@@ -12,6 +12,8 @@ import { useNoteEditorTab } from './hooks/use-note-editor-tab'
 import { useNoteEditor } from './hooks/use-note-editor'
 import { NoteToolbar } from './components/note-toolbar'
 import { NoteTemplatesDropdown } from './components/note-templates'
+import { SlashCommandMenu } from './components/slash-command-menu'
+import { AIAssistantPanel } from './components/ai-assistant-panel'
 import { NotePreviewContent } from './components/note-preview-content'
 
 export default function WriteNotePage() {
@@ -95,7 +97,7 @@ export default function WriteNotePage() {
 
 	const handleContentChange = (content: string) => update('content', content)
 
-	const { handleKeyDown, insertText, wrapSelection } = useNoteEditor({
+	const { handleKeyDown, handleChange, insertText, wrapSelection, slashState, closeSlash, executeSlash } = useNoteEditor({
 		textareaRef,
 		content: form.content,
 		onContentChange: handleContentChange,
@@ -327,15 +329,38 @@ export default function WriteNotePage() {
 									wrapSelection={wrapSelection}
 									extraButtons={<NoteTemplatesDropdown onInsert={insertText} />}
 								/>
-								<textarea
-									ref={textareaRef}
-									value={form.content}
-									onChange={e => update('content', e.target.value)}
-									onKeyDown={handleKeyDown}
-									placeholder='Markdown 内容...'
-									rows={15}
-									className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 font-mono text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-								/>
+								<div className='flex'>
+									<div className='relative min-w-0 flex-1'>
+										<textarea
+											ref={textareaRef}
+											value={form.content}
+											onChange={handleChange}
+											onKeyDown={handleKeyDown}
+											placeholder='Markdown 内容...'
+											rows={15}
+											className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 font-mono text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+										/>
+										<SlashCommandMenu slashState={slashState} onClose={closeSlash} onSelect={executeSlash} />
+									</div>
+									<AIAssistantPanel
+										textareaRef={textareaRef}
+										content={form.content}
+										onInsert={insertText}
+										onReplaceSelection={(text) => {
+											const ta = textareaRef.current
+											if (!ta) return
+											const { selectionStart, selectionEnd, value } = ta
+											const before = value.substring(0, selectionStart)
+											const after = value.substring(selectionEnd)
+											handleContentChange(before + text + after)
+										}}
+										getSelectedText={() => {
+											const ta = textareaRef.current
+											if (!ta) return ''
+											return ta.value.substring(ta.selectionStart, ta.selectionEnd)
+										}}
+									/>
+								</div>
 							</>
 						) : (
 							<NotePreviewContent content={form.content} />

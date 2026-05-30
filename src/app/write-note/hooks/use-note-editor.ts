@@ -1,9 +1,16 @@
 'use client'
 
-import { useCallback, type RefObject } from 'react'
+import { useCallback, useRef, useState, type RefObject } from 'react'
 import dayjs from 'dayjs'
 
 const DEFAULT_FALLBACK = '文本'
+
+export type SlashState = {
+	open: boolean
+	position: { top: number; left: number }
+	query: string
+	commandStart: number
+}
 
 type UseNoteEditorOptions = {
 	textareaRef: RefObject<HTMLTextAreaElement | null>
@@ -13,8 +20,12 @@ type UseNoteEditorOptions = {
 
 type UseNoteEditorReturn = {
 	handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+	handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 	insertText: (text: string) => void
 	wrapSelection: (before: string, after: string, fallback?: string) => void
+	slashState: SlashState
+	closeSlash: () => void
+	executeSlash: (insertText: string) => void
 }
 
 export function useNoteEditor({
@@ -22,6 +33,19 @@ export function useNoteEditor({
 	content,
 	onContentChange,
 }: UseNoteEditorOptions): UseNoteEditorReturn {
+	const [slashState, setSlashState] = useState<SlashState>({
+		open: false,
+		position: { top: 0, left: 0 },
+		query: '',
+		commandStart: 0,
+	})
+	const slashStateRef = useRef(slashState)
+	slashStateRef.current = slashState
+
+	const closeSlash = useCallback(() => {
+		setSlashState(s => ({ ...s, open: false, query: '' }))
+	}, [])
+
 	const insertText = useCallback(
 		(text: string) => {
 			const textarea = textareaRef.current
@@ -43,6 +67,24 @@ export function useNoteEditor({
 			}
 		},
 		[textareaRef, onContentChange]
+	)
+
+	const executeSlash = useCallback(
+		(insert: string) => {
+			const textarea = textareaRef.current
+			if (!textarea) return
+
+			const { commandStart, query } = slashStateRef.current
+			const slashEnd = commandStart + 1 + query.length
+
+			textarea.setSelectionRange(commandStart, slashEnd)
+			closeSlash()
+
+			setTimeout(() => {
+				insertText(insert)
+			}, 0)
+		},
+		[textareaRef, insertText, closeSlash]
 	)
 
 	const wrapSelection = useCallback(
@@ -137,5 +179,71 @@ export function useNoteEditor({
 		[textareaRef, insertText, wrapSelection]
 	)
 
-	return { handleKeyDown, insertText, wrapSelection }
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+			const newValue = e.target.value
+			onContentChange(newValue)
+
+			const textarea = textareaRef.current
+			if (!textarea) return
+
+			const cursor = e.target.selectionStart || 0
+			const textBeforeCursor = newValue.substring(0, cursor)
+
+			const slashIdx = textBeforeCursor.lastIndexOf('/')
+			if (slashStateRef.current.open) {
+				if (slashIdx === -1 || cursor < slashIdx) {
+					closeSlash()
+					return
+				}
+				const q = textBeforeCursor.substring(slashIdx + 1)
+				if (q.includes(' ')) {
+					closeSlash()
+					return
+				}
+
+				const rect = textarea.getBoundingClientRect()
+				const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
+				const lines = textBeforeCursor.split('\n')
+				const currentLine = lines.length - 1
+				const charWidth = 8
+				const currentCol = lines[lines.length - 1].length
+
+				setSlashState({
+					open: true,
+					position: {
+						top: rect.top + (currentLine + 1) * lineHeight + 4,
+						left: rect.left + Math.min(currentCol * charWidth, rect.width - 200),
+					},
+					query: q,
+					commandStart: slashIdx,
+				})
+			} else {
+				if (slashIdx >= 0 && slashIdx === cursor - (textBeforeCursor.length - slashIdx)) {
+					const charAfterSlash = newValue[slashIdx + 1]
+					if (charAfterSlash === undefined || charAfterSlash === ' ' || charAfterSlash === '\n') return
+
+					const rect = textarea.getBoundingClientRect()
+					const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
+					const lines = textBeforeCursor.split('\n')
+					const currentLine = lines.length - 1
+					const charWidth = 8
+					const currentCol = lines[lines.length - 1].length
+
+					setSlashState({
+						open: true,
+						position: {
+							top: rect.top + (currentLine + 1) * lineHeight + 4,
+							left: rect.left + Math.min(currentCol * charWidth, rect.width - 200),
+						},
+						query: textBeforeCursor.substring(slashIdx + 1),
+						commandStart: slashIdx,
+					})
+				}
+			}
+		},
+		[textareaRef, onContentChange, closeSlash]
+	)
+
+	return { handleKeyDown, handleChange, insertText, wrapSelection, slashState, closeSlash, executeSlash }
 }

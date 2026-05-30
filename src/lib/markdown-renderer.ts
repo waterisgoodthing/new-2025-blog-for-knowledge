@@ -16,6 +16,28 @@ export function slugify(text: string): string {
 		.replace(/\s+/g, '-')
 }
 
+function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+}
+
+const ALLOWED_PROTOCOLS = ['http:', 'https:', 'mailto:']
+
+function isAllowedUrl(url: string): boolean {
+	if (!url) return false
+	if (url.startsWith('/') || url.startsWith('./') || url.startsWith('#')) return true
+	try {
+		const u = new URL(url)
+		return ALLOWED_PROTOCOLS.includes(u.protocol)
+	} catch {
+		return /^[a-z][a-z0-9+\-.]*:/i.test(url) === false
+	}
+}
+
 // Lazy load shiki to handle environments where it's not available (e.g., Cloudflare Workers)
 let shikiModule: typeof import('shiki') | null = null
 let shikiLoadAttempted = false
@@ -56,6 +78,14 @@ async function loadKatex() {
 	}
 }
 
+const ALERT_TYPES: Record<string, string> = {
+	NOTE: '注意',
+	TIP: '技巧',
+	WARNING: '警告',
+	CAUTION: '危险',
+	IMPORTANT: '重要',
+}
+
 export async function renderMarkdown(markdown: string): Promise<MarkdownRenderResult> {
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
@@ -64,6 +94,27 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 
 	// Render HTML with heading ids
 	const renderer = new marked.Renderer()
+
+	// T-06: Drop all user raw HTML
+	renderer.html = () => ''
+
+	// T-06: Link protocol whitelist
+	renderer.link = (token: Tokens.Link) => {
+		const href = token.href || ''
+		if (!isAllowedUrl(href)) {
+			return `<span>${escapeHtml(token.text)}</span>`
+		}
+		return `<a href="${escapeHtml(href)}"${token.title ? ` title="${escapeHtml(token.title)}"` : ''}>${token.text}</a>`
+	}
+
+	// T-06: Image src protocol whitelist
+	renderer.image = (token: Tokens.Image) => {
+		const src = token.href || ''
+		if (!isAllowedUrl(src)) {
+			return `<span>[图片: 协议不安全]</span>`
+		}
+		return `<img src="${escapeHtml(src)}" alt="${escapeHtml(token.text || '')}"${token.title ? ` title="${escapeHtml(token.title)}"` : ''} loading="lazy" />`
+	}
 
 	renderer.heading = (token: Tokens.Heading) => {
 		const id = slugify(token.text || '')
@@ -76,7 +127,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 		if (codeData) {
 			// Add data-code attribute with original code for copy functionality
 			// Escape HTML entities for attribute value
-			const escapedCode = codeData.original.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+			const escapedCode = escapeHtml(codeData.original)
 			if (codeData.html) {
 				// Shiki highlighted code
 				return `<pre data-code="${escapedCode}">${codeData.html}</pre>`
@@ -85,7 +136,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 			return `<pre data-code="${escapedCode}"><code>${codeData.original}</code></pre>`
 		}
 		// Fallback to default (inline code, not code block)
-		return `<code>${token.text}</code>`
+		return `<code>${escapeHtml(token.text)}</code>`
 	}
 
 	renderer.listitem = (token: Tokens.ListItem) => {
@@ -102,6 +153,21 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 		}
 
 		return `<li>${inner}</li>\n`
+	}
+
+	// T-07: GitHub Alerts blockquote
+	renderer.blockquote = (token: Tokens.Blockquote) => {
+		const body = marked.parser(token.tokens) as string
+		const firstLineMatch = body.match(/^<p[^>]*>\[!([A-Z]+)\]<\/p>/)
+		if (firstLineMatch) {
+			const type = firstLineMatch[1]
+			const title = ALERT_TYPES[type]
+			if (title) {
+				const remaining = body.replace(/^<p[^>]*>\[![A-Z]+\]<\/p>\n?/, '')
+				return `<div class="markdown-alert markdown-alert-${type.toLowerCase()}" data-alert="${type.toLowerCase()}"><p class="markdown-alert-title">${escapeHtml(title)}</p>${remaining}</div>\n`
+			}
+		}
+		return `<blockquote>${body}</blockquote>\n`
 	}
 
 	const renderMath = (content: string, displayMode: boolean) => {
@@ -175,6 +241,26 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 				renderer(token: any) {
 					return renderMath(token.text || '', false)
 				}
+			},
+			// T-08: Highlight ==text==
+			{
+				name: 'highlight',
+				level: 'inline',
+				start(src: string) {
+					return src.indexOf('==')
+				},
+				tokenizer(src: string) {
+					const match = src.match(/^==([^=\n]+)==/)
+					if (!match) return
+					return {
+						type: 'highlight',
+						raw: match[0],
+						text: match[1]
+					} as any
+				},
+				renderer(token: any) {
+					return `<mark>${token.text || ''}</mark>`
+				}
 			}
 		]
 	})
@@ -207,7 +293,12 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 			const originalCode = codeToken.text
 			const key = `__SHIKI_CODE_${codeBlockMap.size}__`
 
-			if (shiki) {
+			if (codeToken.lang === 'mermaid') {
+				// T-20: Mermaid placeholder (P3, but safe to prepare)
+				const escaped = escapeHtml(originalCode)
+				codeBlockMap.set(key, { html: `<div class="mermaid">${escaped}</div>`, original: originalCode })
+				codeToken.text = key
+			} else if (shiki) {
 				try {
 					const html = await shiki.codeToHtml(originalCode, {
 						lang: codeToken.lang || 'text',
