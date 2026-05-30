@@ -16,11 +16,13 @@ type UseNoteEditorOptions = {
 	textareaRef: RefObject<HTMLTextAreaElement | null>
 	content: string
 	onContentChange: (content: string) => void
+	onImageUpload?: (file: File) => Promise<string>
 }
 
 type UseNoteEditorReturn = {
 	handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
 	handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+	handlePaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void
 	insertText: (text: string) => void
 	wrapSelection: (before: string, after: string, fallback?: string) => void
 	slashState: SlashState
@@ -32,6 +34,7 @@ export function useNoteEditor({
 	textareaRef,
 	content,
 	onContentChange,
+	onImageUpload,
 }: UseNoteEditorOptions): UseNoteEditorReturn {
 	const [slashState, setSlashState] = useState<SlashState>({
 		open: false,
@@ -245,5 +248,41 @@ export function useNoteEditor({
 		[textareaRef, onContentChange, closeSlash]
 	)
 
-	return { handleKeyDown, handleChange, insertText, wrapSelection, slashState, closeSlash, executeSlash }
+	const handlePaste = useCallback(
+		async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+			if (!onImageUpload) return
+			const items = e.clipboardData.items
+			if (!items) return
+
+			const imageFiles: File[] = []
+			for (let i = 0; i < items.length; i++) {
+				const item = items[i]
+				if (item.type.startsWith('image/')) {
+					const file = item.getAsFile()
+					if (file) imageFiles.push(file)
+				}
+			}
+
+			if (imageFiles.length === 0) return
+
+			e.preventDefault()
+
+			const { toast } = await import('sonner')
+			let loadingId: string | number | undefined
+			try {
+				loadingId = toast.loading('上传图片中...')
+				const urls = await Promise.all(imageFiles.map(f => onImageUpload(f)))
+				if (loadingId) toast.dismiss(loadingId)
+				toast.success(`成功上传 ${urls.length} 张图片`)
+				const markdown = urls.map(url => `![](${url})`).join('\n')
+				insertText(markdown)
+			} catch (err: any) {
+				if (loadingId) toast.dismiss(loadingId)
+				toast.error('上传失败: ' + (err?.message || '未知错误'))
+			}
+		},
+		[onImageUpload, insertText]
+	)
+
+	return { handleKeyDown, handleChange, handlePaste, insertText, wrapSelection, slashState, closeSlash, executeSlash }
 }

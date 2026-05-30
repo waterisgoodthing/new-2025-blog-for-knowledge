@@ -16,12 +16,20 @@ import {
 	AlertTriangle,
 	Minus,
 	Clock,
+	Bold,
+	Italic,
+	Highlighter,
+	FoldVertical,
+	GitBranch,
+	Map,
+	ListOrdered,
 } from 'lucide-react'
 import type { SlashState } from '../hooks/use-note-editor'
 
 type SlashCommand = {
 	id: string
 	label: string
+	aliases: string[]
 	description: string
 	icon: ReactNode
 	insert: string
@@ -29,25 +37,39 @@ type SlashCommand = {
 }
 
 const slashCommands: SlashCommand[] = [
-	{ id: 'h1', label: '标题1', description: '一级标题', icon: <Heading1 size={14} />, insert: '# ', cursorOffset: 2 },
-	{ id: 'h2', label: '标题2', description: '二级标题', icon: <Heading2 size={14} />, insert: '## ', cursorOffset: 3 },
-	{ id: 'h3', label: '标题3', description: '三级标题', icon: <Heading3 size={14} />, insert: '### ', cursorOffset: 4 },
-	{ id: 'code', label: '代码块', description: '插入代码块', icon: <FileCode2 size={14} />, insert: '```js\n\n```', cursorOffset: 6 },
-	{ id: 'math', label: '公式', description: '公式块', icon: <Sigma size={14} />, insert: '$$\n\n$$', cursorOffset: 3 },
-	{ id: 'table', label: '表格', description: '插入表格', icon: <Table2 size={14} />, insert: '\n| 列1 | 列2 | 列3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |\n' },
-	{ id: 'task', label: '任务', description: '任务列表项', icon: <ListChecks size={14} />, insert: '- [ ] ', cursorOffset: 6 },
-	{ id: 'quote', label: '引用', description: '引用块', icon: <Quote size={14} />, insert: '> ', cursorOffset: 2 },
-	{ id: 'note', label: '提示', description: 'NOTE 提示框', icon: <AlertCircle size={14} />, insert: '> [!NOTE]\n> ' },
-	{ id: 'warning', label: '警告', description: 'WARNING 提示框', icon: <AlertTriangle size={14} />, insert: '> [!WARNING]\n> ' },
-	{ id: 'hr', label: '分割线', description: '水平分割线', icon: <Minus size={14} />, insert: '\n---\n' },
-	{ id: 'time', label: '时间戳', description: '当前日期时间', icon: <Clock size={14} />, insert: '' },
+	{ id: 'h1', label: '标题1', aliases: ['bt1', 'heading1', 'title1'], description: '一级标题', icon: <Heading1 size={14} />, insert: '# ', cursorOffset: 2 },
+	{ id: 'h2', label: '标题2', aliases: ['bt2', 'heading2', 'title2'], description: '二级标题', icon: <Heading2 size={14} />, insert: '## ', cursorOffset: 3 },
+	{ id: 'h3', label: '标题3', aliases: ['bt3', 'heading3', 'title3'], description: '三级标题', icon: <Heading3 size={14} />, insert: '### ', cursorOffset: 4 },
+	{ id: 'bold', label: '加粗', aliases: ['jb', 'bold'], description: '加粗文本', icon: <Bold size={14} />, insert: '****', cursorOffset: 2 },
+	{ id: 'italic', label: '斜体', aliases: ['xt', 'italic'], description: '斜体文本', icon: <Italic size={14} />, insert: '**', cursorOffset: 1 },
+	{ id: 'highlight', label: '高亮', aliases: ['gl', 'highlight'], description: '高亮文本', icon: <Highlighter size={14} />, insert: '====', cursorOffset: 2 },
+	{ id: 'code', label: '代码块', aliases: ['dmk', 'code', 'codeblock'], description: '插入代码块', icon: <FileCode2 size={14} />, insert: '```js\n\n```', cursorOffset: 6 },
+	{ id: 'math', label: '公式', aliases: ['gs', 'math'], description: '公式块', icon: <Sigma size={14} />, insert: '$$\n\n$$', cursorOffset: 3 },
+	{ id: 'math-inline', label: '行内公式', aliases: ['hngs', 'inline-math'], description: '行内公式', icon: <Sigma size={14} />, insert: '$$', cursorOffset: 1 },
+	{ id: 'table', label: '表格', aliases: ['bg', 'table'], description: '插入表格', icon: <Table2 size={14} />, insert: '\n| 列1 | 列2 | 列3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |\n' },
+	{ id: 'task', label: '任务', aliases: ['rw', 'task', 'todo', 'checkbox'], description: '任务列表项', icon: <ListChecks size={14} />, insert: '- [ ] ', cursorOffset: 6 },
+	{ id: 'olist', label: '有序列表', aliases: ['yxlb', 'ordered'], description: '有序列表', icon: <ListOrdered size={14} />, insert: '1. ', cursorOffset: 3 },
+	{ id: 'quote', label: '引用', aliases: ['yy', 'quote', 'blockquote'], description: '引用块', icon: <Quote size={14} />, insert: '> ', cursorOffset: 2 },
+	{ id: 'note', label: '提示', aliases: ['ts', 'note', 'info'], description: 'NOTE 提示框', icon: <AlertCircle size={14} />, insert: '> [!NOTE]\n> ' },
+	{ id: 'tip', label: '技巧', aliases: ['jq', 'tip'], description: 'TIP 提示框', icon: <AlertCircle size={14} />, insert: '> [!TIP]\n> ' },
+	{ id: 'warning', label: '警告', aliases: ['jg', 'warning', 'warn'], description: 'WARNING 提示框', icon: <AlertTriangle size={14} />, insert: '> [!WARNING]\n> ' },
+	{ id: 'caution', label: '危险', aliases: ['wx', 'caution'], description: 'CAUTION 提示框', icon: <AlertTriangle size={14} />, insert: '> [!CAUTION]\n> ' },
+	{ id: 'important', label: '重要', aliases: ['zy', 'important'], description: 'IMPORTANT 提示框', icon: <AlertCircle size={14} />, insert: '> [!IMPORTANT]\n> ' },
+	{ id: 'hr', label: '分割线', aliases: ['fgx', 'hr', 'divider'], description: '水平分割线', icon: <Minus size={14} />, insert: '\n---\n' },
+	{ id: 'time', label: '时间戳', aliases: ['sjb', 'time', 'timestamp', 'date'], description: '当前日期时间', icon: <Clock size={14} />, insert: '' },
+	{ id: 'details', label: '折叠', aliases: ['zd', 'details', 'fold', 'collapse'], description: '可折叠区域', icon: <FoldVertical size={14} />, insert: '<details>\n<summary>标题</summary>\n\n内容\n</details>' },
+	{ id: 'mermaid', label: '图表', aliases: ['tb', 'mermaid', 'flowchart', 'flow'], description: 'Mermaid 流程图', icon: <GitBranch size={14} />, insert: '```mermaid\ngraph TD\nA-->B\n```' },
+	{ id: 'mindmap', label: '思维导图', aliases: ['swdt', 'mindmap', 'mind'], description: 'Mermaid 思维导图', icon: <Map size={14} />, insert: '```mermaid\nmindmap\n  root((主题))\n    分支1\n    分支2\n```' },
+	{ id: 'footnote', label: '脚注', aliases: ['jz', 'footnote', 'fn'], description: '脚注引用', icon: <Sigma size={14} />, insert: '[^1]', cursorOffset: 3 },
 ]
 
 function filterCommands(query: string): SlashCommand[] {
 	if (!query) return slashCommands
 	const q = query.toLowerCase()
-	return slashCommands.filter(
-		cmd => cmd.label.toLowerCase().includes(q) || cmd.description.toLowerCase().includes(q)
+	return slashCommands.filter(cmd =>
+		cmd.label.toLowerCase().includes(q) ||
+		cmd.description.toLowerCase().includes(q) ||
+		cmd.aliases.some(alias => alias.toLowerCase().includes(q))
 	)
 }
 

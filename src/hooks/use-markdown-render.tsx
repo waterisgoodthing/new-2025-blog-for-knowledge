@@ -3,6 +3,7 @@ import parse, { type HTMLReactParserOptions, Element, type DOMNode } from 'html-
 import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
+import { MermaidBlock } from '@/components/mermaid-block'
 
 type MarkdownRenderResult = {
 	content: ReactElement | null
@@ -48,6 +49,17 @@ export function useMarkdownRender(markdown: string): MarkdownRenderResult {
 							if (domNode instanceof Element && domNode.name === 'img') {
 								const { src, alt, title } = domNode.attribs
 								return <MarkdownImage src={src} alt={alt} title={title} />
+							}
+							// T-20: Mermaid blocks
+							if (domNode instanceof Element && domNode.name === 'div' && domNode.attribs?.class?.includes('mermaid')) {
+								const code = (domNode.children?.[0] as any)?.data || ''
+								const decoded = code
+									.replace(/&amp;/g, '&')
+									.replace(/&lt;/g, '<')
+									.replace(/&gt;/g, '>')
+									.replace(/&quot;/g, '"')
+									.replace(/&#39;/g, "'")
+								return <MermaidBlock code={decoded} />
 							}
 							// Handle code block placeholders in text nodes
 							if (domNode.type === 'text' && domNode.data && domNode.data.includes('__CODE_BLOCK_')) {

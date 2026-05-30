@@ -97,10 +97,14 @@ export default function WriteNotePage() {
 
 	const handleContentChange = (content: string) => update('content', content)
 
-	const { handleKeyDown, handleChange, insertText, wrapSelection, slashState, closeSlash, executeSlash } = useNoteEditor({
+	const { handleKeyDown, handleChange, handlePaste, insertText, wrapSelection, slashState, closeSlash, executeSlash } = useNoteEditor({
 		textareaRef,
 		content: form.content,
 		onContentChange: handleContentChange,
+		onImageUpload: async (file) => {
+			const res = await uploadImage(file)
+			return res.url
+		},
 	})
 
 	const getPreviewContent = () => {
@@ -336,6 +340,7 @@ export default function WriteNotePage() {
 											value={form.content}
 											onChange={handleChange}
 											onKeyDown={handleKeyDown}
+											onPaste={handlePaste}
 											placeholder='Markdown 内容...'
 											rows={15}
 											className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 font-mono text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'

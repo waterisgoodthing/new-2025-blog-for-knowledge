@@ -261,12 +261,50 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 				renderer(token: any) {
 					return `<mark>${token.text || ''}</mark>`
 				}
+			},
+			// T-19: Footnote reference [^id]
+			{
+				name: 'footnoteRef',
+				level: 'inline',
+				start(src: string) {
+					return src.indexOf('[^')
+				},
+				tokenizer(src: string) {
+					const match = src.match(/^\[\^([a-zA-Z0-9\u4e00-\u9fa5_-]+)\]/)
+					if (!match) return
+					return {
+						type: 'footnoteRef',
+						raw: match[0],
+						id: match[1]
+					} as any
+				},
+				renderer(token: any) {
+					const id = slugify(token.id || '')
+					if (!footnoteDefs.has(id)) return token.raw
+					const index = footnoteOrder.indexOf(id) + 1
+					return `<sup><a href="#fn-${id}" id="fnref-${id}">${index}</a></sup>`
+				}
 			}
 		]
 	})
 
+	// T-19: Collect footnote definitions before lexing
+	const footnoteDefs = new Map<string, string>()
+	const footnoteOrder: string[] = []
+	const footnoteDefRegex = /^\[\^([a-zA-Z0-9\u4e00-\u9fa5_-]+)\]:\s*(.+)$/gm
+	let fnMatch: RegExpExecArray | null
+	let cleanMarkdown = markdown
+	while ((fnMatch = footnoteDefRegex.exec(markdown)) !== null) {
+		const id = slugify(fnMatch[1])
+		if (!footnoteDefs.has(id)) {
+			footnoteDefs.set(id, fnMatch[2].trim())
+			footnoteOrder.push(id)
+		}
+		cleanMarkdown = cleanMarkdown.replace(fnMatch[0], '')
+	}
+
 	// Pre-process with marked lexer first (after extensions are registered)
-	const tokens = marked.lexer(markdown)
+	const tokens = marked.lexer(cleanMarkdown)
 
 	// Extract TOC from parsed tokens (this correctly skips code blocks)
 	const toc: TocItem[] = []
@@ -320,5 +358,17 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	}
 	const html = (marked.parser(tokens) as string) || ''
 
-	return { html, toc }
+	// T-19: Append footnotes section
+	let finalHtml = html
+	if (footnoteOrder.length > 0) {
+		const footnotesHtml = footnoteOrder
+			.map((id, i) => {
+				const text = footnoteDefs.get(id) || ''
+				return `<li id="fn-${id}">${escapeHtml(text)} <a href="#fnref-${id}">↩</a></li>`
+			})
+			.join('\n')
+		finalHtml += `\n<section class="footnotes"><ol>${footnotesHtml}</ol></section>`
+	}
+
+	return { html: finalHtml, toc }
 }
