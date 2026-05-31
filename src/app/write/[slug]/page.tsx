@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useParams } from 'next/navigation'
 import { useWriteStore } from '../stores/write-store'
 import { usePreviewStore } from '../stores/preview-store'
@@ -7,7 +8,8 @@ import { useLoadBlog } from '../hooks/use-load-blog'
 import { WriteEditor } from '../components/editor'
 import { WriteSidebar } from '../components/sidebar'
 import { WriteActions } from '../components/actions'
-import { WritePreview } from '../components/preview'
+
+const WritePreview = dynamic(() => import('../components/preview').then(m => m.WritePreview), { ssr: false })
 
 export default function EditBlogPage() {
 	const params = useParams() as { slug?: string }

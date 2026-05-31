@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
@@ -14,7 +15,8 @@ import { NoteToolbar } from './components/note-toolbar'
 import { NoteTemplatesDropdown } from './components/note-templates'
 import { SlashCommandMenu } from './components/slash-command-menu'
 import { AIAssistantPanel } from './components/ai-assistant-panel'
-import { NotePreviewContent } from './components/note-preview-content'
+
+const NotePreviewContent = dynamic(() => import('./components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function WriteNotePage() {
 	const router = useRouter()

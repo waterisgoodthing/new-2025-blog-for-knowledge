@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState, useRef, type ReactElement, Fragment } from 'react'
 import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
