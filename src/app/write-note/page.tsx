@@ -331,7 +331,7 @@ export default function WriteNotePage() {
 									textareaRef={textareaRef}
 									insertText={insertText}
 									wrapSelection={wrapSelection}
-									extraButtons={<NoteTemplatesDropdown onInsert={insertText} />}
+									extraButtons={<NoteTemplatesDropdown onInsert={insertText} textareaRef={textareaRef} />}
 								/>
 								<div className='flex'>
 									<div className='relative min-w-0 flex-1'>

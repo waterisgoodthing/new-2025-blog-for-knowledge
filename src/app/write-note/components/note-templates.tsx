@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useRef, useEffect, type ReactNode, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { BookOpen, ClipboardList, Calendar, BookMarked, FolderKanban } from 'lucide-react'
@@ -133,9 +133,10 @@ export const noteTemplates: NoteTemplate[] = [
 
 type NoteTemplatesDropdownProps = {
 	onInsert: (text: string) => void
+	textareaRef?: RefObject<HTMLTextAreaElement | null>
 }
 
-export function NoteTemplatesDropdown({ onInsert }: NoteTemplatesDropdownProps) {
+export function NoteTemplatesDropdown({ onInsert, textareaRef }: NoteTemplatesDropdownProps) {
 	const [open, setOpen] = useState(false)
 	const [mounted, setMounted] = useState(false)
 	const btnRef = useRef<HTMLButtonElement>(null)
@@ -172,7 +173,20 @@ export function NoteTemplatesDropdown({ onInsert }: NoteTemplatesDropdownProps) 
 	}, [open])
 
 	const handleSelect = (tpl: NoteTemplate) => {
-		onInsert(tpl.getContent())
+		let text = tpl.getContent()
+		const textarea = textareaRef?.current
+		if (textarea) {
+			const { selectionStart, selectionEnd, value } = textarea
+			const charBefore = selectionStart > 0 ? value[selectionStart - 1] : ''
+			const charAfter = selectionEnd < value.length ? value[selectionEnd] : ''
+			if (charBefore && !/\s/.test(charBefore)) {
+				text = '\n\n' + text
+			}
+			if (charAfter && !/\s/.test(charAfter)) {
+				text = text + '\n\n'
+			}
+		}
+		onInsert(text)
 		setOpen(false)
 	}
 

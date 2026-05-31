@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
-import { loadBlog } from '@/lib/load-blog'
+import { getNote } from '@/lib/api/notes'
 import type { PublishForm, ImageItem } from '../types'
 
 export const formatDateTimeLocal = (date: Date = new Date()): string => {
@@ -154,21 +154,22 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 	loading: false,
 	setLoading: loading => set({ loading }),
 
-	// Load blog for editing
+	// Load blog for editing from backend
 	loadBlogForEdit: async (slug: string) => {
 		try {
 			set({ loading: true })
-			const blog = await loadBlog(slug)
+
+			const note = await getNote(slug)
+			const markdown = note.content
+			const coverUrl = note.cover
 
 			// Parse images from markdown
 			const images: ImageItem[] = []
 			const imageRegex = /!\[.*?\]\((.*?)\)/g
 			let match
-			while ((match = imageRegex.exec(blog.markdown)) !== null) {
+			while ((match = imageRegex.exec(markdown)) !== null) {
 				const url = match[1]
-				// Skip cover image and only collect content images
-				if (url && url !== blog.cover && !url.startsWith('local-image:')) {
-					// Check if already added
+				if (url && url !== coverUrl && !url.startsWith('local-image:')) {
 					if (!images.some(img => img.type === 'url' && img.url === url)) {
 						const id = Math.random().toString(36).slice(2, 10)
 						images.push({ id, type: 'url', url })
@@ -178,9 +179,9 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 
 			// Set cover
 			let cover: ImageItem | null = null
-			if (blog.cover) {
+			if (coverUrl) {
 				const coverId = Math.random().toString(36).slice(2, 10)
-				cover = { id: coverId, type: 'url', url: blog.cover }
+				cover = { id: coverId, type: 'url', url: coverUrl }
 			}
 
 			// Set form
@@ -189,13 +190,13 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 				originalSlug: slug,
 				form: {
 					slug,
-					title: blog.config.title || '',
-					md: blog.markdown,
-					tags: blog.config.tags || [],
-					date: blog.config.date ? formatDateTimeLocal(new Date(blog.config.date)) : formatDateTimeLocal(),
-					summary: blog.config.summary || '',
-					hidden: blog.config.hidden || false,
-					category: blog.config.category || ''
+					title: note.title || '',
+					md: markdown,
+					tags: note.tags.map(t => t.name),
+					date: note.created_at ? formatDateTimeLocal(new Date(note.created_at)) : formatDateTimeLocal(),
+					summary: note.summary || '',
+					hidden: note.hidden || false,
+					category: note.category || ''
 				},
 				images,
 				cover,

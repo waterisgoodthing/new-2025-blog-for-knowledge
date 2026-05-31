@@ -239,7 +239,7 @@ export default function SocialButtons() {
 					href={button.value}
 					target='_blank'
 					{...commonProps}
-					className='card relative flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium whitespace-nowrap'>
+					className='card relative flex max-w-[160px] items-center gap-2 truncate rounded-xl px-3 py-2.5 font-medium whitespace-nowrap'>
 					{hasLabel ? button.label : button.value}
 				</motion.a>
 			)

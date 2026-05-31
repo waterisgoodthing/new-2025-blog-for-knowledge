@@ -1,24 +1,27 @@
 import useSWR from 'swr'
 import { useAuthStore } from '@/hooks/use-auth'
+import { listNotes } from '@/lib/api/notes'
 import type { BlogIndexItem } from '@/app/blog/types'
 
 export type { BlogIndexItem } from '@/app/blog/types'
 
-// 改进 fetcher，抛出状态码以便处理 404
-const fetcher = async (url: string) => {
-	const res = await fetch(url, { cache: 'no-store' })
-	if (!res.ok) {
-		const error: any = new Error('Fetch failed')
-		error.status = res.status
-		throw error
-	}
-	const data = await res.json()
-	return Array.isArray(data) ? data : []
+async function fetchBlogIndex(): Promise<BlogIndexItem[]> {
+	const result = await listNotes({ type: 'blog', status: 'published', size: 100 })
+	return result.items.map(n => ({
+		slug: n.slug,
+		title: n.title,
+		tags: n.tags.map(t => t.name),
+		date: n.created_at,
+		summary: n.summary,
+		cover: n.cover,
+		hidden: n.hidden,
+		category: n.category,
+	}))
 }
 
 export function useBlogIndex() {
 	const { isAuth } = useAuthStore()
-	const { data, error, isLoading } = useSWR<BlogIndexItem[]>('/blogs/index.json', fetcher, {
+	const { data, error, isLoading } = useSWR<BlogIndexItem[]>('blog-index', fetchBlogIndex, {
 		revalidateOnFocus: false,
 		revalidateOnReconnect: true
 	})

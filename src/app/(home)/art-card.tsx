@@ -18,7 +18,6 @@ export default function ArtCard() {
 	const artImages = siteContent.artImages ?? []
 	const currentId = siteContent.currentArtImageId
 	const currentArt = (currentId ? artImages.find(item => item.id === currentId) : undefined) ?? artImages[0]
-	const artUrl = currentArt?.url || '/images/art/cat.png'
 
 	return (
 		<HomeDraggableLayer cardKey='artCard' x={x} y={y} width={styles.width} height={styles.height}>
@@ -34,7 +33,13 @@ export default function ArtCard() {
 					</>
 				)}
 
-				<img onClick={() => router.push('/pictures')} src={artUrl} alt='wall art' className='h-full w-full rounded-[32px] object-cover' />
+				{currentArt ? (
+					<img onClick={() => router.push('/pictures')} src={currentArt.url} alt='wall art' className='h-full w-full rounded-[32px] object-cover' />
+				) : (
+					<button type='button' onClick={() => router.push('/pictures')} className='text-secondary h-full w-full rounded-[32px] text-sm'>
+						添加图片
+					</button>
+				)}
 			</Card>
 		</HomeDraggableLayer>
 	)

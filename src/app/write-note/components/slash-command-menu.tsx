@@ -83,6 +83,7 @@ export function SlashCommandMenu({ slashState, onClose, onSelect }: SlashCommand
 	const [selectedIdx, setSelectedIdx] = useState(0)
 	const [mounted, setMounted] = useState(false)
 	const listRef = useRef<HTMLDivElement>(null)
+	const menuRef = useRef<HTMLDivElement>(null)
 	const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
 
 	const filtered = filterCommands(slashState.query)
@@ -94,6 +95,18 @@ export function SlashCommandMenu({ slashState, onClose, onSelect }: SlashCommand
 	useEffect(() => {
 		setSelectedIdx(0)
 	}, [slashState.query])
+
+	useEffect(() => {
+		if (!slashState.open) return
+
+		const handleOutsideClick = (e: MouseEvent) => {
+			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+				onClose()
+			}
+		}
+		document.addEventListener('mousedown', handleOutsideClick)
+		return () => document.removeEventListener('mousedown', handleOutsideClick)
+	}, [slashState.open, onClose])
 
 	useEffect(() => {
 		if (!slashState.open) return
@@ -143,6 +156,7 @@ export function SlashCommandMenu({ slashState, onClose, onSelect }: SlashCommand
 		? createPortal(
 				<AnimatePresence>
 					<motion.div
+						ref={menuRef}
 						initial={{ opacity: 0, y: -8, scale: 0.95 }}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
 						exit={{ opacity: 0, y: -8, scale: 0.95 }}

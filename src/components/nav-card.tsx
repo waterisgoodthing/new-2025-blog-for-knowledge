@@ -17,6 +17,7 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
+import PenSVG from '@/svgs/pen.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
@@ -32,10 +33,16 @@ const list = [
 		href: '/blog'
 	},
 	{
+		icon: PenSVG,
+		iconActive: PenSVG,
+		label: '笔记',
+		href: '/notes'
+	},
+	{
 		icon: ProjectsOutlineSVG,
 		iconActive: ProjectsFilledSVG,
-		label: '我的项目',
-		href: '/projects'
+		label: '错题集',
+		href: '/mistakes'
 	},
 	{
 		icon: AboutOutlineSVG,
@@ -70,7 +77,7 @@ export default function NavCard() {
 	const hiCardStyles = cardStyles.hiCard
 
 	const activeIndex = useMemo(() => {
-		const index = list.findIndex(item => pathname === item.href)
+		const index = list.findIndex(item => pathname.startsWith(item.href))
 		return index >= 0 ? index : undefined
 	}, [pathname])
 
@@ -80,7 +87,7 @@ export default function NavCard() {
 
 	let form = useMemo(() => {
 		if (pathname == '/') return 'full'
-		else if (pathname == '/write') return 'mini'
+		else if (pathname.startsWith('/write')) return 'mini'
 		else return 'icons'
 	}, [pathname])
 	if (maxSM) form = 'icons'
@@ -140,7 +147,7 @@ export default function NavCard() {
 
 					<Link className='flex items-center gap-3' href='/'>
 						<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
-						{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
+						{form === 'full' && <span className='font-averia mt-1 truncate text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
 						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(开发中)</span>}
 					</Link>
 

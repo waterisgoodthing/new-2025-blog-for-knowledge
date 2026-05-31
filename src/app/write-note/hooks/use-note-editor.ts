@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, type RefObject } from 'react'
 import dayjs from 'dayjs'
+import { getCaretCoordinates } from '@/lib/caret-position'
 
 const DEFAULT_FALLBACK = '文本'
 
@@ -207,17 +208,22 @@ export function useNoteEditor({
 
 				const rect = textarea.getBoundingClientRect()
 				const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
-				const lines = textBeforeCursor.split('\n')
-				const currentLine = lines.length - 1
-				const charWidth = 8
-				const currentCol = lines[lines.length - 1].length
+				const menuHeight = 256
+				const menuWidth = 224
+
+				const caret = getCaretCoordinates(textarea, slashIdx)
+				const top = Math.min(
+					Math.max(rect.top + caret.top + lineHeight + 4, rect.top),
+					window.innerHeight - menuHeight - 8
+				)
+				const left = Math.min(
+					Math.max(rect.left + caret.left, rect.left),
+					window.innerWidth - menuWidth - 8
+				)
 
 				setSlashState({
 					open: true,
-					position: {
-						top: rect.top + (currentLine + 1) * lineHeight + 4,
-						left: rect.left + Math.min(currentCol * charWidth, rect.width - 200),
-					},
+					position: { top, left },
 					query: q,
 					commandStart: slashIdx,
 				})
@@ -228,17 +234,22 @@ export function useNoteEditor({
 
 					const rect = textarea.getBoundingClientRect()
 					const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
-					const lines = textBeforeCursor.split('\n')
-					const currentLine = lines.length - 1
-					const charWidth = 8
-					const currentCol = lines[lines.length - 1].length
+					const menuHeight = 256
+					const menuWidth = 224
+
+					const caret = getCaretCoordinates(textarea, slashIdx)
+					const top = Math.min(
+						Math.max(rect.top + caret.top + lineHeight + 4, rect.top),
+						window.innerHeight - menuHeight - 8
+					)
+					const left = Math.min(
+						Math.max(rect.left + caret.left, rect.left),
+						window.innerWidth - menuWidth - 8
+					)
 
 					setSlashState({
 						open: true,
-						position: {
-							top: rect.top + (currentLine + 1) * lineHeight + 4,
-							left: rect.left + Math.min(currentCol * charWidth, rect.width - 200),
-						},
+						position: { top, left },
 						query: textBeforeCursor.substring(slashIdx + 1),
 						commandStart: slashIdx,
 					})

@@ -11,8 +11,20 @@ import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
 import { Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
+import { getPlaylist, type MusicItem } from '@/lib/api/music'
 
-const MUSIC_FILES = ['/music/close-to-you.mp3']
+const FALLBACK_TRACK: MusicItem = {
+	id: 0,
+	title: 'Close To You',
+	artist: null,
+	artwork: null,
+	apple_music_url: '',
+	preview_url: null,
+	track_id: null,
+	sort_order: 0,
+	is_active: true,
+	created_at: '',
+}
 
 export default function MusicCard() {
 	const pathname = usePathname()
@@ -23,16 +35,30 @@ export default function MusicCard() {
 	const clockCardStyles = cardStyles.clockCard
 	const calendarCardStyles = cardStyles.calendarCard
 
-	const [isPlaying, setIsPlaying] = useState(false)
+	const [playlist, setPlaylist] = useState<MusicItem[]>([])
 	const [currentIndex, setCurrentIndex] = useState(0)
+	const [isPlaying, setIsPlaying] = useState(false)
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
 
 	const isHomePage = pathname === '/'
 
+	useEffect(() => {
+		getPlaylist()
+			.then((items) => {
+				if (items.length > 0) setPlaylist(items)
+			})
+			.catch(() => {
+				setPlaylist([FALLBACK_TRACK])
+			})
+	}, [])
+
+	const currentTrack = playlist.length > 0 ? playlist[currentIndex % playlist.length] : FALLBACK_TRACK
+	const displayTitle = currentTrack.title || 'Close To You'
+	const displayArtist = currentTrack.artist
+
 	const position = useMemo(() => {
-		// If not on home page, always position at bottom-right corner when playing
 		if (!isHomePage) {
 			return {
 				x: center.width - styles.width - 16,
@@ -40,16 +66,14 @@ export default function MusicCard() {
 			}
 		}
 
-		// Default position on home page
 		return {
 			x: styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2 - styles.offset,
 			y: styles.offsetY !== null ? center.y + styles.offsetY : center.y - clockCardStyles.offset + CARD_SPACING + calendarCardStyles.height + CARD_SPACING
 		}
-	}, [isPlaying, isHomePage, center, styles, hiCardStyles, clockCardStyles, calendarCardStyles])
+	}, [isHomePage, center, styles, hiCardStyles, clockCardStyles, calendarCardStyles])
 
 	const { x, y } = position
 
-	// Initialize audio element
 	useEffect(() => {
 		if (!audioRef.current) {
 			audioRef.current = new Audio()
@@ -64,38 +88,31 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			const nextIndex = (currentIndexRef.current + 1) % MUSIC_FILES.length
-			currentIndexRef.current = nextIndex
-			setCurrentIndex(nextIndex)
+			if (playlist.length > 1) {
+				const nextIndex = (currentIndexRef.current + 1) % playlist.length
+				currentIndexRef.current = nextIndex
+				setCurrentIndex(nextIndex)
+			}
 			setProgress(0)
 		}
 
-		const handleTimeUpdate = () => {
-			updateProgress()
-		}
-
-		const handleLoadedMetadata = () => {
-			updateProgress()
-		}
-
-		audio.addEventListener('timeupdate', handleTimeUpdate)
+		audio.addEventListener('timeupdate', updateProgress)
 		audio.addEventListener('ended', handleEnded)
-		audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+		audio.addEventListener('loadedmetadata', updateProgress)
 
 		return () => {
-			audio.removeEventListener('timeupdate', handleTimeUpdate)
+			audio.removeEventListener('timeupdate', updateProgress)
 			audio.removeEventListener('ended', handleEnded)
-			audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+			audio.removeEventListener('loadedmetadata', updateProgress)
 		}
-	}, [])
+	}, [playlist.length])
 
-	// Handle currentIndex change - load new audio
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
-		if (audioRef.current) {
+		if (audioRef.current && currentTrack.preview_url) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
-			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.src = currentTrack.preview_url
 			audioRef.current.loop = false
 			setProgress(0)
 
@@ -103,9 +120,8 @@ export default function MusicCard() {
 				audioRef.current.play().catch(console.error)
 			}
 		}
-	}, [currentIndex])
+	}, [currentIndex, currentTrack.preview_url])
 
-	// Handle play/pause state change
 	useEffect(() => {
 		if (!audioRef.current) return
 
@@ -116,7 +132,6 @@ export default function MusicCard() {
 		}
 	}, [isPlaying])
 
-	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
 			if (audioRef.current) {
@@ -127,10 +142,17 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
-		setIsPlaying(!isPlaying)
+		if (currentTrack.preview_url) {
+			setIsPlaying(!isPlaying)
+		}
 	}
 
-	// Hide component if not on home page and not playing
+	const handleCardClick = () => {
+		if (currentTrack.apple_music_url) {
+			window.open(currentTrack.apple_music_url, '_blank')
+		}
+	}
+
 	if (!isHomePage && !isPlaying) {
 		return null
 	}
@@ -155,19 +177,40 @@ export default function MusicCard() {
 					</>
 				)}
 
-				<MusicSVG className='h-8 w-8' />
+				<div
+					className='flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg'
+					onClick={handleCardClick}
+					title={displayArtist ? `${displayTitle} - ${displayArtist}` : displayTitle}
+				>
+					{currentTrack.artwork ? (
+						<img src={currentTrack.artwork} alt={displayTitle} className='h-full w-full object-cover' />
+					) : (
+						<MusicSVG className='h-8 w-8' />
+					)}
+				</div>
 
-				<div className='flex-1'>
-					<div className='text-secondary text-sm'>Close To You</div>
+				<div className='min-w-0 flex-1'>
+					<div
+						className='text-secondary truncate text-sm'
+						onClick={handleCardClick}
+						title={displayArtist ? `${displayTitle} - ${displayArtist}` : displayTitle}
+					>
+						{displayTitle}
+						{displayArtist && <span className='text-xs'> · {displayArtist}</span>}
+					</div>
 
 					<div className='mt-1 h-2 rounded-full bg-white/60'>
 						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
 					</div>
 				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
-					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
-				</button>
+			<button
+				onClick={togglePlayPause}
+				aria-label={isPlaying ? '暂停' : '播放'}
+				className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'
+			>
+				{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
+			</button>
 			</Card>
 		</HomeDraggableLayer>
 	)

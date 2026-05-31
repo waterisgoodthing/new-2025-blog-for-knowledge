@@ -2,16 +2,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import siteContent from '@/config/site-content.json'
-import blogIndex from '@/../public/blogs/index.json'
 import type { BlogIndexItem } from '@/app/blog/types'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.yysuni.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:2025'
 const FEED_PATH = '/rss.xml'
 const SITE_ORIGIN = SITE_URL.replace(/\/$/, '')
 const FEED_URL = `${SITE_ORIGIN}${FEED_PATH}`
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
-
-const blogs = blogIndex as BlogIndexItem[]
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const escapeXml = (value: string): string =>
 	value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
@@ -86,12 +84,35 @@ const serializeItem = (item: BlogIndexItem): string => {
 		</item>`.trim()
 }
 
-export const dynamic = 'force-static'
-export const revalidate = false
+export const dynamic = 'force-dynamic'
 
-export function GET(): Response {
+async function fetchBlogs(): Promise<BlogIndexItem[]> {
+	try {
+		const res = await fetch(`${API_BASE}/api/notes?type=blog&status=published&size=100`, {
+			next: { revalidate: 600 }
+		})
+		if (!res.ok) return []
+		const data = await res.json()
+		return (data.items || []).map((n: any) => ({
+			slug: n.slug,
+			title: n.title,
+			tags: n.tags?.map((t: any) => t.name) || [],
+			date: n.created_at,
+			summary: n.summary,
+			cover: n.cover,
+			hidden: n.hidden,
+			category: n.category,
+		}))
+	} catch {
+		return []
+	}
+}
+
+export async function GET(): Promise<Response> {
 	const title = siteContent.meta?.title || '2025 Blog'
 	const description = siteContent.meta?.description || 'Latest updates from 2025 Blog'
+
+	const blogs = await fetchBlogs()
 
 	const items = blogs
 		.filter(item => item?.slug)

@@ -35,7 +35,7 @@ export function BlogPreview({ markdown, title, tags, date, summary, cover, slug 
 				transition={{ delay: INIT_DELAY }}
 				className='card bg-article static flex-1 overflow-auto rounded-xl p-8'>
 				<div>
-					<div className='text-center text-2xl font-semibold'>{title}</div>
+					<div className='break-words text-center text-2xl font-semibold'>{title}</div>
 
 					<div className='text-secondary mt-4 flex flex-wrap items-center justify-center gap-3 px-8 text-center text-sm'>
 						{tags.map(t => (

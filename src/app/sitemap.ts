@@ -1,19 +1,36 @@
 import { MetadataRoute } from 'next'
-import blogIndex from '@/../public/blogs/index.json'
 import type { BlogIndexItem } from '@/app/blog/types'
 
-export const dynamic = 'force-static'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+export const dynamic = 'force-dynamic'
+
+async function fetchBlogs(): Promise<BlogIndexItem[]> {
+	try {
+		const res = await fetch(`${API_BASE}/api/notes?type=blog&status=published&size=100`, {
+			next: { revalidate: 600 }
+		})
+		if (!res.ok) return []
+		const data = await res.json()
+		return (data.items || []).map((n: any) => ({
+			slug: n.slug,
+			title: n.title,
+			tags: n.tags?.map((t: any) => t.name) || [],
+			date: n.created_at,
+			summary: n.summary,
+			cover: n.cover,
+			hidden: n.hidden,
+			category: n.category,
+		}))
+	} catch {
+		return []
+	}
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	// 域名配置：
-	// 1. 优先使用 SITE_URL (你在 Vercel 手动设置的正式域名)
-	// 2. 其次尝试 VERCEL_URL (Vercel 自动生成的预览域名，通常不带 https://)
-	// 3. 最后回退到本地开发地址
 	const baseUrl = process.env.SITE_URL ? process.env.SITE_URL : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
 
-	console.log(`[Sitemap] Generating for: ${baseUrl}`)
-
-	let posts: BlogIndexItem[] = blogIndex
+	const posts = await fetchBlogs()
 
 	const postEntries: MetadataRoute.Sitemap = posts.map(post => ({
 		url: `${baseUrl}/blog/${post.slug}`,

@@ -1,22 +1,11 @@
 import { useCallback } from 'react'
-import { readFileAsText } from '@/lib/file-utils'
 import { toast } from 'sonner'
 import { pushBlog } from '../services/push-blog'
 import { deleteBlog } from '../services/delete-blog'
 import { useWriteStore } from '../stores/write-store'
-import { useAuthStore } from '@/hooks/use-auth'
 
 export function usePublish() {
 	const { loading, setLoading, form, cover, images, mode, originalSlug } = useWriteStore()
-	const { isAuth, setPrivateKey } = useAuthStore()
-
-	const onChoosePrivateKey = useCallback(
-		async (file: File) => {
-			const pem = await readFileAsText(file)
-			setPrivateKey(pem)
-		},
-		[setPrivateKey]
-	)
 
 	const onPublish = useCallback(async () => {
 		try {
@@ -57,9 +46,7 @@ export function usePublish() {
 	}, [form.slug, originalSlug, setLoading])
 
 	return {
-		isAuth,
 		loading,
-		onChoosePrivateKey,
 		onPublish,
 		onDelete
 	}

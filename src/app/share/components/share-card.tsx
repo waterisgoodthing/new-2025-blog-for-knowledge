@@ -111,7 +111,7 @@ export function ShareCard({ share, isEditMode = false, onUpdate, onDelete }: Sha
 							contentEditable={canEdit}
 							suppressContentEditableWarning
 							onBlur={e => handleFieldChange('name', e.currentTarget.textContent || '')}
-							className={cn('group-hover:text-brand text-lg font-bold transition-colors focus:outline-none', canEdit && 'cursor-text')}>
+							className={cn('group-hover:text-brand truncate text-lg font-bold transition-colors focus:outline-none', canEdit && 'cursor-text')}>
 							{localShare.name}
 						</h3>
 						{canEdit ? (

@@ -95,7 +95,7 @@ export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete }:
 							contentEditable={canEdit}
 							suppressContentEditableWarning
 							onBlur={e => handleFieldChange('name', e.currentTarget.textContent || '')}
-							className={cn('group-hover:text-brand text-lg font-bold transition-colors focus:outline-none', canEdit && 'cursor-text')}>
+							className={cn('group-hover:text-brand truncate text-lg font-bold transition-colors focus:outline-none', canEdit && 'cursor-text')}>
 							{localBlogger.name}
 						</h3>
 						{canEdit ? (

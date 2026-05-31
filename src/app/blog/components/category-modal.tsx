@@ -121,8 +121,8 @@ export function CategoryModal({
 				<div className='max-h-[360px] space-y-2 overflow-y-auto rounded-xl bg-white/60 p-3'>
 					{editableItems.map(item => (
 						<div key={item.slug} className='flex flex-col gap-2 rounded-lg border bg-white/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between'>
-							<div className='text-sm font-medium'>
-								{item.title || item.slug}
+							<div className='min-w-0 text-sm font-medium'>
+								<span className='block truncate'>{item.title || item.slug}</span>
 								<span className='text-secondary ml-2 text-xs'>{dayjs(item.date).format('YYYY-MM-DD')}</span>
 							</div>
 							<Select

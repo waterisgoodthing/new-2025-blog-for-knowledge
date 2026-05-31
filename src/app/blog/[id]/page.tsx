@@ -5,9 +5,29 @@ import { useParams, useRouter } from 'next/navigation'
 import dayjs from 'dayjs'
 import { motion } from 'motion/react'
 import { BlogPreview } from '@/components/blog-preview'
-import { loadBlog, type BlogConfig } from '@/lib/load-blog'
+import { getNote } from '@/lib/api/notes'
+import type { BlogConfig } from '@/app/blog/types'
 import { useReadArticles } from '@/hooks/use-read-articles'
 import LiquidGrass from '@/components/liquid-grass'
+
+type BlogData = { config: BlogConfig; markdown: string; cover?: string }
+
+async function loadBlogFromBackend(slug: string): Promise<BlogData> {
+	const note = await getNote(slug)
+	return {
+		config: {
+			title: note.title,
+			tags: note.tags.map(t => t.name),
+			date: note.created_at,
+			summary: note.summary,
+			cover: note.cover,
+			hidden: note.hidden,
+			category: note.category,
+		},
+		markdown: note.content,
+		cover: note.cover,
+	}
+}
 
 export default function Page() {
 	const params = useParams() as { id?: string | string[] }
@@ -15,7 +35,7 @@ export default function Page() {
 	const router = useRouter()
 	const { markAsRead } = useReadArticles()
 
-	const [blog, setBlog] = useState<{ config: BlogConfig; markdown: string; cover?: string } | null>(null)
+	const [blog, setBlog] = useState<BlogData | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState<boolean>(true)
 
@@ -25,7 +45,7 @@ export default function Page() {
 			if (!slug) return
 			try {
 				setLoading(true)
-				const blogData = await loadBlog(slug)
+				const blogData = await loadBlogFromBackend(slug)
 
 				if (!cancelled) {
 					setBlog(blogData)

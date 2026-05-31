@@ -13,9 +13,9 @@ type LikeButtonProps = {
 	delay?: number
 }
 
-const ENDPOINT = 'https://blog-liker.yysuni1001.workers.dev/api/like'
+const ENDPOINT = process.env.NEXT_PUBLIC_LIKE_API_URL || ''
 
-export default function LikeButton({ slug = 'yysuni', delay, className }: LikeButtonProps) {
+export default function LikeButton({ slug = 'home', delay, className }: LikeButtonProps) {
 	slug = BLOG_SLUG_KEY + slug
 	const [liked, setLiked] = useState(false)
 	const [show, setShow] = useState(false)
@@ -42,7 +42,7 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 		return typeof data?.count === 'number' ? data.count : null
 	}, [])
 
-	const { data: fetchedCount, mutate } = useSWR(slug ? `${ENDPOINT}?slug=${encodeURIComponent(slug)}` : null, fetcher, {
+	const { data: fetchedCount, mutate } = useSWR(ENDPOINT && slug ? `${ENDPOINT}?slug=${encodeURIComponent(slug)}` : null, fetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 1000 * 10
 	})
@@ -64,6 +64,7 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 		setTimeout(() => setParticles([]), 1000)
 
 		try {
+			if (!ENDPOINT) return
 			const url = `${ENDPOINT}?slug=${encodeURIComponent(slug)}`
 			const res = await fetch(url, { method: 'POST' })
 			const data = await res.json().catch(() => ({}))

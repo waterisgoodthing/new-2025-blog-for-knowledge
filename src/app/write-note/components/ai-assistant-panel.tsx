@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, type RefObject } from 'react'
+import { useState, useRef, useEffect, type RefObject } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Sparkles, ChevronLeft, ChevronRight, Square, RefreshCw, Copy, ArrowDown, Replace } from 'lucide-react'
 import { toast } from 'sonner'
@@ -36,6 +36,13 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 	const [result, setResult] = useState('')
 	const [error, setError] = useState('')
 	const abortRef = useRef<AbortController | null>(null)
+	const requestIdRef = useRef(0)
+
+	useEffect(() => {
+		return () => {
+			abortRef.current?.abort()
+		}
+	}, [])
 
 	const runAction = async (action: PolishAction) => {
 		const selected = getSelectedText()
@@ -46,25 +53,30 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 			return
 		}
 
+		abortRef.current?.abort()
+		const controller = new AbortController()
+		abortRef.current = controller
+		const currentId = ++requestIdRef.current
+
 		setLoading(true)
 		setResult('')
 		setError('')
-
-		const controller = new AbortController()
-		abortRef.current = controller
 
 		let accumulated = ''
 
 		await streamPolish(text, action, {
 			onChunk: chunk => {
+				if (currentId !== requestIdRef.current) return
 				accumulated += chunk
 				setResult(accumulated)
 			},
 			onDone: () => {
+				if (currentId !== requestIdRef.current) return
 				setLoading(false)
 				abortRef.current = null
 			},
 			onError: err => {
+				if (currentId !== requestIdRef.current) return
 				setError(err)
 				setLoading(false)
 				abortRef.current = null
@@ -112,7 +124,7 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 						<div className='ml-2 flex h-full w-80 flex-col rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm'>
 							<div className='flex items-center justify-between border-b border-white/40 p-3'>
 								<span className='text-sm font-medium'>AI 助手</span>
-								<button type='button' onClick={() => setExpanded(false)} className='text-gray-400 hover:text-gray-600'>
+								<button type='button' onClick={() => { abortRef.current?.abort(); setExpanded(false) }} className='text-gray-400 hover:text-gray-600'>
 									<ChevronRight size={16} />
 								</button>
 							</div>

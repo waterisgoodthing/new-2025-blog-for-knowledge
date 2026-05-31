@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
 	typescript: {
 		ignoreBuildErrors: true
 	},
+	serverExternalPackages: ['mermaid', 'katex'],
 	experimental: {
 		scrollRestoration: false
 	},
