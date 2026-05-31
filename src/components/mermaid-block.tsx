@@ -10,12 +10,13 @@ async function getMermaid(): Promise<any> {
 	if (!mermaidPromise) {
 		mermaidPromise = (async () => {
 			try {
-				const mod = await import(/* webpackIgnore: true */ 'mermaid')
+				const mod = await import('mermaid')
 				const m = mod.default ?? mod
 				m.initialize({
 					startOnLoad: false,
 					theme: 'default',
 					securityLevel: 'strict',
+					logLevel: 5,
 				})
 				return m
 			} catch (err) {
@@ -41,11 +42,15 @@ export function MermaidBlock({ code }: { code: string }) {
 			try {
 				const mermaid = await getMermaid()
 				const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`
-				const { svg: rendered } = await mermaid.render(id, code)
+				const normalizedCode = code.replace(/\t/g, '    ')
+				console.log('[MermaidBlock] rendering:', id, normalizedCode.substring(0, 80))
+				const { svg: rendered } = await mermaid.render(id, normalizedCode)
+				console.log('[MermaidBlock] success:', id, rendered.substring(0, 100))
 				if (!cancelled) {
 					setSvg(rendered)
 				}
-			} catch {
+			} catch (err) {
+				console.warn('[MermaidBlock] render error:', err, 'Code:', code.substring(0, 100))
 				if (!cancelled) {
 					setError(true)
 				}

@@ -1,6 +1,6 @@
 'use client'
 
-import type { RefObject, ReactNode } from 'react'
+import { memo, type RefObject, type ReactNode } from 'react'
 import {
 	Bold,
 	Italic,
@@ -99,7 +99,7 @@ type NoteToolbarProps = {
 	extraButtons?: ReactNode
 }
 
-export function NoteToolbar({ textareaRef, insertText, wrapSelection, extraButtons }: NoteToolbarProps) {
+export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, wrapSelection, extraButtons }: NoteToolbarProps) {
 	const handleClick = (action: ToolbarAction) => {
 		const textarea = textareaRef.current
 		if (!textarea) return
@@ -159,4 +159,4 @@ export function NoteToolbar({ textareaRef, insertText, wrapSelection, extraButto
 			)}
 		</div>
 	)
-}
+})
