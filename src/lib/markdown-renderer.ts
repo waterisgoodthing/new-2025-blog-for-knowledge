@@ -25,6 +25,33 @@ function escapeHtml(text: string): string {
 		.replace(/'/g, '&#39;')
 }
 
+function stripAlertPrefix(tokens: any[], _type: string): any[] {
+	const first = tokens[0]
+	if (!first || first.type !== 'paragraph') return tokens
+
+	const inlineTokens = first.tokens
+	if (!inlineTokens || inlineTokens.length === 0) return tokens
+
+	const firstInline = inlineTokens[0]
+	if (!firstInline?.text) return tokens
+
+	const alertTagMatch = firstInline.text.match(/^\[![A-Z]+\](?:\s*\n?\s*)?/)
+	if (!alertTagMatch) return tokens
+
+	const remainingText = firstInline.text.slice(alertTagMatch[0].length)
+
+	if (!remainingText && inlineTokens.length === 1) {
+		return tokens.slice(1)
+	}
+
+	const newFirstInline = { ...firstInline, text: remainingText || '' }
+	const newParagraph = {
+		...first,
+		tokens: [newFirstInline, ...inlineTokens.slice(1)],
+	}
+	return [newParagraph, ...tokens.slice(1)]
+}
+
 const ALLOWED_PROTOCOLS = ['http:', 'https:', 'mailto:']
 
 function isAllowedUrl(url: string): boolean {
@@ -125,15 +152,9 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 		// Check if this code block was pre-processed
 		const codeData = codeBlockMap.get(token.text)
 		if (codeData) {
-			// Add data-code attribute with original code for copy functionality
-			// Escape HTML entities for attribute value
 			const escapedCode = escapeHtml(codeData.original)
-			if (codeData.html) {
-				// Shiki highlighted code
-				return `<pre data-code="${escapedCode}">${codeData.html}</pre>`
-			}
-			// Fallback for failed highlighting
-			return `<pre data-code="${escapedCode}"><code>${codeData.original}</code></pre>`
+			const contentHtml = codeData.html || `<pre><code>${escapeHtml(codeData.original)}</code></pre>`
+			return `<div class="ag-code-block" data-code="${escapedCode}">${contentHtml}</div><!--ag-code-block-end-->`
 		}
 		// Fallback to default (inline code, not code block)
 		return `<code>${escapeHtml(token.text)}</code>`
@@ -157,13 +178,36 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 
 	// T-07: GitHub Alerts blockquote
 	renderer.blockquote = (token: Tokens.Blockquote) => {
+		const firstToken = token.tokens?.[0] as any
+		if (firstToken?.type === 'paragraph') {
+			const inlineTokens = firstToken.tokens
+			const firstText = inlineTokens?.[0]?.text || firstToken.text || ''
+			const alertMatch = firstText.match(/^\[!([A-Z]+)\]/)
+			if (alertMatch) {
+				const type = alertMatch[1]
+				const title = ALERT_TYPES[type]
+				if (title) {
+					const remainingTokens = stripAlertPrefix(token.tokens as any[], type)
+					const body = marked.parser(remainingTokens) as string
+					return `<div class="markdown-alert markdown-alert-${type.toLowerCase()}" data-alert="${type.toLowerCase()}"><p class="markdown-alert-title">${escapeHtml(title)}</p>${body}</div>\n`
+				}
+			}
+		}
+
 		const body = marked.parser(token.tokens) as string
-		const firstLineMatch = body.match(/^<p[^>]*>\[!([A-Z]+)\]<\/p>/)
-		if (firstLineMatch) {
-			const type = firstLineMatch[1]
+		const fallbackMatch = body.match(/^<p[^>]*>\[!([A-Z]+)\]/)
+		if (fallbackMatch) {
+			const type = fallbackMatch[1]
 			const title = ALERT_TYPES[type]
 			if (title) {
-				const remaining = body.replace(/^<p[^>]*>\[![A-Z]+\]<\/p>\n?/, '')
+				let remaining = body
+				const tagOnlyPattern = /^<p[^>]*>\[![A-Z]+\]<\/p>\n?/
+				const tagWithContentPattern = /^<p[^>]*>\[![A-Z]+\](?:<br\s*\/?>|\s)*/
+				if (tagOnlyPattern.test(body)) {
+					remaining = body.replace(tagOnlyPattern, '')
+				} else {
+					remaining = body.replace(tagWithContentPattern, '<p>')
+				}
 				return `<div class="markdown-alert markdown-alert-${type.toLowerCase()}" data-alert="${type.toLowerCase()}"><p class="markdown-alert-title">${escapeHtml(title)}</p>${remaining}</div>\n`
 			}
 		}
@@ -171,21 +215,23 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	}
 
 	const renderMath = (content: string, displayMode: boolean) => {
+		const tag = displayMode ? 'div' : 'span'
+		let html = ''
 		if (!katex) {
-			// Keep original delimiters if katex is not available
-			return displayMode ? `$$${content}$$` : `$${content}$`
+			html = displayMode ? `$$${content}$$` : `$${content}$`
+		} else {
+			try {
+				html = katex.renderToString(content, {
+					displayMode,
+					throwOnError: false,
+					output: 'html',
+					strict: 'ignore'
+				})
+			} catch {
+				html = displayMode ? `$$${content}$$` : `$${content}$`
+			}
 		}
-
-		try {
-			return katex.renderToString(content, {
-				displayMode,
-				throwOnError: false,
-				output: 'html',
-				strict: 'ignore'
-			})
-		} catch {
-			return displayMode ? `$$${content}$$` : `$${content}$`
-		}
+		return `<${tag} class="ag-math-container"><!--ag-math-start-->${html}<!--ag-math-end--></${tag}>`
 	}
 
 	// Register extensions BEFORE lexing so math gets tokenized on cold refresh.
