@@ -1,5 +1,13 @@
-import { marked } from 'marked'
 import type { Tokens } from 'marked'
+
+let markedModule: typeof import('marked') | null = null
+
+async function loadMarked() {
+	if (markedModule) return markedModule
+	const mod = await import('marked')
+	markedModule = mod
+	return mod
+}
 
 export type TocItem = { id: string; text: string; level: number }
 
@@ -117,7 +125,8 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
 	const codeBlockMap = new Map<string, { html: string; original: string }>()
-	const [shiki, katex] = await Promise.all([loadShiki(), loadKatex()])
+	const [markedMod, shiki, katex] = await Promise.all([loadMarked(), loadShiki(), loadKatex()])
+	const { marked } = markedMod
 
 	// Render HTML with heading ids
 	const renderer = new marked.Renderer()

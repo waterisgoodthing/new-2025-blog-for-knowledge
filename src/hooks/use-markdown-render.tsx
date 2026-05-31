@@ -1,9 +1,17 @@
 import { useEffect, useState, useRef, type ReactElement, Fragment } from 'react'
-import parse, { type HTMLReactParserOptions, Element, type DOMNode } from 'html-react-parser'
 import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
 import { MermaidBlock } from '@/components/mermaid-block'
+
+let parseModule: typeof import('html-react-parser') | null = null
+
+async function loadParser() {
+	if (parseModule) return parseModule
+	const mod = await import('html-react-parser')
+	parseModule = mod
+	return mod
+}
 
 type MarkdownRenderResult = {
 	content: ReactElement | null
@@ -27,7 +35,8 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 			const md = latestMarkdown.current
 			setLoading(true)
 			try {
-				const { html, toc } = await renderMarkdown(md)
+				const [{ html, toc }, parseMod] = await Promise.all([renderMarkdown(md), loadParser()])
+				const parse = parseMod.default
 				if (cancelled || md !== latestMarkdown.current) return
 
 				const codeBlocks: Array<{ placeholder: string; code: string; preHtml: string }> = []
@@ -54,13 +63,13 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 					return placeholder
 				})
 
-				const options: HTMLReactParserOptions = {
-					replace(domNode: DOMNode) {
-						if (domNode instanceof Element && domNode.name === 'img') {
+				const options = {
+					replace(domNode: any) {
+						if (domNode instanceof parseMod.Element && domNode.name === 'img') {
 							const { src, alt, title } = domNode.attribs
 							return <MarkdownImage src={src} alt={alt} title={title} />
 						}
-						if (domNode instanceof Element && domNode.name === 'div' && domNode.attribs?.class?.includes('mermaid')) {
+						if (domNode instanceof parseMod.Element && domNode.name === 'div' && domNode.attribs?.class?.includes('mermaid')) {
 							const code = (domNode.children?.[0] as any)?.data || ''
 							const decoded = code
 								.replace(/&amp;/g, '&')
