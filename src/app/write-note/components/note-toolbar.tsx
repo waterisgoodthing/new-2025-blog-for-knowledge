@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, type RefObject, type ReactNode } from 'react'
+import { memo, useState, type RefObject, type ReactNode } from 'react'
 import {
 	Bold,
 	Italic,
@@ -19,6 +19,11 @@ import {
 	FileCode2,
 	Sigma,
 	Highlighter,
+	Plus,
+	GitBranch,
+	Columns,
+	Brain,
+	FlipVertical,
 } from 'lucide-react'
 
 type ToolbarAction = {
@@ -100,6 +105,15 @@ type NoteToolbarProps = {
 }
 
 export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, wrapSelection, extraButtons }: NoteToolbarProps) {
+	const [inserterOpen, setInserterOpen] = useState(false)
+
+	const contentBlocks = [
+		{ icon: <GitBranch size={14} />, label: '图表 (Mermaid)', template: '```mermaid\ngraph TD\n    A[开始] --> B[处理]\n    B --> C[结束]\n```' },
+		{ icon: <Columns size={14} />, label: '对比块', template: ':::compare\ntitle: 对比标题\nleft: 选项A\nright: 选项B\n- 区别1\n- 区别2\n:::' },
+		{ icon: <Brain size={14} />, label: '思维导图', template: '```mermaid\nmindmap\n  root((中心主题))\n    分支1\n      子项1\n      子项2\n    分支2\n```' },
+		{ icon: <FlipVertical size={14} />, label: '复习卡片', template: '\n<details>\n<summary>问题</summary>\n\n答案内容\n\n</details>\n' },
+	]
+
 	const handleClick = (action: ToolbarAction) => {
 		const textarea = textareaRef.current
 		if (!textarea) return
@@ -144,6 +158,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 							key={ai}
 							type='button'
 							onClick={() => handleClick(action)}
+							aria-label={`${action.label}${action.shortcut ? `，快捷键 ${action.shortcut}` : ''}`}
 							title={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}
 							className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
 							{action.icon}
@@ -157,6 +172,35 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 					{extraButtons}
 				</>
 			)}
+			<div className='mx-1 h-5 w-px bg-gray-300/50' />
+			<div className='relative'>
+				<button
+					type='button'
+					onClick={() => setInserterOpen(!inserterOpen)}
+					aria-label='插入内容块'
+					title='插入内容块'
+					className='flex h-7 items-center gap-1 rounded-md px-1.5 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
+					<Plus size={15} />
+					<span className='text-xs'>插入</span>
+				</button>
+				{inserterOpen && (
+					<>
+						<div className='fixed inset-0 z-10' onClick={() => setInserterOpen(false)} />
+						<div className='absolute left-0 top-full z-20 mt-1 w-44 rounded-xl border border-white/40 bg-white/95 p-1 shadow-lg backdrop-blur-xl'>
+							{contentBlocks.map((block, i) => (
+								<button
+									key={i}
+									type='button'
+									onClick={() => { insertText('\n' + block.template + '\n'); setInserterOpen(false) }}
+									className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-gray-100/50'>
+									{block.icon}
+									<span>{block.label}</span>
+								</button>
+							))}
+						</div>
+					</>
+				)}
+			</div>
 		</div>
 	)
 })

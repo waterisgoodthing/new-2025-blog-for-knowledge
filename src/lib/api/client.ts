@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { getApiBase } from './config'
+
+const API_BASE = getApiBase()
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

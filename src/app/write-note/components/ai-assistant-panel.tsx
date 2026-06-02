@@ -2,49 +2,80 @@
 
 import { useState, useRef, useEffect, type RefObject } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Sparkles, ChevronLeft, ChevronRight, Square, RefreshCw, Copy, ArrowDown, Replace } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Square, RefreshCw, Copy, ArrowDown, Replace, Type, Tags, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { streamPolish, type PolishAction } from '@/lib/api/ai-polish'
 
-type AIAction = {
-	id: PolishAction
+type AIActionGroup = {
 	label: string
+	actions: { id: PolishAction; label: string }[]
 }
 
-const aiActions: AIAction[] = [
-	{ id: 'polish', label: '润色' },
-	{ id: 'summarize', label: '总结' },
-	{ id: 'expand', label: '扩写' },
-	{ id: 'continue', label: '续写' },
-	{ id: 'translate_en', label: '中→英' },
-	{ id: 'translate_zh', label: '英→中' },
-	{ id: 'extract_tags', label: '提取标签' },
-	{ id: 'generate_questions', label: '生成问题' },
+const actionGroups: AIActionGroup[] = [
+	{
+		label: '选区操作',
+		actions: [
+			{ id: 'polish', label: '改写' },
+			{ id: 'expand', label: '扩写' },
+			{ id: 'summarize', label: '总结' },
+			{ id: 'continue', label: '续写' },
+		],
+	},
+	{
+		label: '插入内容',
+		actions: [
+			{ id: 'diagram', label: '图表' },
+			{ id: 'compare', label: '对比块' },
+			{ id: 'mindmap', label: '思维导图' },
+		],
+	},
+	{
+		label: '全文处理',
+		actions: [
+			{ id: 'title', label: '生成标题' },
+			{ id: 'outline', label: '生成目录' },
+			{ id: 'tags', label: '推荐标签' },
+		],
+	},
 ]
+
+type ActionMeta = {
+	action: PolishAction
+	label: string
+}
 
 type AIAssistantPanelProps = {
 	textareaRef: RefObject<HTMLTextAreaElement | null>
 	content: string
+	title?: string
+	noteType?: string
+	existingTags?: string[]
 	onInsert: (text: string) => void
 	onReplaceSelection: (text: string) => void
 	getSelectedText: () => string
+	onApplyTitle?: (title: string) => void
+	onApplySummary?: (summary: string) => void
+	onApplyTags?: (tags: string[]) => void
 }
 
-export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSelection, getSelectedText }: AIAssistantPanelProps) {
+export function AIAssistantPanel({
+	textareaRef, content, title, noteType, existingTags,
+	onInsert, onReplaceSelection, getSelectedText,
+	onApplyTitle, onApplySummary, onApplyTags,
+}: AIAssistantPanelProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [loading, setLoading] = useState(false)
 	const [result, setResult] = useState('')
 	const [error, setError] = useState('')
+	const [lastAction, setLastAction] = useState<ActionMeta | null>(null)
 	const abortRef = useRef<AbortController | null>(null)
 	const requestIdRef = useRef(0)
 
 	useEffect(() => {
-		return () => {
-			abortRef.current?.abort()
-		}
+		return () => { abortRef.current?.abort() }
 	}, [])
 
-	const runAction = async (action: PolishAction) => {
+	const runAction = async (action: PolishAction, label: string) => {
 		const selected = getSelectedText()
 		const text = selected || content
 
@@ -61,6 +92,7 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 		setLoading(true)
 		setResult('')
 		setError('')
+		setLastAction({ action, label })
 
 		let accumulated = ''
 
@@ -84,6 +116,9 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 		}, {
 			context: selected ? content : undefined,
 			signal: controller.signal,
+			title,
+			noteType,
+			existingTags,
 		})
 	}
 
@@ -111,6 +146,34 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 		toast.success('已替换')
 	}
 
+	const handleApplyTitle = () => {
+		onApplyTitle?.(result.trim())
+		toast.success('已应用为标题')
+	}
+
+	const handleApplyTags = () => {
+		try {
+			let cleaned = result.trim()
+			// Strip ```json ... ``` fences if present
+			const fenceMatch = cleaned.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/)
+			if (fenceMatch) cleaned = fenceMatch[1].trim()
+			const parsed = JSON.parse(cleaned)
+			if (Array.isArray(parsed)) {
+				onApplyTags?.(parsed.map(String))
+				toast.success('已合并标签')
+			} else {
+				onInsert('\n\n' + result)
+			}
+		} catch {
+			onInsert('\n\n' + result)
+		}
+	}
+
+	const handleApplySummary = () => {
+		onApplySummary?.(result.trim())
+		toast.success('已应用为摘要')
+	}
+
 	return (
 		<div className='flex'>
 			<AnimatePresence>
@@ -129,16 +192,23 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 								</button>
 							</div>
 
-							<div className='flex flex-wrap gap-1.5 p-3'>
-								{aiActions.map(a => (
-									<button
-										key={a.id}
-										type='button'
-										onClick={() => runAction(a.id)}
-										disabled={loading}
-										className='rounded-lg bg-white/60 px-2.5 py-1 text-xs transition-colors hover:bg-white/80 disabled:opacity-40'>
-										{a.label}
-									</button>
+							<div className='space-y-3 p-3'>
+								{actionGroups.map(group => (
+									<div key={group.label}>
+										<div className='mb-1.5 text-[11px] font-medium text-gray-400'>{group.label}</div>
+										<div className='flex flex-wrap gap-1.5'>
+											{group.actions.map(a => (
+												<button
+													key={a.id}
+													type='button'
+													onClick={() => runAction(a.id, a.label)}
+													disabled={loading}
+													className='rounded-lg bg-white/60 px-2.5 py-1 text-xs transition-colors hover:bg-white/80 disabled:opacity-40'>
+													{a.label}
+												</button>
+											))}
+										</div>
+									</div>
 								))}
 							</div>
 
@@ -168,7 +238,22 @@ export function AIAssistantPanel({ textareaRef, content, onInsert, onReplaceSele
 							</div>
 
 							{result && !loading && (
-								<div className='flex gap-1.5 border-t border-white/40 p-3'>
+								<div className='flex flex-wrap gap-1.5 border-t border-white/40 p-3'>
+									{lastAction?.action === 'title' && onApplyTitle && (
+										<button type='button' onClick={handleApplyTitle} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+											<Type size={12} /> 应用为标题
+										</button>
+									)}
+									{lastAction?.action === 'tags' && onApplyTags && (
+										<button type='button' onClick={handleApplyTags} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+											<Tags size={12} /> 合并标签
+										</button>
+									)}
+									{lastAction?.action === 'summarize' && onApplySummary && (
+										<button type='button' onClick={handleApplySummary} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+											<FileText size={12} /> 应用为摘要
+										</button>
+									)}
 									<button type='button' onClick={handleInsert} className='flex items-center gap-1 rounded-lg bg-white/60 px-2.5 py-1.5 text-xs hover:bg-white/80'>
 										<ArrowDown size={12} /> 插入
 									</button>

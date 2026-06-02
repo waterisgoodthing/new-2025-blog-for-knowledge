@@ -158,6 +158,7 @@ async def push_notes_to_github(db: AsyncSession) -> dict:
                 "correct_answer": note.correct_answer,
                 "analysis": note.analysis,
                 "knowledge_points": note.knowledge_points,
+                "ai_metadata": note.ai_metadata,
             }
 
             config_sha = await _create_blob(client, json.dumps(note_data, ensure_ascii=False, indent=2))

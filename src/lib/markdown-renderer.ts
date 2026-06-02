@@ -121,6 +121,17 @@ const ALERT_TYPES: Record<string, string> = {
 	IMPORTANT: '重要',
 }
 
+const COLOR_PALETTE: Record<string, string> = {
+	red: '#ef4444',
+	blue: '#3b82f6',
+	green: '#10b981',
+	yellow: '#f59e0b',
+	purple: '#8b5cf6',
+	orange: '#f97316',
+	gray: '#6b7280',
+	pink: '#ec4899',
+}
+
 export async function renderMarkdown(markdown: string): Promise<MarkdownRenderResult> {
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
@@ -317,6 +328,30 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 					return `<mark>${token.text || ''}</mark>`
 				}
 			},
+			// T-303: Color {color|text}
+			{
+				name: 'textColor',
+				level: 'inline',
+				start(src: string) {
+					return src.indexOf('{')
+				},
+				tokenizer(src: string) {
+					const match = src.match(/^\{([a-z]+)\|([^}]+)\}/)
+					if (!match) return
+					const colorKey = match[1]
+					if (!COLOR_PALETTE[colorKey]) return
+					return {
+						type: 'textColor',
+						raw: match[0],
+						color: colorKey,
+						text: match[2]
+					} as any
+				},
+				renderer(token: any) {
+					const hex = COLOR_PALETTE[token.color] || '#000000'
+					return `<span style="color:${hex}">${token.text || ''}</span>`
+				}
+			},
 			// T-19: Footnote reference [^id]
 			{
 				name: 'footnoteRef',
@@ -338,6 +373,45 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 					if (!footnoteDefs.has(id)) return token.raw
 					const index = footnoteOrder.indexOf(id) + 1
 					return `<sup><a href="#fn-${id}" id="fnref-${id}">${index}</a></sup>`
+				}
+			},
+			// T-301: Compare block :::compare ... :::
+			{
+				name: 'compareBlock',
+				level: 'block',
+				start(src: string) {
+					return src.indexOf(':::compare')
+				},
+				tokenizer(src: string) {
+					const match = src.match(/^:::compare\n([\s\S]*?)\n:::(?:\n|$)/)
+					if (!match) return
+					return {
+						type: 'compareBlock',
+						raw: match[0],
+						text: match[1]
+					} as any
+				},
+				renderer(token: any) {
+					const lines = (token.text || '').split('\n')
+					let title = ''
+					let leftLabel = 'A'
+					let rightLabel = 'B'
+					const items: string[] = []
+					for (const line of lines) {
+						const titleMatch = line.match(/^title:\s*(.+)/)
+						const leftMatch = line.match(/^left:\s*(.+)/)
+						const rightMatch = line.match(/^right:\s*(.+)/)
+						const itemMatch = line.match(/^-\s+(.+)/)
+						if (titleMatch) title = escapeHtml(titleMatch[1].trim())
+						else if (leftMatch) leftLabel = escapeHtml(leftMatch[1].trim())
+						else if (rightMatch) rightLabel = escapeHtml(rightMatch[1].trim())
+						else if (itemMatch) items.push(itemMatch[1].trim())
+					}
+					const mid = Math.ceil(items.length / 2)
+					const leftItems = items.slice(0, mid).map(i => `<li>${escapeHtml(i)}</li>`).join('')
+					const rightItems = items.slice(mid).map(i => `<li>${escapeHtml(i)}</li>`).join('')
+					const titleHtml = title ? `<div class="compare-title">${title}</div>` : ''
+					return `<div class="compare-block">${titleHtml}<div class="compare-grid"><div class="compare-col"><div class="compare-label">${leftLabel}</div><ul>${leftItems}</ul></div><div class="compare-col"><div class="compare-label">${rightLabel}</div><ul>${rightItems}</ul></div></div></div>\n`
 				}
 			}
 		]

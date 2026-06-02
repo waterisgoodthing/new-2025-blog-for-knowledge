@@ -9,6 +9,13 @@ export interface AnalyzeResponse {
   subject: string;
   difficulty: string;
   tags: string[];
+  error_reason?: string;
+  key_step?: string;
+  similar_traps?: string[];
+  generalization?: string;
+  review_advice?: string;
+  variant_questions?: string[];
+  related_notes?: { slug: string; title: string }[];
 }
 
 export async function analyzeMistake(images: { base64: string; mime_type: string }[]): Promise<AnalyzeResponse> {

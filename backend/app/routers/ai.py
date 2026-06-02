@@ -2,7 +2,11 @@ import time
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database import get_db
+from app.models.note import Note
 from app.routers.auth import get_current_admin
 from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, TextAnalyzeRequest
 from app.services.ai_service import call_ocr_model, call_text_model
@@ -55,7 +59,13 @@ OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从
   "knowledge_points": "题目涉及的知识点，多个知识点用中文逗号分隔",
   "subject": "学科名称，例如：数学、英语、计算机、数据结构、算法、物理、化学、政治、未知",
   "difficulty": "easy|medium|hard",
-  "tags": ["标签1", "标签2"]
+  "tags": ["标签1", "标签2"],
+  "error_reason": "如果图片中能看出错误原因则填写；否则填写空字符串",
+  "key_step": "本题最关键的解题步骤或判断点；无法判断时填写空字符串",
+  "similar_traps": ["相似易错点1", "相似易错点2"],
+  "generalization": "这类题可迁移的一般方法；无法判断时填写空字符串",
+  "review_advice": "复习建议；无法判断时填写空字符串",
+  "variant_questions": ["变式题1", "变式题2"]
 }
 
 字段要求：
@@ -104,6 +114,14 @@ OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从
    * 算法题需要包含"算法"或"编程"。
    * 图片识别不完整时，可以包含"识别不完整"。
 
+9. extended mistake fields
+   * error_reason 聚焦"为什么错"，不要重复完整解析。
+   * key_step 聚焦"下一次做题时最先抓住哪一步"。
+   * similar_traps 返回 0 到 4 条相似陷阱。
+   * generalization 总结同类题通法。
+   * review_advice 给出当天、3 天后、7 天后的复习建议。
+   * variant_questions 返回 0 到 3 道短变式题。
+
 再次强调：
 
 你只负责识别与结构化提取，不负责完整解题。
@@ -143,7 +161,13 @@ TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据�
   "knowledge_points": "涉及的知识点，多个知识点用中文逗号分隔",
   "subject": "学科名称，例如：数学、英语、计算机、数据结构、算法、物理、化学、政治、未知",
   "difficulty": "easy|medium|hard",
-  "tags": ["标签1", "标签2"]
+  "tags": ["标签1", "标签2"],
+  "error_reason": "错误原因，说明容易错在哪里",
+  "key_step": "关键步骤，说明解这道题最重要的一步",
+  "similar_traps": ["相似易错点1", "相似易错点2"],
+  "generalization": "举一反三，说明同类题的一般解法",
+  "review_advice": "复习建议，包含今天、3 天后、7 天后的安排",
+  "variant_questions": ["变式题1", "变式题2"]
 }
 
 字段要求：
@@ -215,6 +239,14 @@ TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据�
    * 应包含题型、知识点或能力标签。
    * 算法题必须包含"算法"或"编程"。
 
+9. extended mistake fields
+   * error_reason 必须指出用户最可能犯错的位置。
+   * key_step 必须写出解题过程中最关键的一步。
+   * similar_traps 返回 2 到 4 条相似陷阱。
+   * generalization 总结同类题通法和识别信号。
+   * review_advice 给出清晰复习安排，至少包含当天、3 天后、7 天后。
+   * variant_questions 返回 1 到 3 道短变式题，不要过长。
+
 算法题识别规则：
 
 只要题目满足以下任一条件，就视为算法或编程题：
@@ -235,7 +267,18 @@ TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据�
 不要输出 JSON 以外的任何内容。"""
 
 
-def _parse_result(result: dict) -> AnalyzeResponse:
+def _list_of_strings(value) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item).strip()]
+    if isinstance(value, str):
+        normalized = value.replace("，", ",").replace("、", ",").replace("\n", ",")
+        return [item.strip() for item in normalized.split(",") if item.strip()]
+    return [str(value)]
+
+
+def _parse_result(result: dict, related_notes: list[dict] | None = None) -> AnalyzeResponse:
     return AnalyzeResponse(
         title=result.get("title", ""),
         question=result.get("question", ""),
@@ -244,12 +287,40 @@ def _parse_result(result: dict) -> AnalyzeResponse:
         knowledge_points=result.get("knowledge_points", ""),
         subject=result.get("subject", ""),
         difficulty=result.get("difficulty", "medium"),
-        tags=result.get("tags", []),
+        tags=_list_of_strings(result.get("tags")),
+        error_reason=result.get("error_reason", ""),
+        key_step=result.get("key_step", ""),
+        similar_traps=_list_of_strings(result.get("similar_traps")),
+        generalization=result.get("generalization", ""),
+        review_advice=result.get("review_advice", ""),
+        variant_questions=_list_of_strings(result.get("variant_questions")),
+        related_notes=related_notes or [],
     )
 
 
+async def _find_related_notes(db: AsyncSession, subject: str | None, knowledge_points: str | None, limit: int = 3) -> list[dict]:
+    conditions = []
+    if subject:
+        conditions.append(Note.subject == subject)
+    if knowledge_points:
+        keywords = [kw.strip() for kw in knowledge_points.replace("，", ",").replace("、", ",").split(",") if kw.strip()]
+        for kw in keywords[:3]:
+            conditions.append(Note.knowledge_points.ilike(f"%{kw}%"))
+    if not conditions:
+        return []
+    query = (
+        select(Note.slug, Note.title)
+        .where(or_(*conditions))
+        .where(Note.type == "note")
+        .order_by(Note.updated_at.desc())
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return [{"slug": row.slug, "title": row.title} for row in result.all()]
+
+
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin)):
+async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
     _check_rate_limit()
     if not req.images:
         raise HTTPException(status_code=400, detail="At least one image is required")
@@ -276,11 +347,12 @@ async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin)
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-    return _parse_result(result)
+    related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
+    return _parse_result(result, related)
 
 
 @router.post("/analyze-text", response_model=AnalyzeResponse)
-async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin)):
+async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
     _check_rate_limit()
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text is required")
@@ -297,4 +369,5 @@ async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-    return _parse_result(result)
+    related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
+    return _parse_result(result, related)

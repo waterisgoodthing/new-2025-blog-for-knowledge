@@ -1,4 +1,4 @@
-export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions'
+export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap'
 
 export type PolishCallbacks = {
 	onChunk: (chunk: string) => void
@@ -15,7 +15,7 @@ export async function streamPolish(
 	text: string,
 	action: PolishAction,
 	callbacks: PolishCallbacks,
-	options?: { context?: string; signal?: AbortSignal }
+	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[] }
 ): Promise<void> {
 	const token = getAuthToken()
 	if (!token) {
@@ -35,6 +35,9 @@ export async function streamPolish(
 				text,
 				action,
 				context: options?.context,
+				title: options?.title,
+				note_type: options?.noteType,
+				existing_tags: options?.existingTags,
 			}),
 			signal: options?.signal,
 		})

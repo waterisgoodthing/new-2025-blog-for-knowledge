@@ -8,6 +8,7 @@ import { analyzeMistake, analyzeText, type AnalyzeResponse } from '@/lib/api/ai'
 import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { getContentDetailHref } from '@/lib/content-routes'
 
 export default function WriteMistakePage() {
 	const router = useRouter()
@@ -29,6 +30,7 @@ export default function WriteMistakePage() {
 		tags: [] as string[],
 		tagInput: '',
 	})
+	const [aiMetadata, setAiMetadata] = useState<Record<string, unknown> | null>(null)
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 
@@ -44,18 +46,40 @@ export default function WriteMistakePage() {
 		}
 	}
 
+	const buildAnalysisText = (result: AnalyzeResponse) => {
+		const sections = [
+			result.analysis && `### 详细解析\n\n${result.analysis}`,
+			result.error_reason && `### 错误原因\n\n${result.error_reason}`,
+			result.key_step && `### 关键步骤\n\n${result.key_step}`,
+			(result.similar_traps?.length ?? 0) > 0 && `### 相似易错点\n\n${result.similar_traps!.map(item => `- ${item}`).join('\n')}`,
+			result.generalization && `### 举一反三\n\n${result.generalization}`,
+			result.review_advice && `### 复习建议\n\n${result.review_advice}`,
+			(result.variant_questions?.length ?? 0) > 0 && `### 变式题\n\n${result.variant_questions!.map((item, index) => `${index + 1}. ${item}`).join('\n')}`,
+		]
+		return sections.filter(Boolean).join('\n\n')
+	}
+
 	const applyResult = (result: AnalyzeResponse) => {
 		setForm(f => ({
 			...f,
 			title: result.title || f.title,
 			question: result.question || f.question,
 			correct_answer: result.correct_answer || f.correct_answer,
-			analysis: result.analysis || f.analysis,
+			analysis: buildAnalysisText(result) || f.analysis,
 			knowledge_points: result.knowledge_points || f.knowledge_points,
 			subject: result.subject || f.subject,
 			difficulty: (result.difficulty as any) || f.difficulty,
 			tags: [...new Set([...f.tags, ...result.tags])],
 		}))
+		setAiMetadata({
+			error_reason: result.error_reason || '',
+			key_step: result.key_step || '',
+			similar_traps: result.similar_traps || [],
+			generalization: result.generalization || '',
+			review_advice: result.review_advice || '',
+			variant_questions: result.variant_questions || [],
+			related_notes: result.related_notes || [],
+		})
 	}
 
 	const uploadAndAnalyzeFiles = async (files: File[]) => {
@@ -63,7 +87,7 @@ export default function WriteMistakePage() {
 		try {
 			// 1. Upload images to the backend to get hosted URL paths
 			const uploadPromises = files.map(async file => {
-				const res = await uploadImage(file)
+				const res = await uploadImage(file, { noteType: 'mistake', slug: form.slug || undefined })
 				return res.url
 			})
 			const urls = await Promise.all(uploadPromises)
@@ -140,7 +164,7 @@ export default function WriteMistakePage() {
 				form.knowledge_points && `## 知识点\n\n${form.knowledge_points}`,
 			].filter(Boolean).join('\n\n')
 
-			await createNote({
+			const created = await createNote({
 				slug,
 				title: form.title,
 				content,
@@ -154,8 +178,9 @@ export default function WriteMistakePage() {
 				analysis: form.analysis,
 				knowledge_points: form.knowledge_points,
 				images: uploadedImages,
+				ai_metadata: aiMetadata,
 			})
-			router.push('/mistakes')
+			router.push(getContentDetailHref(created.type, created.slug))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -207,6 +232,7 @@ export default function WriteMistakePage() {
 								<button
 									type='button'
 									onClick={() => setUploadedImages(prev => prev.filter(x => x !== url))}
+									aria-label={`删除第 ${idx + 1} 张错题图片`}
 									className='absolute top-1 right-1 flex items-center justify-center h-5 w-5 rounded-full bg-black/50 text-white text-xs hover:bg-red-600 transition-colors shadow'
 									title="删除图片"
 								>
@@ -324,7 +350,14 @@ export default function WriteMistakePage() {
 						{form.tags.map(t => (
 							<span key={t} className='flex items-center gap-1 rounded-full bg-gray-200/60 px-3 py-1 text-xs'>
 								{t}
-								<button onClick={() => update('tags', form.tags.filter((x: string) => x !== t))} className='text-gray-400 hover:text-red-500'>×</button>
+								<button
+									type='button'
+									onClick={() => update('tags', form.tags.filter((x: string) => x !== t))}
+									aria-label={`删除标签 ${t}`}
+									title={`删除标签 ${t}`}
+									className='text-gray-400 hover:text-red-500'>
+									×
+								</button>
 							</span>
 						))}
 					</div>

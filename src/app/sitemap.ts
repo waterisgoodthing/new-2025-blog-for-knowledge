@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
 import type { BlogIndexItem } from '@/app/blog/types'
+import { getApiBase } from '@/lib/api/config'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = getApiBase()
 
 export const dynamic = 'force-dynamic'
 

@@ -53,6 +53,8 @@ async def list_notes(
     status: Optional[NoteStatus] = None,
     q: Optional[str] = None,
     hidden: Optional[bool] = None,
+    folder_id: Optional[str] = None,
+    inbox: Optional[bool] = None,
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -94,6 +96,14 @@ async def list_notes(
                 Note.question.ilike(f"%{q}%"),
             )
         )
+    if folder_id is not None:
+        import uuid as _uuid
+        try:
+            query = query.where(Note.folder_id == _uuid.UUID(folder_id))
+        except ValueError:
+            pass
+    if inbox:
+        query = query.where(Note.folder_id.is_(None))
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -107,11 +117,27 @@ async def list_notes(
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 PUBLIC_PICTURES_DIR = PROJECT_ROOT / "public" / "images" / "pictures"
+MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024
+UPLOAD_CHUNK_BYTES = 1024 * 1024
+
+
+def _image_extension_from_header(header: bytes) -> str | None:
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png"
+    if header.startswith(b"\xff\xd8\xff"):
+        return ".jpg"
+    if header.startswith((b"GIF87a", b"GIF89a")):
+        return ".gif"
+    if header.startswith(b"RIFF") and header[8:12] == b"WEBP":
+        return ".webp"
+    return None
 
 
 @router.post("/upload-image")
 async def upload_image(
     file: UploadFile = File(...),
+    note_type: Optional[str] = None,
+    slug: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     _admin=Depends(get_current_admin),
 ):
@@ -122,20 +148,55 @@ async def upload_image(
             detail="File must be an image",
         )
 
-    os.makedirs(PUBLIC_PICTURES_DIR, exist_ok=True)
-    ext = os.path.splitext(file.filename)[1] if file.filename else ".png"
-    filename = f"{uuid.uuid4().hex}{ext}"
-    file_path = PUBLIC_PICTURES_DIR / filename
+    header = await file.read(12)
+    ext = _image_extension_from_header(header)
+    if ext is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be a PNG, JPEG, GIF, or WebP image",
+        )
 
-    contents = await file.read()
-    if len(contents) > 10 * 1024 * 1024:
+    if len(header) > MAX_IMAGE_UPLOAD_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="File too large (max 10MB)",
         )
-    with open(file_path, "wb") as f:
-        f.write(contents)
 
+    if note_type and slug:
+        safe_type = note_type.replace("/", "_").replace("..", "")
+        safe_slug = slug.replace("/", "_").replace("..", "")
+        upload_dir = PUBLIC_PICTURES_DIR / safe_type / safe_slug
+        filename = f"{uuid.uuid4().hex[:8]}{ext}"
+    else:
+        upload_dir = PUBLIC_PICTURES_DIR
+        filename = f"{uuid.uuid4().hex}{ext}"
+
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = upload_dir / filename
+
+    total_bytes = len(header)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(header)
+            while True:
+                chunk = await file.read(UPLOAD_CHUNK_BYTES)
+                if not chunk:
+                    break
+                total_bytes += len(chunk)
+                if total_bytes > MAX_IMAGE_UPLOAD_BYTES:
+                    raise HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail="File too large (max 10MB)",
+                    )
+                f.write(chunk)
+    except HTTPException:
+        file_path.unlink(missing_ok=True)
+        raise
+
+    if note_type and slug:
+        safe_type = note_type.replace("/", "_").replace("..", "")
+        safe_slug = slug.replace("/", "_").replace("..", "")
+        return {"url": f"/images/pictures/{safe_type}/{safe_slug}/{filename}"}
     return {"url": f"/images/pictures/{filename}"}
 
 
@@ -191,6 +252,7 @@ async def create_note(
         analysis=req.analysis,
         knowledge_points=req.knowledge_points,
         images=req.images,
+        ai_metadata=req.ai_metadata,
         tags=tags,
     )
 

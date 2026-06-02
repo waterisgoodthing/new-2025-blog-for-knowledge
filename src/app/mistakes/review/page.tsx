@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
-import { getReviewQueue, submitReview, getReviewStats, type ReviewStats } from '@/lib/api/review'
+import { getReviewQueue, submitReview, getReviewStats, getReviewPlan, type ReviewStats, type ReviewPlan } from '@/lib/api/review'
 import type { NoteDetail } from '@/lib/api/notes'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import dayjs from 'dayjs'
 
 const qualityLabels = [
 	{ q: 0, label: '完全忘记', color: 'bg-red-500' },
@@ -17,6 +18,8 @@ const qualityLabels = [
 	{ q: 5, label: '完美', color: 'bg-emerald-500' },
 ]
 
+type ReviewResult = { slug: string; title: string; quality: number; nextReview: string | null }
+
 export default function ReviewPage() {
 	const [queue, setQueue] = useState<NoteDetail[]>([])
 	const [current, setCurrent] = useState(0)
@@ -26,11 +29,14 @@ export default function ReviewPage() {
 	const [reviewed, setReviewed] = useState(0)
 	const [loading, setLoading] = useState(true)
 	const [stats, setStats] = useState<ReviewStats | null>(null)
+	const [plan, setPlan] = useState<ReviewPlan | null>(null)
+	const [reviewResults, setReviewResults] = useState<ReviewResult[]>([])
 
 	useEffect(() => {
-		Promise.all([getReviewQueue(), getReviewStats()]).then(([q, s]) => {
+		Promise.all([getReviewQueue(), getReviewStats(), getReviewPlan()]).then(([q, s, p]) => {
 			setQueue(q)
 			setStats(s)
+			setPlan(p)
 			setLoading(false)
 		})
 	}, [])
@@ -41,7 +47,8 @@ export default function ReviewPage() {
 		if (!item || submitting) return
 		setSubmitting(true)
 		try {
-			await submitReview(item.slug, quality)
+			const updated = await submitReview(item.slug, quality)
+			setReviewResults(prev => [...prev, { slug: item.slug, title: item.title, quality, nextReview: updated.next_review ?? null }])
 			setReviewed(r => r + 1)
 			if (current + 1 >= queue.length) {
 				setDone(true)
@@ -74,15 +81,76 @@ export default function ReviewPage() {
 	}
 
 	if (done) {
+		const qualityDistribution = qualityLabels.map(({ q, label, color }) => ({
+			q, label, color, count: reviewResults.filter(r => r.quality === q).length
+		}))
+		const maxCount = Math.max(...qualityDistribution.map(d => d.count), 1)
+
 		return (
-			<div className='mx-auto max-w-xl px-4 py-20 text-center'>
+			<div className='mx-auto max-w-xl px-4 py-12'>
 				<motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-					<div className='mb-4 text-6xl'>✅</div>
-					<h2 className='mb-2 text-xl font-bold'>复习完成！</h2>
-					<p className='mb-6 text-gray-500'>本次复习了 {reviewed} 道题</p>
-					<Link href='/mistakes' className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white'>
-						返回错题集
-					</Link>
+					<div className='mb-4 text-center text-6xl'>✅</div>
+					<h2 className='mb-1 text-center text-xl font-bold'>复习完成！</h2>
+					<p className='mb-8 text-center text-gray-500'>本次复习了 {reviewed} 道题</p>
+
+					<div className='mb-6 rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+						<h3 className='mb-3 text-sm font-semibold text-gray-700'>掌握程度分布</h3>
+						<div className='space-y-2'>
+							{qualityDistribution.map(({ q, label, color, count }) => (
+								<div key={q} className='flex items-center gap-3'>
+									<span className='w-16 shrink-0 text-right text-xs text-gray-500'>{label}</span>
+									<div className='flex-1 h-5 overflow-hidden rounded-full bg-gray-100/50'>
+										<motion.div
+											className={cn('h-full rounded-full', color)}
+											initial={{ width: 0 }}
+											animate={{ width: `${(count / maxCount) * 100}%` }}
+											transition={{ delay: q * 0.08, duration: 0.4 }}
+										/>
+									</div>
+									<span className='w-6 text-xs text-gray-500'>{count}</span>
+								</div>
+							))}
+						</div>
+					</div>
+
+					<div className='mb-6 rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+						<h3 className='mb-3 text-sm font-semibold text-gray-700'>下次复习安排</h3>
+						<div className='space-y-2'>
+							{reviewResults.map((r, i) => (
+								<div key={i} className='flex items-center justify-between gap-3 text-sm'>
+									<span className='min-w-0 truncate text-gray-700'>{r.title}</span>
+									<span className='shrink-0 text-xs text-gray-400'>
+										{r.nextReview ? dayjs(r.nextReview).format('MM-DD') : '-'}
+									</span>
+								</div>
+							))}
+						</div>
+					</div>
+
+					{plan && plan.recommendations.length > 0 && (
+						<div className='mb-6 rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+							<h3 className='mb-3 text-sm font-semibold text-gray-700'>下一步建议</h3>
+							<div className='space-y-2'>
+								{plan.recommendations.map((rec, i) => (
+									<div key={i} className='rounded-lg bg-white/50 px-3 py-2 text-xs leading-5 text-gray-600'>
+										{rec}
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
+					<div className='mb-8 flex flex-col gap-3 sm:flex-row'>
+						<Link href='/mistakes' className='flex-1 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-center text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98]'>
+							回到错题集
+						</Link>
+						<Link href='/write-mistake' className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-center text-sm transition-colors hover:bg-white/80'>
+							继续整理
+						</Link>
+						<button onClick={() => window.location.reload()} className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-sm transition-colors hover:bg-white/80'>
+							再做一轮
+						</button>
+					</div>
 				</motion.div>
 			</div>
 		)

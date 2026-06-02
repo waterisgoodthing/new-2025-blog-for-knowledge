@@ -8,7 +8,8 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.note import Note
 from app.routers.auth import get_current_admin
-from app.schemas.note import NoteOut, ReviewRequest, ReviewStats
+from app.schemas.note import NoteOut, ReviewPlan, ReviewRequest, ReviewStats
+from app.services.review_planner import build_review_plan
 from app.services.sm2 import sm2
 
 router = APIRouter(prefix="/api/review", tags=["review"])
@@ -80,3 +81,9 @@ async def get_review_stats(db: AsyncSession = Depends(get_db), _admin=Depends(ge
     ).scalar() or 0
 
     return ReviewStats(total_mistakes=total, mastered=mastered, pending_review=pending, due_today=due_today)
+
+
+@router.get("/plan", response_model=ReviewPlan)
+async def get_review_plan(db: AsyncSession = Depends(get_db), _admin=Depends(get_current_admin)):
+    result = await db.execute(select(Note).options(selectinload(Note.tags)).where(Note.type == "mistake"))
+    return build_review_plan(result.scalars().all())

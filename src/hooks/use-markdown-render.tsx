@@ -82,7 +82,7 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 							return <MermaidBlock code={decoded} />
 						}
 						if (domNode.type === 'text' && domNode.data) {
-							const text = domNode.data
+							const text = String(domNode.data)
 							if (text.includes('__CODE_BLOCK_') || text.includes('__MATH_BLOCK_')) {
 								const result = text
 									.split(/(__(?:CODE|MATH)_BLOCK_\d+__)/)

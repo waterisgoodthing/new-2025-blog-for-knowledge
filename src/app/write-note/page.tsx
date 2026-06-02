@@ -15,6 +15,7 @@ import { NoteToolbar } from './components/note-toolbar'
 import { NoteTemplatesDropdown } from './components/note-templates'
 import { SlashCommandMenu } from './components/slash-command-menu'
 import { AIAssistantPanel } from './components/ai-assistant-panel'
+import { getContentDetailHref } from '@/lib/content-routes'
 
 const NotePreviewContent = dynamic(() => import('./components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
@@ -47,7 +48,7 @@ export default function WriteNotePage() {
 		setUploading(true)
 		try {
 			const uploadPromises = files.map(async file => {
-				const res = await uploadImage(file)
+				const res = await uploadImage(file, { noteType: form.type, slug: form.slug || undefined })
 				return res.url
 			})
 			const urls = await Promise.all(uploadPromises)
@@ -104,7 +105,7 @@ export default function WriteNotePage() {
 		content: form.content,
 		onContentChange: handleContentChange,
 		onImageUpload: async (file) => {
-			const res = await uploadImage(file)
+			const res = await uploadImage(file, { noteType: form.type, slug: form.slug || undefined })
 			return res.url
 		},
 	})
@@ -140,7 +141,7 @@ export default function WriteNotePage() {
 				].filter(Boolean).join('\n\n')
 				: form.content
 
-			await createNote({
+			const created = await createNote({
 				slug,
 				title: form.title,
 				content,
@@ -158,7 +159,7 @@ export default function WriteNotePage() {
 				cover: form.cover || undefined,
 				images: form.type === 'mistake' ? uploadedImages : undefined,
 			})
-			router.push('/notes')
+			router.push(getContentDetailHref(created.type, created.slug))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -244,6 +245,7 @@ export default function WriteNotePage() {
 										<button
 											type='button'
 											onClick={() => setUploadedImages(prev => prev.filter(x => x !== url))}
+											aria-label={`删除第 ${idx + 1} 张错题图片`}
 											className='absolute top-0.5 right-0.5 flex items-center justify-center h-4 w-4 rounded-full bg-black/50 text-white text-[10px] hover:bg-red-600 transition-colors shadow'
 											title="删除图片"
 										>
@@ -349,24 +351,30 @@ export default function WriteNotePage() {
 										/>
 										<SlashCommandMenu slashState={slashState} onClose={closeSlash} onSelect={executeSlash} />
 									</div>
-									<AIAssistantPanel
-										textareaRef={textareaRef}
-										content={form.content}
-										onInsert={insertText}
-										onReplaceSelection={(text) => {
-											const ta = textareaRef.current
-											if (!ta) return
-											const { selectionStart, selectionEnd, value } = ta
-											const before = value.substring(0, selectionStart)
-											const after = value.substring(selectionEnd)
-											handleContentChange(before + text + after)
-										}}
-										getSelectedText={() => {
-											const ta = textareaRef.current
-											if (!ta) return ''
-											return ta.value.substring(ta.selectionStart, ta.selectionEnd)
-										}}
-									/>
+								<AIAssistantPanel
+									textareaRef={textareaRef}
+									content={form.content}
+									title={form.title}
+									noteType={form.type}
+									existingTags={form.tags}
+									onInsert={insertText}
+									onReplaceSelection={(text) => {
+										const ta = textareaRef.current
+										if (!ta) return
+										const { selectionStart, selectionEnd, value } = ta
+										const before = value.substring(0, selectionStart)
+										const after = value.substring(selectionEnd)
+										handleContentChange(before + text + after)
+									}}
+									getSelectedText={() => {
+										const ta = textareaRef.current
+										if (!ta) return ''
+										return ta.value.substring(ta.selectionStart, ta.selectionEnd)
+									}}
+									onApplyTitle={(t) => update('title', t)}
+									onApplySummary={(s) => update('summary', s)}
+									onApplyTags={(tags) => update('tags', [...new Set([...form.tags, ...tags])])}
+								/>
 								</div>
 							</>
 						) : (
@@ -392,7 +400,7 @@ export default function WriteNotePage() {
 						{form.tags.map(t => (
 							<span key={t} className='flex items-center gap-1 rounded-full bg-gray-200/60 px-3 py-1 text-xs'>
 								{t}
-								<button onClick={() => removeTag(t)} className='text-gray-400 hover:text-red-500'>×</button>
+								<button type='button' onClick={() => removeTag(t)} aria-label={`删除标签 ${t}`} title={`删除标签 ${t}`} className='text-gray-400 hover:text-red-500'>×</button>
 							</span>
 						))}
 					</div>

@@ -59,12 +59,18 @@ class Note(Base):
     next_review: Mapped[date | None] = mapped_column(Date, nullable=True)
     last_reviewed: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     images: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    ai_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True
+    )
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
 
     search_vector = mapped_column(TSVECTOR, nullable=True)
 
     tags: Mapped[list["Tag"]] = relationship(secondary="note_tags", back_populates="notes", lazy="selectin")
 
     __table_args__ = (
+        Index("idx_notes_status", "status"),
         Index("idx_notes_next_review", "next_review", postgresql_where="type = 'mistake'"),
         Index("idx_notes_search", "search_vector", postgresql_using="gin"),
     )

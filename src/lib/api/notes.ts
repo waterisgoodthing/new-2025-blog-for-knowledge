@@ -21,6 +21,7 @@ export interface NoteListItem {
   next_review?: string;
   last_reviewed?: string;
   images?: string[];
+  ai_metadata?: Record<string, unknown> | null;
 }
 
 export interface NoteDetail extends NoteListItem {
@@ -30,6 +31,7 @@ export interface NoteDetail extends NoteListItem {
   correct_answer?: string;
   analysis?: string;
   knowledge_points?: string;
+  ai_metadata?: Record<string, unknown> | null;
 }
 
 export interface NoteListResponse {
@@ -58,6 +60,7 @@ export interface NoteCreateInput {
   analysis?: string;
   knowledge_points?: string;
   images?: string[];
+  ai_metadata?: Record<string, unknown> | null;
 }
 
 export interface NoteUpdateInput {
@@ -78,6 +81,7 @@ export interface NoteUpdateInput {
   analysis?: string;
   knowledge_points?: string;
   images?: string[];
+  ai_metadata?: Record<string, unknown> | null;
 }
 
 export interface NoteListParams {
@@ -89,6 +93,8 @@ export interface NoteListParams {
   status?: "draft" | "published";
   q?: string;
   hidden?: boolean;
+  folder_id?: string;
+  inbox?: boolean;
   page?: number;
   size?: number;
 }
@@ -103,6 +109,8 @@ export async function listNotes(params: NoteListParams = {}): Promise<NoteListRe
   if (params.status) searchParams.set("status", params.status);
   if (params.q) searchParams.set("q", params.q);
   if (params.hidden !== undefined) searchParams.set("hidden", String(params.hidden));
+  if (params.folder_id) searchParams.set("folder_id", params.folder_id);
+  if (params.inbox) searchParams.set("inbox", "true");
   if (params.page) searchParams.set("page", String(params.page));
   if (params.size) searchParams.set("size", String(params.size));
   const qs = searchParams.toString();
@@ -144,10 +152,14 @@ export async function promoteNote(slug: string, newType: "note" | "blog" | "mist
   });
 }
 
-export async function uploadImage(file: File): Promise<{ url: string }> {
+export async function uploadImage(file: File, opts?: { noteType?: string; slug?: string }): Promise<{ url: string }> {
   const formData = new FormData();
   formData.append("file", file);
-  return apiFetch<{ url: string }>("/api/notes/upload-image", {
+  const params = new URLSearchParams();
+  if (opts?.noteType) params.set("note_type", opts.noteType);
+  if (opts?.slug) params.set("slug", opts.slug);
+  const qs = params.toString();
+  return apiFetch<{ url: string }>(`/api/notes/upload-image${qs ? `?${qs}` : ""}`, {
     method: "POST",
     body: formData,
   });

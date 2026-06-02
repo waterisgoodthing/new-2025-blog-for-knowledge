@@ -3,13 +3,14 @@ import path from 'node:path'
 
 import siteContent from '@/config/site-content.json'
 import type { BlogIndexItem } from '@/app/blog/types'
+import { getApiBase } from '@/lib/api/config'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:2025'
 const FEED_PATH = '/rss.xml'
 const SITE_ORIGIN = SITE_URL.replace(/\/$/, '')
 const FEED_URL = `${SITE_ORIGIN}${FEED_PATH}`
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = getApiBase()
 
 const escapeXml = (value: string): string =>
 	value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')

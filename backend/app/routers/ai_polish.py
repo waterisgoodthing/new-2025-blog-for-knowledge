@@ -26,6 +26,9 @@ async def polish(
             action=req.action.value,
             context=req.context,
             request=request,
+            title=req.title,
+            note_type=req.note_type,
+            existing_tags=req.existing_tags,
         ),
         media_type="text/event-stream",
         headers={

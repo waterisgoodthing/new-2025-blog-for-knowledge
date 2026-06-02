@@ -203,6 +203,7 @@ export default function BlogPage() {
 			toast.info('请选择要删除的文章')
 			return
 		}
+		if (!confirm(`确定从列表中移除已选 ${selectedCount} 篇文章？保存后生效。`)) return
 		setEditableItems(prev => prev.filter(item => !selectedSlugs.has(item.slug)))
 		setSelectedSlugs(new Set())
 	}, [selectedCount, selectedSlugs])

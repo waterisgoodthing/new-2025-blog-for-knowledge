@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     KEEP_ALIVE_INTERVAL: int = 300
     KEEP_ALIVE_URL: str = "http://127.0.0.1:8000/api/health"
 
+    AUTH_BYPASS: str = "true"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

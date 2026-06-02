@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { listNotes, type NoteListParams, type NoteListResponse } from "@/lib/api/notes";
-import { getReviewStats, type ReviewStats } from "@/lib/api/review";
+import { getReviewPlan, getReviewStats, type ReviewPlan, type ReviewStats } from "@/lib/api/review";
 
 export function useNoteIndex(params: NoteListParams = {}) {
   const key = `/api/notes?${new URLSearchParams(
@@ -16,6 +16,12 @@ export function useNoteIndex(params: NoteListParams = {}) {
 
 export function useReviewStats() {
   return useSWR<ReviewStats>("/api/review/stats", getReviewStats, {
+    revalidateOnFocus: false,
+  });
+}
+
+export function useReviewPlan() {
+  return useSWR<ReviewPlan>("/api/review/plan", getReviewPlan, {
     revalidateOnFocus: false,
   });
 }

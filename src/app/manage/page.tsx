@@ -12,6 +12,9 @@ import dayjs from 'dayjs'
 import { MusicTab } from './music-tab'
 import { RecommendationTab } from './recommendation-tab'
 import { LogOut } from 'lucide-react'
+import { getContentDetailHref, getContentEditHref } from '@/lib/content-routes'
+import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
+import { SuggestionCard } from '@/app/notes/components/suggestion-card'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -30,13 +33,30 @@ function ContentTab() {
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('all')
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+  const [activeTag, setActiveTag] = useState<string | null>(null)
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter)
+    setPage(1)
+    clearSelected()
+    if (filter === 'all') setType('')
+    else if (filter === 'inbox') setType('')
+    else if (['note', 'blog', 'mistake'].includes(filter)) setType(filter)
+  }
 
   const { data, isLoading, mutate } = useNoteIndex({
     type: type as any || undefined,
     q: q || undefined,
+    tag: activeTag || undefined,
+    folder_id: activeFolderId || undefined,
+    inbox: activeFilter === 'inbox' ? true : undefined,
     page,
     size: 30,
   })
+
+  const clearSelected = () => setSelected(new Set())
 
   const toggleSelect = (slug: string) => {
     setSelected(s => {
@@ -53,12 +73,28 @@ function ContentTab() {
 
   const handleDeleteSelected = async () => {
     if (selected.size === 0) return
-    if (!confirm(`确定删除 ${selected.size} 条内容？`)) return
+    const currentPageSlugs = new Set(data?.items.map(i => i.slug) ?? [])
+    const staleSlugs = Array.from(selected).filter(s => !currentPageSlugs.has(s))
+    if (staleSlugs.length > 0) {
+      toast.warning('选中内容已变化，请重新选择')
+      clearSelected()
+      return
+    }
+    const selectedItems = data?.items.filter(i => selected.has(i.slug)) ?? []
+    const typeCounts = selectedItems.reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+    const typeSummary = Object.entries(typeCounts)
+      .map(([type, count]) => `${typeLabels[type as keyof typeof typeLabels]} ${count} 条`)
+      .join('、')
+    if (!confirm(`确定删除以下内容？\n${typeSummary}\n共 ${selected.size} 条，删除后不可恢复。`)) return
     setDeleting(true)
     try {
       await batchDeleteNotes(Array.from(selected))
       setSelected(new Set())
       mutate()
+      toast.success(`已删除 ${selected.size} 条内容`)
     } catch (e: any) {
       toast.error('删除失败: ' + e.message)
     } finally {
@@ -66,22 +102,34 @@ function ContentTab() {
     }
   }
 
-  const handleDeleteOne = async (slug: string) => {
-    if (!confirm('确定删除？')) return
+  const handleDeleteOne = async (slug: string, type: string) => {
+    const label = typeLabels[type as keyof typeof typeLabels] || '内容'
+    if (!confirm(`确定删除该篇${label}？`)) return
     try {
       await deleteNote(slug)
       mutate()
+      toast.success('已删除')
     } catch (e: any) {
       toast.error('删除失败: ' + e.message)
     }
   }
 
   return (
-    <>
+    <div className='flex gap-6'>
+      <KnowledgeSidebar
+        activeFilter={activeFilter}
+        activeFolderId={activeFolderId}
+        activeTag={activeTag}
+        onFilterChange={handleFilterChange}
+        onFolderChange={(id) => { setActiveFolderId(id); setPage(1); clearSelected() }}
+        onTagChange={(tag) => { setActiveTag(tag); setPage(1); clearSelected() }}
+      />
+      <div className='min-w-0 flex-1'>
+      <SuggestionCard onExecuted={() => mutate()} />
       <div className='mb-6 flex flex-wrap items-center gap-3'>
         <input
           value={q}
-          onChange={e => { setQ(e.target.value); setPage(1) }}
+          onChange={e => { setQ(e.target.value); setPage(1); clearSelected() }}
           placeholder='搜索...'
           className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
         />
@@ -89,7 +137,7 @@ function ContentTab() {
           {['', 'note', 'blog', 'mistake'].map(t => (
             <button
               key={t}
-              onClick={() => { setType(t); setPage(1) }}
+              onClick={() => { setType(t); setPage(1); clearSelected() }}
               className={cn(
                 'rounded-full px-3 py-1 text-sm transition-colors',
                 type === t ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 hover:bg-white/80'
@@ -144,7 +192,7 @@ function ContentTab() {
                     />
                   </td>
                   <td className='max-w-xs truncate p-3 font-medium'>
-                    <Link href={`/notes/${item.slug}`} className='hover:text-[var(--color-brand)]'>
+                    <Link href={getContentDetailHref(item.type, item.slug)} className='hover:text-[var(--color-brand)]'>
                       {item.title}
                     </Link>
                   </td>
@@ -168,14 +216,14 @@ function ContentTab() {
                   <td className='p-3'>
                     <div className='flex gap-2'>
                       <Link
-                        href={item.type === 'blog' ? `/write/${item.slug}` : `/write-note/${item.slug}`}
+                        href={getContentEditHref(item.type, item.slug)}
                         className='rounded bg-white/60 px-2 py-1 text-xs hover:bg-white/80'
                       >
                         编辑
                       </Link>
                       <button
-                        onClick={() => handleDeleteOne(item.slug)}
-                        className='rounded bg-red-500/10 px-2 py-1 text-xs text-red-500 hover:bg-red-500/20'
+                        onClick={() => handleDeleteOne(item.slug, item.type)}
+                        className='rounded bg-red-500/10 px-2 py-1 text-xs text-red-500 transition-colors hover:bg-red-500/20'
                       >
                         删除
                       </button>
@@ -190,12 +238,13 @@ function ContentTab() {
 
       {data && data.total > 30 && (
         <div className='mt-6 flex justify-center gap-2'>
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>上一页</button>
+          <button disabled={page <= 1} onClick={() => { setPage(p => p - 1); clearSelected() }} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>上一页</button>
           <span className='px-3 py-1 text-sm text-gray-500'>{page} / {Math.ceil(data.total / 30)}</span>
-          <button disabled={page >= Math.ceil(data.total / 30)} onClick={() => setPage(p => p + 1)} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>下一页</button>
+          <button disabled={page >= Math.ceil(data.total / 30)} onClick={() => { setPage(p => p + 1); clearSelected() }} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>下一页</button>
         </div>
       )}
-    </>
+      </div>
+    </div>
   )
 }
 

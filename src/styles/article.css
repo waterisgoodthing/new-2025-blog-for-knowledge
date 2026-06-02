@@ -5,7 +5,7 @@
 	letter-spacing: 0.03em;
 	font-size: 15px;
 	width: 100%;
-	overflow: hidden;
+	overflow: visible;
 }
 
 /* Headings */
@@ -186,6 +186,33 @@
 	@apply max-sm:max-w-full;
 }
 
+.prose .diagram-viewer {
+	max-width: 100%;
+}
+
+.prose .diagram-viewer .diagram-stage {
+	max-height: min(76vh, 760px);
+}
+
+.prose .diagram-viewer img,
+.prose .diagram-viewer svg {
+	max-width: none;
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+}
+
+.prose .diagram-viewer .diagram-media {
+	display: block;
+	margin: 0 auto;
+}
+
+.prose .diagram-viewer .diagram-svg svg {
+	width: 100%;
+	height: auto;
+	min-width: 720px;
+}
+
 /* Blockquote */
 .prose blockquote {
 	border-left: 3px solid var(--color-brand);
@@ -264,6 +291,52 @@
 	background: #fef08a;
 	padding: 0.1em 0.3em;
 	border-radius: 3px;
+}
+
+/* T-301: Compare block */
+.prose .compare-block {
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: 12px;
+	padding: 1em;
+	margin: 1em 0;
+	background: rgba(255, 255, 255, 0.6);
+	backdrop-filter: blur(4px);
+}
+.prose .compare-title {
+	font-weight: 700;
+	font-size: 1rem;
+	margin-bottom: 0.75em;
+	padding-bottom: 0.5em;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.prose .compare-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1em;
+}
+@media (max-width: 640px) {
+	.prose .compare-grid {
+		grid-template-columns: 1fr;
+	}
+}
+.prose .compare-col {
+	border-radius: 8px;
+	padding: 0.75em;
+	background: rgba(0, 0, 0, 0.02);
+}
+.prose .compare-label {
+	font-weight: 600;
+	font-size: 0.85em;
+	color: var(--color-brand);
+	margin-bottom: 0.5em;
+}
+.prose .compare-col ul {
+	margin: 0 0 0 1em;
+	list-style-type: disc;
+}
+.prose .compare-col li {
+	margin: 0.25em 0;
+	font-size: 0.9em;
 }
 
 /* T-09: details/summary */

@@ -3,9 +3,13 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { motion } from 'motion/react'
+import { MoreHorizontal } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
+import { KnowledgeSidebar } from './components/knowledge-sidebar'
+import { SuggestionCard } from './components/suggestion-card'
+import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -15,17 +19,32 @@ export default function NotesPage() {
 	const [type, setType] = useState<string>('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
+	const [activeFilter, setActiveFilter] = useState('all')
+	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+	const [activeTag, setActiveTag] = useState<string | null>(null)
+	const [moveTarget, setMoveTarget] = useState<{ slug: string; title: string } | null>(null)
 
-	const { data, isLoading } = useNoteIndex({
+	const handleFilterChange = (filter: string) => {
+		setActiveFilter(filter)
+		setPage(1)
+		if (filter === 'all') setType('')
+		else if (filter === 'inbox') setType('')
+		else if (['note', 'blog', 'mistake'].includes(filter)) setType(filter)
+	}
+
+	const { data, isLoading, mutate } = useNoteIndex({
 		type: type as any || undefined,
 		status: 'published',
 		q: q || undefined,
+		tag: activeTag || undefined,
+		folder_id: activeFolderId || undefined,
+		inbox: activeFilter === 'inbox' ? true : undefined,
 		page,
 		size: 20,
 	})
 
 	return (
-		<div className='mx-auto max-w-4xl px-4 py-8'>
+		<div className='mx-auto max-w-6xl px-4 py-8'>
 			<motion.h1
 				initial={{ opacity: 0, y: -20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -33,6 +52,18 @@ export default function NotesPage() {
 			>
 				笔记
 			</motion.h1>
+
+			<div className='flex gap-6'>
+				<KnowledgeSidebar
+					activeFilter={activeFilter}
+					activeFolderId={activeFolderId}
+					activeTag={activeTag}
+					onFilterChange={handleFilterChange}
+					onFolderChange={setActiveFolderId}
+					onTagChange={setActiveTag}
+				/>
+
+				<div className='min-w-0 flex-1'>
 
 			<div className='mb-6 flex flex-wrap items-center gap-3'>
 				<input
@@ -62,6 +93,8 @@ export default function NotesPage() {
 					写笔记
 				</Link>
 			</div>
+
+			<SuggestionCard onExecuted={() => mutate()} />
 
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>
@@ -94,7 +127,15 @@ export default function NotesPage() {
 										{item.subject}
 									</span>
 								)}
-									<span className='ml-auto text-xs text-gray-400'>
+									<button
+										type='button'
+										onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveTarget({ slug: item.slug, title: item.title }) }}
+										className='ml-auto shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'
+										aria-label='移动到文件夹'
+									>
+										<MoreHorizontal size={14} />
+									</button>
+									<span className='shrink-0 text-xs text-gray-400'>
 										{dayjs(item.updated_at).format('YYYY-MM-DD')}
 									</span>
 								</div>
@@ -142,6 +183,18 @@ export default function NotesPage() {
 						下一页
 					</button>
 				</div>
+			)}
+				</div>
+			</div>
+
+			{moveTarget && (
+				<MoveToFolderDialog
+					slug={moveTarget.slug}
+					noteTitle={moveTarget.title}
+					open={!!moveTarget}
+					onClose={() => setMoveTarget(null)}
+					onMoved={() => { mutate(); setMoveTarget(null) }}
+				/>
 			)}
 		</div>
 	)

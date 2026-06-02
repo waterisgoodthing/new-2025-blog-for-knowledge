@@ -17,26 +17,53 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    # 自动获取或创建一个管理员用户，绕过 JWT 登录限制
-    result = await db.execute(select(User))
-    user = result.scalars().first()
-    if user is None:
-        user = User(username="admin", password_hash="disabled", is_admin=True)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    else:
-        if not user.is_admin:
-            user.is_admin = True
+    settings = get_settings()
+
+    # AUTH_BYPASS=true (default): auto-create/return admin, skip JWT.
+    # AUTH_BYPASS=false: real JWT auth.
+    # To switch to real auth:
+    #   1. Register via POST /api/auth/register (creates non-admin user)
+    #   2. DB: UPDATE users SET is_admin=true WHERE username='<your_user>';
+    #   3. Set AUTH_BYPASS=false in .env
+    #   4. Restart backend
+    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
+        result = await db.execute(select(User))
+        user = result.scalars().first()
+        if user is None:
+            user = User(username="admin", password_hash="disabled", is_admin=True)
             db.add(user)
             await db.commit()
+            await db.refresh(user)
+        else:
+            if not user.is_admin:
+                user.is_admin = True
+                db.add(user)
+                await db.commit()
+        return user
+
+    if not credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
 
 
 async def get_current_admin(
     user: User = Depends(get_current_user),
 ) -> User:
-    # 始终允许管理员权限
+    settings = get_settings()
+    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
+        return user
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
     return user
 
 
@@ -44,8 +71,15 @@ async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User | None:
-    # 始终返回管理员用户
-    return await get_current_user(credentials, db)
+    settings = get_settings()
+    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
+        return await get_current_user(credentials, db)
+    if not credentials:
+        return None
+    try:
+        return await get_current_user(credentials, db)
+    except HTTPException:
+        return None
 
 
 @router.post("/login", response_model=TokenResponse)

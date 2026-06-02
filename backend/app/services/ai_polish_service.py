@@ -19,6 +19,12 @@ SYSTEM_PROMPTS = {
     "translate_zh": "请将以下英文翻译为中文，保持专业术语准确，语言自然流畅。只返回翻译结果。",
     "extract_tags": '请从以下内容中提取 3-8 个关键词标签，返回 JSON 数组格式，例如 ["标签1", "标签2"]。不要输出其他内容。',
     "generate_questions": "请根据以下笔记内容，生成 3-5 个复习问题。每个问题一行，以问号结尾。",
+    "title": "根据以下内容生成一个简洁准确的标题。只返回标题文本，不要解释。不超过 30 个字。",
+    "outline": "根据以下内容生成 Markdown 目录结构。使用 ## 和 ### 标题层级。只返回目录，不要其他内容。",
+    "tags": "从以下内容中推荐 3-5 个关键词标签。返回 JSON 数组格式，例如 [\"标签1\", \"标签2\"]。不要输出其他内容。",
+    "diagram": "将以下文本描述的流程或关系转换为 Mermaid graph TD 流程图语法。只返回 Mermaid 代码块，不要其他内容。",
+    "compare": "根据以下内容生成一个对比分析。使用 Markdown 表格或左右列表形式，每侧 3-5 个要点。只返回对比内容。",
+    "mindmap": "将以下内容整理为 Mermaid mindmap 语法。只返回 Mermaid 代码块，不要其他内容。",
 }
 
 
@@ -27,6 +33,9 @@ async def polish_stream(
     action: str,
     context: str | None,
     request: Request,
+    title: str | None = None,
+    note_type: str | None = None,
+    existing_tags: list[str] | None = None,
 ) -> AsyncGenerator[str, None]:
     settings = get_settings()
     api_key = settings.DEEPSEEK_API_KEY or settings.AI_API_KEY
@@ -43,7 +52,17 @@ async def polish_stream(
     messages = [{"role": "system", "content": system_prompt}]
     if context:
         messages.append({"role": "user", "content": f"以下是完整笔记上下文:\n{context}"})
-    messages.append({"role": "user", "content": text})
+
+    extra_prefix = ""
+    if action == "tags" and existing_tags:
+        extra_prefix = f"已有标签: {', '.join(existing_tags)}\n"
+    if action == "title" and title:
+        extra_prefix = f"当前标题（可参考）: {title}\n"
+    if note_type:
+        extra_prefix += f"笔记类型: {note_type}\n"
+
+    user_content = (extra_prefix + text) if extra_prefix else text
+    messages.append({"role": "user", "content": user_content})
 
     start_time = time.monotonic()
     status = "ok"
@@ -66,7 +85,7 @@ async def polish_stream(
             ) as response:
                 if response.status_code != 200:
                     status = str(response.status_code)
-                    yield f'{{"error": "AI 服务错误 ({response.status_code})"}}\n\n'
+                    yield f'data: {json.dumps({"error": f"AI 服务错误 ({response.status_code})"}, ensure_ascii=False)}\n\n'
                     yield "data: [DONE]\n\n"
                     return
 

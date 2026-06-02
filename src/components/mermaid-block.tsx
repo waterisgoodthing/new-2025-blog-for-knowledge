@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { DiagramViewer } from '@/components/diagram-viewer'
 
 let mermaidPromise: Promise<any> | null = null
 let mermaidFailed = false
@@ -43,9 +44,7 @@ export function MermaidBlock({ code }: { code: string }) {
 				const mermaid = await getMermaid()
 				const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`
 				const normalizedCode = code.replace(/\t/g, '    ')
-				console.log('[MermaidBlock] rendering:', id, normalizedCode.substring(0, 80))
 				const { svg: rendered } = await mermaid.render(id, normalizedCode)
-				console.log('[MermaidBlock] success:', id, rendered.substring(0, 100))
 				if (!cancelled) {
 					setSvg(rendered)
 				}
@@ -73,11 +72,5 @@ export function MermaidBlock({ code }: { code: string }) {
 		return <div className='mermaid-loading animate-pulse bg-gray-100/50 rounded-lg h-20' />
 	}
 
-	return (
-		<div
-			ref={containerRef}
-			className='mermaid'
-			dangerouslySetInnerHTML={{ __html: svg }}
-		/>
-	)
+	return <div ref={containerRef}><DiagramViewer kind='svg' svg={svg} title='Mermaid 图谱' /></div>
 }

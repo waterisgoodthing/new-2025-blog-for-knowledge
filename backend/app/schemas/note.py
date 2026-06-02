@@ -43,6 +43,7 @@ class NoteCreate(BaseModel):
     analysis: str | None = None
     knowledge_points: str | None = None
     images: list[str] | None = None
+    ai_metadata: dict | None = None
 
 
 class NoteUpdate(BaseModel):
@@ -65,6 +66,7 @@ class NoteUpdate(BaseModel):
     analysis: str | None = None
     knowledge_points: str | None = None
     images: list[str] | None = None
+    ai_metadata: dict | None = None
 
 
 class TagOut(BaseModel):
@@ -103,6 +105,7 @@ class NoteOut(BaseModel):
     next_review: date | None = None
     last_reviewed: datetime | None = None
     images: list[str] | None = None
+    ai_metadata: dict | None = None
 
     model_config = {"from_attributes": True}
 
@@ -130,6 +133,7 @@ class NoteListItem(BaseModel):
     next_review: date | None = None
     last_reviewed: datetime | None = None
     images: list[str] | None = None
+    ai_metadata: dict | None = None
 
     model_config = {"from_attributes": True}
 
@@ -150,6 +154,31 @@ class ReviewStats(BaseModel):
     mastered: int
     pending_review: int
     due_today: int
+
+
+class ReviewSubjectSummary(BaseModel):
+    subject: str
+    total: int
+    due_today: int
+    hard: int
+    average_ef: float
+
+
+class ReviewWeaknessItem(BaseModel):
+    name: str
+    count: int
+    due_today: int
+    subjects: list[str] = Field(default_factory=list)
+
+
+class ReviewPlan(BaseModel):
+    today_count: int
+    overdue_count: int
+    week_count: int
+    next_review_date: date | None = None
+    subject_summaries: list[ReviewSubjectSummary] = Field(default_factory=list)
+    weaknesses: list[ReviewWeaknessItem] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
 
 
 class SubjectOut(BaseModel):
