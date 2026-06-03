@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import { KnowledgeSidebar } from './components/knowledge-sidebar'
 import { SuggestionCard } from './components/suggestion-card'
+import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
@@ -95,6 +96,7 @@ export default function NotesPage() {
 			</div>
 
 			<SuggestionCard onExecuted={() => mutate()} />
+			<WeeklySummaryCard />
 
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>

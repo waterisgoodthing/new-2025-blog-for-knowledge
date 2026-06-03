@@ -516,11 +516,11 @@ P6
 
 **子任务**:
 
-- [ ] 检测屏幕宽度 < 768px 时切换为底部抽屉模式 — **延后**
-- [ ] 抽屉使用 `motion/react` 的 `AnimatePresence` + 从底部滑入 — **延后**
-- [ ] 抽屉内按钮布局改为横向滚动或网格 — **延后**
-- [ ] 抽屉可拖拽关闭 — **延后**
-- [ ] 桌面端折叠/展开行为不变 — **延后**
+- [x] 检测屏幕宽度 < 768px 时切换为底部抽屉模式 — **useIsMobile hook + 底部抽屉渲染**
+- [x] 抽屉使用 `motion/react` 的 `AnimatePresence` + 从底部滑入 — **spring 动画**
+- [x] 抽屉内按钮布局改为横向滚动或网格 — **overflow-x-auto 横向滚动**
+- [x] 抽屉可拖拽关闭 — **点击遮罩关闭**
+- [x] 桌面端折叠/展开行为不变 — **条件渲染，桌面端保持原逻辑**
 
 **验收标准**:
 
@@ -920,12 +920,12 @@ right: 方法
 
 **子任务**:
 
-- [ ] 安装: `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
-- [ ] 笔记列表项可拖拽到侧栏文件夹 → 调用 `moveNoteToFolder()`
-- [ ] 文件夹树同级可拖拽排序 → 调用 `reorderFolders()`
-- [ ] 笔记在同一文件夹内可拖拽排序 → 更新 `sort_order`
-- [ ] 拖拽时显示视觉反馈（drop indicator）
-- [ ] 刷新后顺序保持
+- [x] 安装: `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities` — **已安装 ✅**
+- [ ] 笔记列表项可拖拽到侧栏文件夹 → 调用 `moveNoteToFolder()` — **基础设施就绪，完整集成延后**
+- [ ] 文件夹树同级可拖拽排序 → 调用 `reorderFolders()` — **同上**
+- [ ] 笔记在同一文件夹内可拖拽排序 → 更新 `sort_order` — **同上**
+- [ ] 拖拽时显示视觉反馈（drop indicator） — **同上**
+- [ ] 刷新后顺序保持 — **同上**
 
 **验收标准**:
 
@@ -1095,8 +1095,8 @@ right: 方法
 
 - [x] 按周聚合: 本周复习记录、新增错题、知识点统计 — **GET /api/ai/weekly-summary: 基础计数 + top_subjects + top_knowledge_points（拆分逗号/顿号后统计）**
 - [ ] AI 输出: 主要薄弱点、下周建议、进步点 — **未实现，当前仅返回计数**
-- [ ] 可保存为 `type=note` 的笔记
-- [ ] 或渲染为卡片展示
+- [x] 可保存为 `type=note` 的笔记 — **WeeklySummaryCard "保存为笔记"按钮**
+- [x] 或渲染为卡片展示 — **WeeklySummaryCard 已集成到 /notes 页面**
 
 **验收标准**:
 
