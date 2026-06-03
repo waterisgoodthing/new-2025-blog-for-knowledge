@@ -9,6 +9,7 @@ import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getContentDetailHref } from '@/lib/content-routes'
+import { ClipboardPaste, ImageUp, Loader2, Sparkles } from 'lucide-react'
 
 export default function WriteMistakePage() {
 	const router = useRouter()
@@ -135,13 +136,15 @@ export default function WriteMistakePage() {
 
 	const handleTextAnalyze = async () => {
 		const text = pasteText.trim()
-		if (!text) return
+		if (!text) return toast.warning('请先粘贴题目文本')
 
 		setAnalyzing(true)
 		try {
+			toast.info('AI 正在分析错题')
 			const result = await analyzeText(text)
 			applyResult(result)
 			setPasteText('')
+			toast.success('AI 分析完成，已填入下方表单')
 		} catch (err: any) {
 			toast.error('AI 分析失败: ' + err.message)
 		} finally {
@@ -209,20 +212,64 @@ export default function WriteMistakePage() {
 			)}
 
 			<div className='space-y-4'>
-				<div
-					onDragOver={handleDragOver}
-					onDrop={handleDrop}
-					className='rounded-xl border border-dashed border-[var(--color-brand)]/50 bg-white/40 p-6 text-center backdrop-blur-sm hover:bg-white/60 transition-colors'
-				>
-					<label className='cursor-pointer block w-full h-full'>
-						<input type='file' accept='image/*' multiple onChange={handleImageUpload} className='hidden' />
-						<div className='mb-2 text-3xl'>📷</div>
-						<div className='text-sm text-gray-600 font-medium'>
-							{analyzing ? 'AI 分析中...' : '拖拽或点击上传错题图片，AI 自动生成内容'}
+				<section className='rounded-2xl border border-[var(--color-brand)]/25 bg-white/55 p-5 shadow-sm backdrop-blur-sm'>
+					<div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+						<div className='flex items-center gap-3'>
+							<div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--color-brand)] text-white shadow-sm'>
+								<Sparkles className='h-5 w-5' />
+							</div>
+							<div>
+								<h2 className='text-base font-semibold text-gray-800'>AI 分析错题</h2>
+								<p className='mt-1 text-xs text-gray-500'>粘贴题目或上传图片，AI 会自动填充题目、答案、解析和复习建议。</p>
+							</div>
 						</div>
-						<div className='mt-1 text-xs text-gray-400'>支持 JPG、PNG、WebP，拖入即可上传</div>
-					</label>
-				</div>
+						<span className='rounded-full bg-[var(--color-brand)]/10 px-3 py-1 text-xs font-medium text-[var(--color-brand)]'>错题助手</span>
+					</div>
+
+					<div className='grid gap-4 md:grid-cols-[1fr_220px]'>
+						<div className='rounded-xl border border-white/50 bg-white/50 p-4'>
+							<label htmlFor='mistake-ai-text' className='mb-2 flex items-center gap-2 text-sm font-medium text-gray-700'>
+								<ClipboardPaste className='h-4 w-4 text-[var(--color-brand)]' />
+								粘贴题目文本
+							</label>
+							<textarea
+								id='mistake-ai-text'
+								value={pasteText}
+								onChange={e => setPasteText(e.target.value)}
+								placeholder='把题干、选项、你的答案或题目要求粘贴到这里...'
+								rows={6}
+								className='mb-3 w-full rounded-lg border border-white/60 bg-white/75 px-3 py-2 text-sm leading-6 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+							/>
+							<button
+								type='button'
+								onClick={handleTextAnalyze}
+								disabled={analyzing || !pasteText.trim()}
+								title='分析粘贴的题目文本'
+								className='inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50'
+							>
+								{analyzing ? <Loader2 className='h-4 w-4 animate-spin' /> : <Sparkles className='h-4 w-4' />}
+								{analyzing ? 'AI 分析中...' : '开始 AI 分析'}
+							</button>
+						</div>
+
+						<div
+							onDragOver={handleDragOver}
+							onDrop={handleDrop}
+							className='rounded-xl border border-dashed border-[var(--color-brand)]/45 bg-[var(--color-brand)]/5 p-4 text-center transition-colors hover:bg-[var(--color-brand)]/10'
+						>
+							<label className='flex h-full min-h-[184px] cursor-pointer flex-col items-center justify-center gap-3'>
+								<input type='file' accept='image/*' multiple onChange={handleImageUpload} className='hidden' />
+								<div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-white/80 text-[var(--color-brand)] shadow-sm'>
+									<ImageUp className='h-6 w-6' />
+								</div>
+								<div>
+									<div className='text-sm font-semibold text-gray-700'>{analyzing ? '图片分析中...' : '上传错题图片'}</div>
+									<div className='mt-1 text-xs leading-5 text-gray-500'>点击选择或拖拽图片到这里</div>
+								</div>
+							</label>
+						</div>
+					</div>
+				</section>
 
 				{uploadedImages.length > 0 && (
 					<div className='grid grid-cols-4 gap-3 rounded-xl border border-white/40 bg-white/20 p-3 backdrop-blur-sm sm:grid-cols-6'>
@@ -242,24 +289,6 @@ export default function WriteMistakePage() {
 						))}
 					</div>
 				)}
-
-				<div className='rounded-xl border border-dashed border-blue-300/50 bg-white/40 p-4 backdrop-blur-sm'>
-					<div className='mb-2 text-center text-sm text-gray-600'>📋 粘贴题目文本，AI 自动分析</div>
-					<textarea
-						value={pasteText}
-						onChange={e => setPasteText(e.target.value)}
-						placeholder='在此粘贴题目文本...'
-						rows={5}
-						className='mb-3 w-full rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-					/>
-					<button
-						onClick={handleTextAnalyze}
-						disabled={analyzing || !pasteText.trim()}
-						className='w-full rounded-lg bg-[var(--color-brand)] py-2 text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50'
-					>
-						{analyzing ? '分析中...' : 'AI 分析'}
-					</button>
-				</div>
 
 				<input
 					value={form.title}

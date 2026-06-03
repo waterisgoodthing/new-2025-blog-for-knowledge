@@ -12,13 +12,15 @@ import {
 	AlertCircle,
 	ChevronRight,
 	ChevronDown,
+	ChevronUp,
 	Tag,
 	Menu,
 	X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { listFolders, type FolderNode } from '@/lib/api/folders'
+import { listFolders, reorderFolders, type FolderNode } from '@/lib/api/folders'
 import { listTags, type Tag as TagType } from '@/lib/api/meta'
+import { toast } from 'sonner'
 
 type SidebarItem = {
 	id: string
@@ -36,11 +38,15 @@ type KnowledgeSidebarProps = {
 	onFilterChange: (filter: string) => void
 	onFolderChange: (folderId: string | null) => void
 	onTagChange: (tag: string | null) => void
+	onDropNote?: (folderId: string | null) => void
+	dragOverFolderId?: string | null
+	onDragOverFolderChange?: (folderId: string | null) => void
 }
 
 export function KnowledgeSidebar({
 	activeFilter, activeFolderId, activeTag,
 	onFilterChange, onFolderChange, onTagChange,
+	onDropNote, dragOverFolderId, onDragOverFolderChange,
 }: KnowledgeSidebarProps) {
 	const [folders, setFolders] = useState<FolderNode[]>([])
 	const [tags, setTags] = useState<TagType[]>([])
@@ -60,6 +66,39 @@ export function KnowledgeSidebar({
 		})
 	}
 
+	const handleReorder = async (folderId: string, direction: 'up' | 'down') => {
+		const findParent = (nodes: FolderNode[], targetId: string): FolderNode | null => {
+			for (const n of nodes) {
+				if (n.id === targetId) return null
+				if (n.children.some(c => c.id === targetId)) return n
+				const found = findParent(n.children, targetId)
+				if (found) return found
+			}
+			return null
+		}
+
+		const parent = findParent(folders, folderId)
+		const siblings = parent ? parent.children : folders.filter(f => f.parent_id === null)
+		const idx = siblings.findIndex(f => f.id === folderId)
+		if (idx < 0) return
+		const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+		if (targetIdx < 0 || targetIdx >= siblings.length) return
+
+		const reordered = [...siblings]
+		const [moved] = reordered.splice(idx, 1)
+		reordered.splice(targetIdx, 0, moved)
+
+		const items = reordered.map((f, i) => ({ id: f.id, sort_order: i }))
+		try {
+			await reorderFolders(items)
+			const updated = await listFolders()
+			setFolders(updated)
+			toast.success('已调整顺序')
+		} catch (e: any) {
+			toast.error('排序失败: ' + e.message)
+		}
+	}
+
 	const navItems: SidebarItem[] = [
 		{ id: 'all', label: '全部内容', icon: <FileText size={16} /> },
 		{ id: 'inbox', label: '收件箱', icon: <Inbox size={16} /> },
@@ -71,29 +110,57 @@ export function KnowledgeSidebar({
 	const renderFolderTree = (nodes: FolderNode[], depth = 0) => {
 		return nodes.map(node => (
 			<div key={node.id}>
-				<button
-					onClick={() => { onFolderChange(node.id); onFilterChange('') }}
+				<div
+					onDragOver={e => { e.preventDefault(); e.stopPropagation(); onDragOverFolderChange?.(node.id) }}
+					onDragLeave={e => { e.stopPropagation(); onDragOverFolderChange?.(null) }}
+					onDrop={e => { e.preventDefault(); e.stopPropagation(); onDropNote?.(node.id); onDragOverFolderChange?.(null) }}
 					className={cn(
-						'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-white/60',
-						activeFolderId === node.id ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-medium' : 'text-gray-600'
+						'group flex w-full items-center gap-1 rounded-lg py-1.5 text-sm transition-colors hover:bg-white/60',
+						activeFolderId === node.id ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-medium' : 'text-gray-600',
+						dragOverFolderId === node.id && 'ring-2 ring-[var(--color-brand)]/40 bg-[var(--color-brand)]/5'
 					)}
-					style={{ paddingLeft: `${12 + depth * 16}px` }}
+					style={{ paddingLeft: `${12 + depth * 16}px`, paddingRight: '8px' }}
 				>
 					{node.children.length > 0 ? (
 						<button
 							type='button'
-							onClick={(e) => { e.stopPropagation(); toggleFolder(node.id) }}
-							className='shrink-0 text-gray-400'
+							onClick={() => toggleFolder(node.id)}
+							className='shrink-0 rounded p-0.5 text-gray-400 hover:text-gray-600'
+							aria-label={expandedFolders.has(node.id) ? '折叠' : '展开'}
 						>
 							{expandedFolders.has(node.id) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
 						</button>
 					) : (
-						<span className='w-3.5 shrink-0' />
+						<span className='w-5 shrink-0' />
 					)}
-					{expandedFolders.has(node.id) ? <FolderOpen size={15} className='shrink-0 text-amber-500' /> : <Folder size={15} className='shrink-0 text-amber-500' />}
-					<span className='truncate'>{node.name}</span>
-					{node.note_count > 0 && <span className='ml-auto text-xs text-gray-400'>{node.note_count}</span>}
-				</button>
+					<button
+						type='button'
+						onClick={() => { onFolderChange(node.id); onFilterChange('') }}
+						className='flex min-w-0 flex-1 items-center gap-2'
+					>
+						{expandedFolders.has(node.id) ? <FolderOpen size={15} className='shrink-0 text-amber-500' /> : <Folder size={15} className='shrink-0 text-amber-500' />}
+						<span className='truncate'>{node.name}</span>
+					</button>
+					{node.note_count > 0 && <span className='shrink-0 text-xs text-gray-400'>{node.note_count}</span>}
+					<span className='flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100'>
+						<button
+							type='button'
+							onClick={() => handleReorder(node.id, 'up')}
+							className='rounded p-0.5 text-gray-400 hover:bg-white/60 hover:text-gray-600'
+							aria-label='上移'
+						>
+							<ChevronUp size={12} />
+						</button>
+						<button
+							type='button'
+							onClick={() => handleReorder(node.id, 'down')}
+							className='rounded p-0.5 text-gray-400 hover:bg-white/60 hover:text-gray-600'
+							aria-label='下移'
+						>
+							<ChevronDown size={12} />
+						</button>
+					</span>
+				</div>
 				{expandedFolders.has(node.id) && node.children.length > 0 && renderFolderTree(node.children, depth + 1)}
 			</div>
 		))

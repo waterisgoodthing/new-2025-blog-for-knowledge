@@ -37,6 +37,12 @@ pg_restore -U user -d blog_db -c backup.dump
 # -c 表示先清理现有对象
 ```
 
+跨环境恢复到临时库或新机器时，建议去掉源库 owner/ACL，避免目标环境没有同名角色导致恢复失败：
+
+```bash
+pg_restore --no-owner --no-acl -U user -d blog_db backup.dump
+```
+
 ### 图片恢复
 
 ```bash
@@ -50,6 +56,22 @@ rsync -av /backup/images/ /app/uploads/
 - [ ] 恢复后图片 URL 可访问
 - [ ] 恢复后 AI 分析字段 (`ai_metadata`) 保留
 - [ ] 恢复后文件夹结构保留
+
+## 4.1 恢复演练记录
+
+### 2026-06-03
+
+- 备份命令: `pg_dump -Fc`
+- 恢复方式: 独立临时 PostgreSQL 数据目录 + 临时数据库
+- 恢复命令: `pg_restore --no-owner --no-acl`
+- 验证结果:
+  - 备份文件生成成功，大小约 25 KB。
+  - 临时库恢复成功。
+  - `public` schema 表数量: 10。
+  - `alembic_version`: `005`。
+- 经验记录:
+  - 当前业务 DB 用户没有 `CREATE DATABASE` 权限，因此不能直接在主 PostgreSQL 实例创建临时恢复库。
+  - 跨环境恢复时必须加 `--no-owner --no-acl`，否则 dump 中的 `blog_user` owner/GRANT 会导致目标临时库恢复失败。
 
 ## 5. 备份存储位置
 

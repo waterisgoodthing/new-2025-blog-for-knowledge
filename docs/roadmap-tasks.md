@@ -1,8 +1,8 @@
 # 个人知识系统演进路线 — 任务清单
 
-> 版本: 1.1
-> 日期: 2026-06-02
-> 关联: `docs/roadmap-design.md` | `docs/personal-knowledge-system-design.md` | `AGENTS.md`
+> 版本: 1.2
+> 日期: 2026-06-03
+> 关联: `docs/roadmap-design.md` | `docs/personal-knowledge-system-design.md` | `docs/ui-upgrade-design.md` | `docs/ui-upgrade-requirements.md` | `docs/ui-upgrade-tasks.md` | `AGENTS.md`
 >
 > **本文档是当前权威任务清单**。后续以本文档为准；旧文档（`docs/personal-knowledge-system-tasks.md`、`tasks.md`、`design.md`）仅作历史参考，部分条目已标记完成状态。
 
@@ -32,6 +32,9 @@
 | P4 文件夹与拖拽 | 隐藏文件夹侧栏，回滚 folder_id/sort_order migration |
 | P5 AI 知识库管家 | 隐藏管家入口，不执行批量整理动作 |
 | P6 数据可靠性 | 保持现有本地存储和公开逻辑 |
+| P-UI 导航 | 恢复 NavCard `form === 'icons'` 渲染，移除 VerticalNav/MobileNav |
+| P-UI 渲染 | 懒加载降级为代码块，保留旧 Mermaid mindmap 兼容 |
+| P-UI 空状态 | 逐一替换，每处可独立回滚为内联 JSX |
 
 ## 任务概览
 
@@ -44,7 +47,8 @@
 | P4 | Folder 模型/API/侧栏/拖拽/移动端替代 | 8 |
 | P5 | 知识库分析、建议 API、建议卡片、批量执行、周度总结 | 6 |
 | P6 | 图片策略、URL 稳定、RSS 过滤、备份恢复 | 5 |
-| 合计 |  | 41 |
+| P-UI | 全局导航重构、Markmap 渲染、ECharts 渲染、DiagramViewer 优化、写作工具链升级、空状态反馈优化、错题 AI 入口、UI 走查 | 16 |
+| 合计 |  | 57 |
 
 ## 依赖关系图
 
@@ -103,6 +107,24 @@ P6
   T-603 RSS/sitemap 过滤 ─── 无依赖
   T-604 备份恢复流程 ─── T-601
   T-605 P6 验证 ─── T-601~604
+
+P-UI (全部可并行启动，详见 docs/ui-upgrade-design.md)
+  T-U01 VerticalNav 组件 ─── 无依赖
+  T-U02 NavCard 裁剪 ─── 无依赖
+  T-U03 Layout 集成 (桌面端) ─── T-U01 + T-U02
+  T-U04 MobileNav 组件 ─── 无依赖
+  T-U05 Layout 集成 (移动端) ─── T-U04
+  T-U06 首页 NavCard 细节检查 ─── 无依赖
+  T-U07 MarkmapBlock 组件 ─── npm install markmap-lib markmap-view
+  T-U08 Markdown 管线集成 markmap ─── T-U07
+  T-U09 ChartBlock 组件 ─── npm install echarts echarts-for-react
+  T-U10 Markdown 管线集成 chart ─── T-U09
+  T-U11 DiagramViewer 优化 ─── 无依赖
+  T-U12 工具栏/斜杠命令更新 ─── T-U07 + T-U09
+  T-U13 写作工具链升级 (色板/模板/AI prompt) ─── 无依赖
+  T-U14 错题 AI 分析入口可视化 ─── 无依赖
+  T-U15 EmptyState 组件 + 分批替换 + 按钮统一 ─── 无依赖
+  T-U16 UI 走查与文档更新 ─── T-U01~15
 ```
 
 ---
@@ -183,21 +205,21 @@ P6
 
 **Step 1: 前置确认（不改代码）**
 
-- [ ] 确认数据库中是否存在真实 admin 用户（非 bypass 自动创建的 `password_hash="disabled"` 用户）— **需手动 DB 查询**
-- [ ] 如不存在: 通过 `/api/auth/register` 创建真实 admin 用户，确认 `password_hash` 为 bcrypt 哈希 — **需手动操作**
+- [x] 确认数据库中是否存在真实 admin 用户（非 bypass 自动创建的 `password_hash="disabled"` 用户）— **2026-06-03 已确认: admin2 is_admin=true，password_hash 为 bcrypt**
+- [x] 如不存在: 通过 `/api/auth/register` 创建真实 admin 用户，确认 `password_hash` 为 bcrypt 哈希 — **已存在真实 admin，无需创建；另用临时 smoke 用户验证 register/login 后已清理**
 - [x] 确认前端 `login()` → `getMe()` 流程: `/api/auth/login` 返回 token → `apiFetch` 携带 `Authorization: Bearer <token>` → `/api/auth/me` 返回用户 — **代码审查确认完整**
 - [x] 确认前端所有写入 API（`createNote`、`updateNote`、`deleteNote`、`batchDeleteNotes` 等）均通过 `apiFetch` 携带 token — **代码审查确认完整**
-- [x] 记录确认结果: 前端 token 流程完整；真实 admin 用户名待 DB 确认
+- [x] 记录确认结果: 前端 token 流程完整；真实 admin 用户已确认
 
 **Step 2: 移除 bypass（仅在 Step 1 全部确认后执行）**
 
 - [x] 恢复 `get_current_user` 为真实 JWT 校验: 从 `credentials` 解码 token → 查 DB → 返回 user 或 401 — **已实现，通过 AUTH_BYPASS 开关控制**
 - [x] 恢复 `get_current_admin` 为真实权限校验: `user.is_admin` 为 True 才放行 — **已实现**
 - [x] 恢复 `get_optional_user`: 有 token 解码，无 token 返回 None — **已实现**
-- [ ] 验证 `/api/auth/login` → `/api/auth/me` 流程正常 — **需设置 AUTH_BYPASS=false 后手动验证**
-- [ ] 验证未登录时 `/manage` 显示登录表单 — **需设置 AUTH_BYPASS=false 后手动验证**
-- [ ] 验证登录后 `/manage` 可正常加载内容列表 — **需设置 AUTH_BYPASS=false 后手动验证**
-- [ ] 验证匿名用户调用写入 API 返回 401 — **需设置 AUTH_BYPASS=false 后手动验证**
+- [x] 验证 `/api/auth/login` → `/api/auth/me` 流程正常 — **2026-06-03 临时 8001 AUTH_BYPASS=false 验证通过**
+- [x] 验证未登录时 `/manage` 显示登录表单 — **2026-06-03 浏览器 smoke 验证通过**
+- [x] 验证登录后 `/manage` 可正常加载内容列表 — **2026-06-03 临时 8001 AUTH_BYPASS=false + 3025 前端验证通过**
+- [x] 验证匿名用户调用写入 API 返回 401 — **2026-06-03 临时 8001 AUTH_BYPASS=false 验证通过**
 
 **风险**: 如果 Step 1 未完成就执行 Step 2，所有写入 API 将返回 401，系统不可用。必须先确认真实 admin 可登录。
 
@@ -542,8 +564,8 @@ P6
 - [x] 后端 import/start check
 - [x] 手动测试 6 个新 action — **全部验证: title ✅ outline ✅ tags ✅ diagram ✅ compare ✅ mindmap ✅**
 - [x] 手动测试标题/摘要/标签应用 — **代码审查确认: onApplyTitle/onApplySummary/onApplyTags 已接入**
-- [ ] 手动测试图表/思维导图插入
-- [ ] 移动端浏览器检查 — **T-204 延后**
+- [ ] 手动测试图表/思维导图插入 — **代码路径确认 (MermaidBlock + DiagramViewer)，未在浏览器实测**
+- [ ] 移动端浏览器检查 — **T-204 移动端抽屉代码已实现，未在真机验证**
 
 ---
 
@@ -921,11 +943,11 @@ right: 方法
 **子任务**:
 
 - [x] 安装: `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities` — **已安装 ✅**
-- [ ] 笔记列表项可拖拽到侧栏文件夹 → 调用 `moveNoteToFolder()` — **基础设施就绪，完整集成延后**
-- [ ] 文件夹树同级可拖拽排序 → 调用 `reorderFolders()` — **同上**
-- [ ] 笔记在同一文件夹内可拖拽排序 → 更新 `sort_order` — **同上**
-- [ ] 拖拽时显示视觉反馈（drop indicator） — **同上**
-- [ ] 刷新后顺序保持 — **同上**
+- [x] 笔记列表项可拖拽到侧栏文件夹 → 调用 `moveNoteToFolder()` — **HTML5 drag + sidebar drop target + moveNoteToFolder API**
+- [ ] 文件夹树同级可拖拽排序 → 调用 `reorderFolders()` — **延后**
+- [ ] 笔记在同一文件夹内可拖拽排序 → 更新 `sort_order` — **dnd-kit 基础设施就绪，未接入列表排序**
+- [x] 拖拽时显示视觉反馈（drop indicator） — **sidebar folder ring highlight on dragover + onDragOverFolderChange**
+- [x] 刷新后顺序保持 — **moveNoteToFolder API 持久化**
 
 **验收标准**:
 
@@ -949,7 +971,7 @@ right: 方法
 - [x] 菜单项: "移动到..." → 打开文件夹选择弹窗 — **MoveToFolderDialog 组件**
 - [x] 文件夹选择弹窗: 显示文件夹树，点击目标文件夹执行移动 — **树形展示 + moveNoteToFolder API**
 - [x] 侧栏侧栏在移动端收进抽屉（汉堡菜单触发） — **KnowledgeSidebar 已有移动端抽屉**
-- [ ] 文件夹提供"上移/下移"按钮（可选） — **延后，拖拽排序优先**
+- [x] 文件夹提供"上移/下移"按钮（可选） — **ChevronUp/ChevronDown 按钮，hover 显示**
 
 **验收标准**:
 
@@ -968,8 +990,8 @@ right: 方法
 - [x] Alembic migration 可正常 apply — **005 已 apply ✅**
 - [x] 后端 import/start check
 - [x] `npx tsc --noEmit`
-- [ ] 桌面端: 侧栏 + 拖拽 + 排序
-- [ ] 移动端: 抽屉 + 移动菜单
+- [x] 桌面端: 侧栏 + 拖拽到文件夹 — **侧栏 ✅ + 拖拽到文件夹 ✅ + 上移/下移 ✅；排序延后**
+- [x] 移动端: 抽屉 + 移动菜单 — **侧栏抽屉 ✅ + MoveToFolderDialog ✅**
 
 ---
 
@@ -1201,7 +1223,7 @@ right: 方法
 - [x] 编写数据库备份流程: `pg_dump` 命令 + 定时任务 — **docs/backup-restore.md**
 - [x] 编写图片备份流程: 对象存储版本控制 或 rsync 到安全位置 — **docs/backup-restore.md**
 - [x] 编写恢复流程: `pg_restore` + 图片恢复步骤 — **docs/backup-restore.md**
-- [ ] 执行一次恢复演练并记录结果
+- [x] 执行一次恢复演练并记录结果 — **2026-06-03 pg_dump + 临时 PostgreSQL + pg_restore --no-owner --no-acl 成功，alembic_version=005**
 - [x] 编写私有备份与公开导出分离说明 — **docs/backup-restore.md §6**
 
 **验收标准**:
@@ -1221,7 +1243,397 @@ right: 方法
 - [x] 私有笔记不出现在 RSS/sitemap — **已验证: type=blog 过滤**
 - [x] 公开博客正常出现在 RSS/sitemap — **已验证**
 - [x] 图片上传后 URL 稳定 — **已确认: {type}/{slug}/{filename}**
-- [ ] 备份恢复演练完成
+- [x] 备份恢复演练完成 — **2026-06-03 临时库恢复演练通过**
+
+---
+
+## 阶段 P-UI: UI 升级
+
+目标：导航体验修复、渲染引擎升级、写作工具链优化、空状态与反馈统一。详见 `docs/ui-upgrade-design.md`。
+
+### T-U01: VerticalNav 桌面端竖向导航组件
+
+**影响域**: shared UI
+**依赖**: 无
+**文件范围**:
+
+- `src/components/vertical-nav.tsx` (新建)
+
+**子任务**:
+
+- [ ] 新建 `VerticalNav` 组件，固定左侧 `left-0 top-1/2 -translate-y-1/2 z-40`
+- [ ] 默认宽度 56px（仅图标），hover 展开至 180px（图标 + 中文标签）
+- [ ] 展开动画: `motion animate={{ width }}` spring(400, 30)
+- [ ] 导航项: 首页、近期文章、笔记、错题集、关于网站、推荐分享、优秀博客
+- [ ] 当前页高亮: `bg-[var(--color-brand)]/15` + 品牌色图标 + `motion layoutId` 胶囊滑动
+- [ ] 头像区域: 复用 `/images/avatar.png` + 站点标题（展开时显示）
+- [ ] 可访问性: 每个链接 `aria-label` + `title`，`<nav>` 语义标签
+- [ ] 样式: `rounded-r-2xl border border-l-0 border-white/40 bg-white/70 backdrop-blur-xl shadow-lg`
+
+**验收标准**:
+
+- 桌面端内页（非首页、非写作页）左侧显示竖向导航。
+- hover 展开平滑，当前页高亮明显。
+- 所有链接有 aria-label 和 title。
+
+---
+
+### T-U02: NavCard 裁剪
+
+**影响域**: shared UI
+**依赖**: 无
+**文件范围**:
+
+- `src/components/nav-card.tsx`
+
+**子任务**:
+
+- [ ] `form === 'icons'` 时直接 `return null`（不再渲染横向图标栏）
+- [ ] 保留 `form === 'full'`（首页）和 `form === 'mini'`（写作页）逻辑不变
+
+**验收标准**:
+
+- 内页不再显示横向图标栏。
+- 首页和写作页 NavCard 行为不变。
+
+---
+
+### T-U03: Layout 桌面端集成
+
+**影响域**: shared UI
+**依赖**: T-U01, T-U02
+**文件范围**:
+
+- `src/layout/index.tsx`
+
+**子任务**:
+
+- [ ] 引入 `VerticalNav`，条件渲染: `!maxSM && !isHome && !isWrite`
+- [ ] `<main>` 增加 `padding-left: 56px`（桌面端内页）
+- [ ] 判断逻辑: `pathname === '/'` 为首页，`pathname.startsWith('/write')` 为写作页
+
+**验收标准**:
+
+- 桌面端内页左侧有竖向导航，内容区不被遮挡。
+- 首页和写作页不受影响。
+
+---
+
+### T-U04: MobileNav 移动端底部导航
+
+**影响域**: shared UI
+**依赖**: 无
+**文件范围**:
+
+- `src/components/mobile-nav.tsx` (新建)
+
+**子任务**:
+
+- [ ] 新建 `MobileNav` 组件，底部标签栏 4 个主入口（首页、文章、笔记、错题）+ "更多"按钮
+- [ ] 固定底部: `fixed inset-x-0 bottom-0 z-50`，仅 `sm:hidden` 显示
+- [ ] 背景: `bg-white/80 backdrop-blur-xl border-t border-white/40`
+- [ ] 底部安全区: `pb-[env(safe-area-inset-bottom)]`
+- [ ] "更多"抽屉: 从底部弹出，包含关于网站、推荐分享、优秀博客
+- [ ] 当前页高亮: 品牌色图标 + 文字
+- [ ] 可访问性: 每个链接 `aria-label` + `title`
+
+**验收标准**:
+
+- 移动端内页底部显示导航栏。
+- "更多"抽屉正常展开/关闭。
+- 不遮挡页面标题和搜索框。
+
+---
+
+### T-U05: Layout 移动端集成
+
+**影响域**: shared UI
+**依赖**: T-U04
+**文件范围**:
+
+- `src/layout/index.tsx`
+
+**子任务**:
+
+- [ ] 引入 `MobileNav`，条件渲染: `maxSM && isInnerPage`
+- [ ] `<main>` 增加 `padding-bottom: 56px`（移动端内页）
+- [ ] Toaster 位置: 移动端内页改为 `top-center` 避免被底部导航遮挡
+- [ ] ScrollTopButton 位置调整: 移动端内页 `right-4 bottom-16` 避免与 MobileNav 重叠
+- [ ] 写作页 (`/write*`) 不渲染 MobileNav
+
+**验收标准**:
+
+- 移动端内页底部有导航栏，内容区不被遮挡。
+- Toast 不被导航栏遮挡。
+- 写作页无底部导航。
+
+---
+
+### T-U06: 首页 NavCard 细节检查
+
+**影响域**: home
+**依赖**: 无
+**文件范围**:
+
+- `src/components/nav-card.tsx`
+
+**子任务**:
+
+- [ ] 检查 active 胶囊在不同主题色下对比度
+- [ ] 检查图标颜色: 选中态 `text-brand` 在白色胶囊上可读
+- [ ] 检查文字截断: 42px 行高下中文标签不被裁切
+- [ ] 确保导航项列表与 VerticalNav 一致（图标、标签、顺序）
+
+**验收标准**:
+
+- 首页 NavCard 视觉效果与内页 VerticalNav 语言统一。
+
+---
+
+### T-U07: MarkmapBlock 思维导图组件
+
+**影响域**: notes, markdown
+**依赖**: `npm install markmap-lib markmap-view`
+**文件范围**:
+
+- `src/components/markmap-block.tsx` (新建)
+
+**子任务**:
+
+- [ ] 安装依赖: `npm install markmap-lib markmap-view`
+- [ ] 新建 `MarkmapBlock` 组件，接收 `code: string`（Markdown 层级文本）
+- [ ] 渲染流程: `Transformer.transform(code)` → `{ root }` → `Markmap.create(svgRef, options, root)`
+- [ ] 懒加载 markmap（动态 import），失败降级为代码块
+- [ ] 包装 `DiagramViewer` 提供全屏/缩放
+- [ ] 默认适配容器宽度
+
+**验收标准**:
+
+- ` ```markmap\n# 主题\n## 分支\n` ` ` 正确渲染为思维导图。
+- 渲染失败降级为代码块。
+- 支持全屏查看和缩放。
+
+---
+
+### T-U08: Markdown 管线集成 markmap
+
+**影响域**: notes, markdown
+**依赖**: T-U07
+**文件范围**:
+
+- `src/hooks/use-markdown-render.tsx`
+- `src/lib/markdown-renderer.ts`
+
+**子任务**:
+
+- [ ] `markdown-renderer.ts`: 确保 `markmap` 代码块输出 `<div class="markmap">` 标记
+- [ ] `use-markdown-render.tsx`: `replace(domNode)` 中增加 markmap div 检测 → `<MarkmapBlock>`
+- [ ] codeBlock placeholder 处理中增加 markmap 分支
+- [ ] 旧 `mermaid mindmap` 代码块仍由 `MermaidBlock` 渲染（向后兼容）
+
+**验收标准**:
+
+- 新建 markmap 代码块正确渲染。
+- 旧 mermaid mindmap 代码块不受影响。
+
+---
+
+### T-U09: ChartBlock 数据图表组件
+
+**影响域**: notes, markdown, mistakes, review
+**依赖**: `npm install echarts echarts-for-react`
+**文件范围**:
+
+- `src/components/chart-block.tsx` (新建)
+
+**子任务**:
+
+- [ ] 安装依赖: `npm install echarts echarts-for-react`
+- [ ] ECharts 按需引入: Bar/Line/Pie/Radar + Grid/Tooltip/Legend/Title + CanvasRenderer
+- [ ] 新建 `ChartBlock` 组件，接收 JSON 配置字符串
+- [ ] 解析 JSON → ECharts option 对象
+- [ ] 包装 `DiagramViewer` 提供全屏/缩放/下载
+- [ ] 默认高度 400px，自适应容器宽度
+- [ ] 主题适配: 使用 `--color-brand` 作为主色调
+
+**验收标准**:
+
+- ` ```chart\n{"type":"bar",...}\n` ` ` 正确渲染为图表。
+- 支持柱状图、折线图、饼图、雷达图。
+- 全屏查看和下载正常。
+
+---
+
+### T-U10: Markdown 管线集成 chart
+
+**影响域**: notes, markdown
+**依赖**: T-U09
+**文件范围**:
+
+- `src/hooks/use-markdown-render.tsx`
+- `src/lib/markdown-renderer.ts`
+
+**子任务**:
+
+- [ ] `markdown-renderer.ts`: 确保 `chart` 代码块输出 `<div class="chart">` 标记
+- [ ] `use-markdown-render.tsx`: `replace(domNode)` 中增加 chart div 检测 → `<ChartBlock>`
+- [ ] codeBlock placeholder 处理中增加 chart 分支
+
+**验收标准**:
+
+- chart 代码块在笔记详情页和编辑预览中正确渲染。
+
+---
+
+### T-U11: DiagramViewer 优化
+
+**影响域**: shared UI
+**依赖**: 无
+**文件范围**:
+
+- `src/components/diagram-viewer.tsx`
+
+**子任务**:
+
+- [ ] preview 区域增加 `max-w-full overflow-hidden` 约束
+- [ ] 全屏 modal 增加"适配"按钮（fit to viewport）
+- [ ] 增加 PNG 下载功能（Canvas 转换）
+- [ ] 移动端全屏 modal 增加 `touch-action: pan-x pan-y`
+- [ ] 可选: 增加 `kind: 'chart'` 直接渲染 ECharts 实例
+
+**验收标准**:
+
+- 图表默认适配容器，不溢出。
+- 全屏查看支持缩放、适配、下载。
+- 移动端无横向溢出。
+
+---
+
+### T-U12: 工具栏和斜杠命令更新
+
+**影响域**: notes
+**依赖**: T-U07, T-U09
+**文件范围**:
+
+- `src/app/write-note/components/note-toolbar.tsx`
+- `src/app/write-note/components/slash-command-menu.tsx`
+
+**子任务**:
+
+- [ ] `NoteToolbar` 插入菜单: 思维导图模板改为 Markmap Markdown
+- [ ] `NoteToolbar` 插入菜单: 图表模板改为 chart JSON
+- [ ] `SlashCommandMenu`: `mindmap` 命令改为 Markmap Markdown
+- [ ] `SlashCommandMenu`: 增加 `chart` 命令（图表）
+- [ ] 保留旧 Mermaid 流程图模板（`graph TD`）不变
+
+**验收标准**:
+
+- 工具栏插入思维导图为 Markmap 语法。
+- 工具栏插入图表为 chart JSON 语法。
+- 斜杠命令同步更新。
+
+---
+
+### T-U13: 写作工具链升级
+
+**影响域**: notes, AI
+**依赖**: 无
+**文件范围**:
+
+- `src/app/write-note/components/note-toolbar.tsx` — 颜色色板按钮
+- `src/app/write-note/components/ai-assistant-panel.tsx` — AI 输出格式
+- `backend/app/schemas/ai_polish.py` — 新增 `data_chart` action（避免与错题分析接口混淆）
+- `backend/app/services/ai_polish_service.py` — 更新 mindmap prompt + 新增 analyze prompt
+- `src/lib/api/ai-polish.ts` — 前端类型同步
+
+**子任务**:
+
+- [ ] 工具栏增加颜色选择按钮，弹出 8 色色板（red/blue/green/yellow/purple/orange/gray/pink）
+- [ ] 选择颜色后 `wrapSelection(`{${color}|`, `}`)` 包裹选中文本
+- [ ] 对比块插入模板改为带示例内容的可读版本
+- [ ] 后端 `mindmap` prompt 改为输出 Markmap Markdown（非 Mermaid 语法）
+- [ ] 后端新增 `data_chart` action: 输出 ECharts chart JSON 配置
+- [ ] 后端错题解析 prompt 增强: 输出考点、易错点、类似题型
+- [ ] 前端 AI 面板增加"数据分析"按钮
+
+**验收标准**:
+
+- 颜色色板可选择 8 色，插入正确语法。
+- AI 思维导图输出为 Markmap Markdown。
+- AI 数据分析输出为 chart JSON。
+- 对比块模板可读性提升。
+
+---
+
+### T-U14: 错题 AI 分析入口增强
+
+**影响域**: mistakes
+**依赖**: 无
+**文件范围**:
+
+- `src/app/write-mistake/page.tsx`
+
+**子任务**:
+
+- [ ] 分析中显示 loading spinner + 阶段文案（"正在识别题目..."、"正在生成解析..."）
+- [ ] 分析失败时显示错误原因 + "重试"按钮
+- [ ] 增加图片拖拽上传区域 + "或粘贴图片"提示优化
+- [ ] **P2 增强（可后续迭代）**: 分析结果预览卡片 + 确认填充 + 重新分析
+
+**验收标准**:
+
+- 分析中有明确 loading 状态和阶段文案。
+- 失败有错误提示和重试按钮。
+- 结果预览为可选增强，不阻塞主流程。
+
+---
+
+### T-U15: 空状态和反馈优化（分 3 批）
+
+**影响域**: notes, mistakes, blog, manage, snippets, share
+**依赖**: 无
+**文件范围**:
+
+- `src/components/empty-state.tsx` (新建)
+- 24+ 页面文件（分 3 批替换内联空状态）
+
+**子任务**:
+
+- [ ] 新建 `EmptyState` 组件，支持 4 种 variant: `no-content`、`no-results`、`not-logged-in`、`load-error`
+- [ ] 每种 variant 有对应图标、标题、描述、操作按钮
+- [ ] 样式: 继承玻璃卡片风格
+- [ ] **第一批 (B1)**: 替换 `/notes`、`/mistakes`、`/manage` 核心列表页空状态（~5 文件）
+- [ ] **第二批 (B2)**: 替换 `/blog`、`/share`、`/bloggers` 公开页面空状态（~4 文件）
+- [ ] **第三批 (B3)**: 替换弹窗、管理子 tab、TOC、卡片等小区域空状态（~15 文件）
+- [ ] 统一按钮颜色: 危险操作红色、主操作品牌色、次级操作弱化
+- [ ] 审计所有图标按钮确保有 `title` + `aria-label`
+
+**验收标准**:
+
+- 所有列表页空状态有明确的引导操作。
+- 真无内容 vs 筛选为空显示不同文案和按钮。
+- 按钮颜色语义统一。
+
+---
+
+### T-U16: UI 走查与文档更新
+
+**影响域**: 全部
+**依赖**: T-U01 ~ T-U15
+**文件范围**: 无代码修改，纯验收 + 文档
+
+**子任务**:
+
+- [ ] 桌面端走查: `/`、`/notes`、`/mistakes`、`/manage`、`/write-note`
+- [ ] 移动端走查: `/notes`、`/mistakes`、`/write-note`
+- [ ] 检查文字溢出、遮挡、按钮含义、跳转是否明确
+- [ ] 更新 `docs/roadmap-design.md` 增加指向 `docs/ui-upgrade-design.md` 的交叉引用
+- [ ] 确认 `docs/ui-upgrade-design.md` 与实际实现一致
+
+**验收标准**:
+
+- 桌面端和移动端走查无明显 UI 问题。
+- 文档交叉引用完整。
 
 ---
 

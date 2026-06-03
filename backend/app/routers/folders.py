@@ -61,7 +61,12 @@ async def create_folder(
         if not parent:
             raise HTTPException(status_code=404, detail="Parent folder not found")
 
-    folder = Folder(name=req.name, parent_id=req.parent_id)
+    max_order_result = await db.execute(
+        select(func.max(Folder.sort_order)).where(Folder.parent_id == req.parent_id)
+    )
+    max_order = max_order_result.scalar() or 0
+
+    folder = Folder(name=req.name, parent_id=req.parent_id, sort_order=max_order + 1)
     db.add(folder)
     await db.flush()
     await db.refresh(folder)

@@ -1,9 +1,9 @@
 # 个人知识系统演进路线 — 设计文档
 
-> 版本: 1.0
-> 日期: 2026-06-02
+> 版本: 1.1
+> 日期: 2026-06-03
 > 状态: Draft
-> 关联: `docs/personal-knowledge-system-design.md` | `docs/note-editor-design.md` | `AGENTS.md`
+> 关联: `docs/personal-knowledge-system-design.md` | `docs/note-editor-design.md` | `docs/ui-upgrade-design.md` | `AGENTS.md`
 
 ---
 
@@ -17,6 +17,7 @@
 - `personal-knowledge-system-tasks.md`：任务清单（本文档产出后需同步更新）
 - `note-editor-design.md` / `note-editor-tasks.md`：编辑器专项（P2/P3 中与编辑器强相关的部分引用其设计）
 - `tasks.md` / `design.md`：早期闭环修复（部分已完成，本文档标注其遗留项）
+- **`ui-upgrade-design.md`**：UI 层升级设计（导航、渲染引擎、写作工具链、空状态反馈）。本文档侧重后端/数据/业务逻辑；UI 层设计详见 ui-upgrade-design.md。
 
 ---
 

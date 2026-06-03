@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, GripVertical } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
@@ -11,6 +11,8 @@ import { KnowledgeSidebar } from './components/knowledge-sidebar'
 import { SuggestionCard } from './components/suggestion-card'
 import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
+import { moveNoteToFolder } from '@/lib/api/folders'
+import { toast } from 'sonner'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -24,6 +26,22 @@ export default function NotesPage() {
 	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
 	const [activeTag, setActiveTag] = useState<string | null>(null)
 	const [moveTarget, setMoveTarget] = useState<{ slug: string; title: string } | null>(null)
+	const [draggingSlug, setDraggingSlug] = useState<string | null>(null)
+	const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+
+	const handleDropToFolder = async (folderId: string | null) => {
+		if (!draggingSlug) return
+		try {
+			await moveNoteToFolder(draggingSlug, folderId)
+			toast.success(folderId ? '已移动到文件夹' : '已移回收件箱')
+			mutate()
+		} catch (e: any) {
+			toast.error('移动失败: ' + e.message)
+		} finally {
+			setDraggingSlug(null)
+			setDragOverFolderId(null)
+		}
+	}
 
 	const handleFilterChange = (filter: string) => {
 		setActiveFilter(filter)
@@ -62,6 +80,9 @@ export default function NotesPage() {
 					onFilterChange={handleFilterChange}
 					onFolderChange={setActiveFolderId}
 					onTagChange={setActiveTag}
+					onDropNote={handleDropToFolder}
+					dragOverFolderId={dragOverFolderId}
+					onDragOverFolderChange={setDragOverFolderId}
 				/>
 
 				<div className='min-w-0 flex-1'>
@@ -110,6 +131,10 @@ export default function NotesPage() {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: i * 0.05 }}
+							draggable
+							onDragStart={() => setDraggingSlug(item.slug)}
+							onDragEnd={() => { setDraggingSlug(null); setDragOverFolderId(null) }}
+							className={cn(draggingSlug === item.slug && 'opacity-50')}
 						>
 							<Link
 								href={`/notes/${item.slug}`}
