@@ -1,6 +1,6 @@
 # Tasks: AI Skill Pipeline Knowledge Base
 
-**Status**: implementation in progress (backend Phase 3–5 complete)
+**Status**: implementation complete (backend Phase 3–5, skills Phase 1–2, frontend T6-1 done)
 
 ## Phase 1: Planning Completion
 
@@ -14,24 +14,63 @@
   - Completion standard: user approves or requests edits.
   - Status: user provided explicit implementation instruction covering all tasks.
 
-- [ ] **T1-3**: Confirm external skill installation target.
+- [x] **T1-3**: Confirm external skill installation target.
   - Options: `~/.openclaw/skills`, `~/.claude/skills`, or Codex-compatible local skills path.
   - Completion standard: target path is documented before installation.
-  - Status: deferred — not required for backend implementation.
+
+  **Validation Report:**
+  - **Changed files:** None (documentation only)
+  - **Validation command:** `ls -la ~/.openclaw/skills`
+  - **Validation result:** pass
+  - **Manual verification:** User confirmed `~/.openclaw/skills` as installation target. Directory exists and contains skills.
+  - **Scope check:** Development-time only — no runtime dependency added to backend/frontend code.
+  - **Remaining risks:** None
 
 ## Phase 2: Skill Setup Verification
 
-- [ ] **T2-1**: Install or verify `Humanizer-zh`.
-  - Status: deferred — external skill, not required for backend implementation.
+- [x] **T2-1**: Install or verify `Humanizer-zh`.
+  - Completion standard: skill root contains readable `SKILL.md` or equivalent instructions.
 
-- [ ] **T2-2**: Install or verify `guizang-social-card-skill`.
-  - Status: deferred — external skill, not required for backend implementation.
+  **Validation Report:**
+  - **Changed files:** None (pre-existing installation)
+  - **Validation command:** `ls ~/.openclaw/skills/Humanizer-zh/SKILL.md`
+  - **Validation result:** pass
+  - **Manual verification:** `SKILL.md` present at `~/.openclaw/skills/Humanizer-zh/SKILL.md`.
+  - **Scope check:** Development-time skill only. No runtime dependency.
+  - **Remaining risks:** None
 
-- [ ] **T2-3**: Install or verify `ian-xiaohei-illustrations`.
-  - Status: deferred — external skill, not required for backend implementation.
+- [x] **T2-2**: Install or verify `guizang-social-card-skill`.
+  - Completion standard: skill root contains readable `SKILL.md` or equivalent instructions.
 
-- [ ] **T2-4**: Install or verify `notebooklm-skill`.
-  - Status: deferred — external skill, not required for backend implementation.
+  **Validation Report:**
+  - **Changed files:** None (pre-existing installation)
+  - **Validation command:** `ls ~/.openclaw/skills/guizang-social-card-skill/SKILL.md`
+  - **Validation result:** pass
+  - **Manual verification:** `SKILL.md` present at root.
+  - **Scope check:** Development-time skill only. No runtime dependency.
+  - **Remaining risks:** None
+
+- [x] **T2-3**: Install or verify `ian-xiaohei-illustrations`.
+  - Completion standard: nested directory issue is resolved and `SKILL.md` is at the skill root.
+
+  **Validation Report:**
+  - **Changed files:** None (pre-existing installation, nested issue already resolved)
+  - **Validation command:** `ls ~/.openclaw/skills/ian-xiaohei-illustrations/SKILL.md`
+  - **Validation result:** pass
+  - **Manual verification:** `SKILL.md` present at root. No nested subdirectory issue.
+  - **Scope check:** Development-time skill only. No runtime dependency.
+  - **Remaining risks:** None
+
+- [x] **T2-4**: Install or verify `notebooklm-skill`.
+  - Completion standard: correct skill is installed, not `notebooklm-mcp`.
+
+  **Validation Report:**
+  - **Changed files:** None (pre-existing installation)
+  - **Validation command:** `ls ~/.openclaw/skills/notebooklm-skill/SKILL.md && ls ~/.openclaw/skills/notebooklm-mcp 2>/dev/null || echo "mcp not present"`
+  - **Validation result:** pass
+  - **Manual verification:** `notebooklm-skill` present at root with `SKILL.md`. `notebooklm-mcp` confirmed NOT present.
+  - **Scope check:** Development-time skill only. No runtime dependency.
+  - **Remaining risks:** None
 
 ## Phase 3: Backend Contract Design
 
@@ -174,18 +213,25 @@
 
 ## Phase 6: Frontend Integration
 
-- [ ] **T6-1**: Add API client types.
+- [x] **T6-1**: Add API client types.
   - Candidate file: `src/lib/api/knowledge.ts`
   - Completion standard: frontend types match backend schemas.
-  - Status: deferred — frontend not in scope for this implementation pass.
+
+  **Validation Report:**
+  - **Changed files:** `src/lib/api/knowledge.ts`
+  - **Validation command:** `npx tsc --noEmit src/lib/api/knowledge.ts` (also full `npx tsc --noEmit`)
+  - **Validation result:** pass
+  - **Manual verification:** TypeScript types match backend Pydantic schemas: `SourceRef`, `SourceType`, `RelationSuggestion`, `RelationType`, `ContextPackRequest`, `ContextPackResponse`, `ContextPackStats`, `NoteBrief`, `WeakPointItem`, `WeakPointsResponse`, `CitationBlock`, `CitationBlockType`, `KnowledgeSummaryRequest`, `KnowledgeSummaryResponse`, `InsufficientContextResponse`. API wrappers: `getContextPack()`, `getWeakPoints()`, `getKnowledgeSummary()`. Uses `apiFetch` from `./client`. No runtime dependency on external skills.
+  - **Scope check:** No unapproved frontend routes or pages. Types only + API wrappers.
+  - **Remaining risks:** None
 
 - [ ] **T6-2**: Show related notes and similar mistakes in mistake detail or review context.
   - Candidate route: notes/mistake detail UI.
-  - Status: deferred — frontend not in scope.
+  - Status: deferred per user instruction.
 
 - [ ] **T6-3**: Add weak-point summary view.
   - Candidate route: review or mistakes page.
-  - Status: deferred — frontend not in scope.
+  - Status: deferred per user instruction.
 
 ## Phase 7: Validation
 
@@ -199,15 +245,22 @@
   - **Scope check:** No prohibited entities introduced.
   - **Remaining risks:** None
 
-- [ ] **T7-2**: Run frontend type checking if frontend files change.
-  - Status: skipped — no frontend files changed.
+- [x] **T7-2**: Run frontend type checking if frontend files change.
+
+  **Validation Report:**
+  - **Changed files:** N/A (validation task)
+  - **Validation command:** `npx tsc --noEmit`
+  - **Validation result:** pass
+  - **Manual verification:** Full TypeScript type check passes with zero errors after adding `src/lib/api/knowledge.ts`.
+  - **Scope check:** No prohibited entities.
+  - **Remaining risks:** None
 
 - [x] **T7-3**: Record validation results in `validation.md`.
   - See updated `validation.md`.
 
 - [x] **T7-4**: Record task evidence after each completed item.
   - Completion standard: changed files, test command, test result, manual verification, risk notes, and scope check are documented.
-  - Status: all Phase 3–5 tasks have inline validation reports above.
+  - Status: all tasks have inline validation reports above.
 
 ## Approval Gate
 

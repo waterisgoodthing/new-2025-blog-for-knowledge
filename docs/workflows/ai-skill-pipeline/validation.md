@@ -141,7 +141,7 @@ Not directly applicable — social card export not implemented in this pass.
 ## Commands Run
 
 ```bash
-# Import verification
+# Backend import verification
 .venv/bin/python -c "from app.schemas.knowledge import ..."
 .venv/bin/python -c "from app.services.knowledge_retrieval import ..."
 .venv/bin/python -c "from app.services.knowledge_relations import ..."
@@ -154,6 +154,18 @@ Not directly applicable — social card export not implemented in this pass.
 
 # Schema validation
 .venv/bin/python -c "req = ContextPackRequest(...); ref = SourceRef(...)"
+
+# Function-level source-ref branch verification (after SourceType fix)
+.venv/bin/python -c "... matched.source_type == SourceType.mistake ..."
+
+# Skill verification
+ls ~/.openclaw/skills/Humanizer-zh/SKILL.md
+ls ~/.openclaw/skills/guizang-social-card-skill/SKILL.md
+ls ~/.openclaw/skills/ian-xiaohei-illustrations/SKILL.md
+ls ~/.openclaw/skills/notebooklm-skill/SKILL.md
+
+# Frontend type check
+npx tsc --noEmit
 ```
 
 All commands passed.
@@ -166,12 +178,12 @@ All commands passed.
 | `backend/app/services/knowledge_retrieval.py` | New file — structured retrieval + weak-point aggregation |
 | `backend/app/services/knowledge_relations.py` | New file — relation suggestion scoring |
 | `backend/app/routers/knowledge.py` | New file — context-pack + weak-points endpoints |
-| `backend/app/routers/ai.py` | Added knowledge-summary endpoint + imports |
+| `backend/app/routers/ai.py` | Added knowledge-summary endpoint + SourceType import fix |
 | `backend/main.py` | Registered knowledge router |
+| `src/lib/api/knowledge.ts` | New file — frontend types + API wrappers |
 
 ## Remaining Risks
 
 1. **AI model dependency**: `POST /api/ai/knowledge-summary` requires DeepSeek API configuration (`DEEPSEEK_API_KEY`). If not configured, the endpoint will return 500.
 2. **No database migration needed**: All new code uses existing `Note` model fields. No schema changes.
-3. **Frontend integration deferred**: T6-1, T6-2, T6-3 are not implemented. Frontend types and UI components are needed for full user-facing feature.
-4. **External skills deferred**: T1-3, T2-1 through T2-4 are not implemented. These are development-time concerns, not runtime blockers.
+3. **Frontend UI deferred**: T6-2 and T6-3 (related notes/mistakes UI, weak-point summary view) are deferred per user instruction.
