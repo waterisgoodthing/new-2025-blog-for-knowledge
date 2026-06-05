@@ -8,9 +8,9 @@ The latest confirmed public deployment was completed on 2026-06-05.
 
 - Worker: `2025-blog-public`
 - URL: `https://2025-blog-public.17527677392.workers.dev`
-- Version ID: `9d46eb7b-71be-4bd1-9155-12c074806b96`
-- Assets uploaded: 34 new or modified files, 510 already uploaded
-- Worker startup time: 21 ms
+- Version ID: `62dcbb17-5afc-4cf0-b465-ab0b3b3375f5`
+- Assets uploaded: no updated asset files; existing assets reused
+- Worker startup time: 31 ms
 
 ## Scope
 
