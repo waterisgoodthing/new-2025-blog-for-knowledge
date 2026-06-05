@@ -5,6 +5,8 @@ import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
 import { MermaidBlock } from '@/components/mermaid-block'
+import { MarkmapBlock } from '@/components/markmap-block'
+import { ChartBlock } from '@/components/chart-block'
 
 let parseModule: typeof import('html-react-parser') | null = null
 
@@ -81,6 +83,26 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 								.replace(/&#39;/g, "'")
 							return <MermaidBlock code={decoded} />
 						}
+						if (domNode instanceof parseMod.Element && domNode.name === 'div' && domNode.attribs?.class?.includes('markmap')) {
+							const code = (domNode.children?.[0] as any)?.data || ''
+							const decoded = code
+								.replace(/&amp;/g, '&')
+								.replace(/&lt;/g, '<')
+								.replace(/&gt;/g, '>')
+								.replace(/&quot;/g, '"')
+								.replace(/&#39;/g, "'")
+							return <MarkmapBlock code={decoded} />
+						}
+						if (domNode instanceof parseMod.Element && domNode.name === 'div' && domNode.attribs?.class?.includes('chart')) {
+							const code = (domNode.children?.[0] as any)?.data || ''
+							const decoded = code
+								.replace(/&amp;/g, '&')
+								.replace(/&lt;/g, '<')
+								.replace(/&gt;/g, '>')
+								.replace(/&quot;/g, '"')
+								.replace(/&#39;/g, "'")
+							return <ChartBlock code={decoded} />
+						}
 						if (domNode.type === 'text' && domNode.data) {
 							const text = String(domNode.data)
 							if (text.includes('__CODE_BLOCK_') || text.includes('__MATH_BLOCK_')) {
@@ -94,9 +116,15 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 											if (item.startsWith('__CODE_BLOCK_')) {
 												const block = codeBlocks.find(b => b.placeholder === item)
 												if (block) {
-													if (block.preHtml.includes('class="mermaid"')) {
-														return <MermaidBlock key={block.placeholder} code={block.code} />
-													}
+												if (block.preHtml.includes('class="mermaid"')) {
+													return <MermaidBlock key={block.placeholder} code={block.code} />
+												}
+												if (block.preHtml.includes('class="markmap"')) {
+													return <MarkmapBlock key={block.placeholder} code={block.code} />
+												}
+												if (block.preHtml.includes('class="chart"')) {
+													return <ChartBlock key={block.placeholder} code={block.code} />
+												}
 													const preElement = parse(block.preHtml) as ReactElement
 													return (
 														<CodeBlock key={block.placeholder} code={block.code}>{preElement}</CodeBlock>

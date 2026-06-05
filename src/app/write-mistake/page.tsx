@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { createNote, uploadImage } from '@/lib/api/notes'
@@ -9,14 +9,20 @@ import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getContentDetailHref } from '@/lib/content-routes'
-import { ClipboardPaste, ImageUp, Loader2, Sparkles } from 'lucide-react'
+import Link from 'next/link'
+import { ClipboardPaste, ImageUp, Loader2, Sparkles, ArrowLeft } from 'lucide-react'
 
 export default function WriteMistakePage() {
 	const router = useRouter()
 	const [saving, setSaving] = useState(false)
 	const [analyzing, setAnalyzing] = useState(false)
+	const [analyzeError, setAnalyzeError] = useState<string | null>(null)
+	const [phaseText, setPhaseText] = useState('')
+	const phaseTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+	const lastAnalyzeRef = useRef<(() => Promise<void>) | null>(null)
 	const [uploadedImages, setUploadedImages] = useState<string[]>([])
 	const [pasteText, setPasteText] = useState('')
+	const [generatingField, setGeneratingField] = useState<'analysis' | 'knowledge_points' | null>(null)
 	const [subjects, setSubjects] = useState<Subject[]>([])
 	const [form, setForm] = useState({
 		slug: '',
@@ -34,6 +40,22 @@ export default function WriteMistakePage() {
 	const [aiMetadata, setAiMetadata] = useState<Record<string, unknown> | null>(null)
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+	const PHASE_TEXTS = ['正在识别题目...', '正在分析解题思路...', '正在归纳知识点...', '正在生成复习建议...']
+
+	const startPhaseRotation = useCallback(() => {
+		let idx = 0
+		setPhaseText(PHASE_TEXTS[0])
+		phaseTimerRef.current = setInterval(() => {
+			idx = (idx + 1) % PHASE_TEXTS.length
+			setPhaseText(PHASE_TEXTS[idx])
+		}, 2500)
+	}, [])
+
+	const stopPhaseRotation = useCallback(() => {
+		if (phaseTimerRef.current) { clearInterval(phaseTimerRef.current); phaseTimerRef.current = null }
+		setPhaseText('')
+	}, [])
 
 	useEffect(() => {
 		listSubjects().then(setSubjects).catch(() => {})
@@ -85,6 +107,8 @@ export default function WriteMistakePage() {
 
 	const uploadAndAnalyzeFiles = async (files: File[]) => {
 		setAnalyzing(true)
+		setAnalyzeError(null)
+		startPhaseRotation()
 		try {
 			// 1. Upload images to the backend to get hosted URL paths
 			const uploadPromises = files.map(async file => {
@@ -111,15 +135,18 @@ export default function WriteMistakePage() {
 			const result = await analyzeMistake(images)
 			applyResult(result)
 		} catch (err: any) {
+			setAnalyzeError(err.message || '分析失败')
 			toast.error('处理失败: ' + err.message)
 		} finally {
 			setAnalyzing(false)
+			stopPhaseRotation()
 		}
 	}
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files
 		if (!files || files.length === 0) return
+		lastAnalyzeRef.current = () => uploadAndAnalyzeFiles(Array.from(files))
 		await uploadAndAnalyzeFiles(Array.from(files))
 	}
 
@@ -131,6 +158,7 @@ export default function WriteMistakePage() {
 		e.preventDefault()
 		const files = e.dataTransfer.files
 		if (!files || files.length === 0) return
+		lastAnalyzeRef.current = () => uploadAndAnalyzeFiles(Array.from(files))
 		await uploadAndAnalyzeFiles(Array.from(files))
 	}
 
@@ -139,16 +167,50 @@ export default function WriteMistakePage() {
 		if (!text) return toast.warning('请先粘贴题目文本')
 
 		setAnalyzing(true)
+		setAnalyzeError(null)
+		startPhaseRotation()
+		lastAnalyzeRef.current = async () => { await handleTextAnalyze() }
 		try {
-			toast.info('AI 正在分析错题')
 			const result = await analyzeText(text)
 			applyResult(result)
 			setPasteText('')
 			toast.success('AI 分析完成，已填入下方表单')
 		} catch (err: any) {
+			setAnalyzeError(err.message || 'AI 分析失败')
 			toast.error('AI 分析失败: ' + err.message)
 		} finally {
 			setAnalyzing(false)
+			stopPhaseRotation()
+		}
+	}
+
+	const handleRetry = async () => {
+		setAnalyzeError(null)
+		if (lastAnalyzeRef.current) {
+			await lastAnalyzeRef.current()
+		}
+	}
+
+	const hasAiInput = pasteText.trim().length > 0
+
+	const handlePartialAnalyze = async (field: 'analysis' | 'knowledge_points') => {
+		const text = pasteText.trim()
+		if (!text) return toast.warning('请先粘贴题目文本')
+
+		setGeneratingField(field)
+		try {
+			const result = await analyzeText(text)
+			if (field === 'analysis') {
+				const analysisText = buildAnalysisText(result)
+				if (analysisText) update('analysis', analysisText)
+			} else {
+				if (result.knowledge_points) update('knowledge_points', result.knowledge_points)
+			}
+			toast.success(field === 'analysis' ? 'AI 解析已生成' : 'AI 知识点已生成')
+		} catch (err: any) {
+			toast.error('AI 生成失败: ' + (err.message || '未知错误'))
+		} finally {
+			setGeneratingField(null)
 		}
 	}
 
@@ -193,9 +255,18 @@ export default function WriteMistakePage() {
 
 	return (
 		<div className='mx-auto max-w-3xl px-4 py-8'>
-			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
-				添加错题
-			</motion.h1>
+			<div className='mb-6 flex items-center gap-4'>
+				<Link
+					href='/mistakes'
+					aria-label='返回错题集'
+					className='flex h-9 w-9 items-center justify-center rounded-xl border border-white/40 bg-white/60 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-800'
+				>
+					<ArrowLeft size={18} />
+				</Link>
+				<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='text-2xl font-bold'>
+					添加错题
+				</motion.h1>
+			</div>
 
 			{analyzing && (
 				<motion.div
@@ -207,7 +278,24 @@ export default function WriteMistakePage() {
 						<div className='absolute inset-0 rounded-full border-2 border-[var(--color-brand)]/20' />
 						<div className='absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-[var(--color-brand)]' />
 					</div>
-					<span className='text-sm font-medium text-[var(--color-brand)]'>正在解决你的问题哦</span>
+					<span className='text-sm font-medium text-[var(--color-brand)]'>{phaseText || '正在处理...'}</span>
+				</motion.div>
+			)}
+
+			{analyzeError && !analyzing && (
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					className='mb-4 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50/80 px-4 py-3 backdrop-blur-sm'
+				>
+					<span className='text-sm text-red-600'>分析失败: {analyzeError}</span>
+					<button
+						type='button'
+						onClick={handleRetry}
+						className='shrink-0 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-200'
+					>
+						重试
+					</button>
 				</motion.div>
 			)}
 
@@ -220,7 +308,7 @@ export default function WriteMistakePage() {
 							</div>
 							<div>
 								<h2 className='text-base font-semibold text-gray-800'>AI 分析错题</h2>
-								<p className='mt-1 text-xs text-gray-500'>粘贴题目或上传图片，AI 会自动填充题目、答案、解析和复习建议。</p>
+								<p className='mt-1 text-xs text-gray-500'>粘贴题目或上传图片，点击按钮自动填充。</p>
 							</div>
 						</div>
 						<span className='rounded-full bg-[var(--color-brand)]/10 px-3 py-1 text-xs font-medium text-[var(--color-brand)]'>错题助手</span>
@@ -248,8 +336,38 @@ export default function WriteMistakePage() {
 								className='inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50'
 							>
 								{analyzing ? <Loader2 className='h-4 w-4 animate-spin' /> : <Sparkles className='h-4 w-4' />}
-								{analyzing ? 'AI 分析中...' : '开始 AI 分析'}
+								{analyzing ? 'AI 解析中...' : 'AI 智能解析题目'}
 							</button>
+							<div className='mt-2 grid grid-cols-2 gap-2'>
+								<button
+									type='button'
+									onClick={() => handlePartialAnalyze('analysis')}
+									disabled={generatingField !== null || !hasAiInput}
+									title='仅生成解析部分'
+									className='inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/50 bg-white/60 px-3 py-2 text-xs font-medium text-gray-600 backdrop-blur-sm transition-colors hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50'
+								>
+									{generatingField === 'analysis' ? (
+										<Loader2 className='h-3.5 w-3.5 animate-spin' />
+									) : (
+										<Sparkles className='h-3.5 w-3.5' />
+									)}
+									{generatingField === 'analysis' ? '生成中...' : 'AI 生成解析'}
+								</button>
+								<button
+									type='button'
+									onClick={() => handlePartialAnalyze('knowledge_points')}
+									disabled={generatingField !== null || !hasAiInput}
+									title='仅生成知识点部分'
+									className='inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/50 bg-white/60 px-3 py-2 text-xs font-medium text-gray-600 backdrop-blur-sm transition-colors hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50'
+								>
+									{generatingField === 'knowledge_points' ? (
+										<Loader2 className='h-3.5 w-3.5 animate-spin' />
+									) : (
+										<Sparkles className='h-3.5 w-3.5' />
+									)}
+									{generatingField === 'knowledge_points' ? '生成中...' : 'AI 生成知识点'}
+								</button>
+							</div>
 						</div>
 
 						<div
@@ -263,8 +381,8 @@ export default function WriteMistakePage() {
 									<ImageUp className='h-6 w-6' />
 								</div>
 								<div>
-									<div className='text-sm font-semibold text-gray-700'>{analyzing ? '图片分析中...' : '上传错题图片'}</div>
-									<div className='mt-1 text-xs leading-5 text-gray-500'>点击选择或拖拽图片到这里</div>
+									<div className='text-sm font-semibold text-gray-700'>{analyzing ? '图片分析中...' : '拖拽或点击上传错题图片'}</div>
+									<div className='mt-1 text-xs leading-5 text-gray-500'>支持 JPG、PNG、WebP 格式，可一次选择多张</div>
 								</div>
 							</label>
 						</div>
@@ -400,7 +518,7 @@ export default function WriteMistakePage() {
 					>
 						{saving ? '保存中...' : '发布'}
 					</button>
-					<button onClick={() => router.back()} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
+					<Link href='/mistakes' className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</Link>
 				</div>
 			</div>
 		</div>

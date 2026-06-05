@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useNoteIndex } from '@/hooks/use-note-index'
@@ -8,6 +9,7 @@ import { deleteNote, batchDeleteNotes } from '@/lib/api/notes'
 import { login, isLoggedIn, logout, getMe, type User } from '@/lib/api/auth'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/empty-state'
 import dayjs from 'dayjs'
 import { MusicTab } from './music-tab'
 import { RecommendationTab } from './recommendation-tab'
@@ -15,16 +17,18 @@ import { LogOut } from 'lucide-react'
 import { getContentDetailHref, getContentEditHref } from '@/lib/content-routes'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
 import { SuggestionCard } from '@/app/notes/components/suggestion-card'
+import { SiteSettingsPanel } from '@/app/(home)/config-dialog/site-settings-panel'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
 
-type TabType = 'content' | 'music' | 'recommendation'
+type TabType = 'content' | 'music' | 'recommendation' | 'settings'
 
 const tabs: { id: TabType; label: string }[] = [
   { id: 'content', label: '内容管理' },
   { id: 'music', label: '音乐管理' },
   { id: 'recommendation', label: '推荐管理' },
+  { id: 'settings', label: '网站设置' },
 ]
 
 function ContentTab() {
@@ -161,7 +165,7 @@ function ContentTab() {
       {isLoading ? (
         <div className='py-20 text-center text-gray-400'>加载中...</div>
       ) : data?.items.length === 0 ? (
-        <div className='py-20 text-center text-gray-400'>暂无内容</div>
+        <div className='py-20'><EmptyState variant='no-content' title='还没有内容' description='创建笔记、博客或错题后会在这里显示' /></div>
       ) : (
         <div className='overflow-x-auto rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm'>
           <table className='w-full text-sm'>
@@ -311,10 +315,29 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 }
 
 export default function ManagePage() {
-  const [activeTab, setActiveTab] = useState<TabType>('content')
+  return (
+    <Suspense fallback={<div className='mx-auto max-w-5xl px-4 py-20 text-center text-gray-400'>加载中...</div>}>
+      <ManagePageInner />
+    </Suspense>
+  )
+}
+
+function ManagePageInner() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const validTabs: TabType[] = ['content', 'music', 'recommendation', 'settings']
+  const initialTab = validTabs.includes(tabParam as TabType) ? (tabParam as TabType) : 'content'
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [authenticated, setAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    const t = searchParams.get('tab')
+    const nextTab = validTabs.includes(t as TabType) ? (t as TabType) : 'content'
+    setActiveTab(nextTab)
+  }, [searchParams])
 
   useEffect(() => {
     if (isLoggedIn()) {
@@ -332,6 +355,11 @@ export default function ManagePage() {
       setChecking(false)
     }
   }, [])
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    router.push(`/manage?tab=${tab}`)
+  }
 
   const handleLogin = async () => {
     try {
@@ -385,7 +413,7 @@ export default function ManagePage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={cn(
                 'relative px-4 py-2.5 text-sm transition-colors',
                 activeTab === tab.id ? 'text-[var(--color-brand)]' : 'text-gray-500 hover:text-gray-700'
@@ -406,6 +434,11 @@ export default function ManagePage() {
       {activeTab === 'content' && <ContentTab />}
       {activeTab === 'music' && <MusicTab />}
       {activeTab === 'recommendation' && <RecommendationTab />}
+      {activeTab === 'settings' && (
+        <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
+          <SiteSettingsPanel />
+        </div>
+      )}
     </div>
   )
 }

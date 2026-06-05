@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
+import { EmptyState } from '@/components/empty-state'
 import {
   getTodayRecommendation,
   deleteTodayRecommendation,
@@ -116,7 +117,7 @@ export function RecommendationTab() {
 
           <h3 className='mb-3 text-sm font-medium text-gray-500'>推荐历史</h3>
           {history.length === 0 ? (
-            <div className='py-10 text-center text-gray-400'>暂无历史记录</div>
+            <div className='py-10'><EmptyState variant='no-content' title='暂无历史记录' description='推荐历史会在这里显示' /></div>
           ) : (
             <div className='overflow-x-auto rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm'>
               <table className='w-full text-sm'>

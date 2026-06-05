@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
-import { ExternalLink, Maximize2, Minus, Plus, RotateCcw, X } from 'lucide-react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ExternalLink, Maximize2, Minus, Plus, RotateCcw, X, Download } from 'lucide-react'
 import { DialogModal } from '@/components/dialog-modal'
 import { cn } from '@/lib/utils'
 
@@ -55,11 +55,57 @@ export function DiagramViewer(props: DiagramViewerProps) {
 
 	const zoomIn = () => setZoom(value => clampZoom(value + ZOOM_STEP))
 	const zoomOut = () => setZoom(value => clampZoom(value - ZOOM_STEP))
-	const reset = () => setZoom(1)
+	const fitToView = () => setZoom(1)
+
+	const handleDownloadPng = useCallback(() => {
+		if (props.kind !== 'svg') return
+		try {
+			const svgStr = props.svg
+			const canvas = document.createElement('canvas')
+			const ctx = canvas.getContext('2d')
+			if (!ctx) return
+			const img = new Image()
+			const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+			const url = URL.createObjectURL(blob)
+			img.onload = () => {
+				canvas.width = img.naturalWidth || 800
+				canvas.height = img.naturalHeight || 600
+				ctx.fillStyle = '#fff'
+				ctx.fillRect(0, 0, canvas.width, canvas.height)
+				ctx.drawImage(img, 0, 0)
+				URL.revokeObjectURL(url)
+				try {
+					const pngUrl = canvas.toDataURL('image/png')
+					const a = document.createElement('a')
+					a.href = pngUrl
+					a.download = `${title}.png`
+					a.click()
+				} catch {
+					const a = document.createElement('a')
+					a.href = svgDataUrl
+					a.download = `${title}.svg`
+					a.click()
+				}
+			}
+			img.onerror = () => {
+				URL.revokeObjectURL(url)
+				const a = document.createElement('a')
+				a.href = svgDataUrl
+				a.download = `${title}.svg`
+				a.click()
+			}
+			img.src = url
+		} catch {
+			const a = document.createElement('a')
+			a.href = svgDataUrl
+			a.download = `${title}.svg`
+			a.click()
+		}
+	}, [props, title, svgDataUrl])
 
 	const preview = props.kind === 'image'
-		? <img src={props.src} alt={props.alt || ''} title={props.title} loading='lazy' className='diagram-media max-h-[72vh] w-full object-contain' />
-		: <div className='diagram-media diagram-svg' dangerouslySetInnerHTML={{ __html: props.svg }} />
+		? <img src={props.src} alt={props.alt || ''} title={props.title} loading='lazy' className='diagram-media max-h-[72vh] max-w-full object-contain' />
+		: <div className='diagram-media diagram-svg max-w-full overflow-hidden' dangerouslySetInnerHTML={{ __html: props.svg }} />
 
 	const fullView = props.kind === 'image'
 		? <img src={props.src} alt={props.alt || ''} className='diagram-media max-w-none object-contain' style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }} />
@@ -76,8 +122,8 @@ export function DiagramViewer(props: DiagramViewerProps) {
 						</IconButton>
 					)}
 					{props.kind === 'svg' && (
-						<IconButton label='下载 SVG' href={svgDataUrl}>
-							<ExternalLink size={16} />
+						<IconButton label='下载' onClick={handleDownloadPng}>
+							<Download size={16} />
 						</IconButton>
 					)}
 					<IconButton label='全屏查看' onClick={() => setOpen(true)}>
@@ -88,7 +134,7 @@ export function DiagramViewer(props: DiagramViewerProps) {
 			<button
 				type='button'
 				onClick={() => setOpen(true)}
-				className='diagram-stage block w-full overflow-auto rounded-lg border border-zinc-200/70 bg-zinc-50/70 p-3 text-left transition hover:border-zinc-300'
+				className='diagram-stage block w-full max-w-full overflow-hidden rounded-lg border border-zinc-200/70 bg-zinc-50/70 p-3 text-left transition hover:border-zinc-300'
 				aria-label='全屏查看图谱'
 			>
 				{preview}
@@ -102,7 +148,10 @@ export function DiagramViewer(props: DiagramViewerProps) {
 							<IconButton label='缩小' onClick={zoomOut}><Minus size={16} /></IconButton>
 							<span className='w-12 text-center text-xs tabular-nums text-zinc-500'>{Math.round(zoom * 100)}%</span>
 							<IconButton label='放大' onClick={zoomIn}><Plus size={16} /></IconButton>
-							<IconButton label='重置' onClick={reset}><RotateCcw size={16} /></IconButton>
+							<IconButton label='适配' onClick={fitToView}><RotateCcw size={16} /></IconButton>
+							{props.kind === 'svg' && (
+								<IconButton label='下载' onClick={handleDownloadPng}><Download size={16} /></IconButton>
+							)}
 							<button
 								type='button'
 								onClick={() => setOpen(false)}
@@ -114,7 +163,7 @@ export function DiagramViewer(props: DiagramViewerProps) {
 							</button>
 						</div>
 					</div>
-					<div className='min-h-0 flex-1 overflow-auto bg-zinc-50 p-4'>
+					<div className='min-h-0 flex-1 overflow-auto bg-zinc-50 p-4' style={{ touchAction: 'pan-x pan-y' }}>
 						{fullView}
 					</div>
 				</div>

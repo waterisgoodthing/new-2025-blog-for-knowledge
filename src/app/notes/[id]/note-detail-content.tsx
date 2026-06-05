@@ -8,6 +8,7 @@ import { getNote, deleteNote, type NoteDetail } from '@/lib/api/notes'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/empty-state'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -45,7 +46,7 @@ export default function NoteDetailContent() {
 	}
 
 	if (isLoading) return <div className='py-20 text-center text-gray-400'>加载中...</div>
-	if (!note) return <div className='py-20 text-center text-gray-400'>未找到</div>
+	if (!note) return <div className='py-20'><EmptyState variant='load-error' title='未找到内容' description='该笔记可能已被删除或链接无效' action={{ label: '返回笔记列表', href: '/notes' }} /></div>
 
 	const actionBar = (
 		<div className='flex gap-3'>

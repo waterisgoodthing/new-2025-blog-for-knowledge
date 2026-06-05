@@ -1,20 +1,40 @@
 'use client'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 import { useCenterInit } from '@/hooks/use-center'
 import BlurredBubblesBackground from './backgrounds/blurred-bubbles'
 import NavCard from '@/components/nav-card'
+import VerticalNav from '@/components/vertical-nav'
+import MobileNav from '@/components/mobile-nav'
 import { Toaster } from 'sonner'
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
 import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
 import MusicCard from '@/components/music-card'
+import { usePathname } from 'next/navigation'
+import ConfigDialog from '@/app/(home)/config-dialog/index'
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()
 	useSizeInit()
-	const { cardStyles, siteContent, regenerateKey } = useConfigStore()
+	const { cardStyles, siteContent, regenerateKey, configDialogOpen, setConfigDialogOpen } = useConfigStore()
 	const { maxSM, init } = useSize()
+	const pathname = usePathname()
+
+	const isHome = pathname === '/'
+	const isWrite = pathname.startsWith('/write')
+	const isInnerPage = !isHome && !isWrite
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && (e.key === 'l' || e.key === ',')) {
+				e.preventDefault()
+				setConfigDialogOpen(true)
+			}
+		}
+		window.addEventListener('keydown', handleKeyDown)
+		return () => window.removeEventListener('keydown', handleKeyDown)
+	}, [setConfigDialogOpen])
 
 	const backgroundImages = (siteContent.backgroundImages ?? []) as Array<{ id: string; url: string }>
 	const currentBackgroundImageId = siteContent.currentBackgroundImageId
@@ -24,7 +44,7 @@ export default function Layout({ children }: PropsWithChildren) {
 	return (
 		<>
 			<Toaster
-				position='bottom-right'
+				position={maxSM && isInnerPage ? 'top-center' : 'bottom-right'}
 				richColors
 				icons={{
 					success: <CircleCheckIcon className='size-4' />,
@@ -52,14 +72,18 @@ export default function Layout({ children }: PropsWithChildren) {
 			)}
 			<BlurredBubblesBackground colors={siteContent.backgroundColors} regenerateKey={regenerateKey} />
 
-			<main className='relative z-10 h-full'>
+			{!maxSM && isInnerPage && <VerticalNav />}
+
+			<main className={`relative z-10 h-full ${maxSM && isInnerPage ? 'pb-14' : ''}`}>
 				{children}
 				<NavCard />
 
 				{!maxSM && cardStyles.musicCard?.enabled !== false && <MusicCard />}
 			</main>
 
-			{maxSM && init && <ScrollTopButton className='bg-brand/20 fixed right-6 bottom-8 z-50 shadow-md' />}
+			{maxSM && isInnerPage && <MobileNav />}
+			{maxSM && init && <ScrollTopButton className={`bg-brand/20 fixed z-50 shadow-md ${maxSM && isInnerPage ? 'right-4 bottom-16' : 'right-6 bottom-8'}`} />}
+			<ConfigDialog open={configDialogOpen} onClose={() => setConfigDialogOpen(false)} />
 		</>
 	)
 }

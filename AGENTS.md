@@ -21,6 +21,60 @@ Before making code changes:
 4. Prefer existing patterns over new abstractions.
 5. Preserve user changes and generated content. Never revert unrelated dirty files.
 
+## Task Workspace And Workflow Files
+
+Every non-trivial task must follow the repository workflow below. Skills, external prompts, or agent habits do not override this workflow.
+
+Required workflow order:
+
+1. Create or reuse a task workspace folder.
+2. Write or update `README.md`.
+3. Write or update `design.md`.
+4. Write or update `requirements.md`.
+5. Write or update `tasks.md`.
+6. Stop and request explicit user approval for `tasks.md`.
+7. Only after approval, execute tasks one by one.
+8. After each task item is completed, immediately update `tasks.md` and mark that exact item complete.
+9. Record validation in `validation.md`.
+10. Record handoff notes or external-agent prompts in `handoff-prompt.md` when needed.
+
+Agents must not skip directly from discussion to implementation when a task requires workflow files. If the user asks to "start tasks", "implement", "push", or "continue" before approving `tasks.md`, the agent must first ask for approval of the task list.
+
+Every non-trivial task must have a task workspace folder before design, requirements, task lists, audits, prompts, reports, screenshots, or handoff notes are created.
+
+Use this structure:
+
+```text
+docs/workflows/<task-name>/
+  README.md
+  design.md
+  requirements.md
+  tasks.md
+  diff-report.md
+  audit.md
+  validation.md
+  handoff-prompt.md
+  assets/
+```
+
+Rules:
+
+- `<task-name>` must be a short, stable, kebab-case name that describes the user-visible task, for example `ai-mistake-navigation-upgrade` or `note-editor-ui-upgrade`.
+- `README.md` is mandatory. It must state the task goal, touched domains, current status, and links to the main workflow files in that folder.
+- `design.md`, `requirements.md`, and `tasks.md` are mandatory before implementation starts for any feature, UI change, architecture change, backend contract change, deployment change, or multi-step bugfix.
+- `tasks.md` must use checkboxes for implementation items. Use `[ ]` for pending, `[x]` for completed, and clearly label blocked, skipped, or deferred items with a short reason.
+- Starting implementation from `tasks.md` requires explicit user approval in the conversation. Approval must refer to the task list or phase being executed.
+- After completing each individual task item, update `tasks.md` immediately in the same turn before starting the next task item. Do not batch all task-document updates at the end.
+- If implementation changes the plan, update `design.md` or `requirements.md` first, then update `tasks.md`, then continue only if the change stays within the user-approved scope. If scope expands, request approval again.
+- Put workflow-generated files in the task folder, not directly under `docs/`, unless the user explicitly asks for a top-level canonical document.
+- Keep source code in its normal architectural location. Do not move implementation files into `docs/workflows/`.
+- Put screenshots, pasted references, exported reports, and other supporting artifacts under `docs/workflows/<task-name>/assets/` when they should be kept in the repository.
+- If continuing an existing task, reuse its existing task folder instead of creating a new parallel folder with a similar name.
+- If a legacy workflow document already exists directly under `docs/`, do not move it casually. For new work on that topic, create or reuse a task folder and link back to the legacy document from `README.md`.
+- Handoff prompts for Mimo or other agents must live in `handoff-prompt.md` inside the relevant task folder.
+- Validation results must be recorded in `validation.md` or in a clearly named dated validation file inside the task folder.
+- If the task is small enough that no workflow files are needed, do not create an empty folder just for ceremony. The folder rule applies once the task produces planning, audit, prompt, report, or multi-step validation artifacts.
+
 ## Frontend Boundaries
 
 Use these ownership rules:
@@ -230,4 +284,3 @@ Agents must be aware of these known issues and avoid deepening them:
 - Podcast records are not a first-class domain yet.
 
 When working near these areas, either fix the debt in scope or explicitly avoid making it worse.
-

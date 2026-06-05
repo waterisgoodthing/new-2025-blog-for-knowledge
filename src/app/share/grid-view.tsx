@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { type LogoItem } from './components/logo-upload-dialog'
 import { ShareCard, type Share } from './components/share-card'
+import { EmptyState } from '@/components/empty-state'
 
 interface GridViewProps {
 	shares: Share[]
@@ -63,9 +64,7 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 			</div>
 
 			{filteredShares.length === 0 && (
-				<div className='mt-12 text-center text-gray-500'>
-					<p>没有找到相关资源</p>
-				</div>
+				<div className='mt-12'><EmptyState variant='no-results' title='没有找到相关资源' description='试试调整搜索关键词' /></div>
 			)}
 		</div>
 	)

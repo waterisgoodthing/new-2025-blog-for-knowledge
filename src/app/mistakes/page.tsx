@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useNoteIndex, useReviewPlan, useReviewStats } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
+import { EmptyState } from '@/components/empty-state'
 
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
@@ -16,7 +17,7 @@ export default function MistakesPage() {
 	const [difficulty, setDifficulty] = useState('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
-	const [activeFilter, setActiveFilter] = useState('mistake')
+	const [activeFilter, setActiveFilter] = useState('all')
 	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
 	const [activeTag, setActiveTag] = useState<string | null>(null)
 
@@ -38,6 +39,17 @@ export default function MistakesPage() {
 
 	const items = data?.items || []
 
+	const tagsRef = useRef(new Map<number, { id: number; name: string }>())
+
+	const pageTags = useMemo(() => {
+		for (const item of items) {
+			for (const tag of item.tags) {
+				if (!tagsRef.current.has(tag.id)) tagsRef.current.set(tag.id, tag)
+			}
+		}
+		return Array.from(tagsRef.current.values())
+	}, [items])
+
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
 			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
@@ -45,14 +57,17 @@ export default function MistakesPage() {
 			</motion.h1>
 
 			<div className='flex gap-6'>
-				<KnowledgeSidebar
-					activeFilter={activeFilter}
-					activeFolderId={activeFolderId}
-					activeTag={activeTag}
-					onFilterChange={setActiveFilter}
-					onFolderChange={setActiveFolderId}
-					onTagChange={setActiveTag}
-				/>
+			<KnowledgeSidebar
+				mode='mistake'
+				activeFilter={activeFilter}
+				activeFolderId={activeFolderId}
+				activeTag={activeTag}
+				onFilterChange={setActiveFilter}
+				onFolderChange={setActiveFolderId}
+				onTagChange={setActiveTag}
+				contentTypes={['mistake']}
+				tags={pageTags}
+			/>
 
 				<div className='min-w-0 flex-1'>
 
@@ -128,7 +143,7 @@ export default function MistakesPage() {
 								))}
 							</div>
 						) : (
-							<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-gray-500'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
+								<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-gray-500'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
 						)}
 						{plan.subject_summaries.length > 0 && (
 							<div className='mt-3 flex flex-wrap gap-1.5'>
@@ -179,7 +194,7 @@ export default function MistakesPage() {
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>
 			) : items.length === 0 ? (
-				<div className='py-20 text-center text-gray-400'>暂无错题</div>
+				<div className='py-20'><EmptyState variant='no-content' title='还没有错题' description='记录第一道错题，开始系统化复习' action={{ label: '添加错题', href: '/write-mistake' }} /></div>
 			) : (
 				<div className='space-y-3'>
 					{items.map((item, i) => (

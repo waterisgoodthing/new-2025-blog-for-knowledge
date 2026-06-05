@@ -1,4 +1,4 @@
-export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap'
+export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap' | 'data_chart'
 
 export type PolishCallbacks = {
 	onChunk: (chunk: string) => void

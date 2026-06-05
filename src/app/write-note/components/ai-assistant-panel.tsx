@@ -39,6 +39,7 @@ const actionGroups: AIActionGroup[] = [
 			{ id: 'diagram', label: '图表' },
 			{ id: 'compare', label: '对比块' },
 			{ id: 'mindmap', label: '思维导图' },
+			{ id: 'data_chart', label: '数据分析' },
 		],
 	},
 	{
@@ -137,7 +138,13 @@ export function AIAssistantPanel({
 
 	const handleStop = () => {
 		abortRef.current?.abort()
+		abortRef.current = null
 		setLoading(false)
+	}
+
+	const handleClose = () => {
+		handleStop()
+		setExpanded(false)
 	}
 
 	const handleCopy = async () => {
@@ -150,7 +157,13 @@ export function AIAssistantPanel({
 	}
 
 	const handleInsert = () => {
-		onInsert('\n\n' + result)
+		let wrapped = result
+		if (lastAction?.action === 'mindmap') {
+			wrapped = '\n```markmap\n' + result.trim() + '\n```'
+		} else if (lastAction?.action === 'data_chart') {
+			wrapped = '\n```chart\n' + result.trim() + '\n```'
+		}
+		onInsert('\n\n' + wrapped)
 		toast.success('已插入')
 	}
 
@@ -191,7 +204,7 @@ export function AIAssistantPanel({
 		<div className='flex h-full flex-col'>
 			<div className='flex items-center justify-between border-b border-white/40 p-3'>
 				<span className='text-sm font-medium'>AI 助手</span>
-				<button type='button' onClick={() => { abortRef.current?.abort(); setExpanded(false) }} className='text-gray-400 hover:text-gray-600'>
+				<button type='button' onClick={handleClose} className='text-gray-400 hover:text-gray-600' aria-label='关闭 AI 助手' title='关闭 AI 助手'>
 					{isMobile ? <Square size={16} /> : <ChevronRight size={16} />}
 				</button>
 			</div>
@@ -291,7 +304,7 @@ export function AIAssistantPanel({
 								animate={{ opacity: 1 }}
 								exit={{ opacity: 0 }}
 								className='fixed inset-0 z-40 bg-black/20'
-								onClick={() => { abortRef.current?.abort(); setExpanded(false) }}
+								onClick={handleClose}
 							/>
 							<motion.div
 								initial={{ y: '100%' }}
@@ -310,6 +323,7 @@ export function AIAssistantPanel({
 					type='button'
 					onClick={() => setExpanded(true)}
 					className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/40 bg-white/60 text-gray-500 backdrop-blur-sm transition-colors hover:bg-white/80 hover:text-[var(--color-brand)]'
+					aria-label='打开 AI 助手'
 					title='AI 助手'>
 					<Sparkles size={16} />
 				</button>
@@ -339,6 +353,7 @@ export function AIAssistantPanel({
 					type='button'
 					onClick={() => setExpanded(true)}
 					className='ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/40 bg-white/60 text-gray-500 backdrop-blur-sm transition-colors hover:bg-white/80 hover:text-[var(--color-brand)]'
+					aria-label='打开 AI 助手'
 					title='AI 助手'>
 					<ChevronLeft size={16} />
 				</button>

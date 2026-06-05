@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
+import { EmptyState } from '@/components/empty-state'
 import { Plus, X } from 'lucide-react'
 import { DialogModal } from '@/components/dialog-modal'
 import { useAuthStore } from '@/hooks/use-auth'
@@ -165,7 +166,7 @@ export default function Page() {
 					</div>
 
 					<div className='max-h-[320px] space-y-2 overflow-y-auto pr-1'>
-						{draftSnippets.length === 0 && <p className='text-secondary py-6 text-center text-sm'>暂无内容</p>}
+						{draftSnippets.length === 0 && <div className='py-6'><EmptyState variant='no-content' title='还没有代码片段' description='创建常用代码片段方便快速插入' /></div>}
 						{draftSnippets.map((item, index) => (
 							<div key={`${item}-${index}`} className='group flex items-start gap-3 rounded-lg px-3 py-2 text-sm'>
 								<p className='flex-1 leading-relaxed text-gray-800'>{item}</p>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { EmptyState } from '@/components/empty-state'
 import { getPlaylist, deleteMusicItem, updateMusicItem, type MusicItem } from '@/lib/api/music'
 import { MusicFormModal } from './music-form-modal'
 import { toast } from 'sonner'
@@ -83,7 +84,7 @@ export function MusicTab() {
       {loading ? (
         <div className='py-20 text-center text-gray-400'>加载中...</div>
       ) : items.length === 0 ? (
-        <div className='py-20 text-center text-gray-400'>暂无音乐，点击"添加音乐"开始</div>
+        <div className='py-20'><EmptyState variant='no-content' title='暂无音乐' description='点击"添加音乐"开始添加' /></div>
       ) : (
         <div className='overflow-x-auto rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm'>
           <table className='w-full text-sm'>

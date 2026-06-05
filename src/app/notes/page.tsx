@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { motion } from 'motion/react'
 import { MoreHorizontal, GripVertical } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
@@ -11,6 +11,7 @@ import { KnowledgeSidebar } from './components/knowledge-sidebar'
 import { SuggestionCard } from './components/suggestion-card'
 import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
+import { EmptyState } from '@/components/empty-state'
 import { moveNoteToFolder } from '@/lib/api/folders'
 import { toast } from 'sonner'
 
@@ -62,6 +63,18 @@ export default function NotesPage() {
 		size: 20,
 	})
 
+	const tagsRef = useRef(new Map<number, { id: number; name: string }>())
+
+	const pageTags = useMemo(() => {
+		if (!data?.items) return Array.from(tagsRef.current.values())
+		for (const item of data.items) {
+			for (const tag of item.tags) {
+				if (!tagsRef.current.has(tag.id)) tagsRef.current.set(tag.id, tag)
+			}
+		}
+		return Array.from(tagsRef.current.values())
+	}, [data?.items])
+
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
 			<motion.h1
@@ -83,6 +96,8 @@ export default function NotesPage() {
 					onDropNote={handleDropToFolder}
 					dragOverFolderId={dragOverFolderId}
 					onDragOverFolderChange={setDragOverFolderId}
+					contentTypes={['note', 'blog']}
+					tags={pageTags}
 				/>
 
 				<div className='min-w-0 flex-1'>
@@ -122,7 +137,7 @@ export default function NotesPage() {
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>
 			) : data?.items.length === 0 ? (
-				<div className='py-20 text-center text-gray-400'>暂无内容</div>
+				<div className='py-20'><EmptyState variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'} title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'} description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '创建你的第一篇笔记开始记录'} action={{ label: '新建笔记', href: '/write-note' }} /></div>
 			) : (
 				<div className='space-y-3'>
 					{data?.items.map((item, i) => (

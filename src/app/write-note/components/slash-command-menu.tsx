@@ -59,7 +59,8 @@ const slashCommands: SlashCommand[] = [
 	{ id: 'time', label: '时间戳', aliases: ['sjb', 'time', 'timestamp', 'date'], description: '当前日期时间', icon: <Clock size={14} />, insert: '' },
 	{ id: 'details', label: '折叠', aliases: ['zd', 'details', 'fold', 'collapse'], description: '可折叠区域', icon: <FoldVertical size={14} />, insert: '<details>\n<summary>标题</summary>\n\n内容\n</details>' },
 	{ id: 'mermaid', label: '图表', aliases: ['tb', 'mermaid', 'flowchart', 'flow'], description: 'Mermaid 流程图', icon: <GitBranch size={14} />, insert: '```mermaid\ngraph TD\nA-->B\n```' },
-	{ id: 'mindmap', label: '思维导图', aliases: ['swdt', 'mindmap', 'mind'], description: 'Mermaid 思维导图', icon: <Map size={14} />, insert: '```mermaid\nmindmap\n  root((主题))\n    分支1\n    分支2\n```' },
+	{ id: 'mindmap', label: '思维导图', aliases: ['swdt', 'mindmap', 'mind'], description: 'Markmap 思维导图', icon: <Map size={14} />, insert: '```markmap\n# 主题\n## 分支1\n### 子项\n## 分支2\n```' },
+	{ id: 'chart', label: '数据图表', aliases: ['tbzt', 'chart', 'echarts'], description: 'ECharts 数据图表', icon: <GitBranch size={14} />, insert: '```chart\n{"type":"bar","title":"图表标题","xAxis":["A","B","C"],"series":[{"name":"数据","data":[10,20,15]}]}\n```' },
 	{ id: 'footnote', label: '脚注', aliases: ['jz', 'footnote', 'fn'], description: '脚注引用', icon: <Sigma size={14} />, insert: '[^1]', cursorOffset: 3 },
 ]
 

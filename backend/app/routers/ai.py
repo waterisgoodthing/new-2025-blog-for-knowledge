@@ -1,3 +1,4 @@
+import json
 import time
 from collections import defaultdict
 
@@ -9,6 +10,14 @@ from app.database import get_db
 from app.models.note import Note
 from app.routers.auth import get_current_admin
 from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, TextAnalyzeRequest
+from app.schemas.knowledge import (
+    CitationBlock,
+    CitationBlockType,
+    InsufficientContextResponse,
+    KnowledgeSummaryRequest,
+    KnowledgeSummaryResponse,
+    SourceRef,
+)
 from app.services.ai_service import call_ocr_model, call_text_model
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
@@ -371,3 +380,171 @@ async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin
 
     related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
     return _parse_result(result, related)
+
+
+KNOWLEDGE_SUMMARY_SYSTEM_PROMPT = """你是一个严谨的考研复习总结助手。你的任务是根据提供的 source references（来源引用）生成复习总结。
+
+核心规则：
+1. 每个事实性结论必须绑定 source_refs，标明出处。
+2. 如果内容是你基于已有信息的推理，必须标注为 ai_inference。
+3. 如果来源不足，不得编造事实，应返回 insufficient_context。
+4. 不得编造不存在的 source_id、slug、URL 或 excerpt。
+5. 输出必须是严格合法 JSON，不要输出其他内容。
+
+输出格式：
+{
+  "title": "总结标题",
+  "blocks": [
+    {
+      "type": "source_backed_claim",
+      "text": "事实性结论文本",
+      "source_refs": [{"source_type": "mistake", "source_id": "xxx", "field": "analysis"}]
+    },
+    {
+      "type": "ai_inference",
+      "text": "推理或建议文本",
+      "source_refs": []
+    }
+  ]
+}
+
+如果 sources 不足，返回：
+{
+  "status": "insufficient_context",
+  "message": "No usable source references are available for factual generation.",
+  "outline": []
+}"""
+
+
+@router.post("/knowledge-summary", response_model=KnowledgeSummaryResponse | InsufficientContextResponse)
+async def knowledge_summary(
+    request: KnowledgeSummaryRequest,
+    _admin=Depends(get_current_admin),
+):
+    _check_rate_limit()
+
+    sources = request.context_pack.sources
+    if not sources or len(sources) == 0:
+        return InsufficientContextResponse(
+            status="insufficient_context",
+            message="No usable source references are available for factual generation.",
+            outline=[],
+        )
+
+    source_context = []
+    for s in sources[:10]:
+        source_context.append(
+            f"[{s.source_type.value}:{s.source_id}] {s.title} (field: {s.field})\n"
+            f"Excerpt: {s.excerpt[:200]}" if s.excerpt else f"[{s.source_type.value}:{s.source_id}] {s.title}"
+        )
+
+    related_notes_ctx = ""
+    if request.context_pack.related_notes:
+        related_notes_ctx = "\n相关笔记:\n" + "\n".join(
+            f"- {n.title} (subject: {n.subject}, slug: {n.slug})"
+            for n in request.context_pack.related_notes[:5]
+        )
+
+    related_mistakes_ctx = ""
+    if request.context_pack.related_mistakes:
+        related_mistakes_ctx = "\n相关错题:\n" + "\n".join(
+            f"- {m.title} (subject: {m.subject}, difficulty: {m.difficulty})"
+            for m in request.context_pack.related_mistakes[:5]
+        )
+
+    stats_ctx = ""
+    if request.context_pack.stats:
+        stats = request.context_pack.stats
+        stats_ctx = f"\n统计: 错题数={stats.mistake_count}, 笔记数={stats.note_count}"
+        if stats.top_error_reasons:
+            stats_ctx += f", 高频错误原因: {'、'.join(stats.top_error_reasons)}"
+
+    user_content = (
+        f"Mode: {request.mode}\n"
+        f"Language: {request.requirements.get('language', 'zh-CN')}\n"
+        f"Style: {request.requirements.get('style', 'exam_review')}\n"
+        f"Max length: {request.requirements.get('max_length', 1200)}\n"
+        f"\n--- Source References ---\n"
+        + "\n\n".join(source_context)
+        + related_notes_ctx
+        + related_mistakes_ctx
+        + stats_ctx
+        + "\n\n请根据以上来源引用生成复习总结。每个事实性结论必须绑定 source_refs。"
+    )
+
+    messages = [
+        {"role": "system", "content": KNOWLEDGE_SUMMARY_SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+
+    try:
+        result = await call_text_model(messages)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    if result.get("status") == "insufficient_context":
+        return InsufficientContextResponse(
+            status="insufficient_context",
+            message=result.get("message", "No usable source references are available for factual generation."),
+            outline=result.get("outline", []),
+        )
+
+    source_map = {s.source_id: s for s in sources}
+
+    _MISTAKE_FIELDS = {
+        "analysis", "question", "correct_answer", "error_reason",
+        "key_step", "generalization", "review_advice",
+        "knowledge_points", "content",
+    }
+    _NOTE_FIELDS = {"content", "summary", "title", "knowledge_points"}
+
+    blocks: list[CitationBlock] = []
+    for block in result.get("blocks", []):
+        block_type = block.get("type", "ai_inference")
+        try:
+            validated_type = CitationBlockType(block_type)
+        except ValueError:
+            validated_type = CitationBlockType.ai_inference
+
+        raw_refs = block.get("source_refs", [])
+        validated_refs: list[SourceRef] = []
+        for ref in raw_refs:
+            ref_source_id = ref.get("source_id", "")
+            matched = source_map.get(ref_source_id)
+            if not matched:
+                continue
+
+            ai_field = ref.get("field", "")
+            allowed = _MISTAKE_FIELDS if matched.source_type == SourceType.mistake else _NOTE_FIELDS
+            if ai_field and ai_field in allowed:
+                locked_field = ai_field
+            else:
+                locked_field = matched.field
+
+            validated_refs.append(SourceRef(
+                source_type=matched.source_type,
+                source_id=matched.source_id,
+                title=matched.title,
+                slug=matched.slug,
+                field=locked_field,
+                excerpt=matched.excerpt,
+                url=matched.url,
+                confidence=matched.confidence,
+                match_reasons=matched.match_reasons,
+            ))
+
+        if validated_type == CitationBlockType.source_backed_claim and not validated_refs:
+            validated_type = CitationBlockType.ai_inference
+
+        blocks.append(CitationBlock(
+            type=validated_type,
+            text=block.get("text", ""),
+            source_refs=validated_refs,
+        ))
+
+    return KnowledgeSummaryResponse(
+        title=result.get("title", ""),
+        blocks=blocks,
+    )

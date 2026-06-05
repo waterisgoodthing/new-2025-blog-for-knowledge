@@ -24,7 +24,8 @@ SYSTEM_PROMPTS = {
     "tags": "从以下内容中推荐 3-5 个关键词标签。返回 JSON 数组格式，例如 [\"标签1\", \"标签2\"]。不要输出其他内容。",
     "diagram": "将以下文本描述的流程或关系转换为 Mermaid graph TD 流程图语法。只返回 Mermaid 代码块，不要其他内容。",
     "compare": "根据以下内容生成一个对比分析。使用 Markdown 表格或左右列表形式，每侧 3-5 个要点。只返回对比内容。",
-    "mindmap": "将以下内容整理为 Mermaid mindmap 语法。只返回 Mermaid 代码块，不要其他内容。",
+    "mindmap": "将以下内容整理为 Markmap 思维导图的 Markdown 层级格式。使用 # 作为中心主题，## 作为一级分支，### 作为二级分支，以此类推。只返回 Markdown 层级文本，不要包含 ```markmap 代码块标记。",
+    "data_chart": "分析以下数据或文本中的量化信息，生成 ECharts 图表配置。返回 JSON 格式，包含 type (bar/line/pie/radar)、title、xAxis/categories、series。只返回 JSON，不要解释。",
 }
 
 

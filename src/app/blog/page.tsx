@@ -18,6 +18,7 @@ import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { readFileAsText } from '@/lib/file-utils'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/empty-state'
 import { saveBlogEdits } from './services/save-blog-edits'
 import { Check } from 'lucide-react'
 import { BlogCoverHoverPreview, useBlogCoverHover } from './components/blog-cover-hover'
@@ -437,7 +438,7 @@ export default function BlogPage() {
 			</div>
 
 			<div className='pt-12'>
-				{!loading && items.length === 0 && <div className='text-secondary py-6 text-center text-sm'>暂无文章</div>}
+				{!loading && items.length === 0 && <div className='py-6'><EmptyState variant='no-content' title='还没有文章' description='发布第一篇博客文章' /></div>}
 				{loading && <div className='text-secondary py-6 text-center text-sm'>加载中...</div>}
 			</div>
 

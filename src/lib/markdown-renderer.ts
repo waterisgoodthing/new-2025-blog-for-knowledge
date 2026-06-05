@@ -465,6 +465,14 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 				const escaped = escapeHtml(originalCode)
 				codeBlockMap.set(key, { html: `<div class="mermaid">${escaped}</div>`, original: originalCode })
 				codeToken.text = key
+			} else if (codeToken.lang === 'markmap') {
+				const escaped = escapeHtml(originalCode)
+				codeBlockMap.set(key, { html: `<div class="markmap">${escaped}</div>`, original: originalCode })
+				codeToken.text = key
+			} else if (codeToken.lang === 'chart') {
+				const escaped = escapeHtml(originalCode)
+				codeBlockMap.set(key, { html: `<div class="chart">${escaped}</div>`, original: originalCode })
+				codeToken.text = key
 			} else if (shiki) {
 				try {
 					const html = await shiki.codeToHtml(originalCode, {

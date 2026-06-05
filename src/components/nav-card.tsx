@@ -17,13 +17,13 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
-import PenSVG from '@/svgs/pen.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { HomeDraggableLayer } from '@/app/(home)/home-draggable-layer'
+import { Home, PenLine, Settings } from 'lucide-react'
 
 const list = [
 	{
@@ -33,8 +33,8 @@ const list = [
 		href: '/blog'
 	},
 	{
-		icon: PenSVG,
-		iconActive: PenSVG,
+		icon: PenLine,
+		iconActive: PenLine,
 		label: '笔记',
 		href: '/notes'
 	},
@@ -72,7 +72,7 @@ export default function NavCard() {
 	const [show, setShow] = useState(false)
 	const { maxSM } = useSize()
 	const [hoveredIndex, setHoveredIndex] = useState<number>(0)
-	const { siteContent, cardStyles } = useConfigStore()
+	const { siteContent, cardStyles, setConfigDialogOpen } = useConfigStore()
 	const styles = cardStyles.navCard
 	const hiCardStyles = cardStyles.hiCard
 
@@ -92,7 +92,7 @@ export default function NavCard() {
 	}, [pathname])
 	if (maxSM) form = 'icons'
 
-	const itemHeight = form === 'full' ? 52 : 28
+	const itemHeight = form === 'full' ? 36 : 28
 
 	let position = useMemo(() => {
 		if (form === 'full') {
@@ -108,7 +108,7 @@ export default function NavCard() {
 	}, [form, center, styles, hiCardStyles])
 
 	const size = useMemo(() => {
-		if (form === 'mini') return { width: 64, height: 64 }
+		if (form === 'mini') return { width: 108, height: 64 }
 		else if (form === 'icons') return { width: 340, height: 64 }
 		else return { width: styles.width, height: styles.height }
 	}, [form, styles])
@@ -124,6 +124,8 @@ export default function NavCard() {
 
 	if (maxSM) position = { x: center.x - size.width / 2, y: 16 }
 
+	if (form === 'icons') return null
+
 	if (show)
 		return (
 			<HomeDraggableLayer cardKey='navCard' x={position.x} y={position.y} width={styles.width} height={styles.height}>
@@ -133,7 +135,7 @@ export default function NavCard() {
 					height={size.height}
 					x={position.x}
 					y={position.y}
-					className={clsx(form != 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
+					className={clsx('overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
 					{form === 'full' && siteContent.enableChristmas && (
 						<>
 							<img
@@ -145,53 +147,73 @@ export default function NavCard() {
 						</>
 					)}
 
-					<Link className='flex items-center gap-3' href='/'>
-						<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
-						{form === 'full' && <span className='font-averia mt-1 truncate text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
-						{form === 'full' && <span className='text-brand mt-2 text-xs font-medium'>(开发中)</span>}
-					</Link>
+					{form === 'mini' && (
+						<Link className='flex h-full items-center justify-center gap-2 rounded-3xl px-2 transition-colors hover:bg-white/45' href='/' aria-label='返回首页' title='返回首页'>
+							<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+							<span className='flex items-center gap-1 text-sm font-medium text-gray-600'>
+								<Home className='h-4 w-4' />
+								首页
+							</span>
+						</Link>
+					)}
 
-					{(form === 'full' || form === 'icons') && (
-						<>
-							{form !== 'icons' && <div className='text-secondary mt-6 text-sm uppercase'>General</div>}
+					{form === 'full' && (
+						<div className='relative z-10 flex h-full min-h-0 flex-col'>
+							<Link className='flex shrink-0 items-center gap-3 rounded-2xl px-1 py-0.5 transition-colors hover:bg-white/40' href='/' aria-label='返回首页' title='返回首页'>
+								<Image src='/images/avatar.png' alt='avatar' width={36} height={36} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='shrink-0 rounded-full' />
+								<span className='font-averia mt-1 min-w-0 truncate text-xl leading-none font-medium'>{siteContent.meta.title}</span>
+								<span className='text-brand mt-1.5 shrink-0 text-xs font-medium'>(开发中)</span>
+							</Link>
 
-							<div className={cn('relative mt-2 space-y-2', form === 'icons' && 'mt-0 flex items-center gap-6 space-y-0')}>
-								<motion.div
-									className='absolute max-w-[230px] rounded-full border'
-									layoutId='nav-hover'
-									initial={false}
-									animate={
-										form === 'icons'
-											? {
-													left: hoveredIndex * (itemHeight + 24) - extraSize,
-													top: -extraSize,
-													width: itemHeight + extraSize * 2,
-													height: itemHeight + extraSize * 2
-												}
-											: { top: hoveredIndex * (itemHeight + 8), left: 0, width: '100%', height: itemHeight }
-									}
-									transition={{
-										type: 'spring',
-										stiffness: 400,
-										damping: 30
-									}}
-									style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
-								/>
-
-								{list.map((item, index) => (
-									<Link
-										key={item.href}
-										href={item.href}
-										className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
-										onMouseEnter={() => setHoveredIndex(index)}>
-										<div className='flex h-7 w-7 items-center justify-center'>
-											{hoveredIndex == index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
-										</div>
-										{form !== 'icons' && <span className={clsx(index == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
-									</Link>
-								))}
+							<div className='mt-2 shrink-0 border-t border-white/30 pt-1.5'>
+								<button
+									type='button'
+									onClick={() => setConfigDialogOpen(true)}
+									aria-label='网站设置'
+									title='网站设置'
+									className='text-secondary flex w-full items-center gap-3 rounded-full px-4 py-1.5 text-sm transition-colors hover:bg-white/55 hover:text-primary'
+								>
+									<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
+										<Settings className='h-5 w-5' />
+									</div>
+									<span className='font-medium'>网站设置</span>
+								</button>
 							</div>
-						</>
+
+							<div className='text-secondary mt-2 shrink-0 text-xs uppercase'>General</div>
+
+							<div className='relative mt-1.5 min-h-0 flex-1 overflow-hidden pr-1'>
+								<div className='relative space-y-1 pb-1'>
+									<motion.div
+										className='pointer-events-none absolute max-w-[230px] rounded-full border'
+										layoutId='nav-hover'
+										initial={false}
+										animate={{ top: hoveredIndex * (itemHeight + 4), left: 0, width: '100%', height: itemHeight }}
+										transition={{
+											type: 'spring',
+											stiffness: 400,
+											damping: 30
+										}}
+										style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
+									/>
+
+									{list.map((item, index) => (
+										<Link
+											key={item.href}
+											href={item.href}
+											aria-label={item.label}
+											title={item.label}
+											className='text-secondary relative z-10 flex items-center gap-3 rounded-full px-4 py-1.5 text-sm'
+											onMouseEnter={() => setHoveredIndex(index)}>
+											<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
+												{hoveredIndex == index ? <item.iconActive className='text-brand absolute h-6 w-6' /> : <item.icon className='absolute h-6 w-6' />}
+											</div>
+											<span className={clsx(index == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>
+										</Link>
+									))}
+								</div>
+							</div>
+						</div>
 					)}
 				</Card>
 			</HomeDraggableLayer>

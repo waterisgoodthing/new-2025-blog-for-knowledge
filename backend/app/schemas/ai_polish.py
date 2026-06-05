@@ -18,6 +18,7 @@ class PolishAction(str, Enum):
     diagram = "diagram"
     compare = "compare"
     mindmap = "mindmap"
+    data_chart = "data_chart"
 
 
 class PolishRequest(BaseModel):

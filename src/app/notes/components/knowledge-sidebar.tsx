@@ -32,6 +32,7 @@ type SidebarItem = {
 }
 
 type KnowledgeSidebarProps = {
+	mode?: 'knowledge' | 'mistake'
 	activeFilter: string
 	activeFolderId: string | null
 	activeTag: string | null
@@ -41,22 +42,31 @@ type KnowledgeSidebarProps = {
 	onDropNote?: (folderId: string | null) => void
 	dragOverFolderId?: string | null
 	onDragOverFolderChange?: (folderId: string | null) => void
+	contentTypes?: Array<'note' | 'blog' | 'mistake'>
+	tags?: TagType[]
 }
 
 export function KnowledgeSidebar({
+	mode = 'knowledge',
 	activeFilter, activeFolderId, activeTag,
 	onFilterChange, onFolderChange, onTagChange,
 	onDropNote, dragOverFolderId, onDragOverFolderChange,
+	contentTypes,
+	tags: externalTags,
 }: KnowledgeSidebarProps) {
 	const [folders, setFolders] = useState<FolderNode[]>([])
-	const [tags, setTags] = useState<TagType[]>([])
+	const [internalTags, setInternalTags] = useState<TagType[]>([])
 	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 	const [mobileOpen, setMobileOpen] = useState(false)
 
+	const tags = externalTags ?? internalTags
+
 	useEffect(() => {
 		listFolders().then(setFolders).catch(() => {})
-		listTags().then(setTags).catch(() => {})
-	}, [])
+		if (!externalTags) {
+			listTags().then(setInternalTags).catch(() => {})
+		}
+	}, [externalTags])
 
 	const toggleFolder = (id: string) => {
 		setExpandedFolders(prev => {
@@ -99,13 +109,18 @@ export function KnowledgeSidebar({
 		}
 	}
 
-	const navItems: SidebarItem[] = [
-		{ id: 'all', label: '全部内容', icon: <FileText size={16} /> },
-		{ id: 'inbox', label: '收件箱', icon: <Inbox size={16} /> },
-		{ id: 'note', label: '笔记', icon: <FileText size={16} />, type: 'note' },
-		{ id: 'blog', label: '博客', icon: <Newspaper size={16} />, type: 'blog' },
-		{ id: 'mistake', label: '错题', icon: <AlertCircle size={16} />, type: 'mistake' },
-	]
+	const navItems: SidebarItem[] = mode === 'mistake'
+		? [{ id: 'all', label: '全部错题', icon: <AlertCircle size={16} /> }]
+		: [
+			{ id: 'all', label: '全部内容', icon: <FileText size={16} /> },
+			{ id: 'inbox', label: '收件箱', icon: <Inbox size={16} /> },
+			{ id: 'note', label: '笔记', icon: <FileText size={16} />, type: 'note' },
+			{ id: 'blog', label: '博客', icon: <Newspaper size={16} />, type: 'blog' },
+			{ id: 'mistake', label: '错题', icon: <AlertCircle size={16} />, type: 'mistake' },
+		].filter(item => {
+			if (!contentTypes || !item.type) return true
+			return contentTypes.includes(item.type as 'note' | 'blog' | 'mistake')
+		})
 
 	const renderFolderTree = (nodes: FolderNode[], depth = 0) => {
 		return nodes.map(node => (
@@ -194,28 +209,30 @@ export function KnowledgeSidebar({
 				</>
 			)}
 
-			{tags.length > 0 && (
-				<>
-					<div className='mx-3 border-t border-white/20' />
-					<div className='p-3'>
-						<div className='mb-2 px-3 text-xs font-medium text-gray-400'>标签</div>
-						<div className='flex flex-wrap gap-1.5 px-3'>
-							{tags.map(tag => (
-								<button
-									key={tag.id}
-									onClick={() => { onTagChange(tag.name); onFilterChange(''); onFolderChange(null) }}
-									className={cn(
-										'rounded-full px-2.5 py-1 text-xs transition-colors',
-										activeTag === tag.name ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 text-gray-600 hover:bg-white/80'
-									)}
-								>
-									{tag.name}
-								</button>
-							))}
-						</div>
+			<div className='mx-3 border-t border-white/20' />
+			<div className='p-3'>
+				<div className='mb-2 px-3 text-xs font-medium text-gray-400'>标签</div>
+				{tags.length > 0 ? (
+					<div className='flex flex-wrap gap-1.5 px-3'>
+						{tags.map(tag => (
+							<button
+								key={tag.id}
+								onClick={() => { onTagChange(tag.name); onFilterChange(''); onFolderChange(null) }}
+								className={cn(
+									'rounded-full px-2.5 py-1 text-xs font-medium transition-colors',
+									activeTag === tag.name
+										? 'bg-[var(--color-brand)] text-white shadow-sm'
+										: 'bg-white/60 text-gray-600 hover:bg-white/80 hover:text-gray-800'
+								)}
+							>
+								{tag.name}
+							</button>
+						))}
 					</div>
-				</>
-			)}
+				) : (
+					<p className='px-3 text-xs text-gray-400'>暂无标签</p>
+				)}
+			</div>
 		</div>
 	)
 
@@ -254,8 +271,8 @@ export function KnowledgeSidebar({
 								className='fixed left-0 top-0 z-50 h-full w-64 overflow-y-auto border-r border-white/40 bg-white/95 backdrop-blur-xl'
 							>
 								<div className='flex items-center justify-between border-b border-white/20 p-4'>
-									<span className='text-sm font-medium'>知识库</span>
-									<button onClick={() => setMobileOpen(false)} className='text-gray-400 hover:text-gray-600'>
+									<span className='text-sm font-medium'>{mode === 'mistake' ? '错题库' : '知识库'}</span>
+									<button onClick={() => setMobileOpen(false)} className='text-gray-400 hover:text-gray-600' aria-label='关闭导航' title='关闭导航'>
 										<X size={18} />
 									</button>
 								</div>

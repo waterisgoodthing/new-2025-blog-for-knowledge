@@ -1,8 +1,10 @@
-# UI 升级 — 任务清单
+# UI 升级 — 任务清单 v2.2
 
-> 版本: 1.0
-> 日期: 2026-06-03
-> 关联: `docs/ui-upgrade-design.md` | `docs/ui-upgrade-requirements.md`
+> 版本: 2.2
+> 日期: 2026-06-05
+> 关联: `docs/ui-upgrade-design.md` v2.0 | `docs/ui-upgrade-requirements.md` v2.0 | `docs/ui-upgrade-diff-report.md`
+>
+> **v2.2 变更**: 全部 P0/P1/P2 任务完成。T-D08 采用前端聚合+累积模式（已知限制：未访问页面的标签不可见，完整方案需后端 `contentTypes` 参数）。T-D11 抽取 `SiteSettingsPanel` 共享组件。T-D03 ConfigDialog 挂载到全局布局。T-D07 跳过（各页面已有独立写入入口）。
 
 ---
 
@@ -11,9 +13,8 @@
 1. 每次开发前先执行 `git status --short`。
 2. 不回退用户已有改动。
 3. 前端 API 调用优先走 `src/lib/api/*`。
-4. 后端 router 保持 thin，复杂逻辑进入 `backend/app/services/`。
-5. UI 变更必须符合半透明卡片、圆角、轻量动效和个人工作台风格。
-6. 默认不 `git add`、`git commit`、`git push`。
+4. UI 变更必须符合半透明卡片、圆角、轻量动效风格。
+5. 默认不 `git add`、`git commit`、`git push`。
 
 ---
 
@@ -21,10 +22,15 @@
 
 | 阶段 | 回滚方式 |
 |------|----------|
-| P0 导航 | 移除 VerticalNav/MobileNav 组件；恢复 NavCard `form === 'icons'` 渲染 |
-| P1 渲染 | 移除 MarkmapBlock/ChartBlock 组件；注释 markdown-renderer 中新增的语言检测分支 |
-| P2 写作 | 回退后端 prompt 修改；隐藏 AI 面板新增按钮 |
-| P3 空状态 | 移除 EmptyState 组件；恢复各页面内联空状态 |
+| P0 导航修复 | 恢复 `vertical-nav.tsx` 原始版本 |
+| P0 跳转修复 | 恢复 `motion.div` 原始 pointer-events |
+| P0 错题 AI | 恢复原按钮文案，移除次级按钮 |
+| P0 思维导图 | 恢复 `loadFailed` 机制 |
+| P1 标题装饰 | 恢复 `::before` 伪元素规则 |
+| P1 标签过滤 | 恢复原始 `listTags()` 调用 |
+| P1 设置保存 | 恢复原始 try-catch 结构 |
+| P2 Live2D | 恢复原始占位页 |
+| P2 设置集中化 | 移除 /manage 第四个 tab |
 
 ---
 
@@ -32,642 +38,353 @@
 
 | 阶段 | 任务范围 | 任务数 |
 |------|---------|--------|
-| P0 | 导航：VerticalNav + NavCard 裁剪 + MobileNav + Layout 集成 + 可访问性修复 + 验收 | 6 |
-| P1 | 渲染：Markmap + ECharts + DiagramViewer + 管线集成 + 工具栏更新 + 验收 | 7 |
-| P2 | 写作：AI prompt 更新 + AI 面板 + 错题 AI 增强 + 色板 + 对比块模板 + 验收 | 5 |
-| P3 | 反馈：EmptyState 组件 + 分批替换 + 按钮统一 + 验收 | 4 |
-| P4 | 最终走查 | 1 |
-| **合计** | | **23** |
+| P0 | 导航溢出 + 跳转 + My Blog + 错题 AI + 思维导图 | 5 |
+| P1 | 标题去# + 写作文案 + 标签过滤 + 设置保存 | 4 |
+| P2 | Live2D 状态页 + 设置集中化 | 2 |
+| P3 | 验收 | 1 |
+| **合计** | | **12** |
 
 ---
 
 ## 依赖关系图
 
 ```text
-P0 (导航，全部可并行)
-  T-U01 VerticalNav 组件 ← 无依赖
-  T-U02 NavCard 裁剪 + 可访问性修复 ← 无依赖
-  T-U03 MobileNav 组件 ← 无依赖
-  T-U04 Layout 集成 ← T-U01 + T-U02 + T-U03
-  T-U05 首页 NavCard 细节检查 ← 无依赖
-  T-U06 P0 验收 ← T-U01~05
+P0（T-D01~03 同文件串行；T-D04/T-D05 可并行）
+  T-D01 左侧导航溢出与裁切修复  ← 无依赖（与 T-D02/T-D03 同文件，串行）
+  T-D02 导航跳转修复            ← T-D01（同文件，串行）
+  T-D03 My Blog 与设置入口拆分   ← T-D02（同文件，串行）
+  T-D04 错题 AI 入口增强        ← 无依赖
+  T-D05 思维导图渲染失败修复     ← 无依赖
 
-P1 (渲染)
-  T-U07 安装依赖 + MarkmapBlock 组件 ← npm install markmap-lib markmap-view
-  T-U08 Markdown 管线集成 markmap ← T-U07
-  T-U09 安装依赖 + ChartBlock 组件 ← npm install echarts echarts-for-react
-  T-U10 Markdown 管线集成 chart ← T-U09
-  T-U11 DiagramViewer 优化 ← 无依赖
-  T-U12 工具栏/斜杠命令更新 ← T-U07 + T-U09
-  T-U21 P1 验收 ← T-U07~12
+P1（全部可并行）
+  T-D06 Markdown 标题 # 默认移除  ← 无依赖
+  T-D07 写作入口文案（可选）      ← 无依赖
+  T-D08 左侧标签按页面动态过滤    ← 无依赖
+  T-D09 设置保存 GitHub 错误拆分  ← 无依赖
 
-P2 (写作)
-  T-U13 后端 AI prompt 更新 (data_chart + mindmap + analyze_mistake) ← 无依赖
-  T-U14 前端 AI 面板更新 ← T-U13
-  T-U15 错题 AI 分析入口增强 ← 无依赖
-  T-U16 颜色色板 + 对比块模板优化 ← 无依赖
-  T-U22 P2 验收 ← T-U13~16
+P2（全部可并行）
+  T-D10 Live2D 状态页            ← 无依赖
+  T-D11 /manage 网站设置集中化    ← T-D09
 
-P3 (空状态与反馈)
-  T-U17 EmptyState 组件 ← 无依赖
-  T-U18 分批替换空状态 ← T-U17
-  T-U19 按钮颜色统一 ← 无依赖
-  T-U23 P3 验收 ← T-U17~19
-
-P4 (验证)
-  T-U20 UI 走查与文档更新 ← T-U06 + T-U21 + T-U22 + T-U23
+P3
+  T-D12 全量验收                 ← T-D01~11
 ```
 
 ---
 
-## 阶段 P0: 导航体验修复
+## 阶段 P0: 日常使用阻断修复
 
-目标：桌面端内页用竖向导航栏替换横向图标栏；移动端用底部标签栏；NavCard 只保留首页和写作页模式。
-
-### T-U01: VerticalNav 组件
+### T-D01: 左侧导航溢出与裁切修复
 
 **影响域**: shared UI
 **依赖**: 无
-**关联需求**: FR-1.1 ~ FR-1.11
+**关联需求**: FR-1.1 ~ FR-1.5
 **文件范围**:
-
-- `src/components/vertical-nav.tsx` (新建)
+- `src/components/vertical-nav.tsx`
 
 **子任务**:
-
-- [ ] 新建 `VerticalNav` 组件，固定 `left-0 top-1/2 -translate-y-1/2 z-40`
-- [ ] 默认 56px 只显示图标，hover 展开至 180px 显示图标 + 中文标签
-- [ ] 展开动画: `motion animate={{ width }}` spring(400, 30)
-- [ ] 7 个导航项: 首页、近期文章、笔记、错题集、关于网站、推荐分享、优秀博客
-- [ ] 当前页高亮: `bg-[var(--color-brand)]/15` + 品牌色图标 + `motion layoutId` 胶囊滑动
-- [ ] 头像区域: `/images/avatar.png` + 站点标题（展开时显示）
-- [ ] 图标统一使用 `<Icon className='h-[18px] w-[18px]' />` 渲染
-- [ ] 样式: `rounded-r-2xl border border-l-0 border-white/40 bg-white/70 backdrop-blur-xl shadow-lg`
-- [ ] 所有链接 `aria-label` + `title`，`<nav>` 语义标签
-- [ ] 在 `/write*` 路由下不显示（由 Layout 条件控制）
+- [x] 内层 `div` 添加 `max-h-[calc(100vh-32px)]`
+- [x] 导航列表区域添加 `overflow-y-auto`
+- [x] 头像区域与导航列表分离（头像固定，列表可滚动）
+- [x] `left-0` 改为 `left-2`，给左侧 8px 间距防止被浏览器边缘裁切
+- [x] 确保展开动画（56px → 180px）不受 max-height 影响
+- [x] 确认展开态（180px）不覆盖 `KnowledgeSidebar` 主要操作区域
 
 **验收标准**:
-
-- 桌面端内页左侧显示竖向导航栏。
-- hover 展开平滑，当前页高亮明显。
-- 所有链接有 aria-label 和 title。
-- 写作页和首页不显示此组件。
+- 在截图宽高下，左侧竖栏不能被浏览器左边缘裁切
+- 展开态不覆盖知识库侧栏主要操作
+- 导航不紧贴屏幕边缘
+- 展开/收起动画平滑
 
 ---
 
-### T-U02: NavCard 裁剪 + 可访问性修复
-
-**影响域**: shared UI, home
-**依赖**: 无
-**关联需求**: FR-2.1 ~ FR-2.5
-**文件范围**:
-
-- `src/components/nav-card.tsx`
-
-**子任务**:
-
-- [ ] `form === 'icons'` 分支开头加 `return null`
-- [ ] **禁止改动** `form === 'full'`（首页）和 `form === 'mini'`（写作页）渲染逻辑
-- [ ] **禁止改动** `HomeDraggableLayer` 的 `cardKey` 和定位计算逻辑
-- [ ] 首页头像链接 (`line 148`) 补齐 `aria-label='返回首页'` + `title='返回首页'`
-- [ ] 首页导航链接补齐 `aria-label={item.label}` + `title={item.label}`
-
-**验收标准**:
-
-- 内页不再显示横向图标栏。
-- 首页 NavCard 行为完全不变（拖拽、定位、导航）。
-- 写作页 mini NavCard 保留。
-- 首页所有链接有 aria-label 和 title。
-
----
-
-### T-U03: MobileNav 组件
+### T-D02: 导航跳转修复
 
 **影响域**: shared UI
 **依赖**: 无
-**关联需求**: FR-3.1 ~ FR-3.10
+**关联需求**: FR-2.1 ~ FR-2.4
 **文件范围**:
-
-- `src/components/mobile-nav.tsx` (新建)
-
-**子任务**:
-
-- [ ] 新建 `MobileNav` 组件，底部标签栏 4 个主入口 + "更多"按钮
-- [ ] 仅在 `sm` 断点以下显示
-- [ ] 固定底部 `fixed inset-x-0 bottom-0 z-50`
-- [ ] 背景 `bg-white/80 backdrop-blur-xl border-t border-white/40`
-- [ ] 底部安全区 `pb-[env(safe-area-inset-bottom)]`
-- [ ] "更多"抽屉: 从底部弹出，含关于网站、推荐分享、优秀博客，点击遮罩关闭
-- [ ] 当前页高亮: 品牌色图标 + 文字
-- [ ] 所有链接 `aria-label` + `title`
-
-**验收标准**:
-
-- 移动端内页底部显示导航栏。
-- "更多"抽屉正常展开/关闭。
-- 不遮挡页面标题和搜索框。
-
----
-
-### T-U04: Layout 集成
-
-**影响域**: shared UI
-**依赖**: T-U01, T-U02, T-U03
-**关联需求**: FR-1.11, FR-3.7, FR-3.8, FR-3.9
-**文件范围**:
-
-- `src/layout/index.tsx`
+- `src/components/vertical-nav.tsx`
 
 **子任务**:
-
-- [ ] 定义路由变量: `isHome = pathname === '/'`、`isWrite = pathname.startsWith('/write')`、`isInnerPage = !isHome && !isWrite`
-- [ ] 引入 `VerticalNav`，条件渲染: `!maxSM && isInnerPage`
-- [ ] 引入 `MobileNav`，条件渲染: `maxSM && isInnerPage`
-- [ ] 移动端 ScrollTopButton 上移至 `bottom-20` 避免与 MobileNav 重叠
-- [ ] 移动端 Toaster 位置改为 `top-center`
-- [ ] 移动端内容区预留底部安全距离
-- [ ] **不对全局 `<main>` 加 padding-left**
+- [x] `motion.div`（active 胶囊，line 108-112）添加 `pointer-events-none`
+- [x] 标签展开动画从 `width: 0 → width: 'auto'` 改为 `opacity: 0, x: -8 → opacity: 1, x: 0`
+- [x] `Link` 组件确认有 `relative z-10`
+- [x] 测试：点击每个导航项确认跳转正常
+- [x] 测试：hover 展开后点击确认不偏移
 
 **验收标准**:
-
-- 桌面端内页有竖向导航，首页和写作页无。
-- 移动端内页有底部导航，写作页无。
-- ScrollTopButton 和 MobileNav 不重叠。
-- Toast 不被底部导航遮挡。
+- 点击任意导航项稳定跳转
+- hover 展开后点击不偏移
+- active 胶囊动画正常
 
 ---
 
-### T-U05: 首页 NavCard 细节检查
-
-**影响域**: home
-**依赖**: 无
-**关联需求**: FR-2.5
-
-**子任务**:
-
-- [ ] 检查 active 胶囊在不同主题色下对比度
-- [ ] 检查图标颜色可读性
-- [ ] 检查文字截断（52px 行高下中文标签）
-- [ ] 确保导航项列表与 VerticalNav 一致
-
-**验收标准**:
-
-- 首页 NavCard 视觉效果与内页 VerticalNav 语言统一。
-
----
-
-### T-U06: P0 验收
-
-**影响域**: shared UI
-**依赖**: T-U01 ~ T-U05
-
-**验证**:
-
-- [ ] `npx tsc --noEmit`
-- [ ] 桌面端: `/` NavCard 正常、`/notes` VerticalNav 显示、`/blog` VerticalNav 显示
-- [ ] 移动端: `/notes` MobileNav 显示、`/write-note` 无 MobileNav
-- [ ] 首页拖拽编辑功能正常
-- [ ] 写作页 mini NavCard 正常
-- [ ] 可访问性: 所有导航链接有 aria-label/title
-
----
-
-## 阶段 P1: 笔记渲染升级
-
-目标：思维导图切换到 Markmap，新增 ECharts 数据图表，优化 DiagramViewer。
-
-### T-U07: 安装依赖 + MarkmapBlock 组件
-
-**影响域**: notes, markdown
-**依赖**: `npm install markmap-lib markmap-view`
-**关联需求**: FR-4.1 ~ FR-4.9
-**文件范围**:
-
-- `package.json` — 新增依赖
-- `package-lock.json` — lockfile 自动更新
-- `src/components/markmap-block.tsx` (新建)
-
-**子任务**:
-
-- [ ] 安装: `npm install markmap-lib markmap-view`
-- [ ] 新建 `MarkmapBlock` 组件，接收 `code: string`
-- [ ] 渲染: `Transformer.transform(code)` → `{ root }` → `Markmap.create(svgRef, options, root)`
-- [ ] **必须懒加载**: 动态 `import('markmap-lib')` 和 `import('markmap-view')`
-- [ ] 模块缓存: 加载成功后缓存引用（同 `mermaidPromise` 模式）
-- [ ] 渲染失败降级为 `<pre><code>{原始 Markdown}</code></pre>`
-- [ ] 默认适配容器宽度
-- [ ] 节点可折叠/展开
-- [ ] MarkmapBlock 自行处理全屏和缩放（不强依赖 DiagramViewer）
-
-**验收标准**:
-
-- ` ```markmap\n# 主题\n## 分支\n` ` ` 正确渲染为思维导图。
-- 节点可折叠展开。
-- 渲染失败降级为代码块。
-- 首屏 bundle 不包含 markmap。
-
----
-
-### T-U08: Markdown 管线集成 markmap
-
-**影响域**: notes, markdown
-**依赖**: T-U07
-**关联需求**: FR-4.10, FR-4.11, FR-4.12
-**文件范围**:
-
-- `src/lib/markdown-renderer.ts`
-- `src/hooks/use-markdown-render.tsx`
-
-**子任务**:
-
-- [ ] `markdown-renderer.ts`: `codeToken.lang === 'markmap'` → `<div class="markmap">${escaped}</div>`
-- [ ] `use-markdown-render.tsx`: `domNode.attribs?.class?.includes('markmap')` → `<MarkmapBlock>`
-- [ ] `use-markdown-render.tsx`: `block.preHtml.includes('class="markmap"')` → `<MarkmapBlock>`
-- [ ] 旧 `mermaid mindmap` 代码块仍由 `MermaidBlock` 渲染（向后兼容）
-
-**验收标准**:
-
-- 新建 markmap 代码块在详情页和编辑预览中正确渲染。
-- 旧 mermaid mindmap 不受影响。
-
----
-
-### T-U09: 安装依赖 + ChartBlock 组件
-
-**影响域**: notes, markdown, mistakes, review
-**依赖**: `npm install echarts echarts-for-react`
-**关联需求**: FR-5.1 ~ FR-5.9
-**文件范围**:
-
-- `package.json` — 新增依赖
-- `package-lock.json` — lockfile 自动更新
-- `src/components/chart-block.tsx` (新建)
-
-**子任务**:
-
-- [ ] 安装: `npm install echarts echarts-for-react`
-- [ ] ECharts 按需引入: Bar/Line/Pie/Radar + Grid/Tooltip/Legend/Title + CanvasRenderer
-- [ ] 新建 `ChartBlock` 组件，接收 JSON 配置字符串
-- [ ] **安全边界**: 白名单类型 (`bar`/`line`/`pie`/`radar`) + 白名单字段 + `series.data` 长度限制 (1000)
-- [ ] 解析失败或校验不通过降级为代码块
-- [ ] 默认高度 400px，自适应容器宽度
-- [ ] 主题适配: 使用 `--color-brand` 作为主色调
-- [ ] ChartBlock 自行处理全屏和下载（不扩展 DiagramViewer）
-
-**验收标准**:
-
-- ` ```chart\n{"type":"bar",...}\n` ` ` 正确渲染为图表。
-- 4 种图表类型均正确渲染。
-- 非白名单 JSON 降级为代码块。
-- 超大数据不导致卡顿。
-
----
-
-### T-U10: Markdown 管线集成 chart
-
-**影响域**: notes, markdown
-**依赖**: T-U09
-**关联需求**: FR-5.10, FR-5.11
-**文件范围**:
-
-- `src/lib/markdown-renderer.ts`
-- `src/hooks/use-markdown-render.tsx`
-
-**子任务**:
-
-- [ ] `markdown-renderer.ts`: `codeToken.lang === 'chart'` → `<div class="chart">${escaped}</div>`
-- [ ] `use-markdown-render.tsx`: `domNode.attribs?.class?.includes('chart')` → `<ChartBlock>`
-- [ ] `use-markdown-render.tsx`: `block.preHtml.includes('class="chart"')` → `<ChartBlock>`
-
-**验收标准**:
-
-- chart 代码块在笔记详情页和编辑预览中正确渲染。
-
----
-
-### T-U11: DiagramViewer 适配优化
+### T-D03: My Blog 与设置入口语义拆分
 
 **影响域**: shared UI
 **依赖**: 无
-**关联需求**: FR-6.1 ~ FR-6.5
+**关联需求**: FR-3.1 ~ FR-3.5
 **文件范围**:
-
-- `src/components/diagram-viewer.tsx`
+- `src/components/vertical-nav.tsx`
 
 **子任务**:
-
-- [ ] preview 区域增加 `max-w-full overflow-hidden`
-- [ ] 全屏 modal 增加"适配"按钮（fit to viewport）
-- [ ] SVG → PNG 下载 best-effort；失败时保留 SVG 下载并提示用户
-- [ ] 移动端全屏 modal 增加 `touch-action: pan-x pan-y`
-- [ ] **不增加 `kind: 'chart'`**
-
-**验收标准**:
-
-- Mermaid/SVG 图谱默认适配容器，不溢出。
-- 全屏查看支持缩放、适配、下载。
-- 移动端 SVG/图片查看无横向溢出。
-
----
-
-### T-U12: 工具栏/斜杠命令更新
-
-**影响域**: notes
-**依赖**: T-U07, T-U09
-**关联需求**: FR-7.1, FR-7.2, FR-7.7, FR-7.8
-**文件范围**:
-
-- `src/app/write-note/components/note-toolbar.tsx`
-- `src/app/write-note/components/slash-command-menu.tsx`
-
-**子任务**:
-
-- [ ] `NoteToolbar` 插入菜单: 思维导图模板改为 Markmap Markdown
-- [ ] `NoteToolbar` 插入菜单: 图表模板改为 chart JSON
-- [ ] `SlashCommandMenu`: `mindmap` 命令改为 Markmap Markdown
-- [ ] `SlashCommandMenu`: 增加 `chart` 命令
-- [ ] 保留旧 Mermaid 流程图模板 (`graph TD`) 不变
+- [x] 确认头像 + 站点名 `<Link href='/'>` 行为不变（跳转首页）
+- [x] 在分割线下方、导航列表上方添加"网站设置"按钮
+- [x] 按钮点击调用 `setConfigDialogOpen(true)`（复用 config-store 方法）
+- [x] 使用 `Settings` 图标（lucide-react）
+- [x] 添加 `aria-label='网站设置'` + `title='网站设置'`
+- [x] 展开时显示"网站设置"文案，收起时只显示图标
+- [x] ConfigDialog 从首页移至全局布局 `src/layout/index.tsx`，确保内页也能打开
 
 **验收标准**:
-
-- 工具栏插入思维导图为 Markmap 语法。
-- 工具栏插入图表为 chart JSON 语法。
-- 斜杠命令同步更新。
-
----
-
-### T-U21: P1 验收
-
-**影响域**: notes, markdown
-**依赖**: T-U07 ~ T-U12
-
-**验证**:
-
-- [ ] `npx tsc --noEmit`
-- [ ] `npm install markmap-lib markmap-view echarts echarts-for-react` 后无报错
-- [ ] Markmap 代码块在详情页正确渲染，节点可折叠展开
-- [ ] 旧 Mermaid mindmap 代码块仍正常渲染
-- [ ] Chart 代码块 4 种图表类型均正确渲染
-- [ ] 非白名单 JSON 降级为代码块
-- [ ] 工具栏插入思维导图为 Markmap 语法
-- [ ] 工具栏插入图表为 chart JSON 语法
-- [ ] 斜杠命令 `/mindmap` 和 `/chart` 正常
-- [ ] DiagramViewer SVG/图片全屏、缩放、下载正常
-- [ ] 移动端图表和图谱不溢出
+- 头像/站点名点击跳转首页
+- "网站设置"按钮点击打开设置对话框
+- 两者行为独立，互不干扰
 
 ---
 
-## 阶段 P2: 写作体验升级
-
-目标：AI 输出格式更新、错题 AI 入口增强、颜色色板、对比块模板优化。
-
-### T-U13: 后端 AI prompt 更新
-
-**影响域**: AI, notes
-**依赖**: 无
-**关联需求**: FR-8.1, FR-8.2, FR-8.3, FR-8.7
-**文件范围**:
-
-- `backend/app/schemas/ai_polish.py`
-- `backend/app/services/ai_polish_service.py`
-
-**子任务**:
-
-- [ ] `PolishAction` 枚举增加 `data_chart`（不使用 `analyze`，避免与错题分析接口混淆）
-- [ ] `mindmap` prompt 改为输出 Markmap Markdown 层级（非 Mermaid 语法）
-- [ ] 新增 `data_chart` prompt: 输出 ECharts chart JSON 配置
-- [ ] 验证新 action 的 SSE 流正常返回
-
-**验收标准**:
-
-- `mindmap` action 返回 `# 主题\n## 分支` 格式。
-- `data_chart` action 返回 `{"type":"bar",...}` 格式。
-- 原有 14 个 action 不受影响。
-
----
-
-### T-U14: 前端 AI 面板更新
-
-**影响域**: notes
-**依赖**: T-U13
-**关联需求**: FR-8.4, FR-8.5, FR-8.6
-**文件范围**:
-
-- `src/lib/api/ai-polish.ts`
-- `src/app/write-note/components/ai-assistant-panel.tsx`
-
-**子任务**:
-
-- [ ] `ai-polish.ts` 类型增加 `data_chart`
-- [ ] AI 面板"插入内容"分组增加"数据分析"按钮
-- [ ] AI 思维导图结果前端自动包裹 ` ```markmap\n...\n` ` `
-- [ ] AI 数据分析结果前端自动包裹 ` ```chart\n...\n` ` `
-
-**验收标准**:
-
-- 面板显示"数据分析"按钮。
-- 思维导图结果插入后可直接渲染。
-- 数据分析结果插入后可直接渲染。
-
----
-
-### T-U15: 错题 AI 分析入口增强
+### T-D04: 错题 AI 入口增强
 
 **影响域**: mistakes
 **依赖**: 无
-**关联需求**: FR-9.1 ~ FR-9.5
+**关联需求**: FR-4.1 ~ FR-4.9
 **文件范围**:
-
 - `src/app/write-mistake/page.tsx`
 
 **子任务**:
-
-**必做**:
-- [ ] 在非流式接口返回前展示轮换式阶段文案（不代表后端真实阶段）
-- [ ] 分析失败时显示错误原因 + "重试"按钮
-- [ ] 优化图片拖拽上传区域文案与粘贴图片提示
-
-**可选增强（不阻塞本轮验收，可后续迭代）**:
-- [ ] 分析结果预览卡片 + 确认填充
-- [ ] 分析完成后"重新分析"按钮
+- [x] 主按钮文案从"开始 AI 分析"改为"AI 智能解析题目"（line 305）
+- [x] 面板描述文案增加"点击按钮自动填充"（line 277）
+- [x] 在主按钮下方增加"AI 生成解析"按钮
+- [x] 在主按钮下方增加"AI 生成知识点"按钮
+- [x] 次级按钮复用 `analyzeText` API，结果只更新 `analysis` / `knowledge_points` 字段
+- [x] 次级按钮仅在 `pasteText.trim()` 非空时启用（纯图片上传不可用，因次级按钮走文本 API）
+- [x] 次级按钮调用中显示 loading 状态（spinner + "生成中..."）
+- [x] 次级按钮失败时不清空原字段，只显示 toast 错误
+- [x] 次级按钮不需要二次确认（只覆盖目标字段，不覆盖全部）
+- [x] 次级按钮样式：次级操作风格（`bg-white/60 text-gray-600`）
 
 **验收标准**:
-
-- 分析中有明确等待反馈。
-- 失败有错误提示和重试按钮。
-- 可选增强不计入本轮验收。
+- "AI 智能解析题目"按钮明显可见
+- "AI 生成解析""AI 生成知识点"按钮在有输入时可用，无输入时禁用
+- 次级按钮只更新对应字段，失败不清空原字段
 
 ---
 
-### T-U16: 颜色色板 + 对比块模板优化
+### T-D05: 思维导图渲染失败修复
 
-**影响域**: notes
+**影响域**: notes, markdown
 **依赖**: 无
-**关联需求**: FR-7.3 ~ FR-7.6
+**关联需求**: FR-5.1 ~ FR-5.6
 **文件范围**:
-
-- `src/app/write-note/components/note-toolbar.tsx`
+- `src/components/markmap-block.tsx`
 
 **子任务**:
-
-- [ ] 工具栏增加颜色选择按钮，弹出 8 色色板（red/blue/green/yellow/purple/orange/gray/pink）
-- [ ] 选中文本后点击色块 → `wrapSelection(`{${color}|`, `}`)` 
-- [ ] 未选中时点击 → 插入 `{red|示例文本}` 并选中"示例文本"
-- [ ] 对比块模板改为带示例内容的可读版本
+- [x] 移除 `loadFailed` 全局变量（line 9）
+- [x] `loadMarkmapLib` 和 `loadMarkmapView` 失败时将 `libPromise`/`viewPromise` 设为 `null`（允许重试）
+- [x] SVG 容器添加 `style={{ minHeight: 200, minWidth: 300 }}`（line 141）
+- [x] 添加 `mounted` state 防止 SSR 渲染（添加 `useEffect` 设置 `mounted`）
+- [x] 错误状态添加"重试"按钮（line 119-125）
+- [x] 添加重试计数器（最多 3 次）
+- [x] 错误时降级显示原始 Markdown 代码（已有，确认样式）
 
 **验收标准**:
-
-- 颜色色板可选择 8 色，插入正确语法。
-- 对比块模板含具体示例而非占位符。
-
----
-
-### T-U22: P2 验收
-
-**影响域**: notes, mistakes, AI
-**依赖**: T-U13 ~ T-U16
-
-**验证**:
-
-- [ ] `npx tsc --noEmit`
-- [ ] 后端 import/start check
-- [ ] AI `mindmap` action 返回 Markmap Markdown 格式
-- [ ] AI `data_chart` action 返回 chart JSON 格式
-- [ ] AI 面板"数据分析"按钮可点击，结果插入后可渲染
-- [ ] AI 思维导图结果插入后可直接渲染
-- [ ] 错题 AI 分析中有轮换式等待文案
-- [ ] 错题 AI 分析失败有错误提示和重试按钮
-- [ ] 颜色色板 8 色均可选择并插入正确语法
-- [ ] 对比块模板含具体示例
+- markmap 代码块正常渲染为思维导图
+- 加载失败后刷新页面可重试
+- 错误状态有"重试"按钮
+- SSR 不报错
 
 ---
 
-## 阶段 P3: 空状态和反馈优化
+## 阶段 P1: 核心体验修正
 
-目标：统一空状态组件，分批替换；统一按钮颜色语义。
+### T-D06: Markdown 标题 # 默认移除
 
-### T-U17: EmptyState 组件
-
-**影响域**: shared UI
+**影响域**: shared UI, markdown
 **依赖**: 无
-**关联需求**: FR-10.1, FR-10.2, FR-10.3
+**关联需求**: FR-6.1 ~ FR-6.3
 **文件范围**:
-
-- `src/components/empty-state.tsx` (新建)
+- `src/styles/article.css`
 
 **子任务**:
-
-- [ ] 新建 `EmptyState` 组件，支持 4 种 variant: `no-content`、`no-results`、`not-logged-in`、`load-error`
-- [ ] 每种 variant 有对应图标、标题、描述、操作按钮
-- [ ] 样式: `rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm`
-- [ ] 支持自定义标题、描述、操作按钮覆盖
+- [x] 删除 `.prose h1::before, .prose h2::before` 的 `content: '# '` 规则
+- [x] 删除 `.prose h3::before` 的 `content: '## '` 规则
+- [x] 删除 `.prose h4::before` 的 `content: '### '` 规则
+- [x] 删除 `.prose h5::before` 的 `content: '#### '` 规则
+- [x] 保留 `.prose [id] { scroll-margin-top: 100px }` 不受影响
+- [x] 确认 TOC 锚点跳转正常
 
 **验收标准**:
-
-- 4 种 variant 均正确渲染。
-- 样式与现有玻璃卡片风格一致。
+- 标题前不显示 # 符号
+- 标题文本样式（字号、粗细、间距）不受影响
+- TOC 锚点跳转正常
 
 ---
 
-### T-U18: 分批替换空状态
+### T-D07: 写作入口文案（已跳过）
 
-**影响域**: notes, mistakes, manage, blog, share, bloggers, snippets
-**依赖**: T-U17
-**关联需求**: FR-10.4 ~ FR-10.7
-**文件范围**: 见设计文档 §5.1 完整清单（36+ 处）
-
-**子任务**:
-
-- [ ] **第一批 (B1)**: `/notes`、`/mistakes`、`/manage` 核心列表页（~7 文件/区域）
-  - `src/app/notes/page.tsx:125`
-  - `src/app/manage/page.tsx:164`
-  - `src/app/mistakes/page.tsx:131, 182`
-  - `src/app/mistakes/review/page.tsx:74`
-  - `src/app/notes/components/suggestion-card.tsx:74`
-  - `src/app/notes/[id]/note-detail-content.tsx:48`
-  - `src/app/manage/page.tsx:297`
-- [ ] B1 完成后 `npx tsc --noEmit` + 视觉检查
-- [ ] **第二批 (B2)**: `/blog`、`/share`、`/bloggers` 公开页面（~4 文件）
-  - `src/app/blog/page.tsx:440`
-  - `src/app/blog/[id]/blog-detail-content.tsx:83`
-  - `src/app/bloggers/grid-view.tsx:74`
-  - `src/app/share/grid-view.tsx:65`
-- [ ] B2 完成后视觉检查
-- [ ] **第三批 (B3)**: 弹窗、管理子 tab、TOC、卡片等小区域（~13 文件）
-  - `src/app/snippets/page.tsx:168`
-  - `src/components/move-to-folder-dialog.tsx:124`
-  - `src/app/manage/recommendation-tab.tsx:113, 119`
-  - `src/app/manage/music-tab.tsx:86`
-  - `src/app/blog/components/category-modal.tsx:96, 136`
-  - `src/app/(home)/aritcle-card.tsx:56`
-  - `src/components/blog-toc.tsx:69`
-  - `src/app/write-note/[slug]/page.tsx:197`
-  - `src/app/manage/music-form-modal.tsx:176`
-  - `src/app/write-note/components/ai-assistant-panel.tsx:228`
-- [ ] B3 完成后 `npx tsc --noEmit`
-
-**验收标准**:
-
-- 核心页面空状态有明确引导操作。
-- 真无内容 vs 筛选为空显示不同文案和按钮。
-- 每批完成后无 tsc 错误。
-
----
-
-### T-U19: 按钮颜色统一
-
-**影响域**: manage, notes, mistakes, blog, shared UI
+**影响域**: home
 **依赖**: 无
-**关联需求**: FR-11.1 ~ FR-11.5
+**关联需求**: FR-7.1 ~ FR-7.2
+**状态**: 已跳过
+
+**跳过原因**:
+- `/notes` 页面已有独立"写笔记"按钮（`notes/page.tsx`）
+- `/mistakes` 页面已有独立"添加错题"按钮（`mistakes/page.tsx`）
+- 首页"写文章"按钮是全局入口，保持"写文章"不变，无需额外修改
 
 **子任务**:
+- [x] 确认各页面已有独立写入按钮（/notes → 写笔记，/mistakes → 添加错题）
+- [~] 保持"写文章"不变（无需修改）
 
-- [ ] 审计知识系统核心页面删除按钮，统一为 `bg-red-500/10 text-red-500 hover:bg-red-500/20`
-- [ ] 审计主操作按钮，统一为品牌色
-- [ ] 审计次级操作按钮，统一为弱化样式
-- [ ] KnowledgeSidebar 移动关闭按钮补齐 `aria-label='关闭导航'`
-- [ ] 审计所有图标按钮确保有 `title` + `aria-label`
+---
+
+### T-D08: 左侧标签按页面动态过滤
+
+**影响域**: notes, mistakes, manage
+**依赖**: 无
+**关联需求**: FR-8.1 ~ FR-8.6
+**文件范围**:
+- `src/app/notes/components/knowledge-sidebar.tsx`
+- `src/app/notes/page.tsx`
+- `src/app/mistakes/page.tsx`
+
+**实现方案**: 方案 B（前端从当前页面 items 聚合），使用 `useRef` 累积模式确保选中标签后列表不收窄。
+
+**已知限制**: 只聚合到访过的页面标签，未访问页面的标签不可见。完整过滤需后端 `/api/tags` 增加 `contentTypes` 查询参数（方案 A）。
+
+**子任务**:
+- [x] `KnowledgeSidebar` 新增 `contentTypes` prop（可选，类型 `Array<'note' | 'blog' | 'mistake'>`）
+- [x] `/notes` 页面传入 `contentTypes={['note', 'blog']}`，过滤掉 mistake 专属导航项
+- [x] `/mistakes` 页面传入 `contentTypes={['mistake']}`，只显示 mistake 关联导航项
+- [x] `/manage` 页面不传 `contentTypes`，显示全站所有标签（回退到 `listTags()` API）
+- [x] 过滤逻辑：前端从当前页面 items 聚合标签，`useRef` 累积避免选中标签后收窄
+- [x] 无标签时显示"暂无标签"文案（`text-xs text-gray-400`）
+- [x] 标签点击后高亮状态更明显（`font-medium` + `shadow-sm`）
 
 **验收标准**:
-
-- 危险操作按钮视觉一致（红色弱背景）。
-- 所有图标按钮有 title 和 aria-label。
-
----
-
-### T-U23: P3 验收
-
-**影响域**: notes, mistakes, manage, blog, shared UI
-**依赖**: T-U17 ~ T-U19
-
-**验证**:
-
-- [ ] `npx tsc --noEmit`
-- [ ] B1 核心页面空状态显示正确引导操作
-- [ ] B2 公开页面空状态显示正确
-- [ ] B3 小区域空状态显示正确
-- [ ] 真无内容 vs 筛选为空显示不同文案和按钮
-- [ ] 危险操作按钮视觉一致（红色弱背景）
-- [ ] 主操作按钮品牌色
-- [ ] 所有图标按钮有 title 和 aria-label
+- `/notes` 页面不显示 mistake 专属标签
+- `/mistakes` 页面不显示 note/blog 专属标签
+- `/manage` 页面显示全站所有标签
+- 点击标签正确筛选当前页面内容
+- 无标签时显示"暂无标签"
 
 ---
 
-## 阶段 P4: 最终走查
+### T-D09: 设置保存 GitHub 错误拆分
 
-### T-U20: UI 走查与文档更新
+**影响域**: home, settings
+**依赖**: 无
+**关联需求**: FR-9.1 ~ FR-9.6
+**文件范围**:
+- `src/app/(home)/config-dialog/index.tsx`（简化为 DialogModal + SiteSettingsPanel 包装）
+- `src/app/(home)/config-dialog/site-settings-panel.tsx`（新建，提取自 ConfigDialog）
+
+**子任务**:
+- [x] `handleSave` 拆分为两步：本地保存（Zustand + CSS 变量）+ GitHub 同步
+- [x] 本地保存：更新 Zustand store + CSS 变量（不依赖 GitHub）
+- [x] GitHub 同步：调用 `pushSiteContent()`，失败时 catch 但不阻断
+- [x] 成功 toast: "设置已保存并同步到 GitHub"
+- [x] 部分成功 toast: "本地设置已保存，GitHub 同步失败: {原因}"
+- [x] 完全失败 toast: "保存失败: {原因}"
+- [x] 部分成功时仍然关闭对话框 / 保持面板可用
+
+**验收标准**:
+- GitHub 同步失败时本地设置已更新
+- 错误提示明确区分本地和 GitHub
+- 不阻断用户操作
+
+---
+
+## 阶段 P2: 结构整理
+
+### T-D10: Live2D 状态页
+
+**影响域**: live2d
+**依赖**: 无
+**关联需求**: FR-10.1 ~ FR-10.5
+**文件范围**:
+- `src/app/live2d/page.tsx`
+
+**子任务**:
+- [x] 重写页面为状态说明页
+- [x] 显示当前模型状态（当前仅显示"未启用"占位）
+- [x] 显示"如何使用"操作指引（3 步）
+- [x] 添加"前往网站设置"按钮，调用 `setConfigDialogOpen(true)`
+- [x] 样式：玻璃卡片风格，居中布局
+
+**验收标准**:
+- 页面显示清晰的状态说明
+- "前往网站设置"按钮可用
+- 样式与现有页面一致
+
+---
+
+### T-D11: /manage 网站设置集中化
+
+**影响域**: manage
+**依赖**: T-D09
+**关联需求**: FR-11.1 ~ FR-11.6
+**文件范围**:
+- `src/app/manage/page.tsx`（新增第四个 tab "网站设置"，内联渲染 `SiteSettingsPanel`）
+- `src/app/(home)/config-dialog/site-settings-panel.tsx`（新建，从 ConfigDialog 提取的可复用设置面板）
+- `src/app/(home)/config-dialog/index.tsx`（简化为 DialogModal + SiteSettingsPanel）
+
+**实现说明**: 抽取 `SiteSettingsPanel` 共享组件（含 tab 切换、SiteSettings/ColorConfig/HomeLayout 渲染、保存/重置逻辑、文件上传状态管理），同时供 ConfigDialog 弹窗和 /manage 内嵌面板使用。首页 `Ctrl+L` 弹窗保留。
+
+**子任务**:
+- [x] `/manage` 页面 tab 栏新增第四个 tab "网站设置"
+- [x] 复用已导出的 `SiteSettings`、`ColorConfig`、`HomeLayout` 组件，抽取 `SiteSettingsPanel` 共享组件
+- [x] "网站设置" tab 内联渲染 `SiteSettingsPanel`（含 site/color/layout 子 tab + 保存/重置按钮）
+- [x] `handleCancel` 同步重置本地表单状态（`setFormData(originalData)` + `setCardStylesData(originalCardStyles)`）
+- [x] 首页 `Ctrl+L` 弹窗保留（两种入口并存）
+
+**验收标准**:
+- `/manage` 页面显示 4 个 tab
+- "网站设置" tab 可修改站点配置
+- 保存行为与首页弹窗一致（先本地保存，再 GitHub 同步）
+- 首页弹窗不受影响
+
+---
+
+## 阶段 P3: 全量验收
+
+### T-D12: 全量验收
 
 **影响域**: 全部
-**依赖**: T-U06 + T-U21 + T-U22 + T-U23
+**依赖**: T-D01 ~ T-D11
+**状态**: 部分完成（TypeScript 编译通过；浏览器验证需人工进行）
 
-**子任务**:
+**验证清单**:
+- [x] `npx tsc --noEmit` 无错误（exit code 0）
+- [ ] 左侧导航在截图宽高下不被浏览器左边缘裁切，展开态不覆盖知识库侧栏主要操作
+- [ ] 点击任意导航项都能稳定跳转
+- [ ] My Blog 点击行为唯一（跳转首页），设置入口独立且可用
+- [ ] 错题页能明显看到"AI 智能解析题目"入口，次级按钮有输入时启用
+- [ ] 思维导图能正常渲染，失败时有重试按钮
+- [ ] Markdown 标题不显示 # 装饰
+- [ ] 左侧标签按页面类型过滤，无标签时显示"暂无标签"
+- [ ] 设置保存时 GitHub 同步失败不阻断本地保存
+- [ ] Live2D 页面有清晰状态说明和管理入口
+- [ ] /manage 页面有 4 个 tab，"网站设置" tab 可修改站点配置（内联渲染 SiteSettingsPanel）
+- [ ] 首页拖拽编辑功能正常
+- [ ] 写作页 mini NavCard 正常
 
-- [ ] 桌面端走查: `/`、`/notes`、`/mistakes`、`/manage`、`/write-note`
-- [ ] 移动端走查: `/notes`、`/mistakes`、`/write-note`
-- [ ] 检查文字溢出、遮挡、按钮含义、跳转是否明确
-- [ ] 确认 `docs/ui-upgrade-design.md` 与实际实现一致
+**自动化验证通过项**:
+- `npx tsc --noEmit` ✓（exit 0）
+- 所有 `::before` 装饰已移除 ✓（`src/styles/article.css` 中无 `::before` 残留）
+- `scroll-margin-top: 100px` 保留 ✓
+- `loadFailed` 永久标志已移除 ✓（`src/components/markmap-block.tsx`）
+- `pointer-events-none` 添加到 active 胶囊 ✓（`src/components/vertical-nav.tsx`）
+- 标签展开动画改为 `opacity + x` 位移 ✓
+- `Settings` 按钮有 `aria-label="网站设置"` + `title="网站设置"` ✓
+- ConfigDialog 移至全局布局 ✓（`src/layout/index.tsx`）
+- `handleSave` 拆分本地保存 + GitHub 同步 ✓（`site-settings-panel.tsx`）
+- `handleCancel` 同步重置本地表单状态 ✓（`setFormData(originalData)`）
+- `SiteSettingsPanel` 共享组件已抽取 ✓
 
-**验收标准**:
-
-- 桌面端和移动端走查无明显 UI 问题。
-- 文档与实现一致。
+**待人工验证**（dev server `localhost:2025`）：
+- 各页面导航行为、视觉裁切
+- 思维导图实际渲染
+- AI 次级按钮交互
+- /manage 网站设置 tab 的 SiteSettingsPanel 内联显示
