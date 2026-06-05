@@ -95,16 +95,21 @@ Relation suggestions include:
 
 Relations are NOT persisted — only returned as suggestions.
 
-### V8 Citation-Backed Generation
+### V8 Citation-Backed Generation (updated 2026-06-05)
 
 Target: `POST /api/ai/knowledge-summary`
 
 - [x] source_backed_claim blocks include source_refs
 - [x] ai_inference blocks are labeled
 - [x] insufficient_context returned when no sources
-- [x] No invented source IDs (validated against input sources)
+- [x] No invented source IDs (validated against `source_map`)
 - [x] Empty sources produce insufficient_context, not unsupported articles
 - [x] source_backed_claim without valid refs downgraded to ai_inference
+- [x] **Field whitelist**: AI-returned `field` checked against per-source-type whitelist:
+  - Mistake fields: `{analysis, question, correct_answer, error_reason, key_step, generalization, review_advice, knowledge_points, content}`
+  - Note fields: `{content, summary, title, knowledge_points}`
+  - Invalid field falls back to original matched source's `field`
+- [x] **Fidelity copy**: All source ref attributes (`source_type`, `title`, `slug`, `excerpt`, `url`, `confidence`, `match_reasons`) are faithfully copied from the original matched source — AI cannot overwrite them
 
 ### V9 Field Safety
 
