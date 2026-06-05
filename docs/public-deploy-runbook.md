@@ -25,6 +25,9 @@ Before a public deploy:
    - `npx tsc --noEmit`
    - `npm run build`
 5. If the frontend uses backend APIs, confirm the production API environment is configured for the Cloudflare deployment.
+6. Confirm Cloudflare authentication before deploying:
+   - If using `CLOUDFLARE_API_TOKEN`, make sure the token allows the current network location.
+   - If not using an API token, run `wrangler login` in an interactive terminal.
 
 ## Deploy Command
 
@@ -33,6 +36,8 @@ Use the repository script:
 ```bash
 npm run deploy
 ```
+
+If deployment fails with Cloudflare `code: 9109`, the configured API token is restricted by location/IP. Remove the restriction, use an allowed network, or authenticate with `wrangler login`.
 
 This runs:
 
@@ -82,4 +87,3 @@ If the public deploy is bad:
 2. Revert or checkout the good source state.
 3. Run `npx tsc --noEmit` and `npm run build`.
 4. Run `npm run deploy` again.
-
