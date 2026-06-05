@@ -163,11 +163,12 @@
   - Candidate files: `backend/app/routers/ai.py`
   - Completion standard: generated output contains citations or labels AI inference.
 
-  **Validation Report (updated 2026-06-05):**
+  **Validation Report (updated 2026-06-05, fix applied 2026-06-05):**
   - **Changed files:** `backend/app/routers/ai.py`
-  - **Validation command:** `python -c "from app.routers.ai import knowledge_summary"` + functional field-whitelist tests
-  - **Validation result:** pass
+  - **Validation command:** `python -c "from app.routers.ai import knowledge_summary"` + function-level mock exercising the source-ref validation branch
+  - **Validation result:** pass (after fix)
   - **Manual verification:** Endpoint at `/api/ai/knowledge-summary`. Accepts `KnowledgeSummaryRequest` with `context_pack`, `mode`, `requirements`. Returns `InsufficientContextResponse` if no sources. Source ref handling: (1) AI-returned `source_id` must exist in `source_map` — invented IDs are rejected. (2) AI-returned `field` is checked against a whitelist per source type: `_MISTAKE_FIELDS = {analysis, question, correct_answer, error_reason, key_step, generalization, review_advice, knowledge_points, content}`, `_NOTE_FIELDS = {content, summary, title, knowledge_points}`. If `field` is not whitelisted, falls back to the original matched source's `field`. (3) All other source ref attributes (`source_type`, `title`, `slug`, `excerpt`, `url`, `confidence`, `match_reasons`) are faithfully copied from the original matched source — AI cannot overwrite them. If `source_backed_claim` has no valid refs after validation, it is downgraded to `ai_inference`. Rate-limited. Calls `call_text_model()` (DeepSeek). Requires admin auth.
+  - **Bug fix:** `SourceType` was missing from imports at line 13 — caused `NameError` when the source-ref validation branch executed (any request with valid sources). Added `SourceType` to the `app.schemas.knowledge` import block. Previous compile-level check (`python -c "from app.routers.ai import knowledge_summary"`) did not exercise this branch, masking the error. Function-level mock now confirms the branch runs cleanly.
   - **Scope check:** Source validation prevents invented IDs. Field whitelist locks AI to valid fields per source type. Fidelity copy prevents AI from overwriting excerpt/url/confidence/title/slug. Insufficient context returns early. No vector DB. No KnowledgePoint entity.
   - **Remaining risks:** AI model quality depends on DeepSeek configuration.
 

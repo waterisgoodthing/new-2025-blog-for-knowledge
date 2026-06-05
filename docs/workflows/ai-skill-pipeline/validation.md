@@ -95,7 +95,7 @@ Relation suggestions include:
 
 Relations are NOT persisted — only returned as suggestions.
 
-### V8 Citation-Backed Generation (updated 2026-06-05)
+### V8 Citation-Backed Generation (updated 2026-06-05, fix applied 2026-06-05)
 
 Target: `POST /api/ai/knowledge-summary`
 
@@ -110,6 +110,7 @@ Target: `POST /api/ai/knowledge-summary`
   - Note fields: `{content, summary, title, knowledge_points}`
   - Invalid field falls back to original matched source's `field`
 - [x] **Fidelity copy**: All source ref attributes (`source_type`, `title`, `slug`, `excerpt`, `url`, `confidence`, `match_reasons`) are faithfully copied from the original matched source — AI cannot overwrite them
+- [x] **Bug fix**: `SourceType` was missing from `app.schemas.knowledge` import in `ai.py`, causing `NameError` on the source-ref validation branch. Added import. Verified via function-level mock that exercises the branch with a valid source map entry.
 
 ### V9 Field Safety
 

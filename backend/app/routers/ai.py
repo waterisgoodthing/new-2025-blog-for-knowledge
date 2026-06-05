@@ -17,6 +17,7 @@ from app.schemas.knowledge import (
     KnowledgeSummaryRequest,
     KnowledgeSummaryResponse,
     SourceRef,
+    SourceType,
 )
 from app.services.ai_service import call_ocr_model, call_text_model
 
