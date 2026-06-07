@@ -37,6 +37,7 @@ async def polish_stream(
     title: str | None = None,
     note_type: str | None = None,
     existing_tags: list[str] | None = None,
+    custom_prompt: str | None = None,
 ) -> AsyncGenerator[str, None]:
     settings = get_settings()
     api_key = settings.DEEPSEEK_API_KEY or settings.AI_API_KEY
@@ -48,7 +49,7 @@ async def polish_stream(
         yield "data: [DONE]\n\n"
         return
 
-    system_prompt = SYSTEM_PROMPTS.get(action, SYSTEM_PROMPTS["polish"])
+    system_prompt = custom_prompt if action == "custom" and custom_prompt else SYSTEM_PROMPTS.get(action, SYSTEM_PROMPTS["polish"])
 
     messages = [{"role": "system", "content": system_prompt}]
     if context:

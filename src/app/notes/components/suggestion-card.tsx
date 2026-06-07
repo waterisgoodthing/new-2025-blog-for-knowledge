@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Lightbulb, Tag, FolderOpen, RefreshCw, AlertTriangle, X, Check } from 'lucide-react'
+import { Lightbulb, Tag, FolderOpen, RefreshCw, AlertTriangle, X, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getSuggestions, executeSuggestion, type Suggestion } from '@/lib/api/knowledge-assistant'
@@ -10,13 +10,15 @@ import { getSuggestions, executeSuggestion, type Suggestion } from '@/lib/api/kn
 type SuggestionCardProps = {
 	onRefresh?: () => void
 	onExecuted?: () => void
+	defaultExpanded?: boolean
 }
 
-export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
+export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false }: SuggestionCardProps) {
 	const [suggestions, setSuggestions] = useState<Suggestion[]>([])
 	const [loading, setLoading] = useState(true)
 	const [executing, setExecuting] = useState<string | null>(null)
 	const [tagInput, setTagInput] = useState<Record<number, string>>({})
+	const [expanded, setExpanded] = useState(defaultExpanded)
 
 	useEffect(() => {
 		loadSuggestions()
@@ -66,15 +68,29 @@ export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
 
 	if (loading) return null
 
+	const drawerTrigger = (
+		<button
+			onClick={() => setExpanded(!expanded)}
+			className={cn(
+				'mb-6 flex w-full items-center gap-2 rounded-xl border border-white/40 bg-white/60 px-4 py-3 backdrop-blur-sm text-sm transition-colors hover:bg-white/80',
+				suggestions.length === 0 ? 'text-gray-400' : 'text-[var(--color-brand)]'
+			)}
+			aria-label={expanded ? '收起 AI 建议' : '展开 AI 建议'}
+		>
+			<Lightbulb size={16} />
+			<span className='flex-1 text-left'>
+				{suggestions.length === 0
+					? '知识库状态良好，暂无整理建议'
+					: `AI 整理建议 (${suggestions.length} 条)`}
+			</span>
+			{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+		</button>
+	)
+
+	if (!expanded) return drawerTrigger
+
 	if (suggestions.length === 0) {
-		return (
-			<div className='mb-6 rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-				<div className='flex items-center gap-2 text-sm text-gray-500'>
-					<Lightbulb size={16} className='text-green-500' />
-					<span>知识库状态良好，暂无整理建议</span>
-				</div>
-			</div>
-		)
+		return drawerTrigger
 	}
 
 	const typeIcons: Record<string, React.ReactNode> = {

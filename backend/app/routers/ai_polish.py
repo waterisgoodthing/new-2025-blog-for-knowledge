@@ -29,6 +29,7 @@ async def polish(
             title=req.title,
             note_type=req.note_type,
             existing_tags=req.existing_tags,
+            custom_prompt=req.custom_prompt,
         ),
         media_type="text/event-stream",
         headers={

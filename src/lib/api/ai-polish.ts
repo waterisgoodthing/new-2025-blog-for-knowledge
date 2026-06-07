@@ -1,4 +1,8 @@
-export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap' | 'data_chart'
+import { getApiBase } from './config'
+
+const API_BASE = getApiBase()
+
+export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap' | 'data_chart' | 'custom'
 
 export type PolishCallbacks = {
 	onChunk: (chunk: string) => void
@@ -15,7 +19,7 @@ export async function streamPolish(
 	text: string,
 	action: PolishAction,
 	callbacks: PolishCallbacks,
-	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[] }
+	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[]; custom_prompt?: string }
 ): Promise<void> {
 	const token = getAuthToken()
 	if (!token) {
@@ -25,7 +29,7 @@ export async function streamPolish(
 
 	let response: Response
 	try {
-		response = await fetch('/api/ai/polish', {
+		response = await fetch(`${API_BASE}/api/ai/polish`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -38,6 +42,7 @@ export async function streamPolish(
 				title: options?.title,
 				note_type: options?.noteType,
 				existing_tags: options?.existingTags,
+				custom_prompt: options?.custom_prompt,
 			}),
 			signal: options?.signal,
 		})

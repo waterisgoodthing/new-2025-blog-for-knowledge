@@ -7,6 +7,7 @@ export function getContentDetailHref(type: ContentType, slug: string): string {
 
 export function getContentEditHref(type: ContentType, slug: string): string {
 	if (type === 'blog') return `/write/${slug}`
+	if (type === 'mistake') return `/write-mistake/${slug}`
 	return `/write-note/${slug}`
 }
 

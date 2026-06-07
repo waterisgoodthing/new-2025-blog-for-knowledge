@@ -16,9 +16,11 @@ import {
 	Tag,
 	Menu,
 	X,
+	Plus,
+	Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { listFolders, reorderFolders, type FolderNode } from '@/lib/api/folders'
+import { listFolders, reorderFolders, createFolder, type FolderNode } from '@/lib/api/folders'
 import { listTags, type Tag as TagType } from '@/lib/api/meta'
 import { toast } from 'sonner'
 
@@ -58,6 +60,9 @@ export function KnowledgeSidebar({
 	const [internalTags, setInternalTags] = useState<TagType[]>([])
 	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 	const [mobileOpen, setMobileOpen] = useState(false)
+	const [tagsCollapsed, setTagsCollapsed] = useState(false)
+	const [creatingFolder, setCreatingFolder] = useState(false)
+	const [newFolderName, setNewFolderName] = useState('')
 
 	const tags = externalTags ?? internalTags
 
@@ -106,6 +111,21 @@ export function KnowledgeSidebar({
 			toast.success('已调整顺序')
 		} catch (e: any) {
 			toast.error('排序失败: ' + e.message)
+		}
+	}
+
+	const handleCreateFolder = async () => {
+		const name = newFolderName.trim()
+		if (!name) { toast.warning('请输入文件夹名'); return }
+		try {
+			await createFolder({ name })
+			const updated = await listFolders()
+			setFolders(updated)
+			setNewFolderName('')
+			setCreatingFolder(false)
+			toast.success('文件夹已创建')
+		} catch (e: any) {
+			toast.error('创建失败: ' + e.message)
 		}
 	}
 
@@ -199,38 +219,74 @@ export function KnowledgeSidebar({
 				))}
 			</nav>
 
-			{folders.length > 0 && (
-				<>
-					<div className='mx-3 border-t border-white/20' />
-					<div className='p-3'>
-						<div className='mb-2 px-3 text-xs font-medium text-gray-400'>文件夹</div>
-						{renderFolderTree(folders)}
+			<>
+				<div className='mx-3 border-t border-white/20' />
+				<div className='p-3'>
+					<div className='mb-2 flex items-center justify-between px-3'>
+						<span className='text-xs font-medium text-gray-400'>文件夹</span>
+						{creatingFolder ? (
+							<div className='flex items-center gap-1'>
+								<input
+									value={newFolderName}
+									onChange={e => setNewFolderName(e.target.value)}
+									onKeyDown={e => { if (e.key === 'Enter') handleCreateFolder(); if (e.key === 'Escape') { setCreatingFolder(false); setNewFolderName('') } }}
+									placeholder='文件夹名'
+									autoFocus
+									className='w-20 rounded border border-white/40 bg-white/60 px-1.5 py-0.5 text-[10px] outline-none'
+								/>
+								<button type='button' onClick={handleCreateFolder} aria-label='确认创建' className='rounded p-0.5 text-green-500 hover:bg-white/60'><Check size={12} /></button>
+								<button type='button' onClick={() => { setCreatingFolder(false); setNewFolderName('') }} aria-label='取消创建' className='rounded p-0.5 text-gray-400 hover:bg-white/60'><X size={12} /></button>
+							</div>
+						) : (
+							<button
+								type='button'
+								onClick={() => setCreatingFolder(true)}
+								aria-label='创建文件夹'
+								className='rounded p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white/60'
+							>
+								<Plus size={14} />
+							</button>
+						)}
 					</div>
-				</>
-			)}
+					{folders.length > 0 && renderFolderTree(folders)}
+				</div>
+			</>
 
 			<div className='mx-3 border-t border-white/20' />
 			<div className='p-3'>
-				<div className='mb-2 px-3 text-xs font-medium text-gray-400'>标签</div>
-				{tags.length > 0 ? (
-					<div className='flex flex-wrap gap-1.5 px-3'>
-						{tags.map(tag => (
-							<button
-								key={tag.id}
-								onClick={() => { onTagChange(tag.name); onFilterChange(''); onFolderChange(null) }}
-								className={cn(
-									'rounded-full px-2.5 py-1 text-xs font-medium transition-colors',
-									activeTag === tag.name
-										? 'bg-[var(--color-brand)] text-white shadow-sm'
-										: 'bg-white/60 text-gray-600 hover:bg-white/80 hover:text-gray-800'
-								)}
-							>
-								{tag.name}
-							</button>
-						))}
-					</div>
-				) : (
-					<p className='px-3 text-xs text-gray-400'>暂无标签</p>
+				<button
+					type='button'
+					onClick={() => setTagsCollapsed(!tagsCollapsed)}
+					className='mb-2 flex w-full items-center gap-1 px-3 text-xs font-medium text-gray-400 hover:text-gray-600'
+					aria-label={tagsCollapsed ? '展开标签' : '折叠标签'}
+				>
+					{tagsCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+					标签
+				</button>
+				{!tagsCollapsed && (
+					tags.length > 0 ? (
+						<div className='flex flex-wrap gap-1.5 px-3'>
+							{tags.map(tag => (
+								<button
+									key={tag.id}
+									onClick={() => {
+										if (activeTag === tag.name) { onTagChange(null); return }
+										onTagChange(tag.name); onFilterChange(''); onFolderChange(null)
+									}}
+									className={cn(
+										'rounded-full px-2.5 py-1 text-xs font-medium transition-colors',
+										activeTag === tag.name
+											? 'bg-[var(--color-brand)] text-white shadow-sm'
+											: 'bg-white/60 text-gray-600 hover:bg-white/80 hover:text-gray-800'
+									)}
+								>
+									{tag.name}
+								</button>
+							))}
+						</div>
+					) : (
+						<p className='px-3 text-xs text-gray-400'>暂无标签</p>
+					)
 				)}
 			</div>
 		</div>

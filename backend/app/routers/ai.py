@@ -3,13 +3,14 @@ import time
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.models.note import Note
 from app.routers.auth import get_current_admin
-from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, TextAnalyzeRequest
+from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, DiagramItem, TextAnalyzeRequest
 from app.schemas.knowledge import (
     CitationBlock,
     CitationBlockType,
@@ -35,7 +36,7 @@ def _check_rate_limit(key: str = "global") -> None:
         raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {RATE_LIMIT_MAX} requests per {RATE_LIMIT_WINDOW}s.")
     _rate_limit_store[key].append(now)
 
-OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从用户上传的错题图片中提取题目信息，并输出结构化 JSON。
+OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责从用户上传的错题图片中提取题目信息，并输出结构化 JSON。
 
 你的核心任务是：
 
@@ -75,7 +76,8 @@ OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从
   "similar_traps": ["相似易错点1", "相似易错点2"],
   "generalization": "这类题可迁移的一般方法；无法判断时填写空字符串",
   "review_advice": "复习建议；无法判断时填写空字符串",
-  "variant_questions": ["变式题1", "变式题2"]
+  "variant_questions": ["变式题1", "变式题2"],
+  "diagrams": [{"type": "flowchart", "title": "图示标题", "mermaid": "graph TD; A-->B"}]
 }
 
 字段要求：
@@ -135,9 +137,28 @@ OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从
 再次强调：
 
 你只负责识别与结构化提取，不负责完整解题。
-输出必须是严格合法 JSON。"""
+输出必须是严格合法 JSON。
 
-TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据用户提供的题目文本进行完整分析，并输出结构化 JSON。
+## 数学公式规范
+所有数学公式必须使用 LaTeX 语法：
+- 行内公式：$...$ 例如 $E = mc^2$
+- 块级公式：$$...$$ 例如 $$\frac{6 \times 8}{100 \times 10^6} = 0.48\mu s$$
+- 禁止输出裸 \frac、\sqrt、\int 等命令，必须包裹在 $ 或 $$ 中
+- 希腊字母用 LaTeX：$\mu$ 而非 \mu 或 μ
+- 单位用 LaTeX：$\mu s$、$m/s^2$
+
+## 图示规范
+如果题目涉及以下类型，必须在 diagrams 字段输出对应的 Mermaid 图示：
+- 流程/算法题 → type: "flowchart", 用 Mermaid graph TD 语法
+- 时间线/事件顺序 → type: "timeline", 用 Mermaid timeline 语法
+- 公式推导/数学证明 → type: "formula_breakdown", 用 Mermaid graph 语法展示推导步骤
+- 网络拓扑/协议 → type: "network_topology", 用 Mermaid graph 语法
+- 几何图形 → type: "geometry", 用 Mermaid 语法描述几何关系
+- 状态机/有限自动机 → type: "state_machine", 用 Mermaid stateDiagram 语法
+如果题目不需要图示，diagrams 返回空数组 []。
+每个 diagram 的 mermaid 字段必须是有效的 Mermaid 语法字符串。"""
+
+TEXT_SYSTEM_PROMPT = r"""你是一个严谨的学习解题助手，负责根据用户提供的题目文本进行完整分析，并输出结构化 JSON。
 
 你的核心任务是：
 
@@ -177,7 +198,8 @@ TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据�
   "similar_traps": ["相似易错点1", "相似易错点2"],
   "generalization": "举一反三，说明同类题的一般解法",
   "review_advice": "复习建议，包含今天、3 天后、7 天后的安排",
-  "variant_questions": ["变式题1", "变式题2"]
+  "variant_questions": ["变式题1", "变式题2"],
+  "diagrams": [{"type": "flowchart", "title": "图示标题", "mermaid": "graph TD; A-->B"}]
 }
 
 字段要求：
@@ -274,7 +296,26 @@ TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据�
 再次强调：
 
 输出必须是严格合法 JSON。
-不要输出 JSON 以外的任何内容。"""
+不要输出 JSON 以外的任何内容。
+
+## 数学公式规范
+所有数学公式必须使用 LaTeX 语法：
+- 行内公式：$...$ 例如 $E = mc^2$
+- 块级公式：$$...$$ 例如 $$\frac{6 \times 8}{100 \times 10^6} = 0.48\mu s$$
+- 禁止输出裸 \frac、\sqrt、\int 等命令，必须包裹在 $ 或 $$ 中
+- 希腊字母用 LaTeX：$\mu$ 而非 \mu 或 μ
+- 单位用 LaTeX：$\mu s$、$m/s^2$
+
+## 图示规范
+如果题目涉及以下类型，必须在 diagrams 字段输出对应的 Mermaid 图示：
+- 流程/算法题 → type: "flowchart", 用 Mermaid graph TD 语法
+- 时间线/事件顺序 → type: "timeline", 用 Mermaid timeline 语法
+- 公式推导/数学证明 → type: "formula_breakdown", 用 Mermaid graph 语法展示推导步骤
+- 网络拓扑/协议 → type: "network_topology", 用 Mermaid graph 语法
+- 几何图形 → type: "geometry", 用 Mermaid 语法描述几何关系
+- 状态机/有限自动机 → type: "state_machine", 用 Mermaid stateDiagram 语法
+如果题目不需要图示，diagrams 返回空数组 []。
+每个 diagram 的 mermaid 字段必须是有效的 Mermaid 语法字符串。"""
 
 
 def _list_of_strings(value) -> list[str]:
@@ -289,6 +330,19 @@ def _list_of_strings(value) -> list[str]:
 
 
 def _parse_result(result: dict, related_notes: list[dict] | None = None) -> AnalyzeResponse:
+    _VALID_DIAGRAM_TYPES = {"flowchart", "timeline", "formula_breakdown", "network_topology", "geometry", "state_machine"}
+    raw_diagrams = result.get("diagrams", [])
+    diagrams = []
+    for d in raw_diagrams:
+        if isinstance(d, dict) and d.get("mermaid"):
+            dtype = d.get("type", "flowchart")
+            if dtype not in _VALID_DIAGRAM_TYPES:
+                dtype = "flowchart"
+            diagrams.append(DiagramItem(
+                type=dtype,
+                title=d.get("title", ""),
+                mermaid=d["mermaid"],
+            ))
     return AnalyzeResponse(
         title=result.get("title", ""),
         question=result.get("question", ""),
@@ -305,6 +359,7 @@ def _parse_result(result: dict, related_notes: list[dict] | None = None) -> Anal
         review_advice=result.get("review_advice", ""),
         variant_questions=_list_of_strings(result.get("variant_questions")),
         related_notes=related_notes or [],
+        diagrams=diagrams,
     )
 
 
@@ -381,6 +436,127 @@ async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin
 
     related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
     return _parse_result(result, related)
+
+
+@router.post("/analyze-stream")
+async def analyze_mistake_stream(req: AnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    _check_rate_limit()
+
+    async def event_stream():
+        import asyncio
+        try:
+            yield f"data: {json.dumps({'type': 'received', 'label': '收到请求，正在处理...'})}\n\n"
+            await asyncio.sleep(0)
+
+            if not req.images:
+                yield f"data: {json.dumps({'type': 'error', 'message': '至少需要一张图片'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'validating_input', 'label': '正在验证输入...'})}\n\n"
+            await asyncio.sleep(0)
+
+            content = [{"type": "text", "text": OCR_SYSTEM_PROMPT}]
+            for img in req.images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
+                })
+
+            messages = [
+                {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
+                {"role": "user", "content": content},
+            ]
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'calling_model', 'label': '正在调用 AI 模型分析图片...'})}\n\n"
+            await asyncio.sleep(0)
+
+            try:
+                result = await call_ocr_model(messages)
+            except ValueError as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                return
+            except RuntimeError as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'parsing_model_output', 'label': '正在解析AI分析结果...'})}\n\n"
+            await asyncio.sleep(0)
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'finding_related_notes', 'label': '正在查找相关笔记...'})}\n\n"
+            await asyncio.sleep(0)
+
+            related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
+            await asyncio.sleep(0)
+
+            parsed = _parse_result(result, related)
+            yield f"data: {json.dumps({'type': 'result', 'data': parsed.model_dump()})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'label': '分析完成'})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    })
+
+
+@router.post("/analyze-text-stream")
+async def analyze_text_stream(req: TextAnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    _check_rate_limit()
+
+    async def event_stream():
+        import asyncio
+        try:
+            yield f"data: {json.dumps({'type': 'received', 'label': '收到请求，正在处理...'})}\n\n"
+            await asyncio.sleep(0)
+
+            if not req.text.strip():
+                yield f"data: {json.dumps({'type': 'error', 'message': '请输入题目文本'})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'validating_input', 'label': '正在验证输入...'})}\n\n"
+            await asyncio.sleep(0)
+
+            messages = [
+                {"role": "system", "content": TEXT_SYSTEM_PROMPT},
+                {"role": "user", "content": req.text},
+            ]
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'calling_model', 'label': '正在调用 AI 模型分析题目...'})}\n\n"
+            await asyncio.sleep(0)
+
+            try:
+                result = await call_text_model(messages)
+            except ValueError as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                return
+            except RuntimeError as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                return
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'parsing_model_output', 'label': '正在解析AI分析结果...'})}\n\n"
+            await asyncio.sleep(0)
+
+            yield f"data: {json.dumps({'type': 'progress', 'step': 'finding_related_notes', 'label': '正在查找相关笔记...'})}\n\n"
+            await asyncio.sleep(0)
+
+            related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
+            await asyncio.sleep(0)
+
+            parsed = _parse_result(result, related)
+            yield f"data: {json.dumps({'type': 'result', 'data': parsed.model_dump()})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'label': '分析完成'})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    })
 
 
 KNOWLEDGE_SUMMARY_SYSTEM_PROMPT = """你是一个严谨的考研复习总结助手。你的任务是根据提供的 source references（来源引用）生成复习总结。

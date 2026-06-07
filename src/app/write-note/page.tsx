@@ -15,6 +15,7 @@ import { NoteToolbar } from './components/note-toolbar'
 import { NoteTemplatesDropdown } from './components/note-templates'
 import { SlashCommandMenu } from './components/slash-command-menu'
 import { AIAssistantPanel } from './components/ai-assistant-panel'
+import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { ArrowLeft } from 'lucide-react'
 
@@ -24,6 +25,8 @@ export default function WriteNotePage() {
 	const router = useRouter()
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
+	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
+	const [pendingSave, setPendingSave] = useState<((tags?: string[]) => Promise<void>) | null>(null)
 	const { tab, setTab } = useNoteEditorTab()
 
 	const [categories, setCategories] = useState<Category[]>([])
@@ -72,6 +75,22 @@ export default function WriteNotePage() {
 		if (!form.title.trim()) return toast.warning('请输入标题')
 		if (!form.content.trim()) return toast.warning('请输入内容')
 
+		if (form.tags.length === 0) {
+			const skipReminder = localStorage.getItem('skipEmptyTagReminder')
+			if (skipReminder === 'true') {
+				await performSave()
+				return
+			}
+			setPendingSave(() => performSave)
+			setShowTagSuggestion(true)
+			return
+		}
+
+		await performSave()
+	}
+
+	const performSave = async (overrideTags?: string[]) => {
+		const tags = overrideTags ?? form.tags
 		setSaving(true)
 		try {
 			const autoSlug = form.title.trim().toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || `note-${Date.now()}`
@@ -82,7 +101,7 @@ export default function WriteNotePage() {
 				title: form.title,
 				content: form.content,
 				type: form.type,
-				tags: form.tags,
+				tags,
 				summary: form.summary || undefined,
 				category: form.category || undefined,
 				cover: form.cover || undefined,
@@ -215,6 +234,7 @@ export default function WriteNotePage() {
 								onApplyTitle={(t) => update('title', t)}
 								onApplySummary={(s) => update('summary', s)}
 								onApplyTags={(tags) => update('tags', [...new Set([...form.tags, ...tags])])}
+							onApplyCategory={(c) => update('category', c)}
 							/>
 						</div>
 					</>
@@ -281,6 +301,28 @@ export default function WriteNotePage() {
 					</Link>
 				</div>
 			</div>
+
+			<TagSuggestionDialog
+				open={showTagSuggestion}
+				content={form.content}
+				title={form.title}
+				existingTags={form.tags}
+				onApply={(tags) => {
+					setShowTagSuggestion(false)
+					const merged = [...new Set([...form.tags, ...tags])]
+					update('tags', merged)
+					pendingSave?.(merged)
+				}}
+				onSkip={() => {
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+				onDontRemind={() => {
+					localStorage.setItem('skipEmptyTagReminder', 'true')
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+			/>
 		</div>
 	)
 }

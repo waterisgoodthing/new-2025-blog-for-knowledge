@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useMemo, useRef } from 'react'
 import { motion } from 'motion/react'
-import { MoreHorizontal, GripVertical } from 'lucide-react'
+import { MoreHorizontal, GripVertical, ExternalLink, Pencil, Trash2, Copy } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
@@ -11,8 +11,12 @@ import { KnowledgeSidebar } from './components/knowledge-sidebar'
 import { SuggestionCard } from './components/suggestion-card'
 import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
+import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
 import { EmptyState } from '@/components/empty-state'
 import { moveNoteToFolder } from '@/lib/api/folders'
+import { deleteNote } from '@/lib/api/notes'
+import { useRouter } from 'next/navigation'
+import { getContentEditHref, getContentDetailHref, type ContentType } from '@/lib/content-routes'
 import { toast } from 'sonner'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
@@ -20,6 +24,7 @@ const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/2
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 
 export default function NotesPage() {
+	const router = useRouter()
 	const [type, setType] = useState<string>('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
@@ -29,6 +34,12 @@ export default function NotesPage() {
 	const [moveTarget, setMoveTarget] = useState<{ slug: string; title: string } | null>(null)
 	const [draggingSlug, setDraggingSlug] = useState<string | null>(null)
 	const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+	const [ctxMenu, setCtxMenu] = useState<{ slug: string; title: string; type: ContentType; x: number; y: number } | null>(null)
+
+	const handleTagChange = (tag: string | null) => {
+		setActiveTag(tag)
+		setPage(1)
+	}
 
 	const handleDropToFolder = async (folderId: string | null) => {
 		if (!draggingSlug) return
@@ -51,6 +62,8 @@ export default function NotesPage() {
 		else if (filter === 'inbox') setType('')
 		else if (['note', 'blog', 'mistake'].includes(filter)) setType(filter)
 	}
+
+	const showDashboard = activeFilter === 'all' && !activeFolderId && !activeTag && !q
 
 	const { data, isLoading, mutate } = useNoteIndex({
 		type: type as any || undefined,
@@ -75,6 +88,35 @@ export default function NotesPage() {
 		return Array.from(tagsRef.current.values())
 	}, [data?.items])
 
+	const getContextMenuItems = (): ContextMenuItem[] => {
+		if (!ctxMenu) return []
+		return [
+			{ label: '打开', icon: <ExternalLink size={14} />, onClick: () => router.push(getContentDetailHref(ctxMenu.type, ctxMenu.slug)) },
+			{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug)) },
+			{ label: '移动到文件夹', icon: <GripVertical size={14} />, onClick: () => setMoveTarget({ slug: ctxMenu.slug, title: ctxMenu.title }) },
+			{ label: '复制链接', icon: <Copy size={14} />, onClick: () => {
+				navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}`)
+				toast.success('链接已复制')
+			}},
+			{ label: '删除', icon: <Trash2 size={14} />, variant: 'danger', onClick: async () => {
+				if (!confirm(`确定要删除「${ctxMenu.title}」吗？`)) return
+				try {
+					await deleteNote(ctxMenu.slug)
+					toast.success('已删除')
+					mutate()
+				} catch (e: any) {
+					toast.error('删除失败: ' + e.message)
+				}
+			}},
+		]
+	}
+
+	const getCreateAction = () => {
+		if (activeFilter === 'blog') return { label: '写博客', href: '/write' }
+		if (activeFilter === 'mistake') return { label: '写错题', href: '/write-mistake' }
+		return { label: '写笔记', href: '/write-note' }
+	}
+
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
 			<motion.h1
@@ -92,7 +134,7 @@ export default function NotesPage() {
 					activeTag={activeTag}
 					onFilterChange={handleFilterChange}
 					onFolderChange={setActiveFolderId}
-					onTagChange={setActiveTag}
+					onTagChange={handleTagChange}
 					onDropNote={handleDropToFolder}
 					dragOverFolderId={dragOverFolderId}
 					onDragOverFolderChange={setDragOverFolderId}
@@ -110,49 +152,50 @@ export default function NotesPage() {
 					className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
 				/>
 				<div className='flex gap-2'>
-					{['', 'note', 'blog', 'mistake'].map(t => (
-						<button
-							key={t}
-							onClick={() => { setType(t); setPage(1) }}
-							className={cn(
-								'rounded-full px-3 py-1 text-sm transition-colors',
-								type === t ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 hover:bg-white/80'
-							)}
-						>
-							{t ? typeLabels[t as keyof typeof typeLabels] : '全部'}
-						</button>
-					))}
+							{['', 'note', 'blog', 'mistake'].map(t => (
+								<button
+									key={t}
+									onClick={() => { setType(t); setPage(1); setActiveFilter(t || 'all'); setActiveFolderId(null); setActiveTag(null) }}
+									className={cn(
+										'rounded-full px-3 py-1 text-sm transition-colors',
+										type === t ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 hover:bg-white/80'
+									)}
+								>
+									{t ? typeLabels[t as keyof typeof typeLabels] : '全部'}
+								</button>
+							))}
 				</div>
-				<Link
-					href='/write-note'
-					className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
-				>
-					写笔记
-				</Link>
+				{(() => {
+					const createAction = getCreateAction()
+					return <Link
+						href={createAction.href}
+						className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
+					>
+						{createAction.label}
+					</Link>
+				})()}
 			</div>
 
-			<SuggestionCard onExecuted={() => mutate()} />
-			<WeeklySummaryCard />
+			<SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />
+			{showDashboard && <WeeklySummaryCard />}
 
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>
 			) : data?.items.length === 0 ? (
-				<div className='py-20'><EmptyState variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'} title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'} description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '创建你的第一篇笔记开始记录'} action={{ label: '新建笔记', href: '/write-note' }} /></div>
+				<div className='py-20'><EmptyState variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'} title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'} description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '创建你的第一篇笔记开始记录'} action={getCreateAction()} /></div>
 			) : (
 				<div className='space-y-3'>
-					{data?.items.map((item, i) => (
-						<motion.div
+					{data?.items.map((item) => (
+						<div
 							key={item.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: i * 0.05 }}
 							draggable
 							onDragStart={() => setDraggingSlug(item.slug)}
 							onDragEnd={() => { setDraggingSlug(null); setDragOverFolderId(null) }}
+							onContextMenu={e => { e.preventDefault(); setCtxMenu({ slug: item.slug, title: item.title, type: item.type, x: e.clientX, y: e.clientY }) }}
 							className={cn(draggingSlug === item.slug && 'opacity-50')}
 						>
 							<Link
-								href={`/notes/${item.slug}`}
+								href={getContentDetailHref(item.type, item.slug)}
 								className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'
 							>
 								<div className='mb-2 flex items-center gap-2'>
@@ -200,7 +243,7 @@ export default function NotesPage() {
 									</div>
 								)}
 							</Link>
-						</motion.div>
+						</div>
 					))}
 				</div>
 			)}
@@ -228,6 +271,15 @@ export default function NotesPage() {
 			)}
 				</div>
 			</div>
+
+			{ctxMenu && (
+				<ContextMenu
+					open={!!ctxMenu}
+					position={{ x: ctxMenu.x, y: ctxMenu.y }}
+					items={getContextMenuItems()}
+					onClose={() => setCtxMenu(null)}
+				/>
+			)}
 
 			{moveTarget && (
 				<MoveToFolderDialog
