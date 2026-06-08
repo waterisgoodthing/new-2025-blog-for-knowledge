@@ -65,6 +65,18 @@
   - Clears the hover timer on unmount through `clearTimer` cleanup.
 - Non-blocking observation: `listCategories()` still depends on the backend API being reachable from the frontend dev environment. When the backend is unavailable or running on a different port, category loading can fail and the editor falls back to the `无分类` option. This is a pre-existing environment/configuration issue, not introduced by this workflow.
 
+## Deployment Verification
+
+- Command: `source ~/.zshrc && npm run deploy:full`
+- Result: **Pass** — TypeScript and OpenNext Cloudflare build passed; Wrangler uploaded 13 new or modified static assets.
+- Build ID: `gtAuzMAUlD7UCnniUA7Vg`
+- Custom domain check: `https://blog.limengyang.me` returned `HTTP 200`.
+- Worker domain check: `https://2025-blog-public.17527677392.workers.dev` returned `HTTP 200`.
+- Build identity check: local `.open-next/assets/BUILD_ID`, `https://blog.limengyang.me/BUILD_ID`, and `https://2025-blog-public.17527677392.workers.dev/BUILD_ID` all returned `gtAuzMAUlD7UCnniUA7Vg`.
+- Route check: `https://blog.limengyang.me/write-note` returned `HTTP 200`.
+- Asset check: `https://blog.limengyang.me/_next/static/chunks/172ce6cb85bafedf.js` returned `HTTP 200`.
+- Warnings: OpenNext reported generated-bundle warnings for suspicious `! instanceof` parsing and `== NaN` comparisons in emitted server chunks. These warnings did not block deployment.
+
 ## Residual Risks
 
 1. **Static assets**: Some `/music/*`, `/images/share/*`, `/images/art/*`, `/images/blogger/*` content may be missing from `public/`. This is pre-existing debt, not introduced by this workflow.

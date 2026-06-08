@@ -20,6 +20,9 @@ export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false 
 	const [tagInput, setTagInput] = useState<Record<number, string>>({})
 	const [expanded, setExpanded] = useState(defaultExpanded)
 
+	useEffect(() => { setExpanded(defaultExpanded) }, [defaultExpanded])
+	useEffect(() => { if (suggestions.length === 0) setExpanded(false) }, [suggestions.length])
+
 	useEffect(() => {
 		loadSuggestions()
 	}, [])
@@ -116,13 +119,22 @@ export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false 
 					<Lightbulb size={16} className='text-[var(--color-brand)]' />
 					<h3 className='text-sm font-semibold text-gray-800'>AI 整理建议</h3>
 				</div>
-				<button
-					onClick={() => { loadSuggestions(); onRefresh?.() }}
-					className='text-gray-400 hover:text-gray-600'
-					aria-label='刷新建议'
-				>
-					<RefreshCw size={14} />
-				</button>
+				<div className='flex items-center gap-1'>
+					<button
+						onClick={() => { loadSuggestions(); onRefresh?.() }}
+						className='text-gray-400 hover:text-gray-600'
+						aria-label='刷新建议'
+					>
+						<RefreshCw size={14} />
+					</button>
+					<button
+						onClick={() => setExpanded(false)}
+						className='text-gray-400 hover:text-gray-600'
+						aria-label='收起 AI 建议'
+					>
+						<ChevronDown size={14} />
+					</button>
+				</div>
 			</div>
 
 			<div className='space-y-2'>

@@ -17,7 +17,7 @@ Upgrade the notes workspace and writing flows based on the June 7, 2026 feedback
 
 ## Current Status
 
-- Status: phase implementation complete; TypeScript validation passes and follow-up tooltip verification is recorded in `validation.md`.
+- Status: phase implementation complete; TypeScript validation passes, follow-up tooltip verification is recorded, and the current build is deployed to `https://blog.limengyang.me`.
 - Source implementation has been completed for the approved task list.
 - Existing dirty worktree must be preserved.
 - Non-blocking residual risks remain documented in `validation.md`, including category API dev-port mismatch and viewport-aware tooltip positioning.

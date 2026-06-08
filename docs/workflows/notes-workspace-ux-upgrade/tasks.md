@@ -10,8 +10,8 @@ Implementation must not start until this task list is explicitly approved in the
 
 - [x] **P0-01** Fix active tag toggling so clicking the selected tag clears it.
 - [x] **P0-02** Make tag section collapsible in `KnowledgeSidebar`.
-- [x] **P0-03** Show weekly summary only in the true "全部" context.
-- [x] **P0-04** Convert AI organization suggestions into a collapsible drawer/panel.
+- [x] **P0-03** Show weekly summary only in the true "全部" context + collapsible with expand/collapse toggle.
+- [x] **P0-04** Convert AI organization suggestions into a collapsible drawer/panel with both expand and collapse controls.
 - [x] **P0-05** Fix scroll/rendering instability by removing repeated entrance animations on list items.
 
 ## Phase 2: Organization Actions
@@ -27,10 +27,11 @@ Implementation must not start until this task list is explicitly approved in the
 
 ## Phase 4: Write Note Editor
 
-- [x] **P1-04** Add delayed explanatory tooltips to toolbar/template/insert controls using new `DelayedTooltip` component.
+- [ ] **P1-04** Add delayed explanatory tooltips to toolbar/template/insert controls using new `DelayedTooltip` component. **NOTE: Component created and wired, but actual hover interaction did not trigger tooltip during QA. Needs further debugging.**
 - [x] **P1-05** Expand templates with approved domain-neutral workflow categories: 记录型, 理解型, 分析型, 复盘型, 计划型, 整理型, 表达型.
 - [x] **P1-06** Expand insert menu with approved content blocks (callout, details/fold, Mermaid variants, markmap, chart, code variants).
 - [x] **P1-07** Ensure all icon-only controls remain accessible (verified: all buttons have aria-labels or are wrapped with DelayedTooltip).
+- [ ] **P1-14** Browser-check right-click context menu on real note cards — blocked by empty local data, code paths verified.
 
 ## Phase 5: Writing AI
 
