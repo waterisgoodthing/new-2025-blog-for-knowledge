@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import { createNote, uploadImage } from '@/lib/api/notes'
 import { listCategories, type Category } from '@/lib/api/meta'
@@ -18,11 +18,21 @@ import { AIAssistantPanel } from './components/ai-assistant-panel'
 import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { ArrowLeft } from 'lucide-react'
+import { AuthGate } from '@/components/auth-gate'
 
 const NotePreviewContent = dynamic(() => import('./components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function WriteNotePage() {
+	return (
+		<AuthGate>
+			<WriteNoteContent />
+		</AuthGate>
+	)
+}
+
+function WriteNoteContent() {
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
 	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
@@ -48,6 +58,23 @@ export default function WriteNotePage() {
 	})
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+	useEffect(() => {
+		if (searchParams.get('ai_prefill') === '1') {
+			try {
+				const stored = sessionStorage.getItem('ai_prefill_note')
+				if (stored) {
+					const data = JSON.parse(stored)
+					setForm(f => ({
+						...f,
+						title: data.title || f.title,
+						content: data.content || f.content,
+					}))
+					sessionStorage.removeItem('ai_prefill_note')
+				}
+			} catch {}
+		}
+	}, [searchParams])
 
 	const addTag = () => {
 		const tag = form.tagInput.trim()

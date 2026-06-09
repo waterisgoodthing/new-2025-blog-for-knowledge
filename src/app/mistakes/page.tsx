@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
 import { EmptyState } from '@/components/empty-state'
+import { WeakPointDiagnosis } from './components/weak-point-diagnosis'
 
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
@@ -157,6 +158,10 @@ export default function MistakesPage() {
 					</div>
 				</div>
 			)}
+
+			<div className='mb-6'>
+				<WeakPointDiagnosis />
+			</div>
 
 			<div className='mb-6 flex flex-wrap items-center gap-3'>
 				{(stats?.due_today ?? 0) > 0 && (

@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
 	reactStrictMode: false,
 	reactCompiler: true,
 	pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-	serverExternalPackages: ['mermaid', 'katex', 'shiki', 'marked', 'html-react-parser'],
 	experimental: {
 		scrollRestoration: false
 	},

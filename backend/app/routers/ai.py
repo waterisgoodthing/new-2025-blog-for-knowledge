@@ -2,7 +2,7 @@ import json
 import time
 from collections import defaultdict
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,6 +27,24 @@ router = APIRouter(prefix="/api/ai", tags=["ai"])
 _rate_limit_store: dict[str, list[float]] = defaultdict(list)
 RATE_LIMIT_MAX = 10
 RATE_LIMIT_WINDOW = 60
+
+
+@router.get("/config")
+async def get_ai_config(
+    _admin=Depends(get_current_admin),
+):
+    from app.config import get_settings
+    settings = get_settings()
+    return {
+        "ai_model": settings.AI_MODEL,
+        "ai_base_url": settings.AI_BASE_URL,
+        "dashscope_model": settings.DASHSCOPE_MODEL,
+        "deepseek_model": settings.DEEPSEEK_MODEL,
+        "has_ai_key": bool(settings.AI_API_KEY),
+        "has_dashscope_key": bool(settings.DASHSCOPE_API_KEY),
+        "has_deepseek_key": bool(settings.DEEPSEEK_API_KEY),
+    }
+
 
 def _check_rate_limit(key: str = "global") -> None:
     now = time.time()
@@ -385,10 +403,22 @@ async def _find_related_notes(db: AsyncSession, subject: str | None, knowledge_p
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+async def analyze_mistake(
+    req: AnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
     _check_rate_limit()
     if not req.images:
         raise HTTPException(status_code=400, detail="At least one image is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze", after={"image_count": len(req.images)},
+    )
 
     content = [{"type": "text", "text": OCR_SYSTEM_PROMPT}]
 
@@ -417,10 +447,22 @@ async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin)
 
 
 @router.post("/analyze-text", response_model=AnalyzeResponse)
-async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+async def analyze_text(
+    req: TextAnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
     _check_rate_limit()
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_text", after={"text_length": len(req.text)},
+    )
 
     messages = [
         {"role": "system", "content": TEXT_SYSTEM_PROMPT},
@@ -439,8 +481,20 @@ async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin
 
 
 @router.post("/analyze-stream")
-async def analyze_mistake_stream(req: AnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+async def analyze_mistake_stream(
+    req: AnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
     _check_rate_limit()
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_stream", after={"image_count": len(req.images)},
+    )
 
     async def event_stream():
         import asyncio
@@ -503,8 +557,20 @@ async def analyze_mistake_stream(req: AnalyzeRequest, _admin=Depends(get_current
 
 
 @router.post("/analyze-text-stream")
-async def analyze_text_stream(req: TextAnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+async def analyze_text_stream(
+    req: TextAnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
     _check_rate_limit()
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_text_stream", after={"text_length": len(req.text)},
+    )
 
     async def event_stream():
         import asyncio
@@ -559,6 +625,135 @@ async def analyze_text_stream(req: TextAnalyzeRequest, _admin=Depends(get_curren
     })
 
 
+VARIANT_SYSTEM_PROMPT = """你是一个严谨的出题助手。根据给定的知识点和学科，生成一道变式练习题。
+
+要求：
+- 题目应考查相同知识点，但题干、数值或场景与原题不同
+- 难度适中
+- 必须给出正确答案和简要解析
+- 输出严格合法 JSON
+
+输出格式：
+{
+  "question": "完整题目文本",
+  "correct_answer": "正确答案",
+  "analysis": "简要解析，分步骤说明",
+  "difficulty": "easy|medium|hard",
+  "knowledge_points": "涉及的知识点"
+}
+
+不要输出 JSON 以外的任何内容。"""
+
+
+@router.post("/generate-variant")
+async def generate_variant(
+    req: dict,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+    knowledge_point = req.get("knowledge_point", "").strip()
+    subject = req.get("subject", "").strip()
+    if not knowledge_point:
+        raise HTTPException(status_code=400, detail="knowledge_point is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_generate_variant", after={"knowledge_point": knowledge_point},
+    )
+
+    user_content = f"知识点: {knowledge_point}"
+    if subject:
+        user_content += f"\n学科: {subject}"
+
+    messages = [
+        {"role": "system", "content": VARIANT_SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+
+    try:
+        result = await call_text_model(messages)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return {
+        "question": result.get("question", ""),
+        "correct_answer": result.get("correct_answer", ""),
+        "analysis": result.get("analysis", ""),
+        "difficulty": result.get("difficulty", "medium"),
+        "knowledge_points": result.get("knowledge_points", knowledge_point),
+        "subject": subject,
+    }
+
+
+KNOWLEDGE_CARD_SYSTEM_PROMPT = """你是一个严谨的学习助手。根据给定的知识点和学科，生成一张结构化的知识卡片。
+
+要求：
+- 涵盖知识点的核心概念、公式/定理、典型应用、常见易错点
+- 内容准确、条理清晰
+- 适合作为复习提纲使用
+- 输出严格合法 JSON
+
+输出格式：
+{
+  "title": "知识卡片标题",
+  "content": "知识卡片的完整 Markdown 内容，包含：核心概念、关键公式/定理、典型例题思路、易错点提醒",
+  "knowledge_points": "涉及的知识点",
+  "subject": "学科"
+}
+
+不要输出 JSON 以外的任何内容。"""
+
+
+@router.post("/generate-knowledge-card")
+async def generate_knowledge_card(
+    req: dict,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+    knowledge_point = req.get("knowledge_point", "").strip()
+    subject = req.get("subject", "").strip()
+    if not knowledge_point:
+        raise HTTPException(status_code=400, detail="knowledge_point is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_generate_knowledge_card", after={"knowledge_point": knowledge_point},
+    )
+
+    user_content = f"知识点: {knowledge_point}"
+    if subject:
+        user_content += f"\n学科: {subject}"
+
+    messages = [
+        {"role": "system", "content": KNOWLEDGE_CARD_SYSTEM_PROMPT},
+        {"role": "user", "content": user_content},
+    ]
+
+    try:
+        result = await call_text_model(messages)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return {
+        "title": result.get("title", knowledge_point),
+        "content": result.get("content", ""),
+        "knowledge_points": result.get("knowledge_points", knowledge_point),
+        "subject": result.get("subject", subject),
+    }
+
+
 KNOWLEDGE_SUMMARY_SYSTEM_PROMPT = """你是一个严谨的考研复习总结助手。你的任务是根据提供的 source references（来源引用）生成复习总结。
 
 核心规则：
@@ -595,12 +790,21 @@ KNOWLEDGE_SUMMARY_SYSTEM_PROMPT = """你是一个严谨的考研复习总结助�
 
 @router.post("/knowledge-summary", response_model=KnowledgeSummaryResponse | InsufficientContextResponse)
 async def knowledge_summary(
-    request: KnowledgeSummaryRequest,
+    request_body: KnowledgeSummaryRequest,
+    request: Request,
     _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
 ):
     _check_rate_limit()
 
-    sources = request.context_pack.sources
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_knowledge_summary", after={"source_count": len(request_body.context_pack.sources)},
+    )
+
+    sources = request_body.context_pack.sources
     if not sources or len(sources) == 0:
         return InsufficientContextResponse(
             status="insufficient_context",
@@ -616,31 +820,31 @@ async def knowledge_summary(
         )
 
     related_notes_ctx = ""
-    if request.context_pack.related_notes:
+    if request_body.context_pack.related_notes:
         related_notes_ctx = "\n相关笔记:\n" + "\n".join(
             f"- {n.title} (subject: {n.subject}, slug: {n.slug})"
-            for n in request.context_pack.related_notes[:5]
+            for n in request_body.context_pack.related_notes[:5]
         )
 
     related_mistakes_ctx = ""
-    if request.context_pack.related_mistakes:
+    if request_body.context_pack.related_mistakes:
         related_mistakes_ctx = "\n相关错题:\n" + "\n".join(
             f"- {m.title} (subject: {m.subject}, difficulty: {m.difficulty})"
-            for m in request.context_pack.related_mistakes[:5]
+            for m in request_body.context_pack.related_mistakes[:5]
         )
 
     stats_ctx = ""
-    if request.context_pack.stats:
-        stats = request.context_pack.stats
+    if request_body.context_pack.stats:
+        stats = request_body.context_pack.stats
         stats_ctx = f"\n统计: 错题数={stats.mistake_count}, 笔记数={stats.note_count}"
         if stats.top_error_reasons:
             stats_ctx += f", 高频错误原因: {'、'.join(stats.top_error_reasons)}"
 
     user_content = (
-        f"Mode: {request.mode}\n"
-        f"Language: {request.requirements.get('language', 'zh-CN')}\n"
-        f"Style: {request.requirements.get('style', 'exam_review')}\n"
-        f"Max length: {request.requirements.get('max_length', 1200)}\n"
+        f"Mode: {request_body.mode}\n"
+        f"Language: {request_body.requirements.get('language', 'zh-CN')}\n"
+        f"Style: {request_body.requirements.get('style', 'exam_review')}\n"
+        f"Max length: {request_body.requirements.get('max_length', 1200)}\n"
         f"\n--- Source References ---\n"
         + "\n\n".join(source_context)
         + related_notes_ctx

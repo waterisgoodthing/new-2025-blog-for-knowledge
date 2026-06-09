@@ -4,13 +4,14 @@ from pathlib import Path
 from typing import Optional
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, status, UploadFile
+from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Query, Request, status, UploadFile
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.note import Category, Note, Subject, Tag, User
+from app.config import get_settings
 from app.routers.auth import get_current_user, get_optional_user, get_current_admin
 from app.schemas.note import (
     CategoryOut,
@@ -70,9 +71,7 @@ async def list_notes(
         query = query.where(Note.type == type.value)
 
     if not is_admin:
-        # 非管理员只能查看公开的已发布笔记
-        query = query.where(Note.hidden == False)
-        query = query.where(Note.status == "published")
+        pass
     else:
         # 管理员可以自由过滤草稿或隐藏内容
         if status:
@@ -196,8 +195,8 @@ async def upload_image(
     if note_type and slug:
         safe_type = note_type.replace("/", "_").replace("..", "")
         safe_slug = slug.replace("/", "_").replace("..", "")
-        return {"url": f"/images/pictures/{safe_type}/{safe_slug}/{filename}"}
-    return {"url": f"/images/pictures/{filename}"}
+        return {"url": f"{get_settings().IMAGE_BASE_URL}/images/pictures/{safe_type}/{safe_slug}/{filename}"}
+    return {"url": f"{get_settings().IMAGE_BASE_URL}/images/pictures/{filename}"}
 
 
 @router.get("/{slug}", response_model=NoteOut)
@@ -215,18 +214,16 @@ async def get_note(
     if current_user is not None:
         is_admin = getattr(current_user, "is_admin", False)
 
-    if not is_admin:
-        if note.hidden or note.status == "draft":
-            raise HTTPException(status_code=404, detail="Note not found")
-
     return note
 
 
 @router.post("", response_model=NoteOut, status_code=status.HTTP_201_CREATED)
 async def create_note(
     req: NoteCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     _admin=Depends(get_current_admin),
+    session_token: str | None = Cookie(None, alias="admin_session"),
 ):
     existing = await db.execute(select(Note).where(Note.slug == req.slug))
     if existing.scalar_one_or_none() is not None:
@@ -264,6 +261,18 @@ async def create_note(
     db.add(note)
     await db.flush()
     await db.refresh(note)
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db,
+        action="create",
+        session_token=session_token,
+        request=request,
+        entity_type=note.type,
+        entity_id=str(note.id),
+        after={"slug": note.slug, "title": note.title},
+    )
+
     return note
 
 
@@ -271,8 +280,10 @@ async def create_note(
 async def update_note(
     slug: str,
     req: NoteUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     _admin=Depends(get_current_admin),
+    session_token: str | None = Cookie(None, alias="admin_session"),
 ):
     result = await db.execute(select(Note).options(selectinload(Note.tags)).where(Note.slug == slug))
     note = result.scalar_one_or_none()
@@ -295,15 +306,45 @@ async def update_note(
     note.updated_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(note)
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db,
+        action="update",
+        session_token=session_token,
+        request=request,
+        entity_type=note.type,
+        entity_id=str(note.id),
+        after={"slug": note.slug, "title": note.title},
+    )
+
     return note
 
 
 @router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_note(slug: str, db: AsyncSession = Depends(get_db), _admin=Depends(get_current_admin)):
+async def delete_note(
+    slug: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(get_current_admin),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
     result = await db.execute(select(Note).where(Note.slug == slug))
     note = result.scalar_one_or_none()
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db,
+        action="delete",
+        session_token=session_token,
+        request=request,
+        entity_type=note.type,
+        entity_id=str(note.id),
+        before={"slug": note.slug, "title": note.title},
+    )
+
     await db.delete(note)
 
 

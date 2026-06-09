@@ -1,11 +1,11 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
-from jose import JWTError, jwt
 
-from app.config import get_settings
-
-settings = get_settings()
+PASSKEY_SESSION_DAYS = 7
+PASSWORD_SESSION_DAYS = 3
 
 
 def hash_password(password: str) -> str:
@@ -16,15 +16,17 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
-def create_access_token(data: dict) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+def generate_session_token() -> str:
+    return secrets.token_urlsafe(48)
 
 
-def decode_access_token(token: str) -> dict | None:
-    try:
-        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-    except JWTError:
-        return None
+def hash_session_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def get_session_expiry(auth_level: str) -> datetime:
+    if auth_level == "passkey":
+        days = PASSKEY_SESSION_DAYS
+    else:
+        days = PASSWORD_SESSION_DAYS
+    return datetime.now(timezone.utc) + timedelta(days=days)

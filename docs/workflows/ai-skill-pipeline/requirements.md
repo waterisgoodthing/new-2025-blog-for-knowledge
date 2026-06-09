@@ -127,6 +127,44 @@ The workflow must record installation commands and known setup problems for:
 - ian-xiaohei-illustrations
 - notebooklm-skill
 
+### FR8: Mistake Detail Related Knowledge Display
+
+The existing mistake detail view must show structured related knowledge from `POST /api/knowledge/context-pack`.
+
+Rules:
+
+- Only render this panel for `note.type === "mistake"`.
+- Use the current mistake's `subject`, `knowledge_points`, tags, `difficulty`, and type hints as query input.
+- Show related notes, similar mistakes, relation suggestions, and source excerpts when available.
+- Empty results must render a quiet empty state.
+- Loading and API error states must not block the rest of the mistake detail page.
+- Links must use existing `/notes/{slug}` detail routes.
+- Do not persist relation suggestions in this phase.
+
+### FR9: Weak-Point Summary Display
+
+The existing mistakes/review surfaces must show structured weak points from `GET /api/knowledge/weak-points`.
+
+Rules:
+
+- Use the existing `/mistakes` overview and/or `/mistakes/review` page.
+- Do not create a new route.
+- Show knowledge point, subject, mistake count, due review count, recent error count, top error reasons, and evidence sources when available.
+- Empty datasets must render a quiet empty state.
+- Loading and API error states must not block existing review stats or review queue behavior.
+
+### FR10: Frontend Scope Control
+
+This frontend round must stay within display integration:
+
+- No vector database.
+- No `KnowledgePoint` entity or management UI.
+- No relation persistence.
+- No new top-level route.
+- No NotebookLM runtime integration.
+- No social card export UI.
+- No AI summary generation UI unless separately approved.
+
 ## Non-Functional Requirements
 
 | Type | Requirement |
@@ -139,6 +177,8 @@ The workflow must record installation commands and known setup problems for:
 | Scope control | Avoid adding vector search or heavy graph modeling in phase 1. |
 | Determinism | Retrieval and weak-point endpoints must not call external AI providers. |
 | Auditability | Source-backed blocks must trace to source type, source ID, field, and excerpt when available. |
+| UI resilience | Knowledge panels must degrade gracefully when backend data is empty or unavailable. |
+| Frontend ergonomics | Operational pages should remain dense, readable, and review-focused. |
 
 ## Out of Scope For Phase 1
 
@@ -152,3 +192,6 @@ The workflow must record installation commands and known setup problems for:
 - Runtime dependency on OpenClaw, Claude Code, Codex, or local skill folders.
 - Automatic external AI calls inside deterministic retrieval endpoints.
 - Silent overwrite of original note, mistake, OCR, formula, code, answer, or source-reference content.
+- New frontend routes for this display round.
+- Relation confirmation/persistence UI.
+- AI summary generation UI.

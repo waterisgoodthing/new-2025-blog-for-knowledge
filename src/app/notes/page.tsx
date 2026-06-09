@@ -18,6 +18,7 @@ import { deleteNote } from '@/lib/api/notes'
 import { useRouter } from 'next/navigation'
 import { getContentEditHref, getContentDetailHref, type ContentType } from '@/lib/content-routes'
 import { toast } from 'sonner'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -25,6 +26,7 @@ const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yel
 
 export default function NotesPage() {
 	const router = useRouter()
+	const { isAdmin } = useAdminAuth()
 	const [type, setType] = useState<string>('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
@@ -90,25 +92,30 @@ export default function NotesPage() {
 
 	const getContextMenuItems = (): ContextMenuItem[] => {
 		if (!ctxMenu) return []
-		return [
+		const items: ContextMenuItem[] = [
 			{ label: '打开', icon: <ExternalLink size={14} />, onClick: () => router.push(getContentDetailHref(ctxMenu.type, ctxMenu.slug)) },
-			{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug)) },
-			{ label: '移动到文件夹', icon: <GripVertical size={14} />, onClick: () => setMoveTarget({ slug: ctxMenu.slug, title: ctxMenu.title }) },
 			{ label: '复制链接', icon: <Copy size={14} />, onClick: () => {
 				navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}`)
 				toast.success('链接已复制')
 			}},
-			{ label: '删除', icon: <Trash2 size={14} />, variant: 'danger', onClick: async () => {
-				if (!confirm(`确定要删除「${ctxMenu.title}」吗？`)) return
-				try {
-					await deleteNote(ctxMenu.slug)
-					toast.success('已删除')
-					mutate()
-				} catch (e: any) {
-					toast.error('删除失败: ' + e.message)
-				}
-			}},
 		]
+		if (isAdmin) {
+			items.push(
+				{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug)) },
+				{ label: '移动到文件夹', icon: <GripVertical size={14} />, onClick: () => setMoveTarget({ slug: ctxMenu.slug, title: ctxMenu.title }) },
+				{ label: '删除', icon: <Trash2 size={14} />, variant: 'danger', onClick: async () => {
+					if (!confirm(`确定要删除「${ctxMenu.title}」吗？`)) return
+					try {
+						await deleteNote(ctxMenu.slug)
+						toast.success('已删除')
+						mutate()
+					} catch (e: any) {
+						toast.error('删除失败: ' + e.message)
+					}
+				}},
+			)
+		}
+		return items
 	}
 
 	const getCreateAction = () => {
@@ -165,7 +172,7 @@ export default function NotesPage() {
 								</button>
 							))}
 				</div>
-				{(() => {
+				{isAdmin && (() => {
 					const createAction = getCreateAction()
 					return <Link
 						href={createAction.href}
@@ -176,7 +183,7 @@ export default function NotesPage() {
 				})()}
 			</div>
 
-			<SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />
+			{isAdmin && <SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />}
 			{showDashboard && <WeeklySummaryCard />}
 
 			{isLoading ? (
@@ -188,9 +195,9 @@ export default function NotesPage() {
 					{data?.items.map((item) => (
 						<div
 							key={item.id}
-							draggable
-							onDragStart={() => setDraggingSlug(item.slug)}
-							onDragEnd={() => { setDraggingSlug(null); setDragOverFolderId(null) }}
+							draggable={isAdmin}
+							onDragStart={isAdmin ? () => setDraggingSlug(item.slug) : undefined}
+							onDragEnd={isAdmin ? () => { setDraggingSlug(null); setDragOverFolderId(null) } : undefined}
 							onContextMenu={e => { e.preventDefault(); setCtxMenu({ slug: item.slug, title: item.title, type: item.type, x: e.clientX, y: e.clientY }) }}
 							className={cn(draggingSlug === item.slug && 'opacity-50')}
 						>
@@ -212,6 +219,7 @@ export default function NotesPage() {
 										{item.subject}
 									</span>
 								)}
+									{isAdmin && (
 									<button
 										type='button'
 										onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveTarget({ slug: item.slug, title: item.title }) }}
@@ -220,6 +228,7 @@ export default function NotesPage() {
 									>
 										<MoreHorizontal size={14} />
 									</button>
+								)}
 									<span className='shrink-0 text-xs text-gray-400'>
 										{dayjs(item.updated_at).format('YYYY-MM-DD')}
 									</span>

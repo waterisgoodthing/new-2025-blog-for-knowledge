@@ -6,13 +6,17 @@ import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { deleteNote, batchDeleteNotes } from '@/lib/api/notes'
-import { login, isLoggedIn, logout, getMe, type User } from '@/lib/api/auth'
+import { login, logout, getMe, type User } from '@/lib/api/auth'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
+import { Lock } from 'lucide-react'
 import dayjs from 'dayjs'
 import { MusicTab } from './music-tab'
 import { RecommendationTab } from './recommendation-tab'
+import { AITab } from './ai-tab'
+import { SecurityTab } from './security-tab'
+import { AuditTab } from './audit-tab'
 import { LogOut } from 'lucide-react'
 import { getContentDetailHref, getContentEditHref } from '@/lib/content-routes'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
@@ -22,13 +26,18 @@ import { SiteSettingsPanel } from '@/app/(home)/config-dialog/site-settings-pane
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
 
-type TabType = 'content' | 'music' | 'recommendation' | 'settings'
+type TabType = 'overview' | 'content' | 'folders-tags' | 'music' | 'ai' | 'settings' | 'security' | 'sync' | 'audit'
 
-const tabs: { id: TabType; label: string }[] = [
+const tabs: { id: TabType; label: string; passkeyOnly?: boolean }[] = [
+  { id: 'overview', label: '总览' },
   { id: 'content', label: '内容管理' },
+  { id: 'folders-tags', label: '文件夹与标签' },
   { id: 'music', label: '音乐管理' },
-  { id: 'recommendation', label: '推荐管理' },
-  { id: 'settings', label: '网站设置' },
+  { id: 'ai', label: 'AI 管理' },
+  { id: 'settings', label: '页面设置', passkeyOnly: true },
+  { id: 'security', label: '安全设置', passkeyOnly: true },
+  { id: 'sync', label: '同步部署' },
+  { id: 'audit', label: '操作记录' },
 ]
 
 function ContentTab() {
@@ -252,6 +261,55 @@ function ContentTab() {
   )
 }
 
+function OverviewTab() {
+  return (
+    <div className='space-y-6'>
+      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+        {[
+          { label: '笔记', color: 'bg-blue-500/10 text-blue-600' },
+          { label: '博客', color: 'bg-green-500/10 text-green-600' },
+          { label: '错题', color: 'bg-red-500/10 text-red-600' },
+          { label: '待复习', color: 'bg-orange-500/10 text-orange-600' },
+        ].map(card => (
+          <div key={card.label} className={cn('rounded-2xl border border-white/40 p-4 backdrop-blur-sm', card.color)}>
+            <div className='text-sm opacity-70'>{card.label}</div>
+            <div className='mt-1 text-2xl font-bold'>--</div>
+          </div>
+        ))}
+      </div>
+      <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
+        <h3 className='mb-3 font-medium'>快速操作</h3>
+        <div className='flex flex-wrap gap-2'>
+          <Link href='/write-note' className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white hover:scale-105'>写笔记</Link>
+          <Link href='/write' className='rounded-xl bg-green-500/20 px-4 py-2 text-sm text-green-700 hover:bg-green-500/30'>写博客</Link>
+          <Link href='/write-mistake' className='rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-700 hover:bg-red-500/30'>写错题</Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FoldersTagsTab() {
+  return (
+    <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
+      <h3 className='mb-4 font-medium'>文件夹与标签管理</h3>
+      <p className='text-sm text-gray-500'>文件夹和标签管理功能将在后续实现中完善。</p>
+    </div>
+  )
+}
+
+function SyncTab() {
+  return (
+    <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
+      <h3 className='mb-4 font-medium'>同步与部署</h3>
+      <div className='space-y-3'>
+        <button className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white'>同步到 GitHub</button>
+        <p className='text-sm text-gray-500'>将内容推送到 GitHub 仓库以触发静态部署。</p>
+      </div>
+    </div>
+  )
+}
+
 function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -326,11 +384,11 @@ function ManagePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const validTabs: TabType[] = ['content', 'music', 'recommendation', 'settings']
+  const validTabs: TabType[] = ['overview', 'content', 'folders-tags', 'music', 'ai', 'settings', 'security', 'sync', 'audit']
   const initialTab = validTabs.includes(tabParam as TabType) ? (tabParam as TabType) : 'content'
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [authenticated, setAuthenticated] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<(User & { auth_level?: string }) | null>(null)
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
@@ -340,20 +398,15 @@ function ManagePageInner() {
   }, [searchParams])
 
   useEffect(() => {
-    if (isLoggedIn()) {
-      getMe()
-        .then(u => {
-          setUser(u)
-          setAuthenticated(true)
-        })
-        .catch(() => {
-          logout()
-          setAuthenticated(false)
-        })
-        .finally(() => setChecking(false))
-    } else {
-      setChecking(false)
-    }
+    getMe()
+      .then(u => {
+        setUser(u)
+        setAuthenticated(true)
+      })
+      .catch(() => {
+        setAuthenticated(false)
+      })
+      .finally(() => setChecking(false))
   }, [])
 
   const handleTabChange = (tab: TabType) => {
@@ -371,8 +424,8 @@ function ManagePageInner() {
     }
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     setAuthenticated(false)
     setUser(null)
   }
@@ -409,36 +462,54 @@ function ManagePageInner() {
       </div>
 
       <div className='mb-6 border-b border-white/20'>
-        <div className='flex gap-1'>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                'relative px-4 py-2.5 text-sm transition-colors',
-                activeTab === tab.id ? 'text-[var(--color-brand)]' : 'text-gray-500 hover:text-gray-700'
-              )}
-            >
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId='manage-tab-indicator'
-                  className='absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--color-brand)]'
-                />
-              )}
-            </button>
-          ))}
+        <div className='flex gap-1 overflow-x-auto'>
+          {tabs.map((tab) => {
+            const isPasskeyLocked = tab.passkeyOnly && user?.auth_level !== 'passkey'
+            return (
+              <button
+                key={tab.id}
+                onClick={() => isPasskeyLocked ? null : handleTabChange(tab.id)}
+                disabled={isPasskeyLocked}
+                className={cn(
+                  'relative flex items-center gap-1 whitespace-nowrap px-4 py-2.5 text-sm transition-colors',
+                  activeTab === tab.id ? 'text-[var(--color-brand)]' : 'text-gray-500 hover:text-gray-700',
+                  isPasskeyLocked && 'cursor-not-allowed opacity-40',
+                )}
+                title={isPasskeyLocked ? '需要 Passkey 认证' : undefined}
+              >
+                {isPasskeyLocked && <Lock className='h-3 w-3' />}
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId='manage-tab-indicator'
+                    className='absolute right-0 bottom-0 left-0 h-0.5 bg-[var(--color-brand)]'
+                  />
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
 
+      {activeTab === 'overview' && <OverviewTab />}
       {activeTab === 'content' && <ContentTab />}
+      {activeTab === 'folders-tags' && <FoldersTagsTab />}
       {activeTab === 'music' && <MusicTab />}
-      {activeTab === 'recommendation' && <RecommendationTab />}
+      {activeTab === 'ai' && <AITab />}
       {activeTab === 'settings' && (
-        <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
-          <SiteSettingsPanel />
-        </div>
+        user?.auth_level === 'passkey' ? (
+          <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
+            <SiteSettingsPanel />
+          </div>
+        ) : (
+          <div className='py-20'>
+            <EmptyState variant='not-logged-in' title='需要 Passkey 认证' description='页面设置仅限 Passkey 管理员访问' />
+          </div>
+        )
       )}
+      {activeTab === 'security' && <SecurityTab authLevel={user?.auth_level} />}
+      {activeTab === 'sync' && <SyncTab />}
+      {activeTab === 'audit' && <AuditTab />}
     </div>
   )
 }

@@ -73,23 +73,8 @@ function isAllowedUrl(url: string): boolean {
 	}
 }
 
-// Lazy load shiki to handle environments where it's not available (e.g., Cloudflare Workers)
-let shikiModule: typeof import('shiki') | null = null
-let shikiLoadAttempted = false
-
-async function loadShiki() {
-	if (shikiLoadAttempted) {
-		return shikiModule
-	}
-	shikiLoadAttempted = true
-
-	try {
-		shikiModule = await import('shiki')
-		return shikiModule
-	} catch (error) {
-		console.warn('Failed to load shiki module:', error)
-		return null
-	}
+async function loadShiki(): Promise<{ codeToHtml: (code: string, options: { lang: string; theme: string }) => Promise<string> } | null> {
+	return null
 }
 
 // Lazy load katex to handle environments where it's not available (e.g., Cloudflare Workers)

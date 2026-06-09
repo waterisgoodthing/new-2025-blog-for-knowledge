@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class ImageInput(BaseModel):
@@ -12,6 +13,12 @@ class AnalyzeRequest(BaseModel):
 
 class TextAnalyzeRequest(BaseModel):
     text: str
+
+
+class DiagramItem(BaseModel):
+    type: Literal["flowchart", "timeline", "formula_breakdown", "network_topology", "geometry", "state_machine"]
+    title: str
+    mermaid: str
 
 
 class AnalyzeResponse(BaseModel):
@@ -30,3 +37,4 @@ class AnalyzeResponse(BaseModel):
     review_advice: str = ""
     variant_questions: list[str] = Field(default_factory=list)
     related_notes: list[dict] = Field(default_factory=list)
+    diagrams: list[DiagramItem] = Field(default_factory=list)

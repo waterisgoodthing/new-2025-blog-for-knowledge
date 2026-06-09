@@ -20,8 +20,9 @@ import {
 	Check,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { listFolders, reorderFolders, createFolder, type FolderNode } from '@/lib/api/folders'
-import { listTags, type Tag as TagType } from '@/lib/api/meta'
+import { listFolders, reorderFolders, createFolder, deleteFolder, renameFolder, type FolderNode } from '@/lib/api/folders'
+import { listTags, renameTag, deleteTag, type Tag as TagType } from '@/lib/api/meta'
+import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
 import { toast } from 'sonner'
 
 type SidebarItem = {
@@ -63,6 +64,7 @@ export function KnowledgeSidebar({
 	const [tagsCollapsed, setTagsCollapsed] = useState(false)
 	const [creatingFolder, setCreatingFolder] = useState(false)
 	const [newFolderName, setNewFolderName] = useState('')
+	const [ctxMenu, setCtxMenu] = useState<{ type: 'folder' | 'tag'; id: string; name: string; x: number; y: number } | null>(null)
 
 	const tags = externalTags ?? internalTags
 
@@ -129,6 +131,84 @@ export function KnowledgeSidebar({
 		}
 	}
 
+	const getContextMenuItems = (): ContextMenuItem[] => {
+		if (!ctxMenu) return []
+		if (ctxMenu.type === 'folder') {
+			return [
+				{ label: '新建子文件夹', icon: <Plus size={14} />, onClick: async () => {
+					const name = prompt('子文件夹名称:')
+					if (!name) return
+					try {
+						await createFolder({ name, parent_id: ctxMenu.id })
+						setFolders(await listFolders())
+						toast.success('子文件夹已创建')
+					} catch (e: any) { toast.error('创建失败: ' + e.message) }
+				}},
+				{ label: '重命名', icon: <Tag size={14} />, onClick: async () => {
+					const name = prompt('新名称:', ctxMenu.name)
+					if (!name || name === ctxMenu.name) return
+					try {
+						await renameFolder(ctxMenu.id, name)
+						setFolders(await listFolders())
+						toast.success('已重命名')
+					} catch (e: any) { toast.error('重命名失败: ' + e.message) }
+				}},
+				{ label: '复制名称', icon: <FileText size={14} />, onClick: () => {
+					navigator.clipboard.writeText(ctxMenu.name)
+					toast.success('已复制')
+				}},
+				{ label: '删除', icon: <AlertCircle size={14} />, variant: 'danger', onClick: async () => {
+					if (!confirm(`确定删除文件夹「${ctxMenu.name}」？内容将移回收件箱。`)) return
+					try {
+						await deleteFolder(ctxMenu.id)
+						setFolders(await listFolders())
+						if (activeFolderId === ctxMenu.id) onFolderChange(null)
+						toast.success('已删除')
+					} catch (e: any) { toast.error('删除失败: ' + e.message) }
+				}},
+			]
+		}
+		if (ctxMenu.type === 'tag') {
+			return [
+				{ label: '筛选', icon: <FileText size={14} />, onClick: () => {
+					onTagChange(ctxMenu.name)
+					onFilterChange('')
+					onFolderChange(null)
+				}},
+				{ label: '重命名', icon: <Tag size={14} />, onClick: async () => {
+					const name = prompt('新名称:', ctxMenu.name)
+					if (!name || name === ctxMenu.name) return
+					try {
+						const tag = tags.find(t => t.name === ctxMenu.name)
+						if (tag) {
+							await renameTag(tag.id, name)
+							if (!externalTags) setInternalTags(await listTags())
+							if (activeTag === ctxMenu.name) onTagChange(name)
+							toast.success('已重命名')
+						}
+					} catch (e: any) { toast.error('重命名失败: ' + e.message) }
+				}},
+				{ label: '复制名称', icon: <FileText size={14} />, onClick: () => {
+					navigator.clipboard.writeText(ctxMenu.name)
+					toast.success('已复制')
+				}},
+				{ label: '删除', icon: <AlertCircle size={14} />, variant: 'danger', onClick: async () => {
+					if (!confirm(`确定删除标签「${ctxMenu.name}」？不会删除关联内容。`)) return
+					try {
+						const tag = tags.find(t => t.name === ctxMenu.name)
+						if (tag) {
+							await deleteTag(tag.id)
+							if (!externalTags) setInternalTags(await listTags())
+							if (activeTag === ctxMenu.name) onTagChange(null)
+							toast.success('已删除')
+						}
+					} catch (e: any) { toast.error('删除失败: ' + e.message) }
+				}},
+			]
+		}
+		return []
+	}
+
 	const navItems: SidebarItem[] = mode === 'mistake'
 		? [{ id: 'all', label: '全部错题', icon: <AlertCircle size={16} /> }]
 		: [
@@ -149,6 +229,7 @@ export function KnowledgeSidebar({
 					onDragOver={e => { e.preventDefault(); e.stopPropagation(); onDragOverFolderChange?.(node.id) }}
 					onDragLeave={e => { e.stopPropagation(); onDragOverFolderChange?.(null) }}
 					onDrop={e => { e.preventDefault(); e.stopPropagation(); onDropNote?.(node.id); onDragOverFolderChange?.(null) }}
+					onContextMenu={e => { e.preventDefault(); setCtxMenu({ type: 'folder', id: node.id, name: node.name, x: e.clientX, y: e.clientY }) }}
 					className={cn(
 						'group flex w-full items-center gap-1 rounded-lg py-1.5 text-sm transition-colors hover:bg-white/60',
 						activeFolderId === node.id ? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-medium' : 'text-gray-600',
@@ -270,9 +351,10 @@ export function KnowledgeSidebar({
 								<button
 									key={tag.id}
 									onClick={() => {
-										if (activeTag === tag.name) { onTagChange(null); return }
+										if (activeTag === tag.name) { onTagChange(null); onFilterChange('all'); return }
 										onTagChange(tag.name); onFilterChange(''); onFolderChange(null)
 									}}
+									onContextMenu={e => { e.preventDefault(); setCtxMenu({ type: 'tag', id: String(tag.id), name: tag.name, x: e.clientX, y: e.clientY }) }}
 									className={cn(
 										'rounded-full px-2.5 py-1 text-xs font-medium transition-colors',
 										activeTag === tag.name
@@ -338,6 +420,15 @@ export function KnowledgeSidebar({
 					)}
 				</AnimatePresence>
 			</div>
+
+			{ctxMenu && (
+				<ContextMenu
+					open={!!ctxMenu}
+					position={{ x: ctxMenu.x, y: ctxMenu.y }}
+					items={getContextMenuItems()}
+					onClose={() => setCtxMenu(null)}
+				/>
+			)}
 		</>
 	)
 }

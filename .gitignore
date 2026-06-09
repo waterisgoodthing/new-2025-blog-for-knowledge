@@ -55,5 +55,8 @@ __pycache__/
 # local agent/tooling state
 .kilo/
 
+# runtime uploads served by the backend
+/public/images/pictures/
+
 #vscode
 .history/

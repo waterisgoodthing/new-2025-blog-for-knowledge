@@ -7,6 +7,7 @@ import { getReviewQueue, submitReview, getReviewStats, getReviewPlan, type Revie
 import type { NoteDetail } from '@/lib/api/notes'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { RichText } from '@/components/rich-text'
 import dayjs from 'dayjs'
 
 const qualityLabels = [
@@ -199,8 +200,8 @@ export default function ReviewPage() {
 					<h2 className='mb-4 truncate text-lg font-bold'>{item.title}</h2>
 
 					{item.question && (
-						<div className='mb-4 break-words whitespace-pre-wrap rounded-lg bg-gray-100/50 p-4 text-sm'>
-							{item.question}
+						<div className='mb-4 rounded-lg bg-gray-100/50 p-4'>
+							<RichText content={item.question} className='text-sm' />
 						</div>
 					)}
 
@@ -216,19 +217,19 @@ export default function ReviewPage() {
 							{item.correct_answer && (
 								<div className='mb-3'>
 									<div className='mb-1 text-xs font-medium text-green-500'>正确答案</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-green-50/50 p-3 text-sm'>{item.correct_answer}</div>
+									<div className='rounded-lg bg-green-50/50 p-3'><RichText content={item.correct_answer} className='text-sm' /></div>
 								</div>
 							)}
 							{item.analysis && (
 								<div className='mb-3'>
 									<div className='mb-1 text-xs font-medium text-blue-500'>分析</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-blue-50/50 p-3 text-sm'>{item.analysis}</div>
+									<div className='rounded-lg bg-blue-50/50 p-3'><RichText content={item.analysis} className='text-sm' /></div>
 								</div>
 							)}
 							{item.knowledge_points && (
 								<div className='mb-4'>
 									<div className='mb-1 text-xs font-medium text-purple-500'>知识点</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-purple-50/50 p-3 text-sm'>{item.knowledge_points}</div>
+									<div className='rounded-lg bg-purple-50/50 p-3'><RichText content={item.knowledge_points} className='text-sm' /></div>
 								</div>
 							)}
 

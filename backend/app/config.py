@@ -32,7 +32,13 @@ class Settings(BaseSettings):
     KEEP_ALIVE_INTERVAL: int = 300
     KEEP_ALIVE_URL: str = "http://127.0.0.1:8000/api/health"
 
-    AUTH_BYPASS: str = "true"
+    AUTH_BYPASS: str = "false"
+
+    WEBAUTHN_RP_ID: str = "localhost"
+    WEBAUTHN_ORIGIN: str = "http://localhost:2025"
+    WEBAUTHN_RP_NAME: str = "Blog Admin"
+
+    IMAGE_BASE_URL: str = "https://public-api.limengyang.me"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

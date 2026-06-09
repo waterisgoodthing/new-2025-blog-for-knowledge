@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import { createNote, updateNote, uploadImage, type NoteDetail } from '@/lib/api/notes'
 import { analyzeMistake, analyzeText, analyzeMistakeStream, analyzeTextStream, type AnalyzeResponse } from '@/lib/api/ai'
@@ -21,6 +21,7 @@ interface MistakeFormProps {
 
 export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const [saving, setSaving] = useState(false)
 	const [analyzing, setAnalyzing] = useState(false)
 	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
@@ -68,6 +69,28 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 			setAiMetadata(initialData.ai_metadata || null)
 		}
 	}, [initialData])
+
+	useEffect(() => {
+		if (searchParams.get('ai_prefill') === '1') {
+			try {
+				const stored = sessionStorage.getItem('ai_prefill_mistake')
+				if (stored) {
+					const data = JSON.parse(stored)
+					setForm(f => ({
+						...f,
+						title: data.title || f.title,
+						question: data.question || f.question,
+						correct_answer: data.correct_answer || f.correct_answer,
+						analysis: data.analysis || f.analysis,
+						knowledge_points: data.knowledge_points || f.knowledge_points,
+						subject: data.subject || f.subject,
+						difficulty: data.difficulty || f.difficulty,
+					}))
+					sessionStorage.removeItem('ai_prefill_mistake')
+				}
+			} catch {}
+		}
+	}, [searchParams])
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
 

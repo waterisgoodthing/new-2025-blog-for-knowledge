@@ -1,6 +1,7 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { motion } from 'motion/react'
@@ -13,6 +14,11 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getContentEditHref, getContentListHref } from '@/lib/content-routes'
+import { resolveImageUrl } from '@/lib/api/images'
+import { RichText } from '@/components/rich-text'
+import { RelatedKnowledgePanel } from './components/related-knowledge-panel'
+
+const MermaidBlock = dynamic(() => import('@/components/mermaid-block').then(mod => mod.MermaidBlock), { ssr: false })
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -102,11 +108,11 @@ export default function NoteDetailContent() {
 										{note.images.map((url, idx) => (
 											<a
 												key={url}
-												href={url}
+												href={resolveImageUrl(url)}
 												target='_blank'
 												rel='noopener noreferrer'
 												className='block overflow-hidden rounded-lg border border-orange-200 bg-white shadow-sm transition-transform hover:scale-[1.02]'>
-												<img src={url} alt={`错题图片证据 ${idx + 1}`} className='aspect-video w-full object-cover' />
+												<img src={resolveImageUrl(url)} alt={`错题图片证据 ${idx + 1}`} className='aspect-video w-full object-cover' />
 											</a>
 										))}
 									</div>
@@ -192,6 +198,23 @@ export default function NoteDetailContent() {
 					</div>
 				)}
 
+				{(() => {
+					const diagrams = note.ai_metadata?.diagrams as { type: string; title: string; mermaid: string }[] | undefined
+					return diagrams && diagrams.length > 0 ? (
+						<div className='mb-6 space-y-4'>
+							<h2 className='text-lg font-bold text-gray-800'>图示解析</h2>
+							{diagrams.map((diagram, idx) => (
+								<div key={idx} className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
+									{diagram.title && <h3 className='mb-2 text-sm font-semibold text-gray-700'>{diagram.title}</h3>}
+									<MermaidBlock code={diagram.mermaid} />
+								</div>
+							))}
+						</div>
+					) : null
+				})()}
+
+				<RelatedKnowledgePanel note={note} />
+
 				{actionBar}
 				</motion.div>
 			</div>
@@ -271,7 +294,7 @@ function StudyBlock({ title, content, fallback, tone, large = false }: { title: 
 	return (
 		<section className={cn('rounded-xl border p-4', toneClass, large && 'min-h-[180px]')}>
 			<h2 className='mb-2 text-sm font-semibold'>{title}</h2>
-			<div className='break-words whitespace-pre-wrap text-sm leading-6'>{value}</div>
+			<RichText content={value} className='text-sm leading-6' />
 		</section>
 	)
 }

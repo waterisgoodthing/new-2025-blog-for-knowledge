@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState, useRef, type ReactElement, Fragment } from 'react'
-import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
+import dynamic from 'next/dynamic'
+import type { TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
-import { MermaidBlock } from '@/components/mermaid-block'
-import { MarkmapBlock } from '@/components/markmap-block'
-import { ChartBlock } from '@/components/chart-block'
+
+const MermaidBlock = dynamic(() => import('@/components/mermaid-block').then(mod => mod.MermaidBlock), { ssr: false })
+const MarkmapBlock = dynamic(() => import('@/components/markmap-block').then(mod => mod.MarkmapBlock), { ssr: false })
+const ChartBlock = dynamic(() => import('@/components/chart-block').then(mod => mod.ChartBlock), { ssr: false })
 
 let parseModule: typeof import('html-react-parser') | null = null
 
@@ -39,7 +41,8 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 			const md = latestMarkdown.current
 			setLoading(true)
 			try {
-				const [{ html, toc }, parseMod] = await Promise.all([renderMarkdown(md), loadParser()])
+				const [rendererMod, parseMod] = await Promise.all([import('@/lib/markdown-renderer'), loadParser()])
+				const { html, toc } = await rendererMod.renderMarkdown(md)
 				const parse = parseMod.default
 				if (cancelled || md !== latestMarkdown.current) return
 

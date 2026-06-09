@@ -10,6 +10,7 @@
     "build:cf": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare deploy",
+    "deploy:full": "npx tsc --noEmit && npm run build:cf && npx wrangler deploy --route 'blog.limengyang.me/*'",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {

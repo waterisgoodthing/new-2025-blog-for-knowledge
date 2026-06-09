@@ -57,3 +57,11 @@ export async function moveNoteToFolder(slug: string, folderId: string | null): P
     body: JSON.stringify({ folder_id: folderId }),
   });
 }
+
+export async function moveFolder(folderId: string, newParentId: string | null): Promise<FolderNode> {
+  return updateFolder(folderId, { parent_id: newParentId });
+}
+
+export async function renameFolder(folderId: string, name: string): Promise<FolderNode> {
+  return updateFolder(folderId, { name });
+}

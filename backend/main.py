@@ -1,12 +1,16 @@
 from contextlib import asynccontextmanager
 
+from pathlib import Path
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.config import get_settings
 from app.database import engine, Base, async_session
-from app.routers import ai, ai_polish, auth, categories, folders, knowledge, music, notes, recommendations, review, subjects, suggestions, sync, tags
+from app.routers import ai, ai_polish, audit, auth, categories, folders, knowledge, music, music_manage, notes, recommendations, review, subjects, suggestions, sync, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
 
@@ -75,6 +79,12 @@ app.include_router(ai_polish.router)
 app.include_router(folders.router)
 app.include_router(knowledge.router)
 app.include_router(suggestions.router)
+app.include_router(audit.router)
+app.include_router(music_manage.router)
+
+_images_dir = str(Path(__file__).resolve().parent.parent / "public" / "images")
+os.makedirs(_images_dir, exist_ok=True)
+app.mount("/images", StaticFiles(directory=_images_dir), name="images")
 
 
 @app.get("/api/health")

@@ -35,11 +35,6 @@ export type StreamEvent =
   | { type: 'result'; data: AnalyzeResponse }
   | { type: 'error'; message: string }
 
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('token')
-}
-
 export async function analyzeMistake(images: { base64: string; mime_type: string }[]): Promise<AnalyzeResponse> {
   return apiFetch<AnalyzeResponse>("/api/ai/analyze", {
     method: "POST",
@@ -54,22 +49,49 @@ export async function analyzeText(text: string): Promise<AnalyzeResponse> {
   });
 }
 
+export interface VariantResponse {
+  question: string;
+  correct_answer: string;
+  analysis: string;
+  difficulty: string;
+  knowledge_points: string;
+  subject: string;
+}
+
+export interface KnowledgeCardResponse {
+  title: string;
+  content: string;
+  knowledge_points: string;
+  subject: string;
+}
+
+export async function generateVariant(knowledge_point: string, subject?: string): Promise<VariantResponse> {
+  return apiFetch<VariantResponse>("/api/ai/generate-variant", {
+    method: "POST",
+    body: JSON.stringify({ knowledge_point, subject }),
+  });
+}
+
+export async function generateKnowledgeCard(knowledge_point: string, subject?: string): Promise<KnowledgeCardResponse> {
+  return apiFetch<KnowledgeCardResponse>("/api/ai/generate-knowledge-card", {
+    method: "POST",
+    body: JSON.stringify({ knowledge_point, subject }),
+  });
+}
+
 export async function analyzeMistakeStream(
   images: { base64: string; mime_type: string }[],
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  const token = getAuthToken()
-  if (!token) { onEvent({ type: 'error', message: '未登录' }); return }
-
   let response: Response
   try {
     response = await fetch(`${API_BASE}/api/ai/analyze-stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ images }),
       signal,
     })
@@ -136,17 +158,14 @@ export async function analyzeTextStream(
   onEvent: (event: StreamEvent) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  const token = getAuthToken()
-  if (!token) { onEvent({ type: 'error', message: '未登录' }); return }
-
   let response: Response
   try {
     response = await fetch(`${API_BASE}/api/ai/analyze-text-stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ text }),
       signal,
     })

@@ -36,6 +36,20 @@ export async function deleteTag(id: number): Promise<void> {
   return apiFetch<void>(`/api/tags/${id}`, { method: "DELETE" });
 }
 
+export async function renameTag(id: number, name: string): Promise<Tag> {
+  return apiFetch<Tag>(`/api/tags/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function mergeTag(sourceId: number, targetId: number): Promise<Tag> {
+  return apiFetch<Tag>(`/api/tags/${sourceId}/merge`, {
+    method: "POST",
+    body: JSON.stringify({ target_tag_id: targetId }),
+  });
+}
+
 export async function listSubjects(): Promise<Subject[]> {
   return apiFetch<Subject[]>("/api/subjects");
 }

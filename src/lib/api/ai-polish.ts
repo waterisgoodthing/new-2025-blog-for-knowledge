@@ -10,31 +10,20 @@ export type PolishCallbacks = {
 	onError: (error: string) => void
 }
 
-function getAuthToken(): string | null {
-	if (typeof window === 'undefined') return null
-	return localStorage.getItem('token')
-}
-
 export async function streamPolish(
 	text: string,
 	action: PolishAction,
 	callbacks: PolishCallbacks,
 	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[]; custom_prompt?: string }
 ): Promise<void> {
-	const token = getAuthToken()
-	if (!token) {
-		callbacks.onError('未登录')
-		return
-	}
-
 	let response: Response
 	try {
 		response = await fetch(`${API_BASE}/api/ai/polish`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
 			},
+			credentials: 'include',
 			body: JSON.stringify({
 				text,
 				action,
