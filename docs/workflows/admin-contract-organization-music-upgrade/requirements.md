@@ -65,6 +65,7 @@ Input: local backend CLI command.
 
 Processing:
 - CLI starts a local temporary registration service.
+- CLI registration service must open on a WebAuthn-valid local origin that matches backend RP/origin verification settings.
 - User registers exactly one passkey credential from the local device.
 - CLI can reset passkey.
 - CLI can reset or clear administrator password.
@@ -78,11 +79,14 @@ Output:
 Failure handling:
 - If a passkey already exists, CLI refuses unless reset mode is used.
 - If confirmation does not match, CLI aborts.
+- If the preferred registration port is occupied, CLI should fail clearly or fall back in a documented way instead of leaving a misleading partial state.
+- If the current browser origin does not satisfy WebAuthn domain rules, the workflow must surface an actionable error and the implementation must align the served origin with RP/origin settings.
 
 Acceptance:
 - Only one passkey can be registered.
 - Device name is recorded.
 - Passkey reset removes the old credential.
+- Real local registration on the user's machine reaches the system passkey prompt instead of failing with an invalid-domain browser error.
 
 ### REQ-03 Public Read-Only Contract
 

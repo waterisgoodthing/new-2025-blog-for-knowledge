@@ -17,6 +17,20 @@ Implementation is approved by the user in conversation on 2026-06-08. Continue f
 
 ## Phase 1: Administrator Contract
 
+- [x] **P0-03A** Patch passkey CLI registration origin and port behavior.
+  - Source: REQ-02.
+  - Scope: backend CLI and WebAuthn settings alignment.
+  - Completion standard: local registration opens on a WebAuthn-valid origin that matches RP/origin verification settings, and the browser no longer fails immediately with `This is an invalid domain.`
+  - Validation: run real local registration flow on the user's machine and record whether the system passkey prompt appears.
+  - Completed: 2026-06-09. CLI now defaults to `localhost`, uses host-aware RP/origin verification, reports occupied ports clearly, and real local registration reached the macOS/Chrome system passkey save prompt instead of failing on invalid domain.
+
+- [x] **P0-03B** Capture real passkey initialization state in validation notes.
+  - Source: REQ-02.
+  - Scope: workflow validation only.
+  - Completion standard: `validation.md` records whether passkey count is zero/non-zero, whether a local registration service started successfully, and whether registration reached browser prompt, system passkey prompt, verification, and DB persistence.
+  - Validation: file review plus local command/API evidence.
+  - Completed: 2026-06-09. Validation notes now include pre-fix count/state, post-fix local registration service startup, system passkey prompt evidence, successful verification, and persisted credential metadata.
+
 - [x] **P0-01** Add administrator session model and HttpOnly cookie session flow.
   - Source: REQ-01.
   - Scope: backend auth models/schemas/routers/services, frontend API client.

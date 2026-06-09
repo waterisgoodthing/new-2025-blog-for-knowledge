@@ -27,13 +27,15 @@ Build the next large task group for the personal knowledge/blog system:
 
 Task list approved in conversation on 2026-06-08.
 
-No business-code implementation has started in this workflow by Codex. Ownership is being handed to another intelligent agent.
+Core business-code implementation exists and the follow-up passkey remediation has now been completed. Real local validation on 2026-06-09 confirmed that passkey registration reaches the system prompt, completes verification, and persists one credential in the database.
 
 ## Workflow Files
 
 - [requirements.md](./requirements.md)
 - [design.md](./design.md)
 - [tasks.md](./tasks.md)
+- [validation.md](./validation.md)
+- [audit.md](./audit.md)
 
 ## Required Approval Gate
 

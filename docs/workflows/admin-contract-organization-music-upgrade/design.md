@@ -83,6 +83,7 @@ Relationships:
 Lifecycle:
 
 - Create: local backend CLI starts temporary registration service.
+- Create must use a registration origin that satisfies the configured RP/origin pair. The current implementation risk is that the CLI binds and auto-opens `127.0.0.1` while backend settings validate against `localhost`, which causes WebAuthn registration to fail in-browser before the system passkey prompt appears.
 - Use: passkey login validates challenge/response.
 - Reset: local CLI removes or replaces credential.
 - Delete: only through CLI reset.
@@ -91,6 +92,7 @@ Failure handling:
 
 - Existing credential blocks registration unless reset flag is used.
 - CLI requires project path/site name confirmation.
+- Port collisions and origin mismatches must be surfaced as first-class operational failures in validation, not hidden under a generic registration failure label.
 
 ## Administrator Password Design
 

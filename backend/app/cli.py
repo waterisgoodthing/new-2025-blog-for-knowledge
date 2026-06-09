@@ -47,7 +47,7 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 <button id="register-btn" onclick="register()">Register Passkey</button>
 <div id="status"></div>
 <script>
-const PORT = __PORT__;
+const REGISTRATION_ORIGIN = "__REGISTRATION_ORIGIN__";
 async function register() {
   const btn = document.getElementById('register-btn');
   const status = document.getElementById('status');
@@ -55,7 +55,7 @@ async function register() {
   status.className = 'status info';
   status.textContent = 'Requesting registration options...';
   try {
-    const optsRes = await fetch('/api/passkey/register/options');
+    const optsRes = await fetch(REGISTRATION_ORIGIN + '/api/passkey/register/options');
     const opts = await optsRes.json();
     const publicKey = opts.publicKey;
     publicKey.challenge = Uint8Array.from(atob(publicKey.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer;
@@ -73,7 +73,7 @@ async function register() {
     };
     status.textContent = 'Verifying registration...';
     const deviceName = prompt('Enter a device name (e.g., MacBook Pro, iPhone):') || 'Unknown Device';
-    const verifyRes = await fetch('/api/passkey/register/verify', {
+    const verifyRes = await fetch(REGISTRATION_ORIGIN + '/api/passkey/register/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ attestation, deviceName }),
@@ -98,9 +98,14 @@ async function register() {
 </html>"""
 
 
-def create_registration_server(port: int, db_url: str) -> HTTPServer:
+def _registration_origin(host: str, port: int) -> str:
+    return f"http://{host}:{port}"
+
+
+def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
     engine = create_async_engine(db_url)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    origin = _registration_origin(host, port)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, format, *args):
@@ -108,14 +113,14 @@ def create_registration_server(port: int, db_url: str) -> HTTPServer:
 
         def do_GET(self):
             if self.path == "/api/passkey/register/options":
-                opts = generate_registration_options()
+                opts = generate_registration_options(rp_id=host)
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps(opts).encode())
             elif self.path == "/" or self.path == "/index.html":
-                html = REGISTRATION_HTML.replace("__PORT__", str(port))
+                html = REGISTRATION_HTML.replace("__REGISTRATION_ORIGIN__", origin)
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html")
                 self.end_headers()
@@ -131,7 +136,11 @@ def create_registration_server(port: int, db_url: str) -> HTTPServer:
                 attestation = body.get("attestation", {})
                 device_name = body.get("deviceName", "Unknown Device")
 
-                result = verify_registration(attestation)
+                result = verify_registration(
+                    attestation,
+                    expected_origin=origin,
+                    expected_rp_id=host,
+                )
                 if not result:
                     self.send_response(400)
                     self.send_header("Content-Type", "application/json")
@@ -182,23 +191,31 @@ def create_registration_server(port: int, db_url: str) -> HTTPServer:
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.end_headers()
 
-    return HTTPServer(("127.0.0.1", port), Handler)
+    return HTTPServer((host, port), Handler)
 
 
 def cmd_register_passkey(args):
     port = args.port
+    host = args.host
     settings = get_settings()
     db_url = settings.DATABASE_URL
+    origin = _registration_origin(host, port)
 
-    print(f"Starting passkey registration server on http://127.0.0.1:{port}")
+    print(f"Starting passkey registration server on {origin}")
     print("Opening browser... Press Ctrl+C to cancel.\n")
 
-    server = create_registration_server(port, db_url)
+    try:
+        server = create_registration_server(port, host, db_url)
+    except OSError as e:
+        if e.errno == 48:
+            print(f"Port {port} is already in use on host {host}. Use --port to choose a different local port.")
+            return
+        raise
 
     def _open_browser():
         import time
         time.sleep(0.5)
-        webbrowser.open(f"http://127.0.0.1:{port}")
+        webbrowser.open(origin)
 
     threading.Thread(target=_open_browser, daemon=True).start()
 
@@ -327,6 +344,7 @@ def main():
 
     reg = subparsers.add_parser("register-passkey", help="Register a new passkey")
     reg.add_argument("--port", type=int, default=2026, help="Local server port (default: 2026)")
+    reg.add_argument("--host", default="localhost", help="Local host name for WebAuthn registration origin (default: localhost)")
 
     subparsers.add_parser("reset-passkey", help="Remove existing passkey")
     subparsers.add_parser("set-password", help="Set or change admin password")

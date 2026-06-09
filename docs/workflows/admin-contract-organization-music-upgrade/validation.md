@@ -138,3 +138,64 @@ Follow-up re-validation 2026-06-08:
 - Passkey login was not completed in browser because this validation session did not register/use the user's device passkey.
 - Password login was not completed because no test password was provided for browser submission.
 - Drag/drop persistence, folder delete promotion, tag merge/delete, and music candidate sync were not executed through browser mutation flows to avoid changing user data during validation.
+
+## Passkey Remediation Validation 2026-06-09
+
+Environment:
+- Repo: `/Users/limengyang/2025-blog-public`
+- Backend CLI: `backend/.venv/bin/python -m app.cli register-passkey --port 2026`
+- WebAuthn settings: `WEBAUTHN_RP_ID=localhost`, `WEBAUTHN_ORIGIN=http://localhost:2025`, `AUTH_BYPASS=false`
+- Validation browser: local Google Chrome on the user's Mac
+
+### Pre-Fix Real State
+
+- `GET http://127.0.0.1:8000/api/health` -> `{"status":"ok","db":"ok"}`
+- `GET /api/auth/me` -> `401 {"detail":"Not authenticated"}`
+- Database before remediation:
+  - `PASSKEY_COUNT 0`
+  - `SESSION_COUNT 0`
+  - `PASSWORD_COUNT 0`
+- Initial failing behavior:
+  - CLI registration server previously auto-opened `http://127.0.0.1:<port>`
+  - Chrome/WebAuthn showed `Error: This is an invalid domain.`
+  - Registration could not reach the system passkey prompt
+
+### Remediation Applied
+
+- CLI registration host default changed to `localhost`
+- CLI registration verification now uses host-aware RP/origin parameters
+- `passkey_service.py` verification updated to match installed `webauthn 2.7.1` behavior by passing the credential payload directly into `verify_registration_response()` / `verify_authentication_response()` instead of calling removed `parse_raw()` helpers
+- Occupied registration port now returns a clear operator-facing message
+
+### Post-Fix Validation
+
+Commands:
+
+```bash
+python3 -m compileall backend/app
+cd backend && .venv/bin/python -m app.cli register-passkey --port 2026
+```
+
+Observed results:
+
+- Compile validation passed
+- CLI started successfully and printed:
+  - `Starting passkey registration server on http://localhost:2026`
+- Real browser behavior:
+  - Registration page loaded on `http://localhost:2026`
+  - Page advanced to `Please complete the passkey prompt on your device...`
+  - macOS/Chrome system sheet appeared with `使用触控ID保存通行密钥` for `localhost`
+- Server-side result:
+  - CLI printed `Passkey registered successfully!`
+- Database after remediation:
+  - `PASSKEY_COUNT 1`
+  - Persisted credential metadata:
+    - `device_name = Macbook air`
+    - `sign_count = 0`
+    - `created_at = 2026-06-09T08:37:26.870723+00:00`
+
+### Conclusion
+
+- The invalid-domain blocker is fixed.
+- Real local passkey initialization now reaches the system passkey prompt, completes verification, and persists one credential in the database.
+- REQ-02 passkey registration acceptance is satisfied for the local operator flow.

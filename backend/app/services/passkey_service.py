@@ -1,5 +1,4 @@
 import base64
-import json
 import logging
 import secrets
 from datetime import datetime, timezone
@@ -28,6 +27,14 @@ def _get_rp_name() -> str:
     return get_settings().WEBAUTHN_RP_NAME
 
 
+def _resolve_rp_id(rp_id: str | None = None) -> str:
+    return rp_id or _get_rp_id()
+
+
+def _resolve_origin(origin: str | None = None) -> str:
+    return origin or _get_origin()
+
+
 def _b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 
@@ -39,13 +46,15 @@ def _b64url_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s)
 
 
-def generate_registration_options() -> dict:
+def generate_registration_options(
+    rp_id: str | None = None,
+) -> dict:
     challenge = secrets.token_bytes(32)
     user_id = secrets.token_bytes(16)
     _reg_challenge_store["current"] = challenge
     return {
         "publicKey": {
-            "rp": {"name": _get_rp_name(), "id": _get_rp_id()},
+            "rp": {"name": _get_rp_name(), "id": _resolve_rp_id(rp_id)},
             "user": {
                 "id": _b64url_encode(user_id),
                 "name": "admin",
@@ -67,9 +76,12 @@ def generate_registration_options() -> dict:
     }
 
 
-def verify_registration(attestation: dict) -> dict | None:
+def verify_registration(
+    attestation: dict,
+    expected_origin: str | None = None,
+    expected_rp_id: str | None = None,
+) -> dict | None:
     from webauthn import verify_registration_response
-    from webauthn.helpers.structs import RegistrationCredential
 
     expected_challenge = _reg_challenge_store.get("current")
     if not expected_challenge:
@@ -77,12 +89,11 @@ def verify_registration(attestation: dict) -> dict | None:
         return None
 
     try:
-        credential = RegistrationCredential.parse_raw(json.dumps(attestation))
         verification = verify_registration_response(
-            credential=credential,
+            credential=attestation,
             expected_challenge=expected_challenge,
-            expected_origin=_get_origin(),
-            expected_rp_id=_get_rp_id(),
+            expected_origin=_resolve_origin(expected_origin),
+            expected_rp_id=_resolve_rp_id(expected_rp_id),
         )
         del _reg_challenge_store["current"]
         return {
@@ -95,14 +106,16 @@ def verify_registration(attestation: dict) -> dict | None:
         return None
 
 
-def generate_authentication_options() -> dict:
+def generate_authentication_options(
+    rp_id: str | None = None,
+) -> dict:
     challenge = secrets.token_bytes(32)
     _auth_challenge_store["current"] = challenge
     return {
         "publicKey": {
             "challenge": _b64url_encode(challenge),
             "timeout": 60000,
-            "rpId": _get_rp_id(),
+            "rpId": _resolve_rp_id(rp_id),
             "userVerification": "required",
         }
     }
@@ -113,9 +126,10 @@ def verify_authentication(
     stored_credential_id: str,
     stored_public_key: bytes,
     stored_sign_count: int,
+    expected_origin: str | None = None,
+    expected_rp_id: str | None = None,
 ) -> tuple[bool, int]:
     from webauthn import verify_authentication_response
-    from webauthn.helpers.structs import AuthenticationCredential
 
     expected_challenge = _auth_challenge_store.get("current")
     if not expected_challenge:
@@ -123,12 +137,11 @@ def verify_authentication(
         return False, stored_sign_count
 
     try:
-        credential = AuthenticationCredential.parse_raw(json.dumps(assertion))
         verification = verify_authentication_response(
-            credential=credential,
+            credential=assertion,
             expected_challenge=expected_challenge,
-            expected_rp_id=_get_rp_id(),
-            expected_origin=_get_origin(),
+            expected_rp_id=_resolve_rp_id(expected_rp_id),
+            expected_origin=_resolve_origin(expected_origin),
             credential_public_key=stored_public_key,
             credential_current_sign_count=stored_sign_count,
             require_user_verification=True,
