@@ -6,21 +6,36 @@ import { toast } from 'sonner'
 import { ProjectCard, type Project } from './components/project-card'
 import CreateDialog from './components/create-dialog'
 import { pushProjects } from './services/push-projects'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
-import initialList from './list.json'
+import { getProjects } from '@/lib/api/content'
 import type { ImageItem } from './components/image-upload-dialog'
 
 export default function Page() {
-	const [projects, setProjects] = useState<Project[]>(initialList as Project[])
-	const [originalProjects, setOriginalProjects] = useState<Project[]>(initialList as Project[])
+	const [projects, setProjects] = useState<Project[]>([])
+	const [originalProjects, setOriginalProjects] = useState<Project[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [editingProject, setEditingProject] = useState<Project | null>(null)
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
+	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
+	const { isAdmin } = useAdminAuth()
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	useEffect(() => {
+		getProjects()
+			.then(data => {
+				setProjects(data as Project[])
+				setOriginalProjects(data as Project[])
+			})
+			.catch(err => {
+				console.error('Failed to load projects:', err)
+				toast.error('加载项目列表失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem) => {
 		setProjects(prev => prev.map(p => (p.url === oldProject.url ? updatedProject : p)))
@@ -88,7 +103,7 @@ export default function Page() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 			}
@@ -98,7 +113,15 @@ export default function Page() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
+
+	if (isLoading) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -135,7 +158,7 @@ export default function Page() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

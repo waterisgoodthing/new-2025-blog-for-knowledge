@@ -53,6 +53,35 @@ REQ-08: Validation must cover both source evidence and runtime behavior.
 - Passkey-only action protection.
 - Production-mode vs bypass-mode behavior where feasible.
 
+REQ-09: Public-deployment passkey registration and use must work from this machine.
+
+- The live/public RP configuration must match the public hostname and origin used by the browser on this machine.
+- The operator must be able to register a passkey credential from this machine against the production/public RP settings.
+- After registration, the operator must be able to authenticate with that passkey from this machine.
+
+REQ-10: Sensitive production administrator actions must be protected by passkey-level auth after registration.
+
+- Password-admin sessions may still exist as fallback login where intended.
+- Passkey-only actions must reject password-only sessions server-side and be visibly gated in the UI.
+
+REQ-11: The temporary execution round must verify exact public URLs and exact machine-facing outcomes.
+
+- Validation must record the public hostname used.
+- Validation must record whether registration options, browser prompt, device prompt, verification, session creation, and passkey-only action checks succeeded or failed.
+
+REQ-12: Operator-only passkey registration must be possible against the public RP.
+
+- A tool must exist that allows the operator to register a passkey credential bound to `blog.limengyang.me` (RP ID) and `https://blog.limengyang.me` (origin).
+- The tool must not expose passkey registration to anonymous public users.
+- The tool must be protected by a separate operator key, not by session auth.
+- The tool must replace any existing credential atomically (single transaction).
+- The tool must work from a real browser on the public origin, not from a localhost simulation.
+
+REQ-13: The operator registration key must fail closed.
+
+- If `OPERATOR_REGISTRATION_KEY` is empty or unset, operator registration endpoints must reject all requests with 403.
+- The key must be transmitted via HTTP header, not URL query parameter.
+
 ## Non-Goals
 
 - Do not redesign unrelated notes/blog/music management UX.
@@ -74,3 +103,7 @@ DEC-03: How should the UI present passkey login when no passkey has been registe
 - show the button and return a meaningful backend error,
 - hide the button when passkey is unavailable,
 - or show both the button and explanatory helper text?
+
+DEC-04: For this temporary execution round, should the task include live machine registration on the public production RP if the code path already exists?
+
+- Current user direction: yes.

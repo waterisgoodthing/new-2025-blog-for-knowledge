@@ -23,11 +23,6 @@ class Settings(BaseSettings):
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
     DEEPSEEK_MODEL: str = "deepseek-chat"
 
-    GITHUB_TOKEN: str = ""
-    GITHUB_OWNER: str = ""
-    GITHUB_REPO: str = ""
-    GITHUB_BRANCH: str = "main"
-
     KEEP_ALIVE_ENABLED: bool = False
     KEEP_ALIVE_INTERVAL: int = 300
     KEEP_ALIVE_URL: str = "http://127.0.0.1:8000/api/health"
@@ -38,6 +33,8 @@ class Settings(BaseSettings):
     WEBAUTHN_RP_ID: str = "localhost"
     WEBAUTHN_ORIGIN: str = "http://localhost:2025"
     WEBAUTHN_RP_NAME: str = "Blog Admin"
+
+    OPERATOR_REGISTRATION_KEY: str = ""
 
     IMAGE_BASE_URL: str = "https://public-api.limengyang.me"
 

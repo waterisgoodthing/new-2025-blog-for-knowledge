@@ -11,25 +11,24 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import ShareFilledSVG from '@/svgs/share-filled.svg'
-import ShareOutlineSVG from '@/svgs/share-outline.svg'
-import WebsiteFilledSVG from '@/svgs/website-filled.svg'
-import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
-import { Home, Menu, PenLine, Settings } from 'lucide-react'
+import { Home, Menu, PenLine, Settings, Compass, MessageSquare } from 'lucide-react'
 
 const primaryItems = [
 	{ icon: Home, iconActive: Home, label: '首页', href: '/' },
-	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '文章', href: '/blog' },
+	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '博客', href: '/blog' },
 	{ icon: PenLine, iconActive: PenLine, label: '笔记', href: '/notes' },
 	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题', href: '/mistakes' }
 ]
 
-const moreItems = [
-	{ icon: Settings, iconActive: Settings, label: '管理面板', href: '/manage' },
-	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于网站', href: '/about' },
-	{ icon: ShareOutlineSVG, iconActive: ShareFilledSVG, label: '推荐分享', href: '/share' },
-	{ icon: WebsiteOutlineSVG, iconActive: WebsiteFilledSVG, label: '优秀博客', href: '/bloggers' }
+const interactionItems = [
+	{ icon: Compass, iconActive: Compass, label: '发现', href: '/discover' },
+	{ icon: MessageSquare, iconActive: MessageSquare, label: '留言', href: '/guestbook' },
+	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于', href: '/about' },
 ]
+
+const manageItem = { icon: Settings, iconActive: Settings, label: '管理', href: '/manage' }
+
+const allMoreItems = [...interactionItems, manageItem]
 
 export default function MobileNav() {
 	const pathname = usePathname()
@@ -37,7 +36,7 @@ export default function MobileNav() {
 
 	const activeHref = useMemo(() => {
 		if (pathname === '/') return '/'
-		const all = [...primaryItems, ...moreItems]
+		const all = [...primaryItems, ...allMoreItems]
 		const match = all.find(item => item.href !== '/' && pathname.startsWith(item.href))
 		return match?.href ?? null
 	}, [pathname])
@@ -97,7 +96,10 @@ export default function MobileNav() {
 							className='fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/40 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden'>
 							<div className='mx-auto my-2 h-1 w-10 rounded-full bg-gray-300' />
 							<div className='flex flex-col gap-1 px-4 pb-4'>
-								{moreItems.map(item => {
+								<div className='px-2 pb-1 pt-1 text-[10px] font-medium tracking-wider text-gray-400 uppercase'>
+									互动探索
+								</div>
+								{interactionItems.map(item => {
 									const isActive = activeHref === item.href
 									const Icon = isActive ? item.iconActive : item.icon
 									return (
@@ -116,6 +118,26 @@ export default function MobileNav() {
 										</Link>
 									)
 								})}
+								<div className='mx-2 my-1.5 border-t border-gray-200/60' />
+								{(() => {
+									const isActive = activeHref === manageItem.href
+									const Icon = isActive ? manageItem.iconActive : manageItem.icon
+									return (
+										<Link
+											key={manageItem.href}
+											href={manageItem.href}
+											onClick={() => setMoreOpen(false)}
+											aria-label={manageItem.label}
+											title={manageItem.label}
+											className={cn(
+												'flex items-center gap-3 rounded-xl px-4 py-3 transition-colors',
+												isActive ? 'bg-[var(--color-brand)]/10 font-medium text-[var(--color-brand)]' : 'text-gray-400 hover:bg-white/60'
+											)}>
+											<Icon className='h-5 w-5' />
+											<span className='text-sm'>{manageItem.label}</span>
+										</Link>
+									)
+								})()}
 							</div>
 						</motion.div>
 					</>

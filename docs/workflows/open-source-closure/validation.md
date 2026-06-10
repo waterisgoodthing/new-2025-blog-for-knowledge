@@ -1,0 +1,100 @@
+# Validation
+
+## Date: 2026-06-10
+
+## Frontend Validation
+
+### TypeScript Check
+
+```
+npx tsc --noEmit
+```
+
+Result: **PASS** - zero errors.
+
+### Source Inspection
+
+**Sync removal:**
+- No remaining imports of `src/lib/api/sync.ts`, `src/lib/github-client.ts`, `src/lib/auth.ts`, `src/hooks/use-auth.ts`, `src/lib/blog-index.ts`, or `src/lib/aes256-util.ts`.
+- No remaining references to `GITHUB_CONFIG` or `NEXT_PUBLIC_GITHUB_*` env vars in frontend code.
+- No remaining calls to `syncPush()` in `src/lib/api/meta.ts`.
+- All 7 legacy static-content pages now load from backend API via `get*()` calls.
+- All 7 push services now use `update*()` and `uploadContentImage()` from `src/lib/api/content.ts`.
+- Manage page "sync" tab removed.
+
+**Site settings backend闭环:**
+- `src/components/site-settings-loader.tsx` fetches from `GET /api/content/site-settings` on mount and hydrates the Zustand store, applies theme CSS variables, updates favicon, and sets document title.
+- `src/layout/index.tsx` renders `<SiteSettingsLoader />` so every page gets backend values on client load.
+- `src/app/(home)/stores/config-store.ts` `SiteContent` type now includes `faviconUrl` and `avatarUrl`.
+
+**Edit mode permission gating:**
+- All editable pages (about, share, projects, pictures, snippets, bloggers, blog) now use `useAdminAuth()` hook to gate edit button visibility: `isAdmin && !hideEditButton && (...)`.
+- `src/hooks/use-admin-auth.ts` calls `GET /api/auth/me` via SWR to check admin session.
+- Anonymous users no longer see edit buttons.
+
+**favicon/avatar consumption:**
+- `src/components/nav-card.tsx` uses `siteContent.avatarUrl || '/images/avatar.png'` for avatar images.
+- `src/components/vertical-nav.tsx` uses `siteContent.avatarUrl || '/images/avatar.png'`.
+- `src/app/(home)/hi-card.tsx` uses `siteContent.avatarUrl || '/images/avatar.png'`.
+- `src/app/(home)/config-dialog/site-settings/favicon-avatar-upload.tsx` uses `siteContent.avatarUrl` for preview.
+- `SiteSettingsLoader` applies `faviconUrl` to `<link rel="icon">` dynamically.
+
+## Backend Validation
+
+### Import Check
+
+```
+python -c "from main import app"
+```
+
+Result: **PASS** - backend imports cleanly.
+
+### Source Inspection
+
+- `backend/app/routers/sync.py` deleted.
+- `backend/app/services/github_sync.py` deleted.
+- `backend/app/schemas/sync.py` deleted.
+- `backend/main.py` no longer imports or mounts `sync.router`.
+- `backend/app/config.py` no longer defines `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`.
+- `backend/.env` and `backend/.env.example` cleaned of GitHub config.
+
+### Notes Public Boundary
+
+- `GET /api/notes` for anonymous users now filters: `Note.hidden == False AND Note.status == "published"`.
+- `GET /api/notes/{slug}` for anonymous users now returns 404 for hidden or non-published notes.
+
+## Behavior Verification (Manual)
+
+| Check | Status | Notes |
+|---|---|---|
+| Site settings load from backend on page visit | Requires runtime | `SiteSettingsLoader` calls `GET /api/content/site-settings` |
+| Theme CSS variables applied from backend | Requires runtime | `SiteSettingsLoader.applyThemeVariables()` |
+| Favicon updated from backend `faviconUrl` | Requires runtime | `SiteSettingsLoader.applyFavicon()` |
+| Avatar uses backend `avatarUrl` | Verified | nav-card, vertical-nav, hi-card all use store value |
+| Edit buttons hidden for anonymous users | Verified | All pages use `useAdminAuth()` gate |
+| Edit buttons shown for admin users | Requires runtime | `isAdmin && !hideEditButton` |
+| about page load/save via backend API | Requires runtime | `GET/PUT /api/content/about` |
+| share/projects/pictures/bloggers/snippets | Requires runtime | `GET/PUT /api/content/*` + image upload |
+| site settings save via backend API | Requires runtime | `PUT /api/content/site-settings` + image upload |
+| Anonymous cannot see hidden notes | Requires runtime | Backend filters applied |
+| Anonymous cannot see draft notes | Requires runtime | Backend filters applied |
+| Frontend has no sync API calls | Verified | Source inspection confirmed |
+| Manage page has no sync tab | Verified | Source inspection confirmed |
+
+## Environment Blockers
+
+- Full runtime behavior verification requires a running PostgreSQL instance and backend server. The validation above covers static analysis (TypeScript + Python import check) and source inspection. Runtime verification should be done in a staging environment.
+
+## Residual Risks
+
+1. **`Base.metadata.create_all` in `backend/main.py`**: The startup `create_all` call remains. This is acceptable for this round but should be retired in favor of Alembic-only migrations in a future cleanup.
+
+2. **`jsrsasign` npm dependency**: No longer used by any frontend code after `src/lib/github-client.ts` removal. Can be removed from `package.json` in a follow-up cleanup.
+
+3. **Static JSON seed files**: Files like `src/app/about/list.json`, `src/app/share/list.json`, etc. still exist in the repo. They are now only used as default seed data by `backend/app/services/content_store.py` for first-time database initialization. They are no longer imported by frontend pages.
+
+4. **`src/lib/api/content.ts` schema types**: The frontend content API types duplicate the backend Pydantic schemas. A future improvement could generate frontend types from backend schemas.
+
+5. **`create_all` vs Alembic**: The `ManagedContentEntry` table is created both by Alembic migration `010` and by `Base.metadata.create_all` at startup. This dual-track should be resolved in a future cleanup.
+
+6. **Server-side metadata**: `src/app/layout.tsx` still reads static `site-content.json` for Next.js `Metadata` export (SEO). The client-side `SiteSettingsLoader` overrides visual state but SSR `<meta>` tags will show static defaults until a server-side data fetching strategy is added.

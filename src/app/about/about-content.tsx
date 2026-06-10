@@ -5,21 +5,38 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
 import { pushAbout, type AboutData } from './services/push-about'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import LikeButton from '@/components/like-button'
 import GithubSVG from '@/svgs/github.svg'
-import initialData from './list.json'
+import { getAbout } from '@/lib/api/content'
+
+const emptyAbout: AboutData = { title: '', description: '', content: '' }
 
 export default function AboutContent() {
-	const [data, setData] = useState<AboutData>(initialData as AboutData)
-	const [originalData, setOriginalData] = useState<AboutData>(initialData as AboutData)
+	const [data, setData] = useState<AboutData>(emptyAbout)
+	const [originalData, setOriginalData] = useState<AboutData>(emptyAbout)
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [isPreviewMode, setIsPreviewMode] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
+	const { isAdmin } = useAdminAuth()
 	const { content, loading } = useMarkdownRender(data.content)
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	useEffect(() => {
+		getAbout()
+			.then(d => {
+				setData(d)
+				setOriginalData(d)
+			})
+			.catch(err => {
+				console.error('Failed to load about:', err)
+				toast.error('加载关于页面失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const handleSaveClick = () => {
 		handleSave()
@@ -58,7 +75,7 @@ export default function AboutContent() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 				setIsPreviewMode(false)
@@ -69,7 +86,15 @@ export default function AboutContent() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
+
+	if (isLoading) {
+		return (
+			<div className='flex flex-col items-center justify-center px-6 pt-32 pb-12'>
+				<div className='text-secondary text-center'>加载中...</div>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -180,7 +205,7 @@ export default function AboutContent() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

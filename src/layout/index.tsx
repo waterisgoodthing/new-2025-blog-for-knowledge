@@ -11,6 +11,7 @@ import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
 import MusicCard from '@/components/music-card'
+import { SiteSettingsLoader } from '@/components/site-settings-loader'
 import { usePathname, useRouter } from 'next/navigation'
 
 export default function Layout({ children }: PropsWithChildren) {
@@ -43,6 +44,7 @@ export default function Layout({ children }: PropsWithChildren) {
 
 	return (
 		<>
+			<SiteSettingsLoader />
 			<Toaster
 				position={maxSM && isInnerPage ? 'top-center' : 'bottom-right'}
 				richColors

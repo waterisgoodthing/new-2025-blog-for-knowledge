@@ -1,4 +1,5 @@
 from app.models.note import Note, Tag, Subject, Category, User, note_tags
+from app.models.content import ManagedContentEntry
 from app.models.folder import Folder
 from app.models.music import MusicItem
 from app.models.recommendation import DailyRecommendation
@@ -12,6 +13,7 @@ __all__ = [
     "Subject",
     "Category",
     "User",
+    "ManagedContentEntry",
     "Folder",
     "MusicItem",
     "DailyRecommendation",

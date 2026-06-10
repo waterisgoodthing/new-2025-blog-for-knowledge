@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, status, Header
 from fastapi.responses import JSONResponse
@@ -11,6 +12,9 @@ from app.models.note import User
 from app.models.session import AdminSession, AdminPassword
 from app.schemas.auth import (
     LoginRequest,
+    OperatorRegOptionsRequest,
+    OperatorRegisterRequest,
+    OperatorRegisterResponse,
     RegisterRequest,
     SessionUserOut,
     SetPasswordRequest,
@@ -27,6 +31,8 @@ from app.utils.auth import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+logger = logging.getLogger(__name__)
 
 SESSION_COOKIE_NAME = "admin_session"
 COOKIE_PATH = "/api"
@@ -288,6 +294,89 @@ async def passkey_auth_options():
 async def passkey_reg_options():
     from app.services.passkey_service import generate_registration_options
     return generate_registration_options()
+
+
+def _require_operator_key(x_operator_registration_key: str | None) -> None:
+    settings = get_settings()
+    configured_key = settings.OPERATOR_REGISTRATION_KEY
+    if not configured_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operator registration is not configured",
+        )
+    if not x_operator_registration_key or x_operator_registration_key != configured_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid operator registration key",
+        )
+
+
+@router.post("/passkey/operator/reg-options")
+async def operator_passkey_reg_options(
+    req: OperatorRegOptionsRequest,
+    x_operator_registration_key: str | None = Header(None, alias="X-Operator-Registration-Key"),
+):
+    _require_operator_key(x_operator_registration_key)
+
+    from app.services.passkey_service import generate_registration_options
+    return generate_registration_options()
+
+
+@router.post("/passkey/operator/register", response_model=OperatorRegisterResponse)
+async def operator_passkey_register(
+    req: OperatorRegisterRequest,
+    x_operator_registration_key: str | None = Header(None, alias="X-Operator-Registration-Key"),
+    db: AsyncSession = Depends(get_db),
+):
+    _require_operator_key(x_operator_registration_key)
+
+    from app.services.passkey_service import verify_registration, replace_credential
+
+    settings = get_settings()
+    result = verify_registration(
+        req.attestation,
+        expected_origin=settings.WEBAUTHN_ORIGIN,
+        expected_rp_id=settings.WEBAUTHN_RP_ID,
+    )
+    if not result:
+        return OperatorRegisterResponse(
+            success=False,
+            message="WebAuthn registration verification failed",
+        )
+
+    try:
+        new_cred = await replace_credential(
+            db,
+            result["credential_id"],
+            result["public_key"],
+            req.device_name,
+        )
+        await db.flush()
+
+        from app.services.audit_service import record_audit
+        await record_audit(
+            db,
+            action="operator_passkey_register",
+            entity_type="passkey_credential",
+            entity_id=str(new_cred.id),
+            after={"device_name": req.device_name, "path": "operator"},
+        )
+
+        await db.commit()
+
+        logger.info(f"Operator passkey registered: device={req.device_name}, credential_id={new_cred.credential_id[:16]}...")
+        return OperatorRegisterResponse(
+            success=True,
+            device_name=req.device_name,
+            message="Passkey registered and replaced successfully",
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Operator passkey registration failed: {e}")
+        return OperatorRegisterResponse(
+            success=False,
+            message=f"Registration failed: {str(e)}",
+        )
 
 
 @router.get("/passkey/status")

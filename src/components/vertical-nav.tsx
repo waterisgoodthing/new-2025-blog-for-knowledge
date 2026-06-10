@@ -13,31 +13,33 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import ShareFilledSVG from '@/svgs/share-filled.svg'
-import ShareOutlineSVG from '@/svgs/share-outline.svg'
-import WebsiteFilledSVG from '@/svgs/website-filled.svg'
-import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
-import { Home, PenLine, Settings } from 'lucide-react'
+import { Home, PenLine, Settings, Compass, MessageSquare } from 'lucide-react'
 
-const navItems = [
-	{ icon: Home, iconActive: Home, label: '首页', href: '/' },
-	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '近期文章', href: '/blog' },
+type NavItem = { icon: React.ElementType; iconActive: React.ElementType; label: string; href: string }
+
+const publicContentItems: NavItem[] = [
+	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '博客', href: '/blog' },
 	{ icon: PenLine, iconActive: PenLine, label: '笔记', href: '/notes' },
-	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题集', href: '/mistakes' },
-	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于网站', href: '/about' },
-	{ icon: ShareOutlineSVG, iconActive: ShareFilledSVG, label: '推荐分享', href: '/share' },
-	{ icon: WebsiteOutlineSVG, iconActive: WebsiteFilledSVG, label: '优秀博客', href: '/bloggers' }
+	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题', href: '/mistakes' },
 ]
+
+const interactionItems: NavItem[] = [
+	{ icon: Compass, iconActive: Compass, label: '发现', href: '/discover' },
+	{ icon: MessageSquare, iconActive: MessageSquare, label: '留言', href: '/guestbook' },
+	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于', href: '/about' },
+]
+
+const allNavItems = [...publicContentItems, ...interactionItems]
 
 export default function VerticalNav() {
 	const pathname = usePathname()
 	const [expanded, setExpanded] = useState(false)
 	const { siteContent } = useConfigStore()
 
-	const activeIndex = useMemo(() => {
-		if (pathname === '/') return 0
-		const index = navItems.findIndex(item => item.href !== '/' && pathname.startsWith(item.href))
-		return index >= 0 ? index : -1
+	const activeHref = useMemo(() => {
+		if (pathname === '/') return '/'
+		const match = allNavItems.find(item => pathname.startsWith(item.href))
+		return match?.href ?? null
 	}, [pathname])
 	const isManageActive = pathname.startsWith('/manage')
 
@@ -62,7 +64,7 @@ export default function VerticalNav() {
 							pathname === '/' ? 'bg-[var(--color-brand)]/10' : 'hover:bg-white/60'
 						)}>
 						<Image
-							src='/images/avatar.png'
+							src={siteContent.avatarUrl || '/images/avatar.png'}
 							alt='avatar'
 							width={28}
 							height={28}
@@ -86,86 +88,131 @@ export default function VerticalNav() {
 
 				<div className='mx-2 border-t border-white/30' />
 
-				<Link
-					href='/manage'
-					aria-label='管理面板'
-					title='管理面板'
-					className={cn(
-						'mx-2 my-1 flex shrink-0 rounded-xl transition-colors',
-						expanded ? 'items-center gap-2.5 px-2 py-2' : 'flex-col items-center gap-0.5 px-1 py-1.5',
-						isManageActive ? 'bg-[var(--color-brand)]/15 font-medium text-[var(--color-brand)]' : 'text-gray-500 hover:bg-white/60 hover:text-gray-700'
-					)}>
-					<div className='flex h-7 w-7 shrink-0 items-center justify-center'>
-						<Settings className='h-[18px] w-[18px]' />
-					</div>
-					<AnimatePresence>
-						{expanded ? (
-							<motion.span
-								className='relative z-10 truncate text-[13px]'
-								initial={{ opacity: 0, x: -8 }}
-								animate={{ opacity: 1, x: 0 }}
-								exit={{ opacity: 0, x: -8 }}
-								transition={{ duration: 0.15 }}>
-								管理面板
-							</motion.span>
-						) : (
-							<motion.span
-								className='text-[10px] leading-none'
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								exit={{ opacity: 0 }}
-								transition={{ duration: 0.15 }}>
-								管理
-							</motion.span>
-						)}
-					</AnimatePresence>
-				</Link>
+				<nav className='flex-1 overflow-y-auto px-2 py-1'>
+					<NavGroup
+						label='公开内容'
+						items={publicContentItems}
+						activeHref={activeHref}
+						expanded={expanded}
+					/>
+
+					<div className='mx-1 my-1.5 border-t border-white/20' />
+
+					<NavGroup
+						label='互动探索'
+						items={interactionItems}
+						activeHref={activeHref}
+						expanded={expanded}
+					/>
+				</nav>
 
 				<div className='mx-2 border-t border-white/30' />
 
-				<nav className='flex-1 overflow-y-auto px-2 py-1'>
-					{navItems.slice(1).map((item, i) => {
-						const index = i + 1
-						const isActive = index === activeIndex
-						const Icon = isActive ? item.iconActive : item.icon
-
-						return (
-							<Link
-								key={item.href}
-								href={item.href}
-								aria-label={item.label}
-								title={item.label}
-								className={cn(
-									'group relative z-10 flex w-full items-center gap-2.5 rounded-xl px-2 py-2 transition-colors',
-									isActive ? 'bg-[var(--color-brand)]/15 font-medium text-[var(--color-brand)]' : 'text-gray-500 hover:bg-white/60 hover:text-gray-700'
-								)}>
-								{isActive && (
-									<motion.div
-										layoutId='vertical-nav-active'
-										className='pointer-events-none absolute inset-0 rounded-xl bg-[var(--color-brand)]/15'
-										transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-									/>
-								)}
-								<div className='relative z-10 flex h-7 w-7 shrink-0 items-center justify-center'>
-									<Icon className={cn('h-[18px] w-[18px]', isActive ? 'text-[var(--color-brand)]' : 'text-gray-500 group-hover:text-gray-700')} />
-								</div>
-								<AnimatePresence>
-									{expanded && (
-										<motion.span
-											className='relative z-10 truncate text-[13px]'
-											initial={{ opacity: 0, x: -8 }}
-											animate={{ opacity: 1, x: 0 }}
-											exit={{ opacity: 0, x: -8 }}
-											transition={{ duration: 0.15 }}>
-											{item.label}
-										</motion.span>
-									)}
-								</AnimatePresence>
-							</Link>
-						)
-					})}
-				</nav>
+				<div className='shrink-0 px-2 pb-2 pt-1'>
+					<Link
+						href='/manage'
+						aria-label='管理'
+						title='管理'
+						className={cn(
+							'mx-0 my-0.5 flex shrink-0 rounded-xl transition-colors',
+							expanded ? 'items-center gap-2.5 px-2 py-2' : 'flex-col items-center gap-0.5 px-1 py-1.5',
+							isManageActive ? 'bg-[var(--color-brand)]/15 font-medium text-[var(--color-brand)]' : 'text-gray-400 hover:bg-white/60 hover:text-gray-500'
+						)}>
+						<div className='flex h-7 w-7 shrink-0 items-center justify-center'>
+							<Settings className='h-[18px] w-[18px]' />
+						</div>
+						<AnimatePresence>
+							{expanded ? (
+								<motion.span
+									className='relative z-10 truncate text-[13px]'
+									initial={{ opacity: 0, x: -8 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: -8 }}
+									transition={{ duration: 0.15 }}>
+									管理
+								</motion.span>
+							) : (
+								<motion.span
+									className='text-[10px] leading-none'
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.15 }}>
+									管理
+								</motion.span>
+							)}
+						</AnimatePresence>
+					</Link>
+				</div>
 			</div>
 		</motion.nav>
+	)
+}
+
+function NavGroup({
+	label,
+	items,
+	activeHref,
+	expanded,
+}: {
+	label: string
+	items: NavItem[]
+	activeHref: string | null
+	expanded: boolean
+}) {
+	return (
+		<div className='py-0.5'>
+			<AnimatePresence>
+				{expanded && (
+					<motion.div
+						className='px-2 pb-1 pt-1 text-[10px] font-medium tracking-wider text-gray-400 uppercase'
+						initial={{ opacity: 0, x: -8 }}
+						animate={{ opacity: 1, x: 0 }}
+						exit={{ opacity: 0, x: -8 }}
+						transition={{ duration: 0.15 }}>
+						{label}
+					</motion.div>
+				)}
+			</AnimatePresence>
+			{items.map(item => {
+				const isActive = activeHref === item.href
+				const Icon = isActive ? item.iconActive : item.icon
+
+				return (
+					<Link
+						key={item.href}
+						href={item.href}
+						aria-label={item.label}
+						title={item.label}
+						className={cn(
+							'group relative z-10 flex w-full items-center gap-2.5 rounded-xl px-2 py-2 transition-colors',
+							isActive ? 'bg-[var(--color-brand)]/15 font-medium text-[var(--color-brand)]' : 'text-gray-500 hover:bg-white/60 hover:text-gray-700'
+						)}>
+						{isActive && (
+							<motion.div
+								layoutId='vertical-nav-active'
+								className='pointer-events-none absolute inset-0 rounded-xl bg-[var(--color-brand)]/15'
+								transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+							/>
+						)}
+						<div className='relative z-10 flex h-7 w-7 shrink-0 items-center justify-center'>
+							<Icon className={cn('h-[18px] w-[18px]', isActive ? 'text-[var(--color-brand)]' : 'text-gray-500 group-hover:text-gray-700')} />
+						</div>
+						<AnimatePresence>
+							{expanded && (
+								<motion.span
+									className='relative z-10 truncate text-[13px]'
+									initial={{ opacity: 0, x: -8 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: -8 }}
+									transition={{ duration: 0.15 }}>
+									{item.label}
+								</motion.span>
+							)}
+						</AnimatePresence>
+					</Link>
+				)
+			})}
+		</div>
 	)
 }

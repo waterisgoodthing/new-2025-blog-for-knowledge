@@ -16,11 +16,6 @@ export interface Category {
   sort_order: number;
 }
 
-export interface SyncResult {
-  pushed: number;
-  commit: string;
-}
-
 export async function listTags(): Promise<Tag[]> {
   return apiFetch<Tag[]>("/api/tags");
 }
@@ -85,8 +80,4 @@ export async function updateCategory(id: number, data: { name?: string; sort_ord
 
 export async function deleteCategory(id: number): Promise<void> {
   return apiFetch<void>(`/api/categories/${id}`, { method: "DELETE" });
-}
-
-export async function syncPush(): Promise<SyncResult> {
-  return apiFetch<SyncResult>("/api/sync/push", { method: "POST" });
 }

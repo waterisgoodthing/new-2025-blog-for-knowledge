@@ -60,3 +60,84 @@ All tasks completed on 2026-06-09. Review fixes applied same day.
 
 - [x] **P4-03** Record final runtime evidence and residual risks.
   - Recorded in `validation.md`.
+
+## Phase 5: Deployment Drift Investigation (2026-06-10)
+
+- [x] **P5-01** Investigate why production bundle lacks passkey preflight login gate.
+  - Root cause: manual deploy (`npm run deploy`) was run from a state after `73efa4e` but before `4e4b69d`. No CI/CD exists.
+  - Evidence: all 17 live JS chunks searched; zero contain `checkPasskeyRegistered`, `passkey/status`, or preflight error strings.
+
+- [x] **P5-02** Investigate why `public-api.limengyang.me` returns HTTP 530.
+  - Root cause: Cloudflare Tunnel daemon is down. Error 1033 = "Argo Tunnel error".
+  - `api.limengyang.me` (private) correctly returns 302 to Cloudflare Access.
+
+- [x] **P5-03** Document minimum fix path.
+  - 1. Deploy feature branch to Cloudflare Workers.
+  - 2. Restart `cloudflared` tunnel daemon for `public-api.limengyang.me`.
+  - 3. Verify WebAuthn RP settings in production backend `.env`.
+  - 4. Smoke test the live login UI.
+
+## Phase 6: Production Execution And Closure (2026-06-10 Round 2)
+
+- [x] **P6-01** Restore `public-api.limengyang.me`.
+  - Added `public-api.limengyang.me` → `http://localhost:8000` ingress rule to `~/.cloudflared/config.yml`.
+  - Tunnel reconnected to Cloudflare edge at `lax08`.
+  - Restarted stale backend (uvicorn) to pick up `GET /api/auth/passkey/status` endpoint.
+  - Verified: `/api/auth/me` → 401, `/api/auth/passkey/status` → `{"registered":true}`.
+
+- [x] **P6-02** Deploy frontend with passkey preflight login gate.
+  - `npx tsc --noEmit` → PASS.
+  - `npm run build:cf` → PASS.
+  - `npx wrangler deploy --route 'blog.limengyang.me/*'` → PASS. Version `4149ddd3`.
+  - Verified: all 5 required strings present in live bundle chunks.
+
+- [x] **P6-03** Set production WebAuthn RP config.
+  - Added `WEBAUTHN_RP_ID=blog.limengyang.me` and `WEBAUTHN_ORIGIN=https://blog.limengyang.me` to `backend/.env`.
+  - Restarted backend. Verified: reg-options returns `rp.id=blog.limengyang.me`.
+
+- [x] **P6-04** Final smoke test.
+  - All 7 acceptance checks passed (API + bundle evidence).
+  - Deployment-level acceptance: PASS.
+
+- [x] **P6-05** Update validation.md and README.md with execution results.
+
+## Phase 7: Temporary Public Passkey Execution Round (Approval Required)
+
+Implementation for this phase must not start until explicitly approved in conversation.
+
+- [x] **P7-01** Reconfirm the live public RP/origin and passkey preflight state from this machine.
+  - Completion standard: record the exact public URL, RP ID, origin, passkey status response, and current `/manage` gate behavior in `validation.md`.
+  - Completed: 2026-06-10. Source and live preflight evidence confirm this machine is targeting the public RP/origin pair and that the public passkey status endpoint is reachable.
+  - Evidence:
+    - Local backend env currently sets `WEBAUTHN_RP_ID=blog.limengyang.me` and `WEBAUTHN_ORIGIN=https://blog.limengyang.me`.
+    - `https://public-api.limengyang.me/api/auth/passkey/status` returned `{"registered":true}` from this machine.
+    - `https://public-api.limengyang.me/api/auth/me` remains unauthenticated without a session.
+    - `https://blog.limengyang.me/manage` is publicly reachable from this machine and returns the management app shell.
+
+- [x] **P7-02** Implement operator-only passkey registration tool.
+  - Added `OPERATOR_REGISTRATION_KEY` to config (fail-closed when empty).
+  - Added operator registration schemas (`OperatorRegOptionsRequest`, `OperatorRegisterRequest`, `OperatorRegisterResponse`).
+  - Added `replace_credential()` to `passkey_service.py` for atomic credential replacement.
+  - Added `POST /api/auth/passkey/operator/reg-options` and `POST /api/auth/passkey/operator/register` endpoints, protected by `X-Operator-Registration-Key` header.
+  - Created `public/operator-passkey-register.html` — static page served from `blog.limengyang.me` origin that drives the browser WebAuthn flow against the backend operator endpoints.
+  - Backend import check: PASS.
+  - Frontend `npx tsc --noEmit`: PASS.
+  - Operator routes registered: `/api/auth/passkey/operator/reg-options`, `/api/auth/passkey/operator/register`.
+
+- [ ] **P7-03** Set `OPERATOR_REGISTRATION_KEY` in production backend `.env` and restart backend.
+  - Completion standard: operator endpoints return 403 when key is missing/wrong, and return valid registration options when key is correct.
+
+- [ ] **P7-04** Register a passkey credential from this machine against the public deployment.
+  - Completion standard: visit `https://blog.limengyang.me/operator-passkey-register.html` from this machine, complete the WebAuthn registration flow, and the backend persists the new credential (replacing the old one).
+  - Requires: P7-03 completed (operator key configured).
+
+- [ ] **P7-05** Verify passkey login from this machine on the public deployment.
+  - Completion standard: public `/manage` can establish a passkey-authenticated admin session from this machine using the newly registered credential.
+  - Requires: P7-04 completed.
+
+- [ ] **P7-06** Verify passkey-only protection after live registration.
+  - Completion standard: a passkey session satisfies passkey-only action gates.
+  - Requires: P7-05 completed.
+
+- [ ] **P7-07** Record final public-machine execution evidence and residual risks.
+  - Completion standard: `validation.md` captures exact URLs, outcomes, blockers, and any remaining manual follow-up.

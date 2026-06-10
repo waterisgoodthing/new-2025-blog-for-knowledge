@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 _reg_challenge_store: dict[str, bytes] = {}
 _auth_challenge_store: dict[str, bytes] = {}
+_operator_reg_challenge_store: dict[str, bytes] = {}
 
 
 def _get_rp_id() -> str:
@@ -183,6 +184,30 @@ async def reset_credential(db: AsyncSession) -> bool:
         await db.delete(existing)
         return True
     return False
+
+
+async def replace_credential(
+    db: AsyncSession,
+    credential_id: str,
+    public_key: bytes,
+    device_name: str | None = None,
+) -> PasskeyCredential:
+    result = await db.execute(select(PasskeyCredential))
+    existing = result.scalars().all()
+    for cred in existing:
+        await db.delete(cred)
+
+    new_cred = PasskeyCredential(
+        credential_id=credential_id,
+        public_key=public_key,
+        sign_count=0,
+        device_name=device_name,
+        last_used_at=None,
+    )
+    db.add(new_cred)
+    await db.flush()
+    await db.refresh(new_cred)
+    return new_cred
 
 
 async def get_credential(db: AsyncSession) -> PasskeyCredential | None:

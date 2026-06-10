@@ -71,9 +71,9 @@ async def list_notes(
         query = query.where(Note.type == type.value)
 
     if not is_admin:
-        pass
+        query = query.where(Note.hidden == False)
+        query = query.where(Note.status == "published")
     else:
-        # 管理员可以自由过滤草稿或隐藏内容
         if status:
             query = query.where(Note.status == status.value)
         if hidden is not None:
@@ -213,6 +213,10 @@ async def get_note(
     is_admin = False
     if current_user is not None:
         is_admin = getattr(current_user, "is_admin", False)
+
+    if not is_admin:
+        if note.hidden or note.status != "published":
+            raise HTTPException(status_code=404, detail="Note not found")
 
     return note
 

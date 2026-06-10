@@ -12,9 +12,9 @@ import { INIT_DELAY } from '@/consts'
 import ShortLineSVG from '@/svgs/short-line.svg'
 import { useBlogIndex, type BlogIndexItem } from '@/hooks/use-blog-index'
 import { useCategories } from '@/hooks/use-categories'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useReadArticles } from '@/hooks/use-read-articles'
 import JuejinSVG from '@/svgs/juejin.svg'
-import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { readFileAsText } from '@/lib/file-utils'
 import { cn } from '@/lib/utils'
@@ -31,6 +31,7 @@ export default function BlogPage() {
 	const { categories: categoriesFromServer } = useCategories()
 	const { isRead } = useReadArticles()
 	const { siteContent } = useConfigStore()
+	const { isAdmin } = useAdminAuth()
 	const hideEditButton = siteContent.hideEditButton ?? false
 	const enableCategories = siteContent.enableCategories ?? false
 	const [editMode, setEditMode] = useState(false)
@@ -282,7 +283,7 @@ export default function BlogPage() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!editMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !editMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				toggleEditMode()
 			}
@@ -292,7 +293,7 @@ export default function BlogPage() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [editMode, toggleEditMode])
+	}, [isAdmin, editMode, toggleEditMode])
 
 	return (
 		<>
@@ -486,7 +487,7 @@ export default function BlogPage() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

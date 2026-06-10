@@ -10,7 +10,9 @@ import { login, logout, getMe, loginWithPasskey, isPasskeyAvailable, checkPasske
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
-import { Lock } from 'lucide-react'
+import Image from 'next/image'
+import { useConfigStore } from '@/app/(home)/stores/config-store'
+import { Compass, MessageSquare, BookOpen, FileText, AlertCircle, Info, Lock } from 'lucide-react'
 import dayjs from 'dayjs'
 import { MusicTab } from './music-tab'
 import { RecommendationTab } from './recommendation-tab'
@@ -26,7 +28,7 @@ import { SiteSettingsPanel } from '@/app/(home)/config-dialog/site-settings-pane
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
 
-type TabType = 'overview' | 'content' | 'folders-tags' | 'music' | 'ai' | 'settings' | 'security' | 'sync' | 'audit'
+type TabType = 'overview' | 'content' | 'folders-tags' | 'music' | 'ai' | 'settings' | 'security' | 'audit'
 
 const tabs: { id: TabType; label: string; passkeyOnly?: boolean }[] = [
   { id: 'overview', label: '总览' },
@@ -36,7 +38,6 @@ const tabs: { id: TabType; label: string; passkeyOnly?: boolean }[] = [
   { id: 'ai', label: 'AI 管理' },
   { id: 'settings', label: '页面设置', passkeyOnly: true },
   { id: 'security', label: '安全设置', passkeyOnly: true },
-  { id: 'sync', label: '同步部署' },
   { id: 'audit', label: '操作记录' },
 ]
 
@@ -299,17 +300,6 @@ function FoldersTagsTab() {
   )
 }
 
-function SyncTab() {
-  return (
-    <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
-      <h3 className='mb-4 font-medium'>同步与部署</h3>
-      <div className='space-y-3'>
-        <button className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white'>同步到 GitHub</button>
-        <p className='text-sm text-gray-500'>将内容推送到 GitHub 仓库以触发静态部署。</p>
-      </div>
-    </div>
-  )
-}
 
 function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [username, setUsername] = useState('')
@@ -319,6 +309,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [passkeyLoading, setPasskeyLoading] = useState(false)
   const [passkeySupported] = useState(() => isPasskeyAvailable())
   const [passkeyStatus, setPasskeyStatus] = useState<PasskeyStatusResult | null>(null)
+  const { siteContent } = useConfigStore()
 
   useEffect(() => {
     if (!passkeySupported) {
@@ -355,13 +346,32 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     }
   }
 
+  const quickLinks = [
+    { icon: BookOpen, label: '博客', href: '/blog' },
+    { icon: FileText, label: '笔记', href: '/notes' },
+    { icon: AlertCircle, label: '错题', href: '/mistakes' },
+    { icon: Compass, label: '发现', href: '/discover' },
+    { icon: MessageSquare, label: '留言', href: '/guestbook' },
+    { icon: Info, label: '关于', href: '/about' },
+  ]
+
   return (
-    <div className='mx-auto max-w-sm px-4 py-20'>
-      <h1 className='mb-2 text-center text-2xl font-bold'>管理面板登录</h1>
-      <p className='mb-8 text-center text-sm text-gray-400'>需要管理员认证才能访问管理功能</p>
+    <div className='mx-auto max-w-sm px-4 py-12'>
+      <div className='mb-8 flex flex-col items-center gap-3'>
+        <Image
+          src={siteContent.avatarUrl || '/images/avatar.png'}
+          alt='avatar'
+          width={56}
+          height={56}
+          className='rounded-full'
+          style={{ boxShadow: '0 8px 24px -4px #E2D9CE' }}
+        />
+        <h1 className='text-xl font-bold text-gray-800'>{siteContent.meta.title || '管理'}</h1>
+        <p className='text-center text-sm text-gray-400'>登录后即可管理内容、策展发现和审核留言</p>
+      </div>
 
       {passkeySupported && passkeyStatus === null && (
-        <div className='mb-6 text-center text-sm text-gray-400'>检查 Passkey 状态...</div>
+        <div className='mb-4 text-center text-sm text-gray-400'>检查 Passkey 状态...</div>
       )}
 
       {passkeySupported && passkeyStatus && 'registered' in passkeyStatus && passkeyStatus.registered && (
@@ -378,7 +388,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
             Passkey 登录拥有最高权限，可执行密码更改等敏感操作
           </p>
 
-          <div className='my-6 flex items-center gap-3'>
+          <div className='my-5 flex items-center gap-3'>
             <div className='h-px flex-1 bg-white/20' />
             <span className='text-xs text-gray-400'>或使用密码</span>
             <div className='h-px flex-1 bg-white/20' />
@@ -387,13 +397,13 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
       )}
 
       {passkeySupported && passkeyStatus && 'registered' in passkeyStatus && !passkeyStatus.registered && (
-        <div className='mb-6 rounded-xl border border-white/20 bg-white/30 px-4 py-3 text-center text-xs text-gray-500'>
+        <div className='mb-5 rounded-xl border border-white/20 bg-white/30 px-4 py-3 text-center text-xs text-gray-500'>
           当前浏览器支持 Passkey，但服务器未注册 Passkey。使用密码登录后可在安全设置中注册。
         </div>
       )}
 
       {passkeySupported && passkeyStatus && 'error' in passkeyStatus && (
-        <div className='mb-6 rounded-xl border border-red-200/40 bg-red-50/60 px-4 py-3 text-center text-xs text-red-600'>
+        <div className='mb-5 rounded-xl border border-red-200/40 bg-red-50/60 px-4 py-3 text-center text-xs text-red-600'>
           无法检查 Passkey 状态：{passkeyStatus.message}。可先使用密码登录。
         </div>
       )}
@@ -432,14 +442,26 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
       </form>
 
       {!passkeySupported && (
-        <p className='mt-4 text-center text-xs text-gray-400'>
+        <p className='mt-3 text-center text-xs text-gray-400'>
           当前浏览器不支持 Passkey，仅可使用密码登录（普通权限）
         </p>
       )}
 
-      <p className='mt-4 text-center text-sm text-gray-400'>
-        <Link href='/' className='text-[var(--color-brand)] underline'>返回首页</Link>
-      </p>
+      <div className='mt-8 border-t border-white/20 pt-6'>
+        <p className='mb-3 text-center text-xs text-gray-400'>浏览公开内容</p>
+        <div className='flex flex-wrap justify-center gap-2'>
+          {quickLinks.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className='flex items-center gap-1.5 rounded-lg bg-white/40 px-3 py-1.5 text-xs text-gray-500 transition-colors hover:bg-white/60 hover:text-gray-700'
+            >
+              <link.icon className='h-3.5 w-3.5' />
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -456,7 +478,7 @@ function ManagePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const validTabs: TabType[] = ['overview', 'content', 'folders-tags', 'music', 'ai', 'settings', 'security', 'sync', 'audit']
+  const validTabs: TabType[] = ['overview', 'content', 'folders-tags', 'music', 'ai', 'settings', 'security', 'audit']
   const initialTab = validTabs.includes(tabParam as TabType) ? (tabParam as TabType) : 'content'
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [authenticated, setAuthenticated] = useState(false)
@@ -580,7 +602,6 @@ function ManagePageInner() {
         )
       )}
       {activeTab === 'security' && <SecurityTab authLevel={user?.auth_level} />}
-      {activeTab === 'sync' && <SyncTab />}
       {activeTab === 'audit' && <AuditTab />}
     </div>
   )

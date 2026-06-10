@@ -17,6 +17,7 @@ import { getContentEditHref, getContentListHref } from '@/lib/content-routes'
 import { resolveImageUrl } from '@/lib/api/images'
 import { RichText } from '@/components/rich-text'
 import { RelatedKnowledgePanel } from './components/related-knowledge-panel'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 const MermaidBlock = dynamic(() => import('@/components/mermaid-block').then(mod => mod.MermaidBlock), { ssr: false })
 
@@ -29,6 +30,7 @@ export default function NoteDetailContent() {
 	const { id } = useParams<{ id: string }>()
 	const router = useRouter()
 	const [deleting, setDeleting] = useState(false)
+	const { isAdmin } = useAdminAuth()
 
 	const { data: note, isLoading } = useSWR<NoteDetail>(
 		`/api/notes/${id}`,
@@ -54,7 +56,7 @@ export default function NoteDetailContent() {
 	if (isLoading) return <div className='py-20 text-center text-gray-400'>加载中...</div>
 	if (!note) return <div className='py-20'><EmptyState variant='load-error' title='未找到内容' description='该笔记可能已被删除或链接无效' action={{ label: '返回笔记列表', href: '/notes' }} /></div>
 
-	const actionBar = (
+	const actionBar = isAdmin ? (
 		<div className='flex gap-3'>
 			<Link
 				href={getContentEditHref(note.type, note.slug)}
@@ -70,7 +72,7 @@ export default function NoteDetailContent() {
 				{deleting ? '删除中...' : '删除'}
 			</button>
 		</div>
-	)
+	) : null
 
 	if (note.type === 'mistake') {
 		const isDue = note.next_review ? dayjs(note.next_review).isSame(dayjs(), 'day') || dayjs(note.next_review).isBefore(dayjs(), 'day') : false
@@ -94,11 +96,13 @@ export default function NoteDetailContent() {
 							<div className='mb-4 flex flex-wrap items-start justify-between gap-3'>
 								<div>
 									<h1 className='text-2xl font-bold leading-tight text-gray-900'>{note.title}</h1>
-									<p className='mt-1 text-sm text-gray-500'>先看题目和自己的答案，再对照正确步骤复盘。</p>
+									{isAdmin && <p className='mt-1 text-sm text-gray-500'>先看题目和自己的答案，再对照正确步骤复盘。</p>}
 								</div>
-								<Link href='/mistakes/review' className='rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'>
-									开始复习
-								</Link>
+								{isAdmin && (
+									<Link href='/mistakes/review' className='rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'>
+										开始复习
+									</Link>
+								)}
 							</div>
 
 							{note.images && note.images.length > 0 && (
@@ -121,22 +125,24 @@ export default function NoteDetailContent() {
 
 							<div className='space-y-3'>
 								<StudyBlock title='题目' tone='neutral' content={note.question} fallback={note.content} />
-								<StudyBlock title='我的答案' tone='danger' content={note.my_answer} />
+								{isAdmin && <StudyBlock title='我的答案' tone='danger' content={note.my_answer} />}
 								<StudyBlock title='正确答案' tone='success' content={note.correct_answer} />
 							</div>
 						</section>
 
 						<aside className='space-y-3'>
-							<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-								<h2 className='mb-3 text-sm font-semibold text-gray-800'>复习状态</h2>
-								<div className='grid grid-cols-2 gap-2 text-center'>
-									<Metric label='复习次数' value={String(note.repetitions || 0)} />
-									<Metric label='记忆系数' value={(note.ef || 2.5).toFixed(2)} />
-									<Metric label='间隔' value={`${note.interval || 0} 天`} />
-									<Metric label='下次复习' value={note.next_review ? dayjs(note.next_review).format('MM-DD') : '-'} highlight={isDue} />
+							{isAdmin && (
+								<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
+									<h2 className='mb-3 text-sm font-semibold text-gray-800'>复习状态</h2>
+									<div className='grid grid-cols-2 gap-2 text-center'>
+										<Metric label='复习次数' value={String(note.repetitions || 0)} />
+										<Metric label='记忆系数' value={(note.ef || 2.5).toFixed(2)} />
+										<Metric label='间隔' value={`${note.interval || 0} 天`} />
+										<Metric label='下次复习' value={note.next_review ? dayjs(note.next_review).format('MM-DD') : '-'} highlight={isDue} />
+									</div>
+									{note.last_reviewed && <p className='mt-3 text-xs text-gray-500'>上次复习: {dayjs(note.last_reviewed).format('YYYY-MM-DD HH:mm')}</p>}
 								</div>
-								{note.last_reviewed && <p className='mt-3 text-xs text-gray-500'>上次复习: {dayjs(note.last_reviewed).format('YYYY-MM-DD HH:mm')}</p>}
-							</div>
+							)}
 
 							{note.tags.length > 0 && (
 								<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
@@ -151,69 +157,73 @@ export default function NoteDetailContent() {
 						</aside>
 					</div>
 
-				<div className='mb-6 grid gap-4 lg:grid-cols-2'>
-					<StudyBlock title='错因与解析' tone='info' content={note.analysis} large />
-					<StudyBlock title='知识点归总' tone='purple' content={note.knowledge_points} large />
-				</div>
+				{isAdmin && (
+					<>
+						<div className='mb-6 grid gap-4 lg:grid-cols-2'>
+							<StudyBlock title='错因与解析' tone='info' content={note.analysis} large />
+							<StudyBlock title='知识点归总' tone='purple' content={note.knowledge_points} large />
+						</div>
 
-				{note.ai_metadata && (
-					<div className='mb-6 space-y-4'>
-						<h2 className='text-lg font-bold text-gray-800'>AI 解析</h2>
-						<div className='grid gap-4 lg:grid-cols-2'>
-							<StudyBlock title='错误原因' tone='danger' content={note.ai_metadata.error_reason as string} />
-							<StudyBlock title='关键步骤' tone='success' content={note.ai_metadata.key_step as string} />
-						</div>
-						<div className='grid gap-4 lg:grid-cols-2'>
-							<StudyBlock title='举一反三' tone='info' content={note.ai_metadata.generalization as string} />
-							<StudyBlock title='复习建议' tone='purple' content={note.ai_metadata.review_advice as string} />
-						</div>
-						{(note.ai_metadata.similar_traps as string[])?.length > 0 && (
-							<section className='rounded-xl border border-amber-200/70 bg-amber-50/50 p-4'>
-								<h2 className='mb-2 text-sm font-semibold text-amber-800'>易错陷阱</h2>
-								<ul className='list-disc space-y-1 pl-5 text-sm text-amber-900'>
-									{(note.ai_metadata.similar_traps as string[]).map((t, i) => <li key={i}>{t}</li>)}
-								</ul>
-							</section>
+						{note.ai_metadata && (
+							<div className='mb-6 space-y-4'>
+								<h2 className='text-lg font-bold text-gray-800'>AI 解析</h2>
+								<div className='grid gap-4 lg:grid-cols-2'>
+									<StudyBlock title='错误原因' tone='danger' content={note.ai_metadata.error_reason as string} />
+									<StudyBlock title='关键步骤' tone='success' content={note.ai_metadata.key_step as string} />
+								</div>
+								<div className='grid gap-4 lg:grid-cols-2'>
+									<StudyBlock title='举一反三' tone='info' content={note.ai_metadata.generalization as string} />
+									<StudyBlock title='复习建议' tone='purple' content={note.ai_metadata.review_advice as string} />
+								</div>
+								{(note.ai_metadata.similar_traps as string[])?.length > 0 && (
+									<section className='rounded-xl border border-amber-200/70 bg-amber-50/50 p-4'>
+										<h2 className='mb-2 text-sm font-semibold text-amber-800'>易错陷阱</h2>
+										<ul className='list-disc space-y-1 pl-5 text-sm text-amber-900'>
+											{(note.ai_metadata.similar_traps as string[]).map((t, i) => <li key={i}>{t}</li>)}
+										</ul>
+									</section>
+								)}
+								{(note.ai_metadata.variant_questions as string[])?.length > 0 && (
+									<section className='rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4'>
+										<h2 className='mb-2 text-sm font-semibold text-indigo-800'>变式题</h2>
+										<ol className='list-decimal space-y-1 pl-5 text-sm text-indigo-900'>
+											{(note.ai_metadata.variant_questions as string[]).map((q, i) => <li key={i}>{q}</li>)}
+										</ol>
+									</section>
+								)}
+								{(note.ai_metadata.related_notes as { slug: string; title: string }[])?.length > 0 && (
+									<section className='rounded-xl border border-teal-200/70 bg-teal-50/50 p-4'>
+										<h2 className='mb-2 text-sm font-semibold text-teal-800'>关联笔记</h2>
+										<div className='flex flex-wrap gap-2'>
+											{(note.ai_metadata.related_notes as { slug: string; title: string }[]).map((rn) => (
+												<Link key={rn.slug} href={`/notes/${rn.slug}`} className='rounded-lg bg-teal-100 px-3 py-1.5 text-sm text-teal-700 transition-colors hover:bg-teal-200'>
+													{rn.title}
+												</Link>
+											))}
+										</div>
+									</section>
+								)}
+							</div>
 						)}
-						{(note.ai_metadata.variant_questions as string[])?.length > 0 && (
-							<section className='rounded-xl border border-indigo-200/70 bg-indigo-50/50 p-4'>
-								<h2 className='mb-2 text-sm font-semibold text-indigo-800'>变式题</h2>
-								<ol className='list-decimal space-y-1 pl-5 text-sm text-indigo-900'>
-									{(note.ai_metadata.variant_questions as string[]).map((q, i) => <li key={i}>{q}</li>)}
-								</ol>
-							</section>
-						)}
-						{(note.ai_metadata.related_notes as { slug: string; title: string }[])?.length > 0 && (
-							<section className='rounded-xl border border-teal-200/70 bg-teal-50/50 p-4'>
-								<h2 className='mb-2 text-sm font-semibold text-teal-800'>关联笔记</h2>
-								<div className='flex flex-wrap gap-2'>
-									{(note.ai_metadata.related_notes as { slug: string; title: string }[]).map((rn) => (
-										<Link key={rn.slug} href={`/notes/${rn.slug}`} className='rounded-lg bg-teal-100 px-3 py-1.5 text-sm text-teal-700 transition-colors hover:bg-teal-200'>
-											{rn.title}
-										</Link>
+
+						{(() => {
+							const diagrams = note.ai_metadata?.diagrams as { type: string; title: string; mermaid: string }[] | undefined
+							return diagrams && diagrams.length > 0 ? (
+								<div className='mb-6 space-y-4'>
+									<h2 className='text-lg font-bold text-gray-800'>图示解析</h2>
+									{diagrams.map((diagram, idx) => (
+										<div key={idx} className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
+											{diagram.title && <h3 className='mb-2 text-sm font-semibold text-gray-700'>{diagram.title}</h3>}
+											<MermaidBlock code={diagram.mermaid} />
+										</div>
 									))}
 								</div>
-							</section>
-						)}
-					</div>
+							) : null
+						})()}
+
+						<RelatedKnowledgePanel note={note} />
+					</>
 				)}
-
-				{(() => {
-					const diagrams = note.ai_metadata?.diagrams as { type: string; title: string; mermaid: string }[] | undefined
-					return diagrams && diagrams.length > 0 ? (
-						<div className='mb-6 space-y-4'>
-							<h2 className='text-lg font-bold text-gray-800'>图示解析</h2>
-							{diagrams.map((diagram, idx) => (
-								<div key={idx} className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-									{diagram.title && <h3 className='mb-2 text-sm font-semibold text-gray-700'>{diagram.title}</h3>}
-									<MermaidBlock code={diagram.mermaid} />
-								</div>
-							))}
-						</div>
-					) : null
-				})()}
-
-				<RelatedKnowledgePanel note={note} />
 
 				{actionBar}
 				</motion.div>

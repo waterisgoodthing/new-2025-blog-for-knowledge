@@ -1,9 +1,18 @@
 import useSWR from 'swr'
-import { useAuthStore } from '@/hooks/use-auth'
 import { listNotes } from '@/lib/api/notes'
+import { apiFetch } from '@/lib/api/client'
 import type { BlogIndexItem } from '@/app/blog/types'
 
 export type { BlogIndexItem } from '@/app/blog/types'
+
+async function checkAdminAuth(): Promise<boolean> {
+	try {
+		await apiFetch('/api/auth/me')
+		return true
+	} catch {
+		return false
+	}
+}
 
 async function fetchBlogIndex(): Promise<BlogIndexItem[]> {
 	const result = await listNotes({ type: 'blog', status: 'published', size: 100 })
@@ -20,14 +29,19 @@ async function fetchBlogIndex(): Promise<BlogIndexItem[]> {
 }
 
 export function useBlogIndex() {
-	const { isAuth } = useAuthStore()
+	const { data: isAdmin } = useSWR<boolean>('admin-auth-check', checkAdminAuth, {
+		revalidateOnFocus: false,
+		revalidateOnReconnect: false,
+		dedupingInterval: 60000,
+	})
+
 	const { data, error, isLoading } = useSWR<BlogIndexItem[]>('blog-index', fetchBlogIndex, {
 		revalidateOnFocus: false,
 		revalidateOnReconnect: true
 	})
 
 	let result = data || []
-	if (!isAuth) {
+	if (!isAdmin) {
 		result = result.filter(item => !item.hidden)
 	}
 

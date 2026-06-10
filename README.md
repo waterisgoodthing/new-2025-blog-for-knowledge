@@ -4,22 +4,26 @@ Personal knowledge and blog system built with Next.js and FastAPI.
 
 ## Project Lines
 
-- `src/`: Next.js App Router frontend and original static blog workflow.
-- `backend/`: FastAPI backend for notes, mistakes, review, auth, AI, music, recommendations, and GitHub sync.
+- `src/`: Next.js App Router frontend.
+- `backend/`: FastAPI backend for notes, mistakes, review, auth, AI, music, recommendations, and managed content.
 
 ## Local Development
 
-Install frontend dependencies:
+### Frontend
+
+Install dependencies:
 
 ```bash
-pnpm install
+npm install
 ```
 
-Run the frontend:
+Run the dev server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
+
+### Backend
 
 Install backend dependencies in a local virtual environment:
 
@@ -30,20 +34,44 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Copy and edit the environment file:
+
+```bash
+cp .env.example .env
+```
+
 Run the backend:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-## Content State
+## Content Source of Truth
 
-Original author content has been cleared. Static blog indexes, category data, share links, pictures, project entries, snippets, and blogger lists start empty.
+All active content domains are now managed through the backend API and stored in PostgreSQL:
 
-Add your own content through the app UI or by editing the matching JSON/static files.
+| Domain | Storage | API |
+|---|---|---|
+| notes, blog, mistakes | PostgreSQL | `/api/notes` |
+| about | PostgreSQL | `/api/content/about` |
+| share | PostgreSQL | `/api/content/shares` |
+| projects | PostgreSQL | `/api/content/projects` |
+| pictures | PostgreSQL | `/api/content/pictures` |
+| snippets | PostgreSQL | `/api/content/snippets` |
+| bloggers | PostgreSQL | `/api/content/bloggers` |
+| site settings | PostgreSQL | `/api/content/site-settings` |
+
+Static JSON files under `src/app/*/list.json` and `src/config/` serve only as default seed data for first-time database initialization. Edits are persisted through the backend API.
 
 ## Configuration
 
-Frontend GitHub App settings use `NEXT_PUBLIC_GITHUB_*` environment variables.
-
 Backend settings live in `backend/.env`; keep secrets out of Git. Use `backend/.env.example` as the template.
+
+Key settings:
+
+- `DATABASE_URL`: PostgreSQL connection string.
+- `JWT_SECRET_KEY`: Session signing key. Must be changed in production.
+- `ALLOWED_ORIGINS`: Comma-separated CORS origins.
+- `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`: Optional AI features.
+
+No GitHub repository write access is required to run or develop this project.

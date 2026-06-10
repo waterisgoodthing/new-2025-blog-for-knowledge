@@ -5,16 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isAdmin, loading } = useAdminAuth()
+  const { isAdmin, isLoading } = useAdminAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !isAdmin) {
+    if (!isLoading && !isAdmin) {
       router.replace('/manage')
     }
-  }, [loading, isAdmin, router])
+  }, [isLoading, isAdmin, router])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='flex h-screen items-center justify-center'>
         <div className='text-gray-400'>验证中...</div>
