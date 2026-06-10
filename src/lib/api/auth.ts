@@ -98,8 +98,15 @@ export async function loginWithPasskey(): Promise<LoginResponse> {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Passkey login failed: ${res.status} ${text}`);
+    const data = await res.json().catch(() => null);
+    const detail = data?.detail || "";
+    if (res.status === 401 && detail.includes("No passkey")) {
+      throw new Error("未注册 Passkey，请使用密码登录或先注册 Passkey");
+    }
+    if (res.status === 401 && detail.includes("verification failed")) {
+      throw new Error("Passkey 验证失败，请重试");
+    }
+    throw new Error(detail || `Passkey 登录失败 (${res.status})`);
   }
 
   return res.json();
@@ -123,4 +130,24 @@ export function isPasskeyAvailable(): boolean {
     window.PublicKeyCredential &&
     typeof navigator.credentials !== "undefined"
   );
+}
+
+export type PasskeyStatusResult =
+  | { registered: true }
+  | { registered: false }
+  | { error: true; message: string };
+
+export async function checkPasskeyRegistered(): Promise<PasskeyStatusResult> {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/passkey/status`, {
+      credentials: "include",
+    });
+    if (!res.ok) {
+      return { error: true, message: `服务器返回 ${res.status}` };
+    }
+    const data = await res.json();
+    return { registered: !!data.registered };
+  } catch (err: any) {
+    return { error: true, message: err?.message || "无法连接服务器" };
+  }
 }

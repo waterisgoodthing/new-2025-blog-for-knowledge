@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     KEEP_ALIVE_URL: str = "http://127.0.0.1:8000/api/health"
 
     AUTH_BYPASS: str = "false"
+    AUTH_BYPASS_ALLOW: str = "false"
 
     WEBAUTHN_RP_ID: str = "localhost"
     WEBAUTHN_ORIGIN: str = "http://localhost:2025"

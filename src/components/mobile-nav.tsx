@@ -15,19 +15,20 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
-import { Home, Menu, PenLine } from 'lucide-react'
+import { Home, Menu, PenLine, Settings } from 'lucide-react'
 
 const primaryItems = [
 	{ icon: Home, iconActive: Home, label: '首页', href: '/' },
 	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '文章', href: '/blog' },
 	{ icon: PenLine, iconActive: PenLine, label: '笔记', href: '/notes' },
-	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题', href: '/mistakes' },
+	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题', href: '/mistakes' }
 ]
 
 const moreItems = [
+	{ icon: Settings, iconActive: Settings, label: '管理面板', href: '/manage' },
 	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于网站', href: '/about' },
 	{ icon: ShareOutlineSVG, iconActive: ShareFilledSVG, label: '推荐分享', href: '/share' },
-	{ icon: WebsiteOutlineSVG, iconActive: WebsiteFilledSVG, label: '优秀博客', href: '/bloggers' },
+	{ icon: WebsiteOutlineSVG, iconActive: WebsiteFilledSVG, label: '优秀博客', href: '/bloggers' }
 ]
 
 export default function MobileNav() {
@@ -57,8 +58,7 @@ export default function MobileNav() {
 								className={cn(
 									'flex flex-col items-center gap-0.5 rounded-lg px-3 py-1 transition-colors',
 									isActive ? 'text-[var(--color-brand)]' : 'text-gray-400'
-								)}
-							>
+								)}>
 								<Icon className='h-5 w-5' />
 								<span className='text-[10px]'>{item.label}</span>
 							</Link>
@@ -72,8 +72,7 @@ export default function MobileNav() {
 						className={cn(
 							'flex flex-col items-center gap-0.5 rounded-lg px-3 py-1 transition-colors',
 							moreOpen ? 'text-[var(--color-brand)]' : 'text-gray-400'
-						)}
-					>
+						)}>
 						<Menu className='h-5 w-5' />
 						<span className='text-[10px]'>更多</span>
 					</button>
@@ -95,8 +94,7 @@ export default function MobileNav() {
 							animate={{ y: 0 }}
 							exit={{ y: '100%' }}
 							transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-							className='fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/40 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden'
-						>
+							className='fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/40 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden'>
 							<div className='mx-auto my-2 h-1 w-10 rounded-full bg-gray-300' />
 							<div className='flex flex-col gap-1 px-4 pb-4'>
 								{moreItems.map(item => {
@@ -111,11 +109,8 @@ export default function MobileNav() {
 											title={item.label}
 											className={cn(
 												'flex items-center gap-3 rounded-xl px-4 py-3 transition-colors',
-												isActive
-													? 'bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-medium'
-													: 'text-gray-600 hover:bg-white/60'
-											)}
-										>
+												isActive ? 'bg-[var(--color-brand)]/10 font-medium text-[var(--color-brand)]' : 'text-gray-600 hover:bg-white/60'
+											)}>
 											<Icon className='h-5 w-5' />
 											<span className='text-sm'>{item.label}</span>
 										</Link>

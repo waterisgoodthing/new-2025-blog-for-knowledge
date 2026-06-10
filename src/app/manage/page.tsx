@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { deleteNote, batchDeleteNotes } from '@/lib/api/notes'
-import { login, logout, getMe, type User } from '@/lib/api/auth'
+import { login, logout, getMe, loginWithPasskey, isPasskeyAvailable, checkPasskeyRegistered, type PasskeyStatusResult, type User } from '@/lib/api/auth'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
@@ -133,10 +133,11 @@ function ContentTab() {
         activeFilter={activeFilter}
         activeFolderId={activeFolderId}
         activeTag={activeTag}
-        onFilterChange={handleFilterChange}
-        onFolderChange={(id) => { setActiveFolderId(id); setPage(1); clearSelected() }}
-        onTagChange={(tag) => { setActiveTag(tag); setPage(1); clearSelected() }}
-      />
+	        onFilterChange={handleFilterChange}
+	        onFolderChange={(id) => { setActiveFolderId(id); setPage(1); clearSelected() }}
+	        onTagChange={(tag) => { setActiveTag(tag); setPage(1); clearSelected() }}
+	        canManage
+	      />
       <div className='min-w-0 flex-1'>
       <SuggestionCard onExecuted={() => mutate()} />
       <div className='mb-6 flex flex-wrap items-center gap-3'>
@@ -315,6 +316,17 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
+  const [passkeySupported] = useState(() => isPasskeyAvailable())
+  const [passkeyStatus, setPasskeyStatus] = useState<PasskeyStatusResult | null>(null)
+
+  useEffect(() => {
+    if (!passkeySupported) {
+      setPasskeyStatus({ registered: false })
+      return
+    }
+    checkPasskeyRegistered().then(setPasskeyStatus)
+  }, [passkeySupported])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -330,9 +342,62 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     }
   }
 
+  const handlePasskeyLogin = async () => {
+    setError('')
+    setPasskeyLoading(true)
+    try {
+      await loginWithPasskey()
+      onLogin()
+    } catch (err: any) {
+      setError(err.message || 'Passkey 登录失败')
+    } finally {
+      setPasskeyLoading(false)
+    }
+  }
+
   return (
     <div className='mx-auto max-w-sm px-4 py-20'>
-      <h1 className='mb-8 text-center text-2xl font-bold'>管理面板登录</h1>
+      <h1 className='mb-2 text-center text-2xl font-bold'>管理面板登录</h1>
+      <p className='mb-8 text-center text-sm text-gray-400'>需要管理员认证才能访问管理功能</p>
+
+      {passkeySupported && passkeyStatus === null && (
+        <div className='mb-6 text-center text-sm text-gray-400'>检查 Passkey 状态...</div>
+      )}
+
+      {passkeySupported && passkeyStatus && 'registered' in passkeyStatus && passkeyStatus.registered && (
+        <>
+          <button
+            onClick={handlePasskeyLogin}
+            disabled={passkeyLoading}
+            className='flex w-full items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/60 py-2.5 text-sm font-medium transition-colors hover:bg-white/80 disabled:opacity-50'
+          >
+            <Lock className='h-4 w-4' />
+            {passkeyLoading ? '验证中...' : '使用 Passkey 登录'}
+          </button>
+          <p className='mt-2 text-center text-xs text-gray-400'>
+            Passkey 登录拥有最高权限，可执行密码更改等敏感操作
+          </p>
+
+          <div className='my-6 flex items-center gap-3'>
+            <div className='h-px flex-1 bg-white/20' />
+            <span className='text-xs text-gray-400'>或使用密码</span>
+            <div className='h-px flex-1 bg-white/20' />
+          </div>
+        </>
+      )}
+
+      {passkeySupported && passkeyStatus && 'registered' in passkeyStatus && !passkeyStatus.registered && (
+        <div className='mb-6 rounded-xl border border-white/20 bg-white/30 px-4 py-3 text-center text-xs text-gray-500'>
+          当前浏览器支持 Passkey，但服务器未注册 Passkey。使用密码登录后可在安全设置中注册。
+        </div>
+      )}
+
+      {passkeySupported && passkeyStatus && 'error' in passkeyStatus && (
+        <div className='mb-6 rounded-xl border border-red-200/40 bg-red-50/60 px-4 py-3 text-center text-xs text-red-600'>
+          无法检查 Passkey 状态：{passkeyStatus.message}。可先使用密码登录。
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className='space-y-4'>
         <div>
           <label htmlFor='username' className='mb-1 block text-sm text-gray-500'>用户名</label>
@@ -362,9 +427,16 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
           disabled={loading}
           className='w-full rounded-xl bg-[var(--color-brand)] py-2.5 text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50'
         >
-          {loading ? '登录中...' : '登录'}
+          {loading ? '登录中...' : '密码登录'}
         </button>
       </form>
+
+      {!passkeySupported && (
+        <p className='mt-4 text-center text-xs text-gray-400'>
+          当前浏览器不支持 Passkey，仅可使用密码登录（普通权限）
+        </p>
+      )}
+
       <p className='mt-4 text-center text-sm text-gray-400'>
         <Link href='/' className='text-[var(--color-brand)] underline'>返回首页</Link>
       </p>

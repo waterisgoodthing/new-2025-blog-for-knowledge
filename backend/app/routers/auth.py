@@ -53,27 +53,25 @@ def _clear_session_cookie(response: JSONResponse) -> None:
     response.delete_cookie(key=SESSION_COOKIE_NAME, path=COOKIE_PATH)
 
 
+def _is_auth_bypass_active() -> bool:
+    settings = get_settings()
+    bypass = getattr(settings, "AUTH_BYPASS", "false").lower() == "true"
+    allow = getattr(settings, "AUTH_BYPASS_ALLOW", "false").lower() == "true"
+    return bypass and allow
+
+
 async def _resolve_session_user(
     session_token: str | None,
     db: AsyncSession,
 ) -> tuple[User | None, str | None]:
     """Returns (user, auth_level) or (None, None)."""
-    settings = get_settings()
 
-    if getattr(settings, "AUTH_BYPASS", "false").lower() == "true":
-        result = await db.execute(select(User))
+    if _is_auth_bypass_active():
+        result = await db.execute(select(User).where(User.is_admin == True))
         user = result.scalars().first()
-        if user is None:
-            user = User(username="admin", password_hash="disabled", is_admin=True)
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
-        else:
-            if not user.is_admin:
-                user.is_admin = True
-                db.add(user)
-                await db.commit()
-        return user, "password"
+        if user:
+            return user, "password"
+        return None, None
 
     if session_token:
         token_hash = hash_session_token(session_token)
@@ -109,13 +107,6 @@ async def get_current_admin(
     session_token: str | None = Cookie(None, alias=SESSION_COOKIE_NAME),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    settings = get_settings()
-    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
-        user, _ = await _resolve_session_user(session_token, db)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return user
-
     user, _ = await _resolve_session_user(session_token, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -147,11 +138,6 @@ async def get_optional_user(
     session_token: str | None = Cookie(None, alias=SESSION_COOKIE_NAME),
     db: AsyncSession = Depends(get_db),
 ) -> User | None:
-    settings = get_settings()
-    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
-        user, _ = await _resolve_session_user(session_token, db)
-        return user
-
     user, _ = await _resolve_session_user(session_token, db)
     return user
 
@@ -161,11 +147,6 @@ async def get_optional_admin(
     session_token: str | None = Cookie(None, alias=SESSION_COOKIE_NAME),
     db: AsyncSession = Depends(get_db),
 ) -> User | None:
-    settings = get_settings()
-    if getattr(settings, "AUTH_BYPASS", "true").lower() == "true":
-        user, _ = await _resolve_session_user(session_token, db)
-        return user
-
     user, _ = await _resolve_session_user(session_token, db)
     if user and user.is_admin:
         return user
@@ -307,6 +288,14 @@ async def passkey_auth_options():
 async def passkey_reg_options():
     from app.services.passkey_service import generate_registration_options
     return generate_registration_options()
+
+
+@router.get("/passkey/status")
+async def passkey_status(db: AsyncSession = Depends(get_db)):
+    from app.models.session import PasskeyCredential
+    result = await db.execute(select(PasskeyCredential).limit(1))
+    cred = result.scalar_one_or_none()
+    return {"registered": cred is not None}
 
 
 @router.post("/logout")

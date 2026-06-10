@@ -68,14 +68,14 @@ export default function NotesPage() {
 	const showDashboard = activeFilter === 'all' && !activeFolderId && !activeTag && !q
 
 	const { data, isLoading, mutate } = useNoteIndex({
-		type: type as any || undefined,
+		type: (type as any) || undefined,
 		status: 'published',
 		q: q || undefined,
 		tag: activeTag || undefined,
 		folder_id: activeFolderId || undefined,
 		inbox: activeFilter === 'inbox' ? true : undefined,
 		page,
-		size: 20,
+		size: 20
 	})
 
 	const tagsRef = useRef(new Map<number, { id: number; name: string }>())
@@ -94,25 +94,34 @@ export default function NotesPage() {
 		if (!ctxMenu) return []
 		const items: ContextMenuItem[] = [
 			{ label: '打开', icon: <ExternalLink size={14} />, onClick: () => router.push(getContentDetailHref(ctxMenu.type, ctxMenu.slug)) },
-			{ label: '复制链接', icon: <Copy size={14} />, onClick: () => {
-				navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}`)
-				toast.success('链接已复制')
-			}},
+			{
+				label: '复制链接',
+				icon: <Copy size={14} />,
+				onClick: () => {
+					navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}`)
+					toast.success('链接已复制')
+				}
+			}
 		]
 		if (isAdmin) {
 			items.push(
 				{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug)) },
 				{ label: '移动到文件夹', icon: <GripVertical size={14} />, onClick: () => setMoveTarget({ slug: ctxMenu.slug, title: ctxMenu.title }) },
-				{ label: '删除', icon: <Trash2 size={14} />, variant: 'danger', onClick: async () => {
-					if (!confirm(`确定要删除「${ctxMenu.title}」吗？`)) return
-					try {
-						await deleteNote(ctxMenu.slug)
-						toast.success('已删除')
-						mutate()
-					} catch (e: any) {
-						toast.error('删除失败: ' + e.message)
+				{
+					label: '删除',
+					icon: <Trash2 size={14} />,
+					variant: 'danger',
+					onClick: async () => {
+						if (!confirm(`确定要删除「${ctxMenu.title}」吗？`)) return
+						try {
+							await deleteNote(ctxMenu.slug)
+							toast.success('已删除')
+							mutate()
+						} catch (e: any) {
+							toast.error('删除失败: ' + e.message)
+						}
 					}
-				}},
+				}
 			)
 		}
 		return items
@@ -126,11 +135,7 @@ export default function NotesPage() {
 
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
-			<motion.h1
-				initial={{ opacity: 0, y: -20 }}
-				animate={{ opacity: 1, y: 0 }}
-				className='mb-6 text-2xl font-bold'
-			>
+			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
 				笔记
 			</motion.h1>
 
@@ -142,153 +147,155 @@ export default function NotesPage() {
 					onFilterChange={handleFilterChange}
 					onFolderChange={setActiveFolderId}
 					onTagChange={handleTagChange}
-					onDropNote={handleDropToFolder}
-					dragOverFolderId={dragOverFolderId}
-					onDragOverFolderChange={setDragOverFolderId}
+					canManage={isAdmin}
+					onDropNote={isAdmin ? handleDropToFolder : undefined}
+					dragOverFolderId={isAdmin ? dragOverFolderId : null}
+					onDragOverFolderChange={isAdmin ? setDragOverFolderId : undefined}
 					contentTypes={['note', 'blog']}
 					tags={pageTags}
 				/>
 
 				<div className='min-w-0 flex-1'>
-
-			<div className='mb-6 flex flex-wrap items-center gap-3'>
-				<input
-					value={q}
-					onChange={e => { setQ(e.target.value); setPage(1) }}
-					placeholder='搜索...'
-					className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-				/>
-				<div className='flex gap-2'>
+					<div className='mb-6 flex flex-wrap items-center gap-3'>
+						<input
+							value={q}
+							onChange={e => {
+								setQ(e.target.value)
+								setPage(1)
+							}}
+							placeholder='搜索...'
+							className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+						/>
+						<div className='flex gap-2'>
 							{['', 'note', 'blog', 'mistake'].map(t => (
 								<button
 									key={t}
-									onClick={() => { setType(t); setPage(1); setActiveFilter(t || 'all'); setActiveFolderId(null); setActiveTag(null) }}
+									onClick={() => {
+										setType(t)
+										setPage(1)
+										setActiveFilter(t || 'all')
+										setActiveFolderId(null)
+										setActiveTag(null)
+									}}
 									className={cn(
 										'rounded-full px-3 py-1 text-sm transition-colors',
 										type === t ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 hover:bg-white/80'
-									)}
-								>
+									)}>
 									{t ? typeLabels[t as keyof typeof typeLabels] : '全部'}
 								</button>
 							))}
-				</div>
-				{isAdmin && (() => {
-					const createAction = getCreateAction()
-					return <Link
-						href={createAction.href}
-						className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
-					>
-						{createAction.label}
-					</Link>
-				})()}
-			</div>
-
-			{isAdmin && <SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />}
-			{showDashboard && <WeeklySummaryCard />}
-
-			{isLoading ? (
-				<div className='py-20 text-center text-gray-400'>加载中...</div>
-			) : data?.items.length === 0 ? (
-				<div className='py-20'><EmptyState variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'} title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'} description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '创建你的第一篇笔记开始记录'} action={getCreateAction()} /></div>
-			) : (
-				<div className='space-y-3'>
-					{data?.items.map((item) => (
-						<div
-							key={item.id}
-							draggable={isAdmin}
-							onDragStart={isAdmin ? () => setDraggingSlug(item.slug) : undefined}
-							onDragEnd={isAdmin ? () => { setDraggingSlug(null); setDragOverFolderId(null) } : undefined}
-							onContextMenu={e => { e.preventDefault(); setCtxMenu({ slug: item.slug, title: item.title, type: item.type, x: e.clientX, y: e.clientY }) }}
-							className={cn(draggingSlug === item.slug && 'opacity-50')}
-						>
-							<Link
-								href={getContentDetailHref(item.type, item.slug)}
-								className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'
-							>
-								<div className='mb-2 flex items-center gap-2'>
-									<span className={cn('rounded-full px-2 py-0.5 text-xs', typeColors[item.type])}>
-										{typeLabels[item.type]}
-									</span>
-									{item.difficulty && (
-										<span className={cn('rounded-full px-2 py-0.5 text-xs', diffColors[item.difficulty])}>
-											{item.difficulty}
-										</span>
-									)}
-								{item.subject && (
-									<span className='max-w-[120px] truncate rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>
-										{item.subject}
-									</span>
-								)}
-									{isAdmin && (
-									<button
-										type='button'
-										onClick={e => { e.preventDefault(); e.stopPropagation(); setMoveTarget({ slug: item.slug, title: item.title }) }}
-										className='ml-auto shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'
-										aria-label='移动到文件夹'
-									>
-										<MoreHorizontal size={14} />
-									</button>
-								)}
-									<span className='shrink-0 text-xs text-gray-400'>
-										{dayjs(item.updated_at).format('YYYY-MM-DD')}
-									</span>
-								</div>
-								<h3 className='truncate font-medium'>{item.title}</h3>
-								{item.summary && (
-									<p className='mt-1 line-clamp-2 text-sm text-gray-500'>{item.summary}</p>
-								)}
-								{item.tags.length > 0 && (
-									<div className='mt-2 flex flex-wrap gap-1'>
-										{item.tags.map(tag => (
-											<span key={tag.id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
-												{tag.name}
-											</span>
-										))}
-									</div>
-								)}
-								{item.type === 'mistake' && item.next_review && (
-									<div className='mt-2 text-xs text-orange-500'>
-										下次复习: {dayjs(item.next_review).format('YYYY-MM-DD')}
-									</div>
-								)}
-							</Link>
 						</div>
-					))}
-				</div>
-			)}
+						{isAdmin &&
+							(() => {
+								const createAction = getCreateAction()
+								return (
+									<Link
+										href={createAction.href}
+										className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'>
+										{createAction.label}
+									</Link>
+								)
+							})()}
+					</div>
 
-			{data && data.total > 20 && (
-				<div className='mt-6 flex justify-center gap-2'>
-					<button
-						disabled={page <= 1}
-						onClick={() => setPage(p => p - 1)}
-						className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'
-					>
-						上一页
-					</button>
-					<span className='px-3 py-1 text-sm text-gray-500'>
-						{page} / {Math.ceil(data.total / 20)}
-					</span>
-					<button
-						disabled={page >= Math.ceil(data.total / 20)}
-						onClick={() => setPage(p => p + 1)}
-						className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'
-					>
-						下一页
-					</button>
-				</div>
-			)}
+					{isAdmin && <SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />}
+					{isAdmin && showDashboard && <WeeklySummaryCard />}
+
+					{isLoading ? (
+						<div className='py-20 text-center text-gray-400'>加载中...</div>
+					) : data?.items.length === 0 ? (
+						<div className='py-20'>
+							<EmptyState
+								variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
+								title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
+								description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '登录后可以创建和整理内容'}
+								action={isAdmin ? getCreateAction() : null}
+							/>
+						</div>
+					) : (
+						<div className='space-y-3'>
+							{data?.items.map(item => (
+								<div
+									key={item.id}
+									draggable={isAdmin}
+									onDragStart={isAdmin ? () => setDraggingSlug(item.slug) : undefined}
+									onDragEnd={
+										isAdmin
+											? () => {
+													setDraggingSlug(null)
+													setDragOverFolderId(null)
+												}
+											: undefined
+									}
+									onContextMenu={e => {
+										e.preventDefault()
+										setCtxMenu({ slug: item.slug, title: item.title, type: item.type, x: e.clientX, y: e.clientY })
+									}}
+									className={cn(draggingSlug === item.slug && 'opacity-50')}>
+									<Link
+										href={getContentDetailHref(item.type, item.slug)}
+										className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'>
+										<div className='mb-2 flex items-center gap-2'>
+											<span className={cn('rounded-full px-2 py-0.5 text-xs', typeColors[item.type])}>{typeLabels[item.type]}</span>
+											{item.difficulty && <span className={cn('rounded-full px-2 py-0.5 text-xs', diffColors[item.difficulty])}>{item.difficulty}</span>}
+											{item.subject && (
+												<span className='max-w-[120px] truncate rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>{item.subject}</span>
+											)}
+											{isAdmin && (
+												<button
+													type='button'
+													onClick={e => {
+														e.preventDefault()
+														e.stopPropagation()
+														setMoveTarget({ slug: item.slug, title: item.title })
+													}}
+													className='ml-auto shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'
+													aria-label='移动到文件夹'>
+													<MoreHorizontal size={14} />
+												</button>
+											)}
+											<span className='shrink-0 text-xs text-gray-400'>{dayjs(item.updated_at).format('YYYY-MM-DD')}</span>
+										</div>
+										<h3 className='truncate font-medium'>{item.title}</h3>
+										{item.summary && <p className='mt-1 line-clamp-2 text-sm text-gray-500'>{item.summary}</p>}
+										{item.tags.length > 0 && (
+											<div className='mt-2 flex flex-wrap gap-1'>
+												{item.tags.map(tag => (
+													<span key={tag.id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
+														{tag.name}
+													</span>
+												))}
+											</div>
+										)}
+										{item.type === 'mistake' && item.next_review && (
+											<div className='mt-2 text-xs text-orange-500'>下次复习: {dayjs(item.next_review).format('YYYY-MM-DD')}</div>
+										)}
+									</Link>
+								</div>
+							))}
+						</div>
+					)}
+
+					{data && data.total > 20 && (
+						<div className='mt-6 flex justify-center gap-2'>
+							<button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>
+								上一页
+							</button>
+							<span className='px-3 py-1 text-sm text-gray-500'>
+								{page} / {Math.ceil(data.total / 20)}
+							</span>
+							<button
+								disabled={page >= Math.ceil(data.total / 20)}
+								onClick={() => setPage(p => p + 1)}
+								className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>
+								下一页
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 
-			{ctxMenu && (
-				<ContextMenu
-					open={!!ctxMenu}
-					position={{ x: ctxMenu.x, y: ctxMenu.y }}
-					items={getContextMenuItems()}
-					onClose={() => setCtxMenu(null)}
-				/>
-			)}
+			{ctxMenu && <ContextMenu open={!!ctxMenu} position={{ x: ctxMenu.x, y: ctxMenu.y }} items={getContextMenuItems()} onClose={() => setCtxMenu(null)} />}
 
 			{moveTarget && (
 				<MoveToFolderDialog
@@ -296,7 +303,10 @@ export default function NotesPage() {
 					noteTitle={moveTarget.title}
 					open={!!moveTarget}
 					onClose={() => setMoveTarget(null)}
-					onMoved={() => { mutate(); setMoveTarget(null) }}
+					onMoved={() => {
+						mutate()
+						setMoveTarget(null)
+					}}
 				/>
 			)}
 		</div>

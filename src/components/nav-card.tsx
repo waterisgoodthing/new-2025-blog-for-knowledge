@@ -72,7 +72,7 @@ export default function NavCard() {
 	const [show, setShow] = useState(false)
 	const { maxSM } = useSize()
 	const [hoveredIndex, setHoveredIndex] = useState<number>(0)
-	const { siteContent, cardStyles, setConfigDialogOpen } = useConfigStore()
+	const { siteContent, cardStyles } = useConfigStore()
 	const styles = cardStyles.navCard
 	const hiCardStyles = cardStyles.hiCard
 
@@ -148,7 +148,11 @@ export default function NavCard() {
 					)}
 
 					{form === 'mini' && (
-						<Link className='flex h-full items-center justify-center gap-2 rounded-3xl px-2 transition-colors hover:bg-white/45' href='/' aria-label='返回首页' title='返回首页'>
+						<Link
+							className='flex h-full items-center justify-center gap-2 rounded-3xl px-2 transition-colors hover:bg-white/45'
+							href='/'
+							aria-label='返回首页'
+							title='返回首页'>
 							<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
 							<span className='flex items-center gap-1 text-sm font-medium text-gray-600'>
 								<Home className='h-4 w-4' />
@@ -159,25 +163,34 @@ export default function NavCard() {
 
 					{form === 'full' && (
 						<div className='relative z-10 flex h-full min-h-0 flex-col'>
-							<Link className='flex shrink-0 items-center gap-3 rounded-2xl px-1 py-0.5 transition-colors hover:bg-white/40' href='/' aria-label='返回首页' title='返回首页'>
-								<Image src='/images/avatar.png' alt='avatar' width={36} height={36} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='shrink-0 rounded-full' />
+							<Link
+								className='flex shrink-0 items-center gap-3 rounded-2xl px-1 py-0.5 transition-colors hover:bg-white/40'
+								href='/'
+								aria-label='返回首页'
+								title='返回首页'>
+								<Image
+									src='/images/avatar.png'
+									alt='avatar'
+									width={36}
+									height={36}
+									style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }}
+									className='shrink-0 rounded-full'
+								/>
 								<span className='font-averia mt-1 min-w-0 truncate text-xl leading-none font-medium'>{siteContent.meta.title}</span>
 								<span className='text-brand mt-1.5 shrink-0 text-xs font-medium'>(开发中)</span>
 							</Link>
 
 							<div className='mt-2 shrink-0 border-t border-white/30 pt-1.5'>
-								<button
-									type='button'
-									onClick={() => setConfigDialogOpen(true)}
-									aria-label='网站设置'
-									title='网站设置'
-									className='text-secondary flex w-full items-center gap-3 rounded-full px-4 py-1.5 text-sm transition-colors hover:bg-white/55 hover:text-primary'
-								>
+								<Link
+									href='/manage'
+									aria-label='管理面板'
+									title='管理面板'
+									className='text-secondary hover:text-primary flex w-full items-center gap-3 rounded-full px-4 py-1.5 text-sm transition-colors hover:bg-white/55'>
 									<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
 										<Settings className='h-5 w-5' />
 									</div>
-									<span className='font-medium'>网站设置</span>
-								</button>
+									<span className='font-medium'>管理面板</span>
+								</Link>
 							</div>
 
 							<div className='text-secondary mt-2 shrink-0 text-xs uppercase'>General</div>
