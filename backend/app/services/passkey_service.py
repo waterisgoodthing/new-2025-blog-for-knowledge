@@ -107,6 +107,67 @@ def verify_registration(
         return None
 
 
+def generate_operator_registration_options(
+    session_id: str,
+    rp_id: str | None = None,
+) -> dict:
+    challenge = secrets.token_bytes(32)
+    user_id = secrets.token_bytes(16)
+    _operator_reg_challenge_store[session_id] = challenge
+    return {
+        "publicKey": {
+            "rp": {"name": _get_rp_name(), "id": _resolve_rp_id(rp_id)},
+            "user": {
+                "id": _b64url_encode(user_id),
+                "name": "admin",
+                "displayName": "Administrator",
+            },
+            "challenge": _b64url_encode(challenge),
+            "pubKeyCredParams": [
+                {"type": "public-key", "alg": -7},
+                {"type": "public-key", "alg": -257},
+            ],
+            "timeout": 60000,
+            "attestation": "none",
+            "authenticatorSelection": {
+                "authenticatorAttachment": "platform",
+                "userVerification": "required",
+                "residentKey": "required",
+            },
+        }
+    }
+
+
+def verify_operator_registration(
+    attestation: dict,
+    session_id: str,
+    expected_origin: str | None = None,
+    expected_rp_id: str | None = None,
+) -> dict | None:
+    from webauthn import verify_registration_response
+
+    expected_challenge = _operator_reg_challenge_store.pop(session_id, None)
+    if not expected_challenge:
+        logger.warning(f"Operator registration: no challenge for session {session_id[:8]}...")
+        return None
+
+    try:
+        verification = verify_registration_response(
+            credential=attestation,
+            expected_challenge=expected_challenge,
+            expected_origin=_resolve_origin(expected_origin),
+            expected_rp_id=_resolve_rp_id(expected_rp_id),
+        )
+        return {
+            "credential_id": _b64url_encode(verification.credential_id),
+            "public_key": verification.credential_public_key,
+            "sign_count": verification.sign_count,
+        }
+    except Exception as e:
+        logger.error(f"Operator registration verification failed: {e}")
+        return None
+
+
 def generate_authentication_options(
     rp_id: str | None = None,
 ) -> dict:

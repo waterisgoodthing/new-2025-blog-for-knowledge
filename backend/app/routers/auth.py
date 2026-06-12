@@ -311,6 +311,14 @@ def _require_operator_key(x_operator_registration_key: str | None) -> None:
         )
 
 
+@router.post("/passkey/operator/validate-key")
+async def operator_validate_key(
+    x_operator_registration_key: str | None = Header(None, alias="X-Operator-Registration-Key"),
+):
+    _require_operator_key(x_operator_registration_key)
+    return {"valid": True}
+
+
 @router.post("/passkey/operator/reg-options")
 async def operator_passkey_reg_options(
     req: OperatorRegOptionsRequest,
@@ -318,8 +326,12 @@ async def operator_passkey_reg_options(
 ):
     _require_operator_key(x_operator_registration_key)
 
-    from app.services.passkey_service import generate_registration_options
-    return generate_registration_options()
+    import secrets as secrets_mod
+    from app.services.passkey_service import generate_operator_registration_options
+
+    session_id = secrets_mod.token_hex(16)
+    options = generate_operator_registration_options(session_id)
+    return {"options": options, "session_id": session_id}
 
 
 @router.post("/passkey/operator/register", response_model=OperatorRegisterResponse)
@@ -330,18 +342,19 @@ async def operator_passkey_register(
 ):
     _require_operator_key(x_operator_registration_key)
 
-    from app.services.passkey_service import verify_registration, replace_credential
+    from app.services.passkey_service import verify_operator_registration, replace_credential
 
     settings = get_settings()
-    result = verify_registration(
+    result = verify_operator_registration(
         req.attestation,
+        session_id=req.session_id,
         expected_origin=settings.WEBAUTHN_ORIGIN,
         expected_rp_id=settings.WEBAUTHN_RP_ID,
     )
     if not result:
         return OperatorRegisterResponse(
             success=False,
-            message="WebAuthn registration verification failed",
+            message="WebAuthn registration verification failed (challenge may have expired or session_id mismatch)",
         )
 
     try:

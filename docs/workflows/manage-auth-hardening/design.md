@@ -126,29 +126,50 @@ After the RP ID migration from `localhost` to `blog.limengyang.me`, the existing
 
 **Why not public anonymous endpoints?** Passkey registration is a sensitive operation that replaces the sole admin credential. Exposing it anonymously would be a backdoor.
 
-**Solution**: Two new backend endpoints protected by `X-Operator-Registration-Key` header, plus a static HTML page served from the public frontend origin.
+**Solution**: Three new backend endpoints protected by `X-Operator-Registration-Key` header, plus a key-gated static HTML page served from the public frontend origin.
 
 ### Architecture
 
 ```
 Operator browser on https://blog.limengyang.me/operator-passkey-register.html
   |
-  |-- POST /api/auth/passkey/operator/reg-options  (with X-Operator-Registration-Key)
-  |     returns WebAuthn registration options (challenge, rp.id, user, etc.)
+  |-- [P2] Page hidden behind key gate: no valid key → page shows rejection message
   |
-  |-- navigator.credentials.create({ publicKey })  (browser authenticator prompt)
+  |-- POST /api/auth/passkey/operator/validate-key  (with X-Operator-Registration-Key)
+  |     validates key before showing registration form
   |
-  |-- POST /api/auth/passkey/operator/register     (with X-Operator-Registration-Key)
-  |     verifies attestation, replaces old credential, returns success/failure
+  |-- POST /api/auth/passkey/operator/reg-options    (with X-Operator-Registration-Key)
+  |     returns { options, session_id } — challenge stored under operator:<session_id>
+  |
+  |-- navigator.credentials.create({ publicKey })    (browser authenticator prompt)
+  |
+  |-- POST /api/auth/passkey/operator/register       (with X-Operator-Registration-Key + session_id)
+  |     verifies attestation against session-keyed challenge, replaces old credential
 ```
 
 ### Security Model
 
 - `OPERATOR_REGISTRATION_KEY` env var: if empty, all operator endpoints return 403 (fail-closed).
 - Key transmitted via `X-Operator-Registration-Key` HTTP header.
+- **P2 fix**: HTML page is gated — it validates the key server-side via `validate-key` before rendering the registration form. Without a valid key, the page shows a rejection message.
 - No session/cookie auth required — operator key is the sole gate.
 - Old credential is deleted and new credential is written in a single DB transaction (atomic replace).
 - Audit log records `operator_passkey_register` action with device name.
+
+### Challenge Isolation (P1 Fix)
+
+The global `_reg_challenge_store["current"]` used by the public `GET /reg-options` endpoint is a single-slot dict — any concurrent reg-options request overwrites the previous challenge. This is acceptable for the login-gate flow but unacceptable for the operator recovery path.
+
+**Fix**: Operator challenges use a separate `_operator_reg_challenge_store` dict, keyed by a random `session_id` (hex, 32 chars). The flow:
+
+1. `POST /operator/reg-options` generates a `session_id`, stores the challenge under `_operator_reg_challenge_store[session_id]`, returns both `options` and `session_id`.
+2. `POST /operator/register` receives the `session_id`, pops the challenge from the store, and verifies.
+3. The public `GET /reg-options` continues to use `_reg_challenge_store["current"]` — completely isolated.
+
+This means:
+- A concurrent public `GET /reg-options` cannot invalidate an operator challenge.
+- Two concurrent operator flows each get their own `session_id`-scoped challenge.
+- The `session_id` is single-use (popped on verify, not deleted on failure for security — failed attempts don't leak the challenge).
 
 ### Credential Replacement Strategy
 
@@ -165,7 +186,7 @@ Operator browser on https://blog.limengyang.me/operator-passkey-register.html
 |------|--------|
 | `backend/app/config.py` | Added `OPERATOR_REGISTRATION_KEY: str = ""` |
 | `backend/.env.example` | Added `OPERATOR_REGISTRATION_KEY` documentation |
-| `backend/app/schemas/auth.py` | Added `OperatorRegOptionsRequest`, `OperatorRegisterRequest`, `OperatorRegisterResponse` |
-| `backend/app/services/passkey_service.py` | Added `replace_credential()` |
-| `backend/app/routers/auth.py` | Added `_require_operator_key()`, `POST .../operator/reg-options`, `POST .../operator/register` |
-| `public/operator-passkey-register.html` | Static operator registration page served from public origin |
+| `backend/app/schemas/auth.py` | Added `OperatorRegOptionsRequest`, `OperatorRegisterRequest` (with `session_id`), `OperatorRegisterResponse` |
+| `backend/app/services/passkey_service.py` | Added `replace_credential()`, `generate_operator_registration_options()`, `verify_operator_registration()`, `_operator_reg_challenge_store` |
+| `backend/app/routers/auth.py` | Added `_require_operator_key()`, `POST .../operator/validate-key`, `POST .../operator/reg-options`, `POST .../operator/register` |
+| `public/operator-passkey-register.html` | Key-gated static operator registration page with session-keyed challenge flow |

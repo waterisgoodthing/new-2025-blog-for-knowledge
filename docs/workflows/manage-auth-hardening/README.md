@@ -47,7 +47,13 @@ Phase 7 operator-only registration tool implemented on 2026-06-10:
 - Added operator-only endpoints: `POST /api/auth/passkey/operator/reg-options`, `POST /api/auth/passkey/operator/register`.
 - Added `replace_credential()` for atomic credential swap in `passkey_service.py`.
 - Added static operator registration page at `public/operator-passkey-register.html`.
-- Remaining: set operator key in production `.env`, restart backend, deploy frontend, execute registration, verify login.
+- Public-machine execution completed on 2026-06-10:
+  - `OPERATOR_REGISTRATION_KEY` set in production backend `.env`; backend restarted successfully.
+  - `public-api.limengyang.me` tunnel repaired and verified healthy.
+  - Frontend rebuilt and redeployed with operator registration page.
+  - This machine successfully registered a new passkey against `blog.limengyang.me`.
+  - Public `/manage` established a real `auth_level=passkey` admin session from this machine.
+  - Passkey-only tabs (`页面设置`, `安全设置`) were available in the live management UI.
 
 Changes made:
 - Backend `AUTH_BYPASS` hardened with double opt-in (`AUTH_BYPASS` + `AUTH_BYPASS_ALLOW`); auto-create/auto-promote removed.

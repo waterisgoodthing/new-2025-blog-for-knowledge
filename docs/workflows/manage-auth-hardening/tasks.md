@@ -116,28 +116,57 @@ Implementation for this phase must not start until explicitly approved in conver
 
 - [x] **P7-02** Implement operator-only passkey registration tool.
   - Added `OPERATOR_REGISTRATION_KEY` to config (fail-closed when empty).
-  - Added operator registration schemas (`OperatorRegOptionsRequest`, `OperatorRegisterRequest`, `OperatorRegisterResponse`).
+  - Added operator registration schemas (`OperatorRegOptionsRequest`, `OperatorRegisterRequest` with `session_id`, `OperatorRegisterResponse`).
   - Added `replace_credential()` to `passkey_service.py` for atomic credential replacement.
-  - Added `POST /api/auth/passkey/operator/reg-options` and `POST /api/auth/passkey/operator/register` endpoints, protected by `X-Operator-Registration-Key` header.
-  - Created `public/operator-passkey-register.html` — static page served from `blog.limengyang.me` origin that drives the browser WebAuthn flow against the backend operator endpoints.
+  - Added `generate_operator_registration_options()` and `verify_operator_registration()` with session-keyed challenge isolation (`_operator_reg_challenge_store`), separate from the public `_reg_challenge_store["current"]` (P1 fix).
+  - Added `POST /api/auth/passkey/operator/validate-key`, `POST /api/auth/passkey/operator/reg-options`, and `POST /api/auth/passkey/operator/register` endpoints, protected by `X-Operator-Registration-Key` header.
+  - Created `public/operator-passkey-register.html` — key-gated page (P2 fix) that validates operator key via `validate-key` before showing registration form, uses session-keyed challenge flow.
   - Backend import check: PASS.
   - Frontend `npx tsc --noEmit`: PASS.
-  - Operator routes registered: `/api/auth/passkey/operator/reg-options`, `/api/auth/passkey/operator/register`.
+  - Operator routes registered: `validate-key`, `operator/reg-options`, `operator/register`.
+  - Challenge isolation verified: `_operator_reg_challenge_store` is separate from `_reg_challenge_store`, `generate_operator_registration_options` uses session key, global store not polluted.
 
-- [ ] **P7-03** Set `OPERATOR_REGISTRATION_KEY` in production backend `.env` and restart backend.
+- [x] **P7-03** Set `OPERATOR_REGISTRATION_KEY` in production backend `.env` and restart backend.
   - Completion standard: operator endpoints return 403 when key is missing/wrong, and return valid registration options when key is correct.
+  - Completed: 2026-06-10.
+  - Evidence:
+    - `backend/.env` updated with a strong random `OPERATOR_REGISTRATION_KEY`.
+    - Backend restarted via `launchctl kickstart -k gui/$(id -u)/com.blog.backend`.
+    - Live operator endpoints on `https://public-api.limengyang.me` returned `403` without key, `403` with wrong key, and `200 {"valid": true}` with the correct key.
+    - `POST /api/auth/passkey/operator/reg-options` returned valid registration options plus a `session_id`.
 
-- [ ] **P7-04** Register a passkey credential from this machine against the public deployment.
+- [x] **P7-04** Register a passkey credential from this machine against the public deployment.
   - Completion standard: visit `https://blog.limengyang.me/operator-passkey-register.html` from this machine, complete the WebAuthn registration flow, and the backend persists the new credential (replacing the old one).
   - Requires: P7-03 completed (operator key configured).
+  - Completed: 2026-06-10.
+  - Evidence:
+    - Frontend rebuilt with `npm run build:cf` and redeployed with `npx wrangler deploy --route 'blog.limengyang.me/*'`.
+    - Public page `https://blog.limengyang.me/operator-passkey-register` unlocked with operator key and completed WebAuthn registration on this machine.
+    - Browser success state showed `Passkey registered successfully!` and `Device: MacBook Air`.
+    - Database verification found exactly one `PasskeyCredential` row with `device_name='MacBook Air'`, created at `2026-06-10 12:13:17.926593+00:00`.
+    - Audit log contains `operator_passkey_register` for the new credential.
 
-- [ ] **P7-05** Verify passkey login from this machine on the public deployment.
+- [x] **P7-05** Verify passkey login from this machine on the public deployment.
   - Completion standard: public `/manage` can establish a passkey-authenticated admin session from this machine using the newly registered credential.
   - Requires: P7-04 completed.
+  - Completed: 2026-06-10.
+  - Evidence:
+    - Visiting `https://blog.limengyang.me/manage` triggered the macOS passkey login sheet for RP `blog.limengyang.me`.
+    - After successful passkey login, database verification showed one live `AdminSession` with `auth_level='passkey'`, created at `2026-06-10 12:16:59.828535+00:00`.
+    - The same login updated `PasskeyCredential.last_used_at` to `2026-06-10 12:16:59.852372+00:00`.
+    - Public management UI loaded as authenticated and showed username `admin2`.
 
-- [ ] **P7-06** Verify passkey-only protection after live registration.
+- [x] **P7-06** Verify passkey-only protection after live registration.
   - Completion standard: a passkey session satisfies passkey-only action gates.
   - Requires: P7-05 completed.
+  - Completed: 2026-06-10.
+  - Evidence:
+    - Live `/manage` UI displayed both passkey-only tabs: `页面设置` and `安全设置`.
+    - Those tabs were not disabled or lock-blocked in the authenticated passkey session.
+    - Source cross-check: `src/app/manage/page.tsx` disables passkey-only tabs only when `user?.auth_level !== 'passkey'`, so the live unlocked state matches the backend session evidence.
 
-- [ ] **P7-07** Record final public-machine execution evidence and residual risks.
+- [x] **P7-07** Record final public-machine execution evidence and residual risks.
   - Completion standard: `validation.md` captures exact URLs, outcomes, blockers, and any remaining manual follow-up.
+  - Completed: 2026-06-10.
+  - Evidence:
+    - `validation.md` now records live URLs, deployment actions, DB/session evidence, and the remaining residual risks after closure.

@@ -14,9 +14,11 @@ label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; mar
 input { width: 100%; padding: 10px 12px; border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: #e2e8f0; font-size: 14px; }
 input:focus { outline: none; border-color: #3b82f6; }
 button { width: 100%; margin-top: 24px; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-#register-btn { background: #2563eb; color: white; }
+#unlock-btn { background: #7c3aed; color: white; }
+#unlock-btn:hover { background: #6d28d9; }
+#register-btn { background: #2563eb; color: white; display: none; }
 #register-btn:hover { background: #1d4ed8; }
-#register-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
 .status { margin-top: 20px; padding: 14px; border-radius: 8px; font-size: 14px; line-height: 1.5; display: none; }
 .status.success { display: block; background: #064e3b; color: #6ee7b7; border: 1px solid #065f46; }
 .status.error { display: block; background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
@@ -24,6 +26,9 @@ button { width: 100%; margin-top: 24px; padding: 12px; border: none; border-radi
 .rp-info { margin-top: 20px; padding: 12px; background: #0f172a; border-radius: 8px; font-size: 12px; color: #64748b; }
 .rp-info span { color: #94a3b8; }
 .warning { margin-top: 16px; padding: 12px; background: #451a03; color: #fbbf24; border: 1px solid #78350f; border-radius: 8px; font-size: 13px; }
+#key-section { display: block; }
+#register-section { display: none; }
+.denied { color: #fca5a5; font-size: 14px; margin-top: 20px; }
 </style>
 </head>
 <body>
@@ -31,15 +36,19 @@ button { width: 100%; margin-top: 24px; padding: 12px; border: none; border-radi
   <h1>Operator Passkey Registration</h1>
   <p class="subtitle">Register a passkey credential for the public deployment RP.</p>
 
-  <label for="operator-key">Operator Registration Key</label>
-  <input type="password" id="operator-key" placeholder="Enter operator registration key" autocomplete="off">
+  <div id="key-section">
+    <label for="operator-key">Operator Registration Key</label>
+    <input type="password" id="operator-key" placeholder="Enter operator registration key" autocomplete="off">
+    <button id="unlock-btn" onclick="unlock()">Unlock</button>
+    <div id="key-status" class="status"></div>
+  </div>
 
-  <label for="device-name">Device Name</label>
-  <input type="text" id="device-name" placeholder="e.g. MacBook Pro, iPhone" value="MacBook Air">
-
-  <button id="register-btn" onclick="register()">Register Passkey</button>
-
-  <div id="status" class="status"></div>
+  <div id="register-section">
+    <label for="device-name">Device Name</label>
+    <input type="text" id="device-name" placeholder="e.g. MacBook Pro, iPhone" value="MacBook Air">
+    <button id="register-btn" onclick="register()">Register Passkey</button>
+    <div id="reg-status" class="status"></div>
+  </div>
 
   <div class="rp-info">
     <div>RP ID: <span id="rp-id">loading...</span></div>
@@ -71,6 +80,8 @@ button { width: 100%; margin-top: 24px; padding: 12px; border: none; border-radi
   document.getElementById('api-url').textContent = API_BASE;
 
   window._apiBase = API_BASE;
+  window._operatorKey = null;
+  window._sessionId = null;
 })();
 
 function b64urlEncode(buffer) {
@@ -94,15 +105,58 @@ function b64urlDecode(str) {
   return bytes.buffer;
 }
 
-async function register() {
-  var btn = document.getElementById('register-btn');
-  var status = document.getElementById('status');
-  var operatorKey = document.getElementById('operator-key').value.trim();
-  var deviceName = document.getElementById('device-name').value.trim() || 'Operator Device';
+async function unlock() {
+  var keyInput = document.getElementById('operator-key');
+  var keyStatus = document.getElementById('key-status');
+  var unlockBtn = document.getElementById('unlock-btn');
+  var operatorKey = keyInput.value.trim();
 
   if (!operatorKey) {
+    keyStatus.className = 'status error';
+    keyStatus.textContent = 'Operator registration key is required.';
+    return;
+  }
+
+  unlockBtn.disabled = true;
+  keyStatus.className = 'status info';
+  keyStatus.textContent = 'Validating key...';
+
+  try {
+    var res = await fetch(window._apiBase + '/api/auth/passkey/operator/validate-key', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Operator-Registration-Key': operatorKey,
+      },
+    });
+
+    if (!res.ok) {
+      var errBody = await res.json().catch(function() { return {}; });
+      throw new Error(errBody.detail || 'Key rejected (' + res.status + ')');
+    }
+
+    window._operatorKey = operatorKey;
+    keyStatus.className = 'status success';
+    keyStatus.textContent = 'Key accepted. Registration form unlocked.';
+    document.getElementById('key-section').querySelector('input').disabled = true;
+    unlockBtn.style.display = 'none';
+    document.getElementById('register-section').style.display = 'block';
+    document.getElementById('register-btn').style.display = 'block';
+  } catch (e) {
+    keyStatus.className = 'status error';
+    keyStatus.textContent = 'Access denied: ' + e.message;
+    unlockBtn.disabled = false;
+  }
+}
+
+async function register() {
+  var btn = document.getElementById('register-btn');
+  var status = document.getElementById('reg-status');
+  var deviceName = document.getElementById('device-name').value.trim() || 'Operator Device';
+
+  if (!window._operatorKey) {
     status.className = 'status error';
-    status.textContent = 'Operator registration key is required.';
+    status.textContent = 'Key not validated. Reload and unlock first.';
     return;
   }
 
@@ -115,7 +169,7 @@ async function register() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Operator-Registration-Key': operatorKey,
+        'X-Operator-Registration-Key': window._operatorKey,
       },
       body: JSON.stringify({ device_name: deviceName }),
     });
@@ -125,8 +179,9 @@ async function register() {
       throw new Error('Failed to get registration options: ' + (errBody.detail || optsRes.status));
     }
 
-    var opts = await optsRes.json();
-    var publicKey = opts.publicKey;
+    var data = await optsRes.json();
+    var publicKey = data.options.publicKey;
+    window._sessionId = data.session_id;
 
     publicKey.challenge = b64urlDecode(publicKey.challenge);
     publicKey.user.id = b64urlDecode(publicKey.user.id);
@@ -151,9 +206,13 @@ async function register() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Operator-Registration-Key': operatorKey,
+        'X-Operator-Registration-Key': window._operatorKey,
       },
-      body: JSON.stringify({ attestation: attestation, device_name: deviceName }),
+      body: JSON.stringify({
+        attestation: attestation,
+        session_id: window._sessionId,
+        device_name: deviceName,
+      }),
     });
 
     var result = await verifyRes.json();

@@ -433,6 +433,8 @@ One of the following must exist before public-machine passkey closure can be com
 
 Until one of those exists, any claim that this machine has successfully added and used a `blog.limengyang.me` passkey would be **未验证**.
 
+This blocker state was later resolved by the operator-only registration flow documented below; keep this section as historical evidence of the pre-fix condition.
+
 ## Phase 7 Operator Registration Tool Implementation 2026-06-10
 
 Goal: implement the operator-only passkey registration tool identified as the minimum next step above.
@@ -441,11 +443,36 @@ Goal: implement the operator-only passkey registration tool identified as the mi
 
 Chose **operator-key-protected HTTP endpoints** (approach A from handoff prompt):
 
-- `POST /api/auth/passkey/operator/reg-options` — generates WebAuthn registration options for the configured RP.
-- `POST /api/auth/passkey/operator/register` — verifies attestation and atomically replaces the existing credential.
-- Both endpoints protected by `X-Operator-Registration-Key` header, validated against `OPERATOR_REGISTRATION_KEY` env var.
+- `POST /api/auth/passkey/operator/validate-key` — validates operator key before showing registration form (P2 fix).
+- `POST /api/auth/passkey/operator/reg-options` — generates WebAuthn registration options with session-keyed challenge (P1 fix).
+- `POST /api/auth/passkey/operator/register` — verifies attestation against session-keyed challenge and atomically replaces the existing credential.
+- All endpoints protected by `X-Operator-Registration-Key` header, validated against `OPERATOR_REGISTRATION_KEY` env var.
 - Fail-closed: if `OPERATOR_REGISTRATION_KEY` is empty, all requests are rejected with 403.
-- A static HTML page (`public/operator-passkey-register.html`) is served from `blog.limengyang.me` origin so that `navigator.credentials.create()` produces a credential with the correct `clientDataJSON.origin`.
+- HTML page is key-gated: validates key via `validate-key` before rendering the registration form.
+- Challenges use a separate `_operator_reg_challenge_store` dict keyed by random `session_id`, isolated from the public `_reg_challenge_store["current"]`.
+
+### P1 Fix: Challenge Isolation
+
+**Problem**: The public `GET /api/auth/passkey/reg-options` and operator `POST /api/auth/passkey/operator/reg-options` both wrote to `_reg_challenge_store["current"]`. Any concurrent reg-options request would overwrite the operator's challenge, causing verify to fail.
+
+**Fix**: Operator challenges use `_operator_reg_challenge_store[session_id]` instead of `_reg_challenge_store["current"]`. The `session_id` is a random hex string (32 chars) generated per reg-options call and returned to the client. The client includes it in the register request. The challenge is popped (single-use) on verify.
+
+**Verified**:
+- `_operator_reg_challenge_store` is a separate dict from `_reg_challenge_store`.
+- `generate_operator_registration_options("test-session-1234567890")` stores challenge under the session key.
+- Global `_reg_challenge_store` is not polluted by operator reg-options.
+
+### P2 Fix: Page Access Gate
+
+**Problem**: `public/operator-passkey-register.html` was accessible to anyone, exposing the operator registration UI to scanners.
+
+**Fix**: The page now has a two-step UI:
+1. Step 1: User enters operator key and clicks "Unlock".
+2. Page calls `POST /api/auth/passkey/operator/validate-key` with the key.
+3. If rejected, page shows "Access denied" — registration form is hidden.
+4. If accepted, registration form is revealed.
+
+The API endpoints remain the true security gate. The page gate prevents casual discovery and reduces surface area.
 
 ### Implementation Evidence
 
@@ -456,73 +483,152 @@ Chose **operator-key-protected HTTP endpoints** (approach A from handoff prompt)
 
 #### Schemas
 
-- `backend/app/schemas/auth.py` — added `OperatorRegOptionsRequest`, `OperatorRegisterRequest`, `OperatorRegisterResponse`.
+- `backend/app/schemas/auth.py` — added `OperatorRegOptionsRequest`, `OperatorRegisterRequest` (requires `session_id`), `OperatorRegisterResponse`.
 
 #### Service
 
-- `backend/app/services/passkey_service.py` — added `replace_credential()`:
-  - Queries all existing `PasskeyCredential` rows.
-  - Deletes each within the same session.
-  - Inserts new credential.
-  - Flushes and refreshes.
-  - Single transaction — rollback on failure means no partial state.
+- `backend/app/services/passkey_service.py` — added:
+  - `_operator_reg_challenge_store` — separate dict for operator challenges.
+  - `generate_operator_registration_options(session_id)` — stores challenge under session key.
+  - `verify_operator_registration(session_id=...)` — pops challenge by session key.
+  - `replace_credential()` — atomic credential replacement in single transaction.
 
 #### Router
 
 - `backend/app/routers/auth.py` — added:
   - `_require_operator_key()` — fail-closed key validation helper.
-  - `POST /api/auth/passkey/operator/reg-options` — operator-protected registration options.
-  - `POST /api/auth/passkey/operator/register` — operator-protected attestation verify + credential replace.
+  - `POST /api/auth/passkey/operator/validate-key` — key validation for page gate.
+  - `POST /api/auth/passkey/operator/reg-options` — returns `{ options, session_id }`.
+  - `POST /api/auth/passkey/operator/register` — session-keyed attestation verify + credential replace.
   - Audit logging via `record_audit()` with action `operator_passkey_register`.
 
 #### Operator Page
 
-- `public/operator-passkey-register.html` — static page with:
-  - Operator key input field (password type).
-  - Device name input field (default: "MacBook Air").
+- `public/operator-passkey-register.html` — key-gated page with:
+  - Step 1: Operator key input + "Unlock" button. Calls `validate-key` before showing form.
+  - Step 2: Device name input + "Register Passkey" button.
   - Auto-detects API base URL from current hostname.
-  - Calls `POST .../operator/reg-options` to get WebAuthn options.
-  - Calls `navigator.credentials.create()` in the browser (real public origin).
-  - Calls `POST .../operator/register` with attestation.
-  - Shows success/failure status.
+  - Uses session-keyed challenge flow (`session_id` from reg-options, passed to register).
   - Displays RP ID, origin, and API URL for operator verification.
-
-#### Operator Page Deployment Note
-
-The HTML page is in `public/` and will be deployed to Cloudflare Workers with the next `npx wrangler deploy`. It will be accessible at `https://blog.limengyang.me/operator-passkey-register.html`. The page itself has no protection — the operator key on the API endpoints is the security gate.
 
 ### Static Validation
 
 | Check | Result |
 |-------|--------|
 | `npx tsc --noEmit` | PASS |
-| `python -c "from app.routers.auth import router"` | PASS |
-| `python -c "from app.services.passkey_service import replace_credential"` | PASS |
-| `python -c "from app.schemas.auth import OperatorRegOptionsRequest, OperatorRegisterRequest, OperatorRegisterResponse"` | PASS |
 | `python -c "from main import app"` | PASS |
-| Operator routes registered | `/api/auth/passkey/operator/reg-options`, `/api/auth/passkey/operator/register` |
+| `from app.services.passkey_service import replace_credential` | PASS |
+| `from app.schemas.auth import OperatorRegOptionsRequest, OperatorRegisterRequest, OperatorRegisterResponse` | PASS |
+| Operator routes registered | `validate-key`, `operator/reg-options`, `operator/register` |
 | `OPERATOR_REGISTRATION_KEY` default is empty (fail-closed) | PASS |
+| `_operator_reg_challenge_store` is separate from `_reg_challenge_store` | PASS |
+| `generate_operator_registration_options` uses session key, not "current" | PASS |
+| `OperatorRegisterRequest` requires `session_id` | PASS (ValidationError if missing) |
 
 ### Runtime Validation Status
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Operator endpoints reject requests without key | **未验证** | Requires backend restart with code deployed |
-| Operator endpoints reject requests with wrong key | **未验证** | Requires `OPERATOR_REGISTRATION_KEY` set in `.env` |
-| Operator endpoints accept requests with correct key | **未验证** | Requires `OPERATOR_REGISTRATION_KEY` set in `.env` |
-| `reg-options` returns correct RP ID (`blog.limengyang.me`) | **未验证** | Requires backend restart |
-| Browser `navigator.credentials.create()` succeeds on public origin | **未验证** | Requires live page + backend |
-| `register` verifies attestation and replaces credential | **未验证** | Requires end-to-end flow |
-| New credential enables passkey login at `/manage` | **未验证** | Requires registration + login |
-| `last_used_at` updates after successful login | **未验证** | Requires login |
-| Passkey-only actions work with new credential | **未验证** | Requires login |
+| Operator endpoints reject requests without key | PASS | Live `403` from `https://public-api.limengyang.me/api/auth/passkey/operator/validate-key` |
+| Operator endpoints reject requests with wrong key | PASS | Live `403` from the same endpoint |
+| Operator endpoints accept requests with correct key | PASS | Live `200 {"valid": true}` |
+| `validate-key` gates the HTML page | PASS | Browser unlock step succeeded before registration form use |
+| `reg-options` returns correct RP ID + session_id | PASS | Live response contained public RP config and non-empty `session_id` |
+| Operator challenge isolated from public reg-options | **未验证** (static: PASS) | No live concurrent overwrite test performed in this round |
+| Browser `navigator.credentials.create()` succeeds on public origin | PASS | Real browser registration succeeded on `https://blog.limengyang.me/operator-passkey-register` |
+| `register` verifies attestation with session-keyed challenge | PASS | Registration completed and credential persisted |
+| New credential enables passkey login at `/manage` | PASS | Real `/manage` passkey login created a live `auth_level='passkey'` session |
+| `last_used_at` updates after successful login | PASS | DB shows `2026-06-10 12:16:59.852372+00:00` |
+| Passkey-only actions work with new credential | PASS | `页面设置` and `安全设置` available in live passkey session |
 
-### Remaining Manual Steps
+## Phase 7 Public-Machine Closure 2026-06-10
 
-1. Set `OPERATOR_REGISTRATION_KEY=<strong-random-value>` in `backend/.env`.
-2. Restart the backend (`launchctl stop com.blog.backend`).
-3. Deploy frontend with the new `operator-passkey-register.html` (`npx wrangler deploy`).
-4. Visit `https://blog.limengyang.me/operator-passkey-register.html`.
-5. Enter the operator key and complete the WebAuthn registration flow.
-6. Verify passkey login at `https://blog.limengyang.me/manage`.
-7. Record all outcomes in this file.
+Goal: finish the operator-only recovery path end-to-end on the real public deployment from this machine, then verify that the resulting credential can log into `/manage` and satisfy passkey-only gates.
+
+### Live Environment Actions
+
+1. Generated and set a strong random `OPERATOR_REGISTRATION_KEY` in `backend/.env`.
+2. Restarted the backend with `launchctl kickstart -k gui/$(id -u)/com.blog.backend`.
+3. Repaired `public-api.limengyang.me` tunnel connectivity:
+   - replaced local `cloudflared` binary with official `2026.6.0` arm64 build at `/opt/homebrew/bin/cloudflared`;
+   - changed `~/.cloudflared/config.yml` from `protocol: http2` to `protocol: quic`;
+   - restarted tunnel with `launchctl kickstart -k gui/$(id -u)/com.blog.tunnel`.
+4. Rebuilt and redeployed frontend:
+   - `npm run build:cf`
+   - `npx wrangler deploy --route 'blog.limengyang.me/*'`
+
+### Tunnel And API Verification
+
+- `cloudflared tunnel info blog-tunnel` showed active connectors after restart.
+- `https://public-api.limengyang.me/api/health` returned HTTP `200`.
+- Live operator endpoint checks from this machine:
+  - no operator key -> HTTP `403`
+  - wrong operator key -> HTTP `403`
+  - correct operator key -> HTTP `200 {"valid": true}`
+- `POST /api/auth/passkey/operator/reg-options` returned valid public-domain registration options plus a non-empty `session_id`.
+
+### Browser Registration Evidence
+
+- Opened `https://blog.limengyang.me/operator-passkey-register` in Chrome.
+- Unlock step succeeded with the configured operator key.
+- Browser completed real WebAuthn registration on the public RP.
+- Success UI showed:
+  - `Passkey registered successfully!`
+  - `Device: MacBook Air`
+
+### Database Evidence After Registration
+
+Queried the live database through the project backend virtualenv:
+
+- `PasskeyCredential` count: `1`
+- Persisted row:
+  - `device_name='MacBook Air'`
+  - `created_at='2026-06-10 12:13:17.926593+00:00'`
+  - `sign_count=0`
+  - `last_used_at=NULL` immediately after registration
+- Audit evidence:
+  - `operator_passkey_register`
+  - `entity_type='passkey_credential'`
+  - `entity_id='81848787-f19d-413b-8652-a7534f7cec96'`
+  - `created_at='2026-06-10 12:13:17.926593+00:00'`
+
+### Passkey Login Evidence
+
+- Opened `https://blog.limengyang.me/manage` in Chrome.
+- macOS system passkey sheet appeared for RP `blog.limengyang.me` and account `admin`.
+- Login completed successfully from this machine.
+- Post-login database evidence:
+  - one live `AdminSession` row exists
+  - `auth_level='passkey'`
+  - `created_at='2026-06-10 12:16:59.828535+00:00'`
+  - `revoked=false`
+- The same login updated the registered credential:
+  - `last_used_at='2026-06-10 12:16:59.852372+00:00'`
+
+### Passkey-Only Gate Evidence
+
+- After login, live `/manage` loaded as authenticated and displayed username `admin2`.
+- The management UI showed both passkey-only tabs:
+  - `页面设置`
+  - `安全设置`
+- These tabs were not rendered in the disabled/locked state expected for non-passkey sessions.
+- Source cross-check:
+  - `src/app/manage/page.tsx` marks those tabs as `passkeyOnly: true`.
+  - The same file disables passkey-only tabs only when `user?.auth_level !== 'passkey'`.
+  - Therefore the live unlocked state matches the backend `auth_level='passkey'` session evidence.
+
+### Acceptance Status
+
+| Item | Status | Notes |
+|------|--------|-------|
+| P7-03 Configure operator key and restart backend | PASS | Completed on 2026-06-10 |
+| P7-04 Register new public-domain passkey from this machine | PASS | Completed on 2026-06-10 |
+| P7-05 Verify public `/manage` passkey login | PASS | Completed on 2026-06-10 |
+| P7-06 Verify passkey-only protection with live passkey session | PASS | Completed on 2026-06-10 |
+| P7-07 Record exact evidence and residual risk | PASS | Completed in this section |
+
+### Residual Risks
+
+1. Operator challenge isolation is verified statically and through successful end-to-end use, but this round did not run an explicit concurrent overwrite attack test; that item remains **未验证** at runtime.
+2. The operator registration page remains a public URL, although the registration flow is fail-closed behind `X-Operator-Registration-Key` plus the page unlock step.
+3. This round changed live machine-level infrastructure (`cloudflared` binary and tunnel protocol) in order to restore public API reachability; that operational state should be preserved or documented separately if the tunnel host changes.
