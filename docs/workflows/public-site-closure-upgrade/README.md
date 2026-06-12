@@ -21,26 +21,20 @@ Reframe the site around a complete public-user experience instead of an admin-fi
 
 ## Current Status
 
-Approved for workflow construction on 2026-06-10.
-
-This round remains documentation-only, but the task is no longer waiting for scope approval. The current state is:
+All phases implemented on 2026-06-10.
 
 - product direction approved in conversation;
 - workflow documents created;
 - closure review performed;
-- follow-up doc fixes applied to align status, route strategy, and site-wide closure coverage;
-- code implementation has not started yet.
-
-This workflow captures the approved product direction before implementation:
-
-- navigation groups become `公开内容` and `互动探索`;
-- `推荐分享` and `优秀博客` merge into `发现`;
-- `优秀笔记` joins the discovery system;
-- blogs remain fully public;
-- notes remain fully public;
-- mistakes become limited public views;
-- guest messages are anonymous but constrained by server-side abuse controls;
-- the whole site must satisfy site-wide closure, not just page-local linking.
+- follow-up doc fixes applied;
+- Phase 0 (scope lock): confirmed;
+- Phase 1 (shared navigation): implemented in `vertical-nav.tsx`, `mobile-nav.tsx`, `nav-card.tsx`, `share-card.tsx`;
+- Phase 2 (manage anonymous experience): redesigned `LoginForm` in `manage/page.tsx`;
+- Phase 3 (public content boundaries): admin-gated buttons in blog/note detail, limited public mistake view;
+- Phase 4 (discover system merge): new `/discover` page, legacy route redirects for non-admin;
+- Phase 5 (guest message domain): backend model/schema/router + frontend `/guestbook` page;
+- Phase 6 (site-wide closure pass): closure links added to about, discover, guestbook, and content detail pages;
+- Phase 7 (validation): `npx tsc --noEmit` passes, backend imports verified, browser validation pending.
 
 ## Workflow Files
 

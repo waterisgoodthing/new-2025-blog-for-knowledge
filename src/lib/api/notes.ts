@@ -10,6 +10,7 @@ export interface NoteListItem {
   created_at: string;
   updated_at: string;
   tags: { id: number; name: string }[];
+  sort_order: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -49,6 +50,7 @@ export interface NoteCreateInput {
   status?: "draft" | "published";
   hidden?: boolean;
   tags?: string[];
+  sort_order?: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -70,6 +72,7 @@ export interface NoteUpdateInput {
   status?: "draft" | "published";
   hidden?: boolean;
   tags?: string[];
+  sort_order?: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -95,6 +98,8 @@ export interface NoteListParams {
   hidden?: boolean;
   folder_id?: string;
   inbox?: boolean;
+  featured?: boolean;
+  sort_by?: "sort_order" | "updated_at";
   page?: number;
   size?: number;
 }
@@ -111,6 +116,8 @@ export async function listNotes(params: NoteListParams = {}): Promise<NoteListRe
   if (params.hidden !== undefined) searchParams.set("hidden", String(params.hidden));
   if (params.folder_id) searchParams.set("folder_id", params.folder_id);
   if (params.inbox) searchParams.set("inbox", "true");
+  if (params.featured) searchParams.set("featured", "true");
+  if (params.sort_by) searchParams.set("sort_by", params.sort_by);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.size) searchParams.set("size", String(params.size));
   const qs = searchParams.toString();

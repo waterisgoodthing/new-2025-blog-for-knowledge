@@ -6,6 +6,7 @@ from app.models.recommendation import DailyRecommendation
 from app.models.session import AdminSession, PasskeyCredential, AdminPassword
 from app.models.audit import AuditLog
 from app.models.music_daily import MusicSourceRule, MusicCandidate, DailySong, MusicSyncLog, NetEaseApiConfig
+from app.models.guest_message import GuestMessage, GuestMessageBan
 
 __all__ = [
     "Note",
@@ -26,5 +27,7 @@ __all__ = [
     "DailySong",
     "MusicSyncLog",
     "NetEaseApiConfig",
+    "GuestMessage",
+    "GuestMessageBan",
     "note_tags",
 ]

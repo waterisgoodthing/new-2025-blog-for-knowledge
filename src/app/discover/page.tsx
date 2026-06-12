@@ -46,7 +46,7 @@ function DiscoverContent() {
 		Promise.all([
 			getShares().catch(() => []),
 			getBloggers().catch(() => []),
-			listNotes({ type: 'note', size: 50 }).then(r => r.items).catch(() => []),
+			listNotes({ type: 'note', featured: true, sort_by: 'sort_order', size: 50 }).then(r => r.items).catch(() => []),
 		]).then(([s, b, n]) => {
 			setShares(s)
 			setBloggers(b)
@@ -205,7 +205,7 @@ function DiscoverContent() {
 							))}
 							{filteredNotes.length === 0 && (
 								<div className='col-span-full py-12'>
-									<EmptyState variant='no-results' title='暂无精选笔记' description='稍后再来看看' />
+									<EmptyState variant='no-results' title='暂无精选笔记' description='管理员可在编辑笔记时设置策展权重来标记精选' />
 								</div>
 							)}
 						</div>

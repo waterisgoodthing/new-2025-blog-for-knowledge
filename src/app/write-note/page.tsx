@@ -55,6 +55,7 @@ function WriteNoteContent() {
 		summary: '',
 		category: '',
 		cover: '',
+		sort_order: 0,
 	})
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
@@ -132,6 +133,7 @@ function WriteNoteContent() {
 				summary: form.summary || undefined,
 				category: form.category || undefined,
 				cover: form.cover || undefined,
+				sort_order: form.sort_order,
 			})
 			router.push(getContentDetailHref(created.type, created.slug))
 		} catch (e: any) {
@@ -309,6 +311,17 @@ function WriteNoteContent() {
 						onChange={e => update('cover', e.target.value)}
 						placeholder='封面图 URL（可选）'
 						className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-2 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+					/>
+				</div>
+
+				<div>
+					<label className='mb-1 block text-xs text-gray-500'>策展权重（0 = 不精选，1+ = 进入发现页精选区，值越大越靠前）</label>
+					<input
+						type='number'
+						min={0}
+						value={form.sort_order}
+						onChange={e => update('sort_order', Math.max(0, parseInt(e.target.value) || 0))}
+						className='w-32 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]'
 					/>
 				</div>
 

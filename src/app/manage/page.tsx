@@ -19,6 +19,7 @@ import { RecommendationTab } from './recommendation-tab'
 import { AITab } from './ai-tab'
 import { SecurityTab } from './security-tab'
 import { AuditTab } from './audit-tab'
+import { listGuestMessages, moderateGuestMessage, type GuestMessage } from '@/lib/api/guest-messages'
 import { LogOut } from 'lucide-react'
 import { getContentDetailHref, getContentEditHref } from '@/lib/content-routes'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
@@ -28,7 +29,7 @@ import { SiteSettingsPanel } from '@/app/(home)/config-dialog/site-settings-pane
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
 
-type TabType = 'overview' | 'content' | 'folders-tags' | 'music' | 'ai' | 'settings' | 'security' | 'audit'
+type TabType = 'overview' | 'content' | 'folders-tags' | 'music' | 'ai' | 'settings' | 'security' | 'audit' | 'guestbook'
 
 const tabs: { id: TabType; label: string; passkeyOnly?: boolean }[] = [
   { id: 'overview', label: '总览' },
@@ -36,6 +37,7 @@ const tabs: { id: TabType; label: string; passkeyOnly?: boolean }[] = [
   { id: 'folders-tags', label: '文件夹与标签' },
   { id: 'music', label: '音乐管理' },
   { id: 'ai', label: 'AI 管理' },
+  { id: 'guestbook', label: '留言审核' },
   { id: 'settings', label: '页面设置', passkeyOnly: true },
   { id: 'security', label: '安全设置', passkeyOnly: true },
   { id: 'audit', label: '操作记录' },
@@ -466,6 +468,125 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
   )
 }
 
+function GuestbookTab() {
+  const [messages, setMessages] = useState<GuestMessage[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'all' | 'visible' | 'hidden'>('all')
+
+  const load = async (p: number, f: 'all' | 'visible' | 'hidden') => {
+    setLoading(true)
+    try {
+      const statusParam = f === 'all' ? undefined : f
+      const res = await listGuestMessages({ page: p, size: 30, status: statusParam as any })
+      setMessages(res.items)
+      setTotal(res.total)
+    } catch {
+      // silent
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load(1, filter) }, [filter])
+
+  const handleModerate = async (id: string, newStatus: 'visible' | 'hidden') => {
+    try {
+      await moderateGuestMessage(id, newStatus)
+      toast.success(newStatus === 'hidden' ? '已隐藏' : '已恢复可见')
+      load(page, filter)
+    } catch (e: any) {
+      toast.error('操作失败: ' + (e?.message || '未知错误'))
+    }
+  }
+
+  const attachmentLabels: Record<string, string> = { home: '首页', blog: '博客', note: '笔记', mistake: '错题' }
+
+  return (
+    <div className='space-y-4'>
+      <div className='flex items-center gap-3'>
+        <div className='flex gap-1 rounded-lg border border-white/40 bg-white/60 p-0.5'>
+          {(['all', 'visible', 'hidden'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => { setFilter(f); setPage(1) }}
+              className={cn(
+                'rounded-md px-3 py-1 text-xs transition-colors',
+                filter === f ? 'bg-[var(--color-brand)] text-white' : 'text-gray-500 hover:text-gray-700'
+              )}>
+              {f === 'all' ? '全部' : f === 'visible' ? '可见' : '已隐藏'}
+            </button>
+          ))}
+        </div>
+        <span className='text-xs text-gray-400'>共 {total} 条留言</span>
+      </div>
+
+      {loading ? (
+        <div className='py-12 text-center text-gray-400'>加载中...</div>
+      ) : messages.length === 0 ? (
+        <div className='py-12'>
+          <EmptyState variant='no-content' title='暂无留言' description='还没有收到任何留言' />
+        </div>
+      ) : (
+        <div className='space-y-2'>
+          {messages.map(msg => (
+            <div
+              key={msg.id}
+              className={cn(
+                'rounded-xl border p-4 backdrop-blur-sm',
+                msg.status === 'hidden' ? 'border-red-200/40 bg-red-50/30' : 'border-white/40 bg-white/60'
+              )}>
+              <div className='mb-2 flex items-center gap-2'>
+                <span className='font-medium text-gray-700'>{msg.nickname || '匿名访客'}</span>
+                {msg.attachment_type && (
+                  <span className='rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500'>
+                    {attachmentLabels[msg.attachment_type] || msg.attachment_type}
+                    {msg.attachment_slug ? ` / ${msg.attachment_slug}` : ''}
+                  </span>
+                )}
+                <span className={cn(
+                  'rounded-full px-2 py-0.5 text-[10px]',
+                  msg.status === 'visible' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                )}>
+                  {msg.status === 'visible' ? '可见' : '已隐藏'}
+                </span>
+                <span className='ml-auto text-xs text-gray-400'>
+                  {dayjs(msg.created_at).format('MM-DD HH:mm')}
+                </span>
+              </div>
+              <p className='whitespace-pre-wrap text-sm text-gray-600'>{msg.content}</p>
+              <div className='mt-3 flex gap-2'>
+                {msg.status === 'visible' ? (
+                  <button
+                    onClick={() => handleModerate(msg.id, 'hidden')}
+                    className='rounded-lg bg-red-500/10 px-3 py-1 text-xs text-red-600 hover:bg-red-500/20'>
+                    隐藏
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleModerate(msg.id, 'visible')}
+                    className='rounded-lg bg-green-500/10 px-3 py-1 text-xs text-green-600 hover:bg-green-500/20'>
+                    恢复可见
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {total > 30 && (
+        <div className='flex justify-center gap-2'>
+          <button disabled={page <= 1} onClick={() => { const p = page - 1; setPage(p); load(p, filter) }} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>上一页</button>
+          <span className='px-3 py-1 text-sm text-gray-500'>{page} / {Math.ceil(total / 30)}</span>
+          <button disabled={page >= Math.ceil(total / 30)} onClick={() => { const p = page + 1; setPage(p); load(p, filter) }} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>下一页</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ManagePage() {
   return (
     <Suspense fallback={<div className='mx-auto max-w-5xl px-4 py-20 text-center text-gray-400'>加载中...</div>}>
@@ -478,7 +599,7 @@ function ManagePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const validTabs: TabType[] = ['overview', 'content', 'folders-tags', 'music', 'ai', 'settings', 'security', 'audit']
+  const validTabs: TabType[] = ['overview', 'content', 'folders-tags', 'music', 'ai', 'settings', 'security', 'audit', 'guestbook']
   const initialTab = validTabs.includes(tabParam as TabType) ? (tabParam as TabType) : 'content'
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [authenticated, setAuthenticated] = useState(false)
@@ -603,6 +724,7 @@ function ManagePageInner() {
       )}
       {activeTab === 'security' && <SecurityTab authLevel={user?.auth_level} />}
       {activeTab === 'audit' && <AuditTab />}
+      {activeTab === 'guestbook' && <GuestbookTab />}
     </div>
   )
 }

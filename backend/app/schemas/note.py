@@ -30,6 +30,7 @@ class NoteCreate(BaseModel):
     status: NoteStatus = NoteStatus.published
     hidden: bool = False
     tags: list[str] = []
+    sort_order: int = 0
 
     summary: str | None = None
     cover: str | None = None
@@ -53,6 +54,7 @@ class NoteUpdate(BaseModel):
     status: NoteStatus | None = None
     hidden: bool | None = None
     tags: list[str] | None = None
+    sort_order: int | None = None
 
     summary: str | None = None
     cover: str | None = None
@@ -87,6 +89,7 @@ class NoteOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    sort_order: int = 0
 
     summary: str | None = None
     cover: str | None = None
@@ -120,6 +123,7 @@ class NoteListItem(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    sort_order: int = 0
 
     summary: str | None = None
     cover: str | None = None

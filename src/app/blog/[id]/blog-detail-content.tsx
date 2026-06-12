@@ -10,6 +10,7 @@ import type { BlogConfig } from '@/app/blog/types'
 import { useReadArticles } from '@/hooks/use-read-articles'
 import LiquidGrass from '@/components/liquid-grass'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
+import Link from 'next/link'
 
 type BlogData = { config: BlogConfig; markdown: string; cover?: string }
 
@@ -91,7 +92,7 @@ export default function BlogDetailContent() {
 	}
 
 	return (
-		<>
+		<div>
 			<BlogPreview
 				markdown={blog.markdown}
 				title={title}
@@ -114,7 +115,21 @@ export default function BlogDetailContent() {
 				</motion.button>
 			)}
 
+			{!isAdmin && (
+				<div className='mx-auto max-w-3xl px-4 pb-8'>
+					<div className='flex flex-wrap justify-center gap-3 border-t border-white/20 pt-6'>
+						<Link href='/discover' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>发现更多</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/guestbook' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>留言</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/blog' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>更多博客</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>回到首页</Link>
+					</div>
+				</div>
+			)}
+
 			{slug === 'liquid-grass' && <LiquidGrass />}
-		</>
+		</div>
 	)
 }

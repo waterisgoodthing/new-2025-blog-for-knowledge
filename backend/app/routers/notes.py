@@ -56,6 +56,8 @@ async def list_notes(
     hidden: Optional[bool] = None,
     folder_id: Optional[str] = None,
     inbox: Optional[bool] = None,
+    featured: Optional[bool] = None,
+    sort_by: Optional[str] = Query(None, pattern="^(sort_order|updated_at)$"),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -103,11 +105,17 @@ async def list_notes(
             pass
     if inbox:
         query = query.where(Note.folder_id.is_(None))
+    if featured:
+        query = query.where(Note.sort_order > 0)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
 
-    query = query.order_by(Note.updated_at.desc()).offset((page - 1) * size).limit(size)
+    if sort_by == "sort_order":
+        query = query.order_by(Note.sort_order.desc(), Note.updated_at.desc())
+    else:
+        query = query.order_by(Note.updated_at.desc())
+    query = query.offset((page - 1) * size).limit(size)
     result = await db.execute(query)
     notes = result.scalars().all()
 
@@ -254,6 +262,7 @@ async def create_note(
         knowledge_points=req.knowledge_points,
         images=req.images,
         ai_metadata=req.ai_metadata,
+        sort_order=req.sort_order,
         tags=tags,
     )
 

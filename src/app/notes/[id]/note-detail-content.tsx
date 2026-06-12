@@ -226,6 +226,16 @@ export default function NoteDetailContent() {
 				)}
 
 				{actionBar}
+
+				{!isAdmin && (
+					<div className='mt-8 flex flex-wrap justify-center gap-3 border-t border-white/20 pt-6'>
+						<Link href='/discover' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>发现更多</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/guestbook' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>留言</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>回到首页</Link>
+					</div>
+				)}
 				</motion.div>
 			</div>
 		)
@@ -276,6 +286,16 @@ export default function NoteDetailContent() {
 				)}
 
 				{actionBar}
+
+				{!isAdmin && (
+					<div className='mt-8 flex flex-wrap justify-center gap-3 border-t border-white/20 pt-6'>
+						<Link href='/discover' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>发现更多</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/guestbook' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>留言</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>回到首页</Link>
+					</div>
+				)}
 			</motion.div>
 		</div>
 	)

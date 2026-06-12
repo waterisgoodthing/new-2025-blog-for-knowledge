@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
+import uuid
 
 
 class GuestMessageCreate(BaseModel):
@@ -11,7 +12,7 @@ class GuestMessageCreate(BaseModel):
 
 
 class GuestMessageOut(BaseModel):
-    id: str
+    id: uuid.UUID
     content: str
     nickname: Optional[str] = None
     attachment_type: Optional[str] = None
@@ -19,8 +20,7 @@ class GuestMessageOut(BaseModel):
     status: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class GuestMessageListResponse(BaseModel):

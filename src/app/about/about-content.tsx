@@ -10,6 +10,7 @@ import { useConfigStore } from '@/app/(home)/stores/config-store'
 import LikeButton from '@/components/like-button'
 import GithubSVG from '@/svgs/github.svg'
 import { getAbout } from '@/lib/api/content'
+import Link from 'next/link'
 
 const emptyAbout: AboutData = { title: '', description: '', content: '' }
 
@@ -177,6 +178,18 @@ export default function AboutContent() {
 						</motion.a>
 
 						<LikeButton slug='open-source' delay={0} />
+					</div>
+
+					<div className='mt-8 flex flex-wrap justify-center gap-3 border-t border-white/20 pt-6'>
+						<Link href='/' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>回到首页</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/discover' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>发现</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/blog' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>博客</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/notes' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>笔记</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/guestbook' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>留言</Link>
 					</div>
 				</div>
 			</div>

@@ -89,6 +89,7 @@ export default function EditNotePage() {
 		knowledge_points: '',
 		category: '',
 		cover: '',
+		sort_order: 0,
 	})
 	const [aiMetadata, setAiMetadata] = useState<Record<string, unknown> | null>(null)
 
@@ -115,6 +116,7 @@ export default function EditNotePage() {
 				knowledge_points: note.knowledge_points || '',
 				category: note.category || '',
 				cover: note.cover || '',
+				sort_order: note.sort_order ?? 0,
 			})
 			setUploadedImages(note.images || [])
 			setAiMetadata(note.ai_metadata ?? null)
@@ -203,6 +205,7 @@ export default function EditNotePage() {
 				cover: form.cover || undefined,
 				images: form.type === 'mistake' ? uploadedImages : undefined,
 				ai_metadata: form.type === 'mistake' ? aiMetadata : undefined,
+				sort_order: form.sort_order,
 			})
 			router.push(getContentDetailHref(updated.type, updated.slug))
 		} catch (e: any) {
@@ -405,6 +408,17 @@ export default function EditNotePage() {
 						onChange={e => update('cover', e.target.value)}
 						placeholder='封面图 URL（可选）'
 						className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-2 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+					/>
+				</div>
+
+				<div>
+					<label className='mb-1 block text-xs text-gray-500'>策展权重（0 = 不精选，1+ = 进入发现页精选区，值越大越靠前）</label>
+					<input
+						type='number'
+						min={0}
+						value={form.sort_order}
+						onChange={e => update('sort_order', Math.max(0, parseInt(e.target.value) || 0))}
+						className='w-32 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]'
 					/>
 				</div>
 
