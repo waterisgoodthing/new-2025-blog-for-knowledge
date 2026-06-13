@@ -43,6 +43,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 		correct_answer: '',
 		analysis: '',
 		knowledge_points: '',
+		user_error_analysis: '',
 		subject: '',
 		difficulty: 'medium' as 'easy' | 'medium' | 'hard',
 		tags: [] as string[],
@@ -60,6 +61,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				correct_answer: initialData.correct_answer || '',
 				analysis: initialData.analysis || '',
 				knowledge_points: initialData.knowledge_points || '',
+				user_error_analysis: (initialData.ai_metadata?.user_error_analysis as string) || '',
 				subject: initialData.subject || '',
 				difficulty: (initialData.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
 				tags: initialData.tags?.map(t => t.name) || [],
@@ -136,6 +138,10 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 			variant_questions: result.variant_questions || [],
 			related_notes: result.related_notes || [],
 			diagrams: result.diagrams || [],
+			personalized_diagnosis: result.personalized_diagnosis || '',
+			misread_signal: result.misread_signal || '',
+			next_time_checklist: result.next_time_checklist || [],
+			latex_warnings: result.latex_warnings || [],
 		})
 	}
 
@@ -184,7 +190,11 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				} else if (event.type === 'done') {
 					// handled by result
 				}
-			}, controller.signal)
+			}, controller.signal, {
+				my_answer: form.my_answer || undefined,
+				correct_answer: form.correct_answer || undefined,
+				user_error_analysis: form.user_error_analysis || undefined,
+			})
 		} catch (err: any) {
 			if (err.name === 'AbortError') return
 			setAnalyzeError(err.message || '分析失败')
@@ -236,7 +246,12 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 					setAnalyzeError(event.message)
 					toast.error('AI 分析失败: ' + event.message)
 				}
-			}, controller.signal)
+			}, controller.signal, {
+				question: form.question || undefined,
+				my_answer: form.my_answer || undefined,
+				correct_answer: form.correct_answer || undefined,
+				user_error_analysis: form.user_error_analysis || undefined,
+			})
 		} catch (err: any) {
 			if (err.name === 'AbortError') return
 			setAnalyzeError(err.message || 'AI 分析失败')
@@ -261,7 +276,12 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 		if (!text) return toast.warning('请先粘贴题目文本')
 		setGeneratingField(field)
 		try {
-			const result = await analyzeText(text)
+			const result = await analyzeText(text, {
+				question: form.question || undefined,
+				my_answer: form.my_answer || undefined,
+				correct_answer: form.correct_answer || undefined,
+				user_error_analysis: form.user_error_analysis || undefined,
+			})
 			if (field === 'analysis') {
 				const analysisText = buildAnalysisText(result)
 				if (analysisText) update('analysis', analysisText)
@@ -323,7 +343,10 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				analysis: form.analysis,
 				knowledge_points: form.knowledge_points,
 				images: uploadedImages,
-				ai_metadata: aiMetadata,
+				ai_metadata: {
+					...(aiMetadata || {}),
+					...(form.user_error_analysis ? { user_error_analysis: form.user_error_analysis } : {}),
+				},
 			}
 
 			let result: NoteDetail
@@ -526,6 +549,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 
 				<textarea value={form.question} onChange={e => update('question', e.target.value)} placeholder='题目内容...' rows={4} className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]' />
 				<textarea value={form.my_answer} onChange={e => update('my_answer', e.target.value)} placeholder='我的错误答案...' rows={3} className='w-full rounded-xl border border-red-200/50 bg-red-50/30 px-4 py-3 text-sm outline-none focus:border-red-400' />
+				<textarea value={form.user_error_analysis} onChange={e => update('user_error_analysis', e.target.value)} placeholder='我当时的思路 / 我自己判断的错因（可选，用于 AI 个性化诊断）...' rows={2} className='w-full rounded-xl border border-orange-200/50 bg-orange-50/30 px-4 py-3 text-sm outline-none focus:border-orange-400' />
 				<textarea value={form.correct_answer} onChange={e => update('correct_answer', e.target.value)} placeholder='正确答案...' rows={3} className='w-full rounded-xl border border-green-200/50 bg-green-50/30 px-4 py-3 text-sm outline-none focus:border-green-400' />
 				<textarea value={form.analysis} onChange={e => update('analysis', e.target.value)} placeholder='分析与反思...' rows={3} className='w-full rounded-xl border border-blue-200/50 bg-blue-50/30 px-4 py-3 text-sm outline-none focus:border-blue-400' />
 				<input value={form.knowledge_points} onChange={e => update('knowledge_points', e.target.value)} placeholder='知识点总结' className='w-full rounded-xl border border-purple-200/50 bg-purple-50/30 px-4 py-3 text-sm outline-none focus:border-purple-400' />

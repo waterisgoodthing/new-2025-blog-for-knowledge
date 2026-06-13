@@ -77,27 +77,6 @@ async function loadShiki(): Promise<{ codeToHtml: (code: string, options: { lang
 	return null
 }
 
-// Lazy load katex to handle environments where it's not available (e.g., Cloudflare Workers)
-let katexModule: typeof import('katex') | null = null
-let katexLoadAttempted = false
-
-async function loadKatex() {
-	if (katexModule) return katexModule
-	if (katexLoadAttempted) return null
-	katexLoadAttempted = true
-
-	try {
-		// katex is published as CJS; depending on bundler/runtime the dynamic import
-		// may return either the exports object directly or as `default`.
-		const mod: any = await import('katex')
-		katexModule = (mod?.default ?? mod) as any
-		return katexModule
-	} catch (error) {
-		console.warn('Failed to load katex module:', error)
-		return null
-	}
-}
-
 const ALERT_TYPES: Record<string, string> = {
 	NOTE: '注意',
 	TIP: '技巧',
@@ -121,7 +100,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
 	const codeBlockMap = new Map<string, { html: string; original: string }>()
-	const [markedMod, shiki, katex] = await Promise.all([loadMarked(), loadShiki(), loadKatex()])
+	const [markedMod, shiki] = await Promise.all([loadMarked(), loadShiki()])
 	const { marked } = markedMod
 
 	// Render HTML with heading ids
@@ -221,22 +200,8 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 
 	const renderMath = (content: string, displayMode: boolean) => {
 		const tag = displayMode ? 'div' : 'span'
-		let html = ''
-		if (!katex) {
-			html = displayMode ? `$$${content}$$` : `$${content}$`
-		} else {
-			try {
-				html = katex.renderToString(content, {
-					displayMode,
-					throwOnError: false,
-					output: 'html',
-					strict: 'ignore'
-				})
-			} catch {
-				html = displayMode ? `$$${content}$$` : `$${content}$`
-			}
-		}
-		return `<${tag} class="ag-math-container"><!--ag-math-start-->${html}<!--ag-math-end--></${tag}>`
+		const payload = encodeURIComponent(JSON.stringify({ content, displayMode }))
+		return `<${tag} class="ag-math-container"><!--ag-math-start-->${payload}<!--ag-math-end--></${tag}>`
 	}
 
 	// Register extensions BEFORE lexing so math gets tokenized on cold refresh.

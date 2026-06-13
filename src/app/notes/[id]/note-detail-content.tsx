@@ -154,6 +154,13 @@ export default function NoteDetailContent() {
 									</div>
 								</div>
 							)}
+
+							{note.knowledge_points && (
+								<div className='rounded-xl border border-purple-200/70 bg-purple-50/50 p-4 backdrop-blur-sm'>
+									<h2 className='mb-2 text-sm font-semibold text-purple-800'>知识点归总</h2>
+									<RichText content={note.knowledge_points} className='text-sm leading-6 text-purple-900' />
+								</div>
+							)}
 						</aside>
 					</div>
 
@@ -161,12 +168,36 @@ export default function NoteDetailContent() {
 					<>
 						<div className='mb-6 grid gap-4 lg:grid-cols-2'>
 							<StudyBlock title='错因与解析' tone='info' content={note.analysis} large />
-							<StudyBlock title='知识点归总' tone='purple' content={note.knowledge_points} large />
 						</div>
 
 						{note.ai_metadata && (
 							<div className='mb-6 space-y-4'>
 								<h2 className='text-lg font-bold text-gray-800'>AI 解析</h2>
+								{String(note.ai_metadata.user_error_analysis || '') && (
+									<section className='rounded-xl border border-orange-200/70 bg-orange-50/50 p-4'>
+										<h2 className='mb-2 text-sm font-semibold text-orange-800'>我的思路与错因</h2>
+										<RichText content={String(note.ai_metadata.user_error_analysis)} className='text-sm leading-6 text-orange-900' />
+									</section>
+								)}
+								{String(note.ai_metadata.personalized_diagnosis || '') && (
+									<section className='rounded-xl border border-rose-200/70 bg-rose-50/50 p-4'>
+										<h2 className='mb-2 text-sm font-semibold text-rose-800'>个性化错因诊断</h2>
+										<RichText content={String(note.ai_metadata.personalized_diagnosis)} className='text-sm leading-6 text-rose-900' />
+										{String(note.ai_metadata.misread_signal || '') && (
+											<div className='mt-2 rounded-lg bg-rose-100/50 px-3 py-2 text-xs text-rose-800'>
+												<span className='font-medium'>忽略的信号: </span>{String(note.ai_metadata.misread_signal)}
+											</div>
+										)}
+										{(note.ai_metadata.next_time_checklist as string[])?.length > 0 && (
+											<div className='mt-2'>
+												<div className='text-xs font-medium text-rose-700 mb-1'>下次做题检查清单:</div>
+												<ul className='list-disc space-y-0.5 pl-4 text-xs text-rose-800'>
+													{(note.ai_metadata.next_time_checklist as string[]).map((item, i) => <li key={i}>{item}</li>)}
+												</ul>
+											</div>
+										)}
+									</section>
+								)}
 								<div className='grid gap-4 lg:grid-cols-2'>
 									<StudyBlock title='错误原因' tone='danger' content={note.ai_metadata.error_reason as string} />
 									<StudyBlock title='关键步骤' tone='success' content={note.ai_metadata.key_step as string} />

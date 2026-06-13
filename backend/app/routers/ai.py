@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from collections import defaultdict
 
@@ -347,7 +348,108 @@ def _list_of_strings(value) -> list[str]:
     return [str(value)]
 
 
+_LATEX_COMMANDS = re.compile(r'\\(?:frac|sqrt|int|sum|prod|lim|log|ln|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|infty|partial|nabla|pm|mp|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|subseteq|supseteq|cup|cap|emptyset|forall|exists|in|notin|rightarrow|leftarrow|Rightarrow|Leftarrow|ldots|cdots|vdots|ddots|quad|qquad|text|mathrm|mathbf|mathit|overline|underline|hat|bar|vec|tilde|dot|ddot)')
+_FORMULA_LINE = re.compile(r'(?:[\^_{}\[\]]|[a-zA-Z]\s*[=<>≤≥≠]\s*|\\[a-zA-Z]+|\d+\s*[-+*/=]\s*\d+)')
+_UNIT_PATTERN = re.compile(r'\b\d+\.?\d*\s*(?:μs|ms|ns|km|m|cm|mm|kg|g|mg|A|V|Ω|Hz|kHz|MHz|GHz|dB|Pa|kPa|MPa|J|kJ|W|kW|eV|mol|rad|sr|°C|°F|K)\b')
+_GREEK_LETTERS = re.compile(r'[αβγδεζηθικλμνξπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΠΡΣΤΥΦΧΨΩ]')
+_CODE_LIKE_LINE = re.compile(r'\b(?:def|return|if|else|elif|for|while|int|float|double|char|void|printf|scanf|include|import|class|const|let|var)\b|[;:]|==|!=|<=|>=|\+\+|--|&&|\|\|')
+_PLAIN_IDENTIFIER_ASSIGNMENT = re.compile(r'^[A-Za-z]+\s*=\s*[A-Za-z]+$')
+
+
+def _repair_latex_in_text(text: str) -> tuple[str, list[str]]:
+    if not text:
+        return text, []
+
+    warnings = []
+
+    lines = text.split('\n')
+    repaired_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            repaired_lines.append(line)
+            continue
+
+        if '$' in stripped:
+            repaired_lines.append(line)
+            continue
+
+        has_latex_cmd = bool(_LATEX_COMMANDS.search(stripped))
+        has_operators = bool(re.search(r'[=^_{}]', stripped))
+        has_greek = bool(_GREEK_LETTERS.search(stripped))
+        has_unit = bool(_UNIT_PATTERN.search(stripped))
+        looks_formula = bool(_FORMULA_LINE.search(stripped))
+        looks_code = (
+            bool(_CODE_LIKE_LINE.search(stripped))
+            or bool(_PLAIN_IDENTIFIER_ASSIGNMENT.fullmatch(stripped))
+            or bool(re.search(r'^\s{2,}', line))
+        )
+        is_short = len(stripped) < 120
+        has_prose_words = bool(re.search(r'\b(?:the|is|and|or|of|in|to|that|this|with|for|are|was|were|be|been|has|have|had|do|does|did|will|would|could|should|may|might|can|shall|not|but|if|then|else|when|where|how|what|which|who|whom|why)\b', stripped, re.IGNORECASE))
+        has_chinese = bool(re.search(r'[\u4e00-\u9fff]', stripped))
+
+        should_wrap = False
+        if has_latex_cmd and is_short and not has_prose_words and not has_chinese:
+            should_wrap = True
+        elif (
+            (looks_formula or has_operators or has_greek or has_unit)
+            and is_short
+            and not has_prose_words
+            and not has_chinese
+            and not has_latex_cmd
+            and not looks_code
+            and not re.search(r'(?<!\\)[a-zA-Z]{4,}', stripped)
+        ):
+            should_wrap = True
+
+        if should_wrap:
+            if stripped.startswith('$$'):
+                repaired_lines.append(line)
+            else:
+                repaired_lines.append(f'$${stripped}$$')
+                warnings.append(f'auto-wrapped bare LaTeX: {stripped[:60]}')
+        else:
+            repaired_lines.append(line)
+
+    return '\n'.join(repaired_lines), warnings
+
+
+def _repair_latex_in_result(result: dict) -> tuple[dict, list[str]]:
+    all_warnings = []
+    fields_to_check = ['question', 'correct_answer', 'analysis', 'knowledge_points',
+                       'error_reason', 'key_step', 'generalization', 'review_advice']
+
+    for field in fields_to_check:
+        value = result.get(field, '')
+        if isinstance(value, str) and value:
+            repaired, warns = _repair_latex_in_text(value)
+            if repaired != value:
+                result[field] = repaired
+                all_warnings.extend(warns)
+
+    for field in ['variant_questions', 'similar_traps']:
+        items = result.get(field, [])
+        if isinstance(items, list):
+            repaired_items = []
+            for item in items:
+                if isinstance(item, str):
+                    repaired, warns = _repair_latex_in_text(item)
+                    repaired_items.append(repaired)
+                    all_warnings.extend(warns)
+                else:
+                    repaired_items.append(item)
+            result[field] = repaired_items
+
+    return result, all_warnings
+
+
 def _parse_result(result: dict, related_notes: list[dict] | None = None) -> AnalyzeResponse:
+    result, latex_warnings = _repair_latex_in_result(result)
+
+    from app.services.tag_canonicalization import canonicalize_tags
+    raw_tags = _list_of_strings(result.get("tags"))
+    result["tags"] = canonicalize_tags(raw_tags)
+
     _VALID_DIAGRAM_TYPES = {"flowchart", "timeline", "formula_breakdown", "network_topology", "geometry", "state_machine"}
     raw_diagrams = result.get("diagrams", [])
     diagrams = []
@@ -378,6 +480,10 @@ def _parse_result(result: dict, related_notes: list[dict] | None = None) -> Anal
         variant_questions=_list_of_strings(result.get("variant_questions")),
         related_notes=related_notes or [],
         diagrams=diagrams,
+        personalized_diagnosis=result.get("personalized_diagnosis", ""),
+        misread_signal=result.get("misread_signal", ""),
+        next_time_checklist=_list_of_strings(result.get("next_time_checklist")),
+        latex_warnings=_list_of_strings(result.get("latex_warnings")) + latex_warnings,
     )
 
 
@@ -430,6 +536,17 @@ async def analyze_mistake(
             }
         )
 
+    if req.my_answer or req.correct_answer or req.user_error_analysis:
+        personal_ctx = "\n\n--- 个人答题上下文 ---"
+        if req.my_answer:
+            personal_ctx += f"\n我的答案: {req.my_answer}"
+        if req.correct_answer:
+            personal_ctx += f"\n正确答案: {req.correct_answer}"
+        if req.user_error_analysis:
+            personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
+        personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+        content.append({"type": "text", "text": personal_ctx})
+
     messages = [
         {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
         {"role": "user", "content": content},
@@ -464,9 +581,21 @@ async def analyze_text(
         entity_type="ai_analyze_text", after={"text_length": len(req.text)},
     )
 
+    user_content = req.text
+    if req.my_answer or req.correct_answer or req.user_error_analysis:
+        personal_ctx = "\n\n--- 个人答题上下文 ---"
+        if req.my_answer:
+            personal_ctx += f"\n我的答案: {req.my_answer}"
+        if req.correct_answer:
+            personal_ctx += f"\n正确答案: {req.correct_answer}"
+        if req.user_error_analysis:
+            personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
+        personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+        user_content += personal_ctx
+
     messages = [
         {"role": "system", "content": TEXT_SYSTEM_PROMPT},
-        {"role": "user", "content": req.text},
+        {"role": "user", "content": user_content},
     ]
 
     try:
@@ -515,6 +644,17 @@ async def analyze_mistake_stream(
                     "type": "image_url",
                     "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
                 })
+
+            if req.my_answer or req.correct_answer or req.user_error_analysis:
+                personal_ctx = "\n\n--- 个人答题上下文 ---"
+                if req.my_answer:
+                    personal_ctx += f"\n我的答案: {req.my_answer}"
+                if req.correct_answer:
+                    personal_ctx += f"\n正确答案: {req.correct_answer}"
+                if req.user_error_analysis:
+                    personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
+                personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+                content.append({"type": "text", "text": personal_ctx})
 
             messages = [
                 {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
@@ -585,9 +725,21 @@ async def analyze_text_stream(
             yield f"data: {json.dumps({'type': 'progress', 'step': 'validating_input', 'label': '正在验证输入...'})}\n\n"
             await asyncio.sleep(0)
 
+            user_content = req.text
+            if req.my_answer or req.correct_answer or req.user_error_analysis:
+                personal_ctx = "\n\n--- 个人答题上下文 ---"
+                if req.my_answer:
+                    personal_ctx += f"\n我的答案: {req.my_answer}"
+                if req.correct_answer:
+                    personal_ctx += f"\n正确答案: {req.correct_answer}"
+                if req.user_error_analysis:
+                    personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
+                personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+                user_content += personal_ctx
+
             messages = [
                 {"role": "system", "content": TEXT_SYSTEM_PROMPT},
-                {"role": "user", "content": req.text},
+                {"role": "user", "content": user_content},
             ]
 
             yield f"data: {json.dumps({'type': 'progress', 'step': 'calling_model', 'label': '正在调用 AI 模型分析题目...'})}\n\n"

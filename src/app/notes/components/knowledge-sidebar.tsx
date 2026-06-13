@@ -55,6 +55,7 @@ export function KnowledgeSidebar({
 	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 	const [mobileOpen, setMobileOpen] = useState(false)
 	const [tagsCollapsed, setTagsCollapsed] = useState(false)
+	const [tagsExpanded, setTagsExpanded] = useState(false)
 	const [creatingFolder, setCreatingFolder] = useState(false)
 	const [newFolderName, setNewFolderName] = useState('')
 	const [ctxMenu, setCtxMenu] = useState<{ type: 'folder' | 'tag'; id: string; name: string; x: number; y: number } | null>(null)
@@ -463,7 +464,7 @@ export function KnowledgeSidebar({
 				{!tagsCollapsed &&
 					(tags.length > 0 ? (
 						<div className='flex flex-wrap gap-1.5 px-3'>
-							{tags.map(tag => (
+							{(tagsExpanded ? tags : tags.slice(0, 12)).map(tag => (
 								<button
 									key={tag.id}
 									onClick={() => {
@@ -487,6 +488,15 @@ export function KnowledgeSidebar({
 									{tag.name}
 								</button>
 							))}
+							{tags.length > 12 && (
+								<button
+									type='button'
+									onClick={() => setTagsExpanded(!tagsExpanded)}
+									className='rounded-full px-2.5 py-1 text-xs text-gray-400 hover:text-gray-600 hover:bg-white/60'
+								>
+									{tagsExpanded ? '收起' : `更多 (${tags.length - 12})`}
+								</button>
+							)}
 						</div>
 					) : (
 						<p className='px-3 text-xs text-gray-400'>暂无标签</p>

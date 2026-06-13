@@ -26,6 +26,10 @@ export interface AnalyzeResponse {
   variant_questions?: string[];
   related_notes?: { slug: string; title: string }[];
   diagrams?: DiagramItem[];
+  personalized_diagnosis?: string;
+  misread_signal?: string;
+  next_time_checklist?: string[];
+  latex_warnings?: string[];
 }
 
 export type StreamEvent =
@@ -35,17 +39,25 @@ export type StreamEvent =
   | { type: 'result'; data: AnalyzeResponse }
   | { type: 'error'; message: string }
 
-export async function analyzeMistake(images: { base64: string; mime_type: string }[]): Promise<AnalyzeResponse> {
+export async function analyzeMistake(images: { base64: string; mime_type: string }[], options?: AnalyzeTextOptions): Promise<AnalyzeResponse> {
   return apiFetch<AnalyzeResponse>("/api/ai/analyze", {
     method: "POST",
-    body: JSON.stringify({ images }),
+    body: JSON.stringify({ images, ...options }),
   });
 }
 
-export async function analyzeText(text: string): Promise<AnalyzeResponse> {
+export interface AnalyzeTextOptions {
+  question?: string;
+  my_answer?: string;
+  correct_answer?: string;
+  user_error_analysis?: string;
+  analysis_mode?: string;
+}
+
+export async function analyzeText(text: string, options?: AnalyzeTextOptions): Promise<AnalyzeResponse> {
   return apiFetch<AnalyzeResponse>("/api/ai/analyze-text", {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, ...options }),
   });
 }
 
@@ -82,7 +94,8 @@ export async function generateKnowledgeCard(knowledge_point: string, subject?: s
 export async function analyzeMistakeStream(
   images: { base64: string; mime_type: string }[],
   onEvent: (event: StreamEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options?: AnalyzeTextOptions
 ): Promise<void> {
   let response: Response
   try {
@@ -92,7 +105,7 @@ export async function analyzeMistakeStream(
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ images }),
+      body: JSON.stringify({ images, ...options }),
       signal,
     })
   } catch (err: any) {
@@ -156,7 +169,8 @@ export async function analyzeMistakeStream(
 export async function analyzeTextStream(
   text: string,
   onEvent: (event: StreamEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options?: AnalyzeTextOptions
 ): Promise<void> {
   let response: Response
   try {
@@ -166,7 +180,7 @@ export async function analyzeTextStream(
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, ...options }),
       signal,
     })
   } catch (err: any) {

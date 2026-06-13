@@ -11,6 +11,15 @@ from app.schemas.note import NameCreate, TagOut
 router = APIRouter(prefix="/api/tags", tags=["tags"])
 
 
+def _canonical_tag_or_400(name: str) -> str:
+    from app.services.tag_canonicalization import canonicalize_tag
+
+    canonical_name = canonicalize_tag(name)
+    if not canonical_name:
+        raise HTTPException(status_code=400, detail="Tag name is too generic or low-value")
+    return canonical_name
+
+
 class TagRenameRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
 
@@ -27,10 +36,11 @@ async def list_tags(db: AsyncSession = Depends(get_db)):
 
 @router.post("", response_model=TagOut, status_code=status.HTTP_201_CREATED)
 async def create_tag(req: NameCreate, db: AsyncSession = Depends(get_db), _admin=Depends(get_current_admin)):
-    existing = await db.execute(select(Tag).where(Tag.name == req.name))
+    canonical_name = _canonical_tag_or_400(req.name)
+    existing = await db.execute(select(Tag).where(Tag.name == canonical_name))
     if existing.scalar_one_or_none() is not None:
         raise HTTPException(status_code=409, detail="Tag already exists")
-    tag = Tag(name=req.name)
+    tag = Tag(name=canonical_name)
     db.add(tag)
     await db.flush()
     await db.refresh(tag)
@@ -51,11 +61,12 @@ async def rename_tag(
     if tag is None:
         raise HTTPException(status_code=404, detail="Tag not found")
 
-    existing = await db.execute(select(Tag).where(Tag.name == req.name, Tag.id != tag_id))
+    canonical_name = _canonical_tag_or_400(req.name)
+    existing = await db.execute(select(Tag).where(Tag.name == canonical_name, Tag.id != tag_id))
     if existing.scalar_one_or_none() is not None:
         raise HTTPException(status_code=409, detail="Tag name already exists. Use merge instead.")
 
-    tag.name = req.name
+    tag.name = canonical_name
     db.add(tag)
     await db.flush()
     await db.refresh(tag)

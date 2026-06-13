@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Optional
 import uuid
 
+from app.utils.datetime import utc_now_naive
+
 from fastapi import APIRouter, Cookie, Depends, File, HTTPException, Query, Request, status, UploadFile
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,8 +34,10 @@ router = APIRouter(prefix="/api/notes", tags=["notes"])
 
 
 async def _get_or_create_tags(db: AsyncSession, tag_names: list[str]) -> list[Tag]:
+    from app.services.tag_canonicalization import canonicalize_tags
+    cleaned = canonicalize_tags(tag_names)
     tags = []
-    for name in tag_names:
+    for name in cleaned:
         result = await db.execute(select(Tag).where(Tag.name == name))
         tag = result.scalar_one_or_none()
         if tag is None:
@@ -239,7 +243,8 @@ async def create_note(
 ):
     existing = await db.execute(select(Note).where(Note.slug == req.slug))
     if existing.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="Slug already exists")
+        from app.utils.slug import ensure_unique_slug
+        req.slug = await ensure_unique_slug(db, req.slug)
 
     tags = await _get_or_create_tags(db, req.tags)
 
@@ -316,7 +321,7 @@ async def update_note(
             value = value.value if hasattr(value, "value") else value
         setattr(note, key, value)
 
-    note.updated_at = datetime.now(timezone.utc)
+    note.updated_at = utc_now_naive()
     await db.flush()
     await db.refresh(note)
 
@@ -386,7 +391,7 @@ async def promote_note(
         from datetime import date
 
         note.next_review = date.today()
-    note.updated_at = datetime.now(timezone.utc)
+    note.updated_at = utc_now_naive()
     await db.flush()
     await db.refresh(note)
     return note

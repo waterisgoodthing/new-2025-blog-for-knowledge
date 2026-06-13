@@ -45,10 +45,16 @@ async def execute_suggestion(
                 failed += 1
                 errors.append(f"Note {slug} not found")
                 continue
-            tag_result = await db.execute(select(Tag).where(Tag.name == req.tag))
+            from app.services.tag_canonicalization import canonicalize_tag
+            canonical_name = canonicalize_tag(req.tag)
+            if not canonical_name:
+                failed += 1
+                errors.append(f"Tag '{req.tag}' filtered as low-value")
+                continue
+            tag_result = await db.execute(select(Tag).where(Tag.name == canonical_name))
             tag = tag_result.scalar_one_or_none()
             if not tag:
-                tag = Tag(name=req.tag)
+                tag = Tag(name=canonical_name)
                 db.add(tag)
                 await db.flush()
             if tag not in note.tags:
