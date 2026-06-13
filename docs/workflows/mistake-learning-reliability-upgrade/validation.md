@@ -208,6 +208,8 @@ Run from `backend/` with the project's active Python environment if required.
 ### Mistake Detail Analysis Width
 - `npx tsc --noEmit`: exit 0.
 - `npm run build`: success.
+- Public deploy completed with Cloudflare Worker version `2ba74464-e48a-4cc6-aa2c-04b988061d74`.
+- Public/local `BUILD_ID`: `fbEjkqQR2fetc9U7uLpn0`.
 - Local browser check at `http://localhost:2025/notes/ipv4`: non-admin view loaded; right rail still renders tags and `知识点归总`. Admin-only `错因与解析` was not visible in that local browser session.
 - `错因与解析` no longer uses the two-column grid wrapper and is rendered as a full-width analysis block below the question/answer area.
 - Large study blocks now use larger padding, heading spacing, line height, and minimum height for long-form reading.
