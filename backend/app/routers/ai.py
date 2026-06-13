@@ -354,6 +354,7 @@ _UNIT_PATTERN = re.compile(r'\b\d+\.?\d*\s*(?:μs|ms|ns|km|m|cm|mm|kg|g|mg|A|V|�
 _GREEK_LETTERS = re.compile(r'[αβγδεζηθικλμνξπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΠΡΣΤΥΦΧΨΩ]')
 _CODE_LIKE_LINE = re.compile(r'\b(?:def|return|if|else|elif|for|while|int|float|double|char|void|printf|scanf|include|import|class|const|let|var)\b|[;:]|==|!=|<=|>=|\+\+|--|&&|\|\|')
 _PLAIN_IDENTIFIER_ASSIGNMENT = re.compile(r'^[A-Za-z]+\s*=\s*[A-Za-z]+$')
+_CHOICE_OPTION_LINE = re.compile(r'^[A-Ha-h][\.、．\)]\s*')
 
 
 def _repair_latex_in_text(text: str) -> tuple[str, list[str]]:
@@ -382,6 +383,7 @@ def _repair_latex_in_text(text: str) -> tuple[str, list[str]]:
         looks_code = (
             bool(_CODE_LIKE_LINE.search(stripped))
             or bool(_PLAIN_IDENTIFIER_ASSIGNMENT.fullmatch(stripped))
+            or bool(_CHOICE_OPTION_LINE.match(stripped))
             or bool(re.search(r'^\s{2,}', line))
         )
         is_short = len(stripped) < 120
