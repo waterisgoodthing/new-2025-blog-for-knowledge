@@ -9,6 +9,8 @@ The production browser console shows:
 - `DELETE .../api/folders/<id> -> 401`
 - `GitHub sync failed: {"detail":"Not authenticated"}`
 - Requests to `https://api.limengyang.me/api/subjects` are redirected to Cloudflare Access login, then blocked by CORS because the Access login response does not include `Access-Control-Allow-Origin`.
+- New 2026-06-12 production login reports include `https://public-api.limengyang.me/api/music/playlist` and `https://public-api.limengyang.me/api/auth/passkey/status` failing without usable CORS headers.
+- New 2026-06-12 live HTTP checks show `https://public-api.limengyang.me/api/health` returns Cloudflare `530` body `error code: 1033`, indicating the public API tunnel/route is not connected to the backend origin.
 
 ## Functional Requirements
 
@@ -34,8 +36,15 @@ REQ-10: The old "网站设置" entry should not remain the only visible settings
 
 REQ-11: The administrator console entry must be understandable without hover-only text. On desktop, the collapsed navigation state must still show a readable management label, because users may not discover hidden hover labels.
 
+REQ-12: Public API reachability must be restored before treating login failures as an application-auth bug.
+
+REQ-13: Public login and passkey status calls must use `public-api.limengyang.me` and receive CORS responses for `https://blog.limengyang.me`.
+
+REQ-14: `api.limengyang.me` may remain Cloudflare-Access-protected, but deployed public browser bundles must not rely on it for routine public/login preflight data.
+
 ## Non-Goals
 
 - Do not change Cloudflare Access policy in code.
 - Do not expose admin mutation endpoints publicly.
 - Do not reintroduce bearer-token localStorage auth.
+- Do not commit live secrets or local tunnel credentials.

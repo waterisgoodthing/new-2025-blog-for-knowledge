@@ -107,3 +107,101 @@ Browser checks:
 Validation boundary:
 
 - This round did not exercise a real authenticated browser login because local admin credentials were not used in the validation artifact. The code path and tab gating now align with the intended behavior, but an interactive post-login smoke check can still be added later if needed.
+
+## Incident Evidence 2026-06-12
+
+Reason:
+
+- User reports that every fresh login shows failure. The pasted browser console includes CORS failures for `public-api.limengyang.me/api/music/playlist`, `public-api.limengyang.me/api/auth/passkey/status`, and repeated redirects from `api.limengyang.me/api/subjects` to Cloudflare Access login.
+
+Current HTTP checks:
+
+- `GET https://public-api.limengyang.me/api/health`: `HTTP 530`, body `error code: 1033`.
+- `OPTIONS https://public-api.limengyang.me/api/music/playlist` with `Origin: https://blog.limengyang.me`: `HTTP 530`, body `error code: 1033`.
+- `GET https://public-api.limengyang.me/api/auth/passkey/status` with `Origin: https://blog.limengyang.me`: `HTTP 530`, body `error code: 1033`.
+- `GET https://api.limengyang.me/api/subjects` redirects to `small-term-e3a5.cloudflareaccess.com/...` and returns Cloudflare Access login HTML after following redirects.
+
+Classification:
+
+- `public-api.limengyang.me` is currently not reaching its backend origin/tunnel, so login-adjacent API calls fail before application auth can be evaluated.
+- `api.limengyang.me` remains Access-protected; using it from public browser XHR still produces Access-login HTML/CORS failure and should not be considered a successful public API path.
+
+Next approved task gate:
+
+- Execute Phase 6 in `tasks.md` after explicit user approval.
+
+### P0-15 Local Service State
+
+- `GET http://127.0.0.1:8000/api/health`: `HTTP 200`, body `{"status":"ok","db":"ok"}`.
+- `launchctl list | rg 'com\.blog\.(backend|tunnel)'`: both `com.blog.backend` and `com.blog.tunnel` are listed.
+- `cloudflared tunnel info blog-tunnel`: `does not have any active connection`.
+- `~/.cloudflared/config.yml`: ingress includes both `api.limengyang.me` and `public-api.limengyang.me` to `http://localhost:8000`, but `protocol` is currently `http2`.
+
+P0-15 conclusion:
+
+- Backend is healthy locally.
+- Public API outage is at the Cloudflare tunnel connector layer, not the FastAPI app or database.
+
+### P0-16 Repair Evidence
+
+Actions:
+
+- Restored `~/.cloudflared/config.yml` to `protocol: quic`.
+- Added Clash Verge DNS/rule overrides so `*.argotunnel.com` resolves to real Cloudflare Edge IPs instead of fake `198.18.0.x` addresses.
+- Restarted Clash Verge and confirmed `dig region1.v2.argotunnel.com` returns `198.41.*` addresses.
+- Restarted `com.blog.tunnel`.
+
+Post-repair evidence:
+
+- `cloudflared tunnel info blog-tunnel`: active connector `9ee077b9-ad4b-45b6-9165-1c522be11699`, version `2026.6.0`, edge locations `lax01`, `lax05`, `sjc06`, `sjc07`.
+- `cloudflared` log: four `Registered tunnel connection` entries and connectivity prechecks all `PASS`.
+- `GET https://public-api.limengyang.me/api/health`: `HTTP 200`, body `{"status":"ok","db":"ok"}`.
+
+P0-16 conclusion:
+
+- The public API tunnel is restored. The immediate `530 / 1033` outage is resolved.
+
+### P0-17 CORS And Login-Adjacent Endpoint Verification
+
+- `OPTIONS https://public-api.limengyang.me/api/music/playlist` from `Origin: https://blog.limengyang.me`: `HTTP 200`, `access-control-allow-origin: https://blog.limengyang.me`, `access-control-allow-credentials: true`.
+- `GET https://public-api.limengyang.me/api/auth/passkey/status` from `Origin: https://blog.limengyang.me`: `HTTP 200`, body `{"registered":true}`, expected CORS headers present.
+- `GET https://public-api.limengyang.me/api/music/playlist` from `Origin: https://blog.limengyang.me`: `HTTP 200`, body `[]`, expected CORS headers present.
+- `GET https://public-api.limengyang.me/api/subjects` from `Origin: https://blog.limengyang.me`: `HTTP 200`, body `[]`, expected CORS headers present.
+
+P0-17 conclusion:
+
+- The browser-visible CORS failure path for music/passkey status/public reads is repaired.
+
+### P0-18 Deployed Frontend API Host Verification
+
+- Downloaded live HTML/chunks for:
+  - `https://blog.limengyang.me/`
+  - `https://blog.limengyang.me/notes`
+  - `https://blog.limengyang.me/manage`
+- Search result: deployed client chunk contains `https://public-api.limengyang.me`.
+- Search result: no deployed HTML/chunk contains standalone `https://api.limengyang.me`.
+
+P0-18 conclusion:
+
+- The deployed frontend is built against the public API host for routine browser API calls.
+
+### P0-19 Manage Login Smoke Check
+
+Tool:
+
+- Headless Google Chrome via Playwright.
+
+Observed page/API behavior:
+
+- `https://blog.limengyang.me/manage` loaded successfully.
+- Passkey login text/button was visible.
+- `GET https://public-api.limengyang.me/api/auth/me`: `HTTP 401` with CORS header. This is expected for an anonymous session.
+- `GET https://public-api.limengyang.me/api/content/site-settings`: `HTTP 200` with CORS header.
+- `GET https://public-api.limengyang.me/api/music/playlist`: `HTTP 200` with CORS header.
+- `GET https://public-api.limengyang.me/api/auth/passkey/status`: `HTTP 200` with CORS header.
+- No request to standalone `https://api.limengyang.me` was observed.
+- No browser request failure was observed for app APIs. Only Google Analytics beacon requests reported `net::ERR_ABORTED`.
+
+Validation boundary:
+
+- A full credential assertion was not executed because password entry or Passkey approval requires user presence. The original CORS/API-transport failure path is repaired; any remaining failure after a real credential attempt would be auth-specific, not the `public-api` tunnel outage recorded in this incident.

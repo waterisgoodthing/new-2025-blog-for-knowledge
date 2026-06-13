@@ -8,6 +8,23 @@ The reported console log contains three categories:
 2. Frontend gate leaks: public `/notes` mounts admin-only widgets or controls, causing calls to protected endpoints such as `/api/ai/weekly-summary` and `/api/folders/<id>`.
 3. Deployment host mismatch: some requests still use `api.limengyang.me`, which remains Cloudflare Access-protected. Browser fetch receives an Access login page from another host and fails CORS.
 
+### 2026-06-12 Incident Update
+
+The current failure is a live API infrastructure outage before normal auth verification:
+
+- `public-api.limengyang.me/api/health` returns Cloudflare `530` with body `error code: 1033`.
+- `public-api.limengyang.me` therefore cannot serve CORS preflight or login-adjacent API calls.
+- `api.limengyang.me/api/subjects` redirects to Cloudflare Access login HTML, which is expected for the private host but unusable for browser XHR from `blog.limengyang.me`.
+- Previous validation shows this exact public API host worked after restarting `cloudflared` and the backend/tunnel services on 2026-06-10, so the first hypothesis is tunnel/backend service drift rather than a password/passkey credential regression.
+
+Root-cause work should validate the host route in this order:
+
+1. Confirm the backend local service is running and healthy.
+2. Confirm the `com.blog.tunnel`/Cloudflare tunnel connector is active.
+3. Restart only the affected local services if they are down or stale.
+4. Re-run public API CORS and `/manage` login smoke checks.
+5. Only inspect frontend bundle/API-base drift if the public API tunnel is healthy but browser calls still hit `api.limengyang.me`.
+
 ## Planned Changes
 
 ### Notes Dashboard Admin Widgets
@@ -66,3 +83,4 @@ Likely files:
 - Cloudflare Access configuration cannot be fixed from repository code; if public read endpoints still go to `api.limengyang.me`, deployment environment variables must be corrected.
 - Changing the settings entry can affect the old homepage customization workflow, so validate that `/manage?tab=settings` still provides page settings.
 - A visible collapsed management label slightly increases the height of the side navigation, so keep the label compact and avoid changing the main content layout.
+- Restarting local launch agents or Cloudflare tunnel changes live production behavior for this personal deployment; record the commands and HTTP evidence in `validation.md`.

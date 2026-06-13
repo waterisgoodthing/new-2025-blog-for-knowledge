@@ -4,6 +4,8 @@
 
 Implementation was approved in conversation and completed on 2026-06-09.
 
+The 2026-06-12 production login/API incident is a new operational phase. Do not execute the Phase 6 repair tasks until the user explicitly approves this updated task list.
+
 ## Phase 1: Reproduce And Classify
 
 - [x] **P0-01** Record the pasted production console symptoms in validation notes.
@@ -83,3 +85,35 @@ Implementation was approved in conversation and completed on 2026-06-09.
   - Domain: shared navigation/manage.
   - Completion standard: the collapsed desktop side navigation shows a readable "管理" label for `/manage`, and the active state is visible on `/manage`.
   - Completed: collapsed desktop side navigation now shows a persistent "管理" label and applies active styling when the current route starts with `/manage`.
+
+## Phase 6: 2026-06-12 Public API Login Incident
+
+- [x] **P0-14** Record current public API and private API failure evidence.
+  - Domain: shared infrastructure/auth/music.
+  - Completion standard: `validation.md` contains fresh HTTP evidence for `public-api` health/CORS, passkey status, music playlist, and private `api` Access redirect.
+  - Completed: 2026-06-12. `validation.md` records `public-api` `530 / 1033`, failed CORS-adjacent checks, and private `api` Cloudflare Access redirect evidence.
+
+- [x] **P0-15** Check local backend and tunnel service state without changing code.
+  - Domain: shared infrastructure.
+  - Completion standard: record whether backend health is reachable locally, whether `cloudflared tunnel info blog-tunnel` shows active connectors, and whether launch agents for backend/tunnel are running.
+  - Completed: 2026-06-12. Local backend returned `200 {"status":"ok","db":"ok"}` and launch agents were listed, but `cloudflared tunnel info blog-tunnel` reported no active connection; config also showed `protocol: http2`.
+
+- [x] **P0-16** Repair production API reachability if service state confirms tunnel/backend drift.
+  - Domain: shared infrastructure.
+  - Completion standard: restart only the affected service(s), then `https://public-api.limengyang.me/api/health` returns `200` JSON and no longer returns Cloudflare `1033`.
+  - Completed: 2026-06-12. Restored Clash Verge real DNS resolution for `argotunnel.com`, kept `cloudflared` on `quic`, restarted `com.blog.tunnel`, confirmed active connector and `public-api` health `200`.
+
+- [x] **P0-17** Verify CORS and login-adjacent endpoints after repair.
+  - Domain: auth/music/shared infrastructure.
+  - Completion standard: `OPTIONS /api/music/playlist`, `GET /api/auth/passkey/status`, and a representative public read endpoint include expected CORS behavior from origin `https://blog.limengyang.me`.
+  - Completed: 2026-06-12. Music preflight, passkey status, music playlist, and subjects all returned `HTTP 200` with expected CORS headers from `https://blog.limengyang.me`.
+
+- [x] **P0-18** Verify the deployed frontend does not still call the private Access host for routine public/login data.
+  - Domain: shared infrastructure/frontend deployment.
+  - Completion standard: inspect deployed assets or browser network evidence and record whether `https://api.limengyang.me` remains only an intentional private host.
+  - Completed: 2026-06-12. Downloaded deployed HTML/chunks for home, notes, and manage; chunks contain `https://public-api.limengyang.me` and no standalone `https://api.limengyang.me`.
+
+- [x] **P0-19** Run a `/manage` login smoke check and record the result.
+  - Domain: auth/manage.
+  - Completion standard: fresh browser/login verification shows either successful login or a remaining auth-specific error after API reachability is restored.
+  - Completed: 2026-06-12. Headless Chrome loaded live `/manage`; login UI and Passkey button rendered; `auth/me` returned expected anonymous `401`; `site-settings`, `music/playlist`, and `passkey/status` returned `200` from `public-api` with CORS. Full credential assertion was not executed because it requires user Passkey/password confirmation.

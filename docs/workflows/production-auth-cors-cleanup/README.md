@@ -13,7 +13,7 @@ Fix the production console errors reported from `https://blog.limengyang.me/note
 
 ## Current Status
 
-Completed on 2026-06-09. Public `/notes` is now read-only when logged out, the admin console is discoverable from normal navigation, and migrated settings entry points resolve to `/manage?tab=settings` without the earlier passkey-only dead end.
+Reopened on 2026-06-12 for a production login/API reachability incident. The earlier 2026-06-09 source-code cleanup remains complete, but current live checks show `public-api.limengyang.me` returning Cloudflare `530 / 1033`, while `api.limengyang.me` still redirects to Cloudflare Access by design. This affects `auth`, `music`, and shared API infrastructure; implementation/operations must follow the new Phase 6 task list.
 
 ## Workflow Files
 
