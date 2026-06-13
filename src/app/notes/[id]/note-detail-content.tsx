@@ -166,7 +166,7 @@ export default function NoteDetailContent() {
 
 				{isAdmin && (
 					<>
-						<div className='mb-6 grid gap-4 lg:grid-cols-2'>
+						<div className='mb-6'>
 							<StudyBlock title='错因与解析' tone='info' content={note.analysis} large />
 						</div>
 
@@ -353,9 +353,9 @@ function StudyBlock({ title, content, fallback, tone, large = false }: { title: 
 	}[tone]
 
 	return (
-		<section className={cn('rounded-xl border p-4', toneClass, large && 'min-h-[180px]')}>
-			<h2 className='mb-2 text-sm font-semibold'>{title}</h2>
-			<RichText content={value} className='text-sm leading-6' />
+		<section className={cn('rounded-xl border p-4', toneClass, large && 'min-h-[260px] p-5 sm:p-6')}>
+			<h2 className={cn('mb-2 text-sm font-semibold', large && 'mb-5 text-base')}>{title}</h2>
+			<RichText content={value} className={cn('text-sm leading-6', large && 'text-base leading-8')} />
 		</section>
 	)
 }

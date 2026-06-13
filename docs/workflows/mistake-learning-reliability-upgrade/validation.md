@@ -197,6 +197,21 @@ Run from `backend/` with the project's active Python environment if required.
 - Live external AI generation calls for variant/card creation; button restoration is code-verified, not model-call verified.
 - Network inspection of a real AI request with personal fields; code paths for text and image flows pass the fields, but no external request was sent in this local pass.
 
+## Follow-up Validation Results (2026-06-13)
+
+### Mistake Detail Knowledge Summary Placement
+- `npx tsc --noEmit`: exit 0.
+- Public deploy completed with Cloudflare Worker version `0634e591-f6c8-468c-963a-2fdb79844f07`.
+- Public/local/worker `BUILD_ID`: `hu3u56h9l6YxH9ibdtOI2`.
+- Right rail order changed to tags, knowledge summary, then review status.
+
+### Mistake Detail Analysis Width
+- `npx tsc --noEmit`: exit 0.
+- `npm run build`: success.
+- Local browser check at `http://localhost:2025/notes/ipv4`: non-admin view loaded; right rail still renders tags and `知识点归总`. Admin-only `错因与解析` was not visible in that local browser session.
+- `错因与解析` no longer uses the two-column grid wrapper and is rendered as a full-width analysis block below the question/answer area.
+- Large study blocks now use larger padding, heading spacing, line height, and minimum height for long-form reading.
+
 ## Acceptance Matrix
 
 | Acceptance | Status | Evidence |
