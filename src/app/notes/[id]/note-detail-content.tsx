@@ -130,20 +130,7 @@ export default function NoteDetailContent() {
 							</div>
 						</section>
 
-						<aside className='space-y-3'>
-							{isAdmin && (
-								<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-									<h2 className='mb-3 text-sm font-semibold text-gray-800'>复习状态</h2>
-									<div className='grid grid-cols-2 gap-2 text-center'>
-										<Metric label='复习次数' value={String(note.repetitions || 0)} />
-										<Metric label='记忆系数' value={(note.ef || 2.5).toFixed(2)} />
-										<Metric label='间隔' value={`${note.interval || 0} 天`} />
-										<Metric label='下次复习' value={note.next_review ? dayjs(note.next_review).format('MM-DD') : '-'} highlight={isDue} />
-									</div>
-									{note.last_reviewed && <p className='mt-3 text-xs text-gray-500'>上次复习: {dayjs(note.last_reviewed).format('YYYY-MM-DD HH:mm')}</p>}
-								</div>
-							)}
-
+						<aside className='self-start space-y-3'>
 							{note.tags.length > 0 && (
 								<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
 									<h2 className='mb-3 text-sm font-semibold text-gray-800'>标签</h2>
@@ -159,6 +146,19 @@ export default function NoteDetailContent() {
 								<div className='rounded-xl border border-purple-200/70 bg-purple-50/50 p-4 backdrop-blur-sm'>
 									<h2 className='mb-2 text-sm font-semibold text-purple-800'>知识点归总</h2>
 									<RichText content={note.knowledge_points} className='text-sm leading-6 text-purple-900' />
+								</div>
+							)}
+
+							{isAdmin && (
+								<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
+									<h2 className='mb-3 text-sm font-semibold text-gray-800'>复习状态</h2>
+									<div className='grid grid-cols-2 gap-2 text-center'>
+										<Metric label='复习次数' value={String(note.repetitions || 0)} />
+										<Metric label='记忆系数' value={(note.ef || 2.5).toFixed(2)} />
+										<Metric label='间隔' value={`${note.interval || 0} 天`} />
+										<Metric label='下次复习' value={note.next_review ? dayjs(note.next_review).format('MM-DD') : '-'} highlight={isDue} />
+									</div>
+									{note.last_reviewed && <p className='mt-3 text-xs text-gray-500'>上次复习: {dayjs(note.last_reviewed).format('YYYY-MM-DD HH:mm')}</p>}
 								</div>
 							)}
 						</aside>
