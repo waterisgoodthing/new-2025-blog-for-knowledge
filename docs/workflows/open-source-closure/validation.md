@@ -98,3 +98,55 @@ Result: **PASS** - backend imports cleanly.
 5. **`create_all` vs Alembic**: The `ManagedContentEntry` table is created both by Alembic migration `010` and by `Base.metadata.create_all` at startup. This dual-track should be resolved in a future cleanup.
 
 6. **Server-side metadata**: `src/app/layout.tsx` still reads static `site-content.json` for Next.js `Metadata` export (SEO). The client-side `SiteSettingsLoader` overrides visual state but SSR `<meta>` tags will show static defaults until a server-side data fetching strategy is added.
+
+## Date: 2026-06-14
+
+## Phase 5 Documentation Validation
+
+### Scope
+
+GitHub-facing documentation only. No runtime source code was changed.
+
+Changed files:
+
+- `README.md`
+- `CONTRIBUTING.md`
+- `SECURITY.md`
+- `docs/workflows/open-source-closure/README.md`
+- `docs/workflows/open-source-closure/requirements.md`
+- `docs/workflows/open-source-closure/design.md`
+- `docs/workflows/open-source-closure/tasks.md`
+- `docs/workflows/open-source-closure/validation.md`
+
+### Source And License Inspection
+
+Result: **PASS with attribution limit recorded**.
+
+- `LICENSE` was inspected and left unchanged.
+- License evidence: MIT License, copyright `YYsuni`.
+- `package.json` was inspected and does not contain repository, homepage, author, or upstream metadata.
+- `git remote -v` shows only the current `mine` remote.
+- No top-level `NOTICE`, `AUTHORS`, `CREDITS`, or acknowledgement file was found.
+- Early git history shows commits by `Suni <YYsuni1001@gmail.com>`, but no upstream URL.
+
+Attribution limit: the repository currently supports stating that this project is adapted from an original open-source project and that the preserved license copyright is `YYsuni`. It does not provide enough evidence to name or link an upstream repository.
+
+### Chinese Documentation Inspection
+
+Result: **PASS**.
+
+- `README.md` is Chinese-first and includes `来源与致谢`, project structure, local development, content source-of-truth, configuration, no-GitHub-write-access note, and contribution/security links.
+- `CONTRIBUTING.md` is Chinese-first and includes setup, tech stack, architecture boundaries, validation expectations, PR guidance, and issue reporting.
+- `SECURITY.md` is Chinese-first and includes private vulnerability reporting, security scope, environment security, JWT/CORS guidance, and source/license note.
+
+### Link And Command Inspection
+
+Result: **PASS**.
+
+- `README.md` links point to existing `CONTRIBUTING.md` and `SECURITY.md`.
+- Commands preserved from verified setup docs: `npm install`, `npm run dev`, `python -m venv .venv`, `source .venv/bin/activate`, `pip install -r requirements.txt`, `cp .env.example .env`, `uvicorn main:app --reload`.
+- No code validation was run because this phase changed documentation only.
+
+### Residual Follow-Up
+
+If the original upstream repository URL is later confirmed, update `README.md` `来源与致谢` with the exact project name, link, and any additional attribution required by the upstream project.

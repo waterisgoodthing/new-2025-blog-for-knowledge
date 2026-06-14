@@ -17,6 +17,8 @@ The project should move toward this simpler model:
 - frontend writes through backend APIs only
 - public reads come from explicit backend/public routes or intentionally static assets
 - GitHub repository write automation is not part of the default product architecture
+- GitHub visitors can understand the repository in Chinese
+- repository authorship is represented honestly as an adaptation of an original open-source project
 
 ## Architectural Approach
 
@@ -114,6 +116,30 @@ After the write-path removal, contributors still need a coherent setup story:
 - security reporting guidance
 - contribution guidance
 
+### 5. Chinese GitHub-facing content and upstream attribution
+
+This extension should update repository-facing content, not runtime product flows.
+
+Primary targets:
+
+- `README.md`: Chinese overview, project lines, local setup, content source-of-truth model, configuration, and a visible source/thanks section.
+- `CONTRIBUTING.md`: Chinese contribution workflow and architecture boundaries.
+- `SECURITY.md`: Chinese security reporting and environment security guidance.
+- `LICENSE`: preserve existing license text unless the original project attribution requires an additional notice.
+
+Attribution strategy:
+
+1. Keep the statement factual: this repository is adapted from an original open-source project.
+2. If the upstream name or URL is discoverable in the repository, cite it directly.
+3. If the upstream name or URL is not discoverable, use a placeholder-safe statement that does not invent details, and mark the missing upstream detail in validation.
+4. Do not remove existing license text or imply the current maintainer authored the original project.
+
+Chinese content style:
+
+- Use Chinese as the primary language.
+- Keep commands, paths, API names, and environment variable names unchanged.
+- Avoid marketing-style copy; this is a personal knowledge/blog system and contributor-facing repository.
+
 ## Risks
 
 1. Some routes may still assume static-file publish outputs exist.
@@ -121,6 +147,8 @@ After the write-path removal, contributors still need a coherent setup story:
 3. Removing sync too early without replacing save flows could strand management UI actions.
 4. Documentation cleanup alone will not fix architectural ambiguity unless each supported domain is explicitly classified.
 5. Some public routes may still import checked-in JSON during the migration window, so read path and write path may briefly diverge unless each domain is migrated end-to-end.
+6. Attribution can become inaccurate if upstream project identity is guessed instead of verified from repository evidence.
+7. Translating docs can accidentally weaken security warnings if the wording becomes too casual.
 
 ## Validation Strategy
 
@@ -128,3 +156,4 @@ After the write-path removal, contributors still need a coherent setup story:
 - Targeted backend import or startup checks where environment allows
 - Source inspection for removed sync imports and routes
 - Browser verification for public notes behavior and admin management paths when implementation starts
+- For documentation-only Phase 5: source inspection of changed docs, link/path checks, and no code validation unless implementation files change

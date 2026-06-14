@@ -1,25 +1,31 @@
-# Security Policy
+# 安全策略
 
-## Reporting a Vulnerability
+## 报告安全漏洞
 
-If you discover a security vulnerability in this project, please report it responsibly.
+如果你发现安全漏洞，请负责任地私下报告。
 
-**Do not open a public GitHub issue for security vulnerabilities.**
+**不要通过公开 GitHub issue 披露安全漏洞。**
 
-Instead, email the maintainer directly or use GitHub's private vulnerability reporting feature if available.
+请直接联系维护者，或在可用时使用 GitHub Private Vulnerability Reporting。报告中请尽量包含影响范围、复现步骤、相关日志和建议修复方向。
 
-## Scope
+## 安全范围
 
-This project is a personal knowledge and blog system. The following are considered in scope:
+这个项目是个人知识库与博客系统。以下问题属于安全范围：
 
-- Authentication or authorization bypass.
-- Exposure of private note or mistake content to unauthorized users.
-- SQL injection, remote code execution, or path traversal.
-- Exposure of secrets or credentials.
+- 认证或授权绕过。
+- 未授权访问私有笔记、错题、复习记录或管理内容。
+- SQL 注入、远程代码执行、路径穿越。
+- `.env`、密钥、令牌、数据库凭据或其他敏感信息泄露。
+- 生产环境 CORS 或 JWT 配置导致的越权访问风险。
 
-## Environment Security
+## 环境安全
 
-- Never commit `.env` files, private keys, tokens, or database credentials.
-- The backend enforces JWT secret validation and CORS checks in production mode.
-- `JWT_SECRET_KEY` must be changed from the default before deploying to production.
-- `ALLOWED_ORIGINS` must not contain wildcards in production.
+- 不要提交 `.env`、私钥、令牌、数据库凭据、数据库导出或个人敏感内容。
+- 后端生产环境必须使用强 `JWT_SECRET_KEY`，不能沿用默认值。
+- 生产环境的 `ALLOWED_ORIGINS` 必须显式配置可信来源，不能使用通配符。
+- 后端受保护写入应通过 `Authorization: Bearer <token>` 使用 JWT 鉴权。
+- GitHub 仓库写入权限不是当前支持产品流程的运行依赖，不应重新引入为默认内容写入路径。
+
+## 许可证和来源
+
+本仓库保留 MIT License。项目是在原开源项目基础上改造而来；如安全报告涉及原始项目代码，请在报告中说明你判断相关性的依据。

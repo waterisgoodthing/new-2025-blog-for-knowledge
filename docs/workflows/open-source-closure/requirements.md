@@ -14,12 +14,16 @@ In scope:
 - Clarify runtime and contributor setup for open-source use.
 - Record validation evidence for the new architecture.
 - Migrate currently editable legacy static-content domains onto backend APIs so editing remains available after sync removal.
+- Update GitHub-facing repository content into Chinese.
+- Add a clear Chinese disclosure that this repository is adapted from an original open-source project.
 
 Out of scope unless explicitly approved later:
 
 - Broad redesign of unrelated frontend routes.
 - Production secret rotation or live deployment operations.
 - Data migration of user-owned production content outside the repository.
+- Changing the source license or removing required upstream license notices.
+- Rebranding the runtime product UI unless a later task explicitly scopes it.
 
 ## Functional Requirements
 
@@ -29,6 +33,9 @@ Out of scope unless explicitly approved later:
 4. README setup instructions must match the actual package manager and runtime expectations in the repo.
 5. Open-source collaboration basics must be documented with at least contribution and security guidance.
 6. The repository must have a clear documented source-of-truth model for each active content domain after migration.
+7. GitHub-facing documentation must be written in Chinese for the target audience.
+8. Repository documentation must explicitly state that the project is adapted from an original open-source project.
+9. The upstream-origin statement must not overclaim authorship of the original project and must preserve license/attribution intent.
 
 ## Non-Functional Requirements
 
@@ -36,12 +43,16 @@ Out of scope unless explicitly approved later:
 2. The new design should reduce accidental public exposure of private learning content.
 3. The implementation should keep the codebase easier to understand, not replace GitHub sync with another hidden dual-write path.
 4. Validation must distinguish verified runtime behavior from environment-blocked checks.
+5. Documentation changes should be concise enough for GitHub visitors to understand the project quickly.
+6. Chinese documentation should keep technical terms consistent with the existing architecture.
 
 ## Decisions Needed During Implementation
 
 1. Whether startup `create_all` remains temporarily tolerated during this task or is included in scope for final release cleanup.
 2. How much cross-domain normalization is acceptable in one round versus route-by-route API migration with shared primitives underneath.
 3. Whether the home/site settings domain should land in a generic config API or a more explicit site-settings contract.
+4. Exact upstream project name, URL, and license if the repository does not already contain enough evidence to identify them.
+5. Whether GitHub issue/PR templates or repository metadata should also be Chinese in this phase.
 
 ## Acceptance Criteria
 
@@ -51,3 +62,6 @@ Out of scope unless explicitly approved later:
 4. Legacy editable static domains continue to support save/edit through backend APIs rather than GitHub sync.
 5. Documentation explains how to run the project locally without GitHub sync secrets.
 6. Validation notes record TypeScript, targeted backend checks, and route-level behavior relevant to the removed sync flow.
+7. README, contribution guidance, and security guidance are Chinese or have Chinese as the primary language.
+8. README contains a visible "来源与致谢" or equivalent section stating the project is adapted from an original open-source project.
+9. Validation notes record the final changed documentation files and any attribution limits, such as unknown upstream URL.

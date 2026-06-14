@@ -1,31 +1,41 @@
 # 2025 Blog
 
-Personal knowledge and blog system built with Next.js and FastAPI.
+这是一个个人知识库与博客系统，前端使用 Next.js App Router，后端使用 FastAPI。项目当前面向个人内容管理、笔记写作、错题复盘、博客发布、公开内容展示和后台管理。
 
-## Project Lines
+## 来源与致谢
 
-- `src/`: Next.js App Router frontend.
-- `backend/`: FastAPI backend for notes, mistakes, review, auth, AI, music, recommendations, and managed content.
+本仓库是在原开源项目基础上改造而来，并继续保留原项目的 MIT License 许可声明。当前仓库内可核验的许可证信息显示原版权人为 `YYsuni`。
 
-## Local Development
+仓库中暂未记录可核验的原项目链接或上游仓库地址，因此本文档不虚构上游 URL。若后续确认原项目地址，应在本节补充链接和更完整的致谢说明。
 
-### Frontend
+## 项目结构
 
-Install dependencies:
+本项目有两条主要架构线：
+
+- `src/`：Next.js App Router 前端，包括公开页面、管理页面、写作页面和前端 API 客户端。
+- `backend/`：FastAPI 后端，负责笔记、错题、复习、认证、AI、音乐推荐和可管理内容。
+
+## 本地开发
+
+### 前端
+
+安装依赖：
 
 ```bash
 npm install
 ```
 
-Run the dev server:
+启动开发服务器：
 
 ```bash
 npm run dev
 ```
 
-### Backend
+前端默认使用项目脚本中的端口配置。
 
-Install backend dependencies in a local virtual environment:
+### 后端
+
+进入后端目录并创建本地虚拟环境：
 
 ```bash
 cd backend
@@ -34,23 +44,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Copy and edit the environment file:
+复制环境变量模板：
 
 ```bash
 cp .env.example .env
 ```
 
-Run the backend:
+启动后端：
 
 ```bash
 uvicorn main:app --reload
 ```
 
-## Content Source of Truth
+## 内容真源
 
-All active content domains are now managed through the backend API and stored in PostgreSQL:
+当前所有活跃内容域都通过后端 API 管理，并存储在 PostgreSQL 中：
 
-| Domain | Storage | API |
+| 领域 | 存储 | API |
 |---|---|---|
 | notes, blog, mistakes | PostgreSQL | `/api/notes` |
 | about | PostgreSQL | `/api/content/about` |
@@ -61,17 +71,23 @@ All active content domains are now managed through the backend API and stored in
 | bloggers | PostgreSQL | `/api/content/bloggers` |
 | site settings | PostgreSQL | `/api/content/site-settings` |
 
-Static JSON files under `src/app/*/list.json` and `src/config/` serve only as default seed data for first-time database initialization. Edits are persisted through the backend API.
+`src/app/*/list.json` 和 `src/config/` 下的静态 JSON 文件只作为首次初始化数据库时的默认种子数据。实际编辑和保存都通过后端 API 持久化。
 
-## Configuration
+## 配置
 
-Backend settings live in `backend/.env`; keep secrets out of Git. Use `backend/.env.example` as the template.
+后端配置放在 `backend/.env` 中。不要提交真实 `.env`、私钥、令牌、数据库凭据或其他敏感信息。可以参考 `backend/.env.example` 创建本地配置。
 
-Key settings:
+关键配置项：
 
-- `DATABASE_URL`: PostgreSQL connection string.
-- `JWT_SECRET_KEY`: Session signing key. Must be changed in production.
-- `ALLOWED_ORIGINS`: Comma-separated CORS origins.
-- `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`: Optional AI features.
+- `DATABASE_URL`：PostgreSQL 连接字符串。
+- `JWT_SECRET_KEY`：会话签名密钥，生产环境必须修改。
+- `ALLOWED_ORIGINS`：允许访问后端的 CORS 来源列表。
+- `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`：可选 AI 功能配置。
 
-No GitHub repository write access is required to run or develop this project.
+## GitHub 写入依赖
+
+当前版本不需要 GitHub 仓库写权限即可运行或开发。历史上的 GitHub sync 写入链路已经从支持的产品流程中移除；内容编辑以 PostgreSQL 和后端 API 为准。
+
+## 参与贡献
+
+贡献前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。安全问题请按 [SECURITY.md](./SECURITY.md) 中的方式私下报告。

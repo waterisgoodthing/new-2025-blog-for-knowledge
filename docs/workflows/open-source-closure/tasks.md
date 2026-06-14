@@ -95,3 +95,35 @@
 - [x] **P4-03** Record final residual risks and follow-up items.
   - Completed: 2026-06-10.
   - Evidence: See `validation.md`.
+
+## Phase 5: GitHub-Facing Chinese Content And Attribution
+
+Status: completed on 2026-06-14 after user approval.
+
+- [x] **P5-01** Inspect repository-facing docs and license evidence for upstream-origin details.
+  - Scope: `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, package metadata if relevant.
+  - Completion standard: known upstream details are identified from repository evidence, or missing details are explicitly recorded.
+  - Completed: 2026-06-14.
+  - Evidence: `LICENSE` is MIT with copyright `YYsuni`; `package.json` has no repository/homepage/author metadata; `git remote -v` shows only the current `mine` remote; no `NOTICE`/`AUTHORS`/`CREDITS` file was found; early git history identifies `Suni <YYsuni1001@gmail.com>` commits but no upstream URL.
+
+- [x] **P5-02** Rewrite `README.md` in Chinese as the primary GitHub landing document.
+  - Scope: project overview, architecture lines, local setup, content source-of-truth, configuration, no-GitHub-write-access note.
+  - Required attribution: include a visible Chinese source/thanks section stating that the project is adapted from an original open-source project.
+  - Completed: 2026-06-14.
+  - Evidence: `README.md` is now Chinese-first and includes `来源与致谢`, architecture lines, local development commands, content source-of-truth table, configuration notes, and the no-GitHub-write-access statement.
+
+- [x] **P5-03** Rewrite `CONTRIBUTING.md` in Chinese.
+  - Scope: setup workflow, code style, architecture boundaries, validation requirements, PR guidance.
+  - Completed: 2026-06-14.
+  - Evidence: `CONTRIBUTING.md` is now Chinese-first and covers setup, tech stack, architecture boundaries, validation, PR expectations, and issue reporting.
+
+- [x] **P5-04** Rewrite `SECURITY.md` in Chinese.
+  - Scope: vulnerability reporting, security scope, environment and secret handling guidance.
+  - Completed: 2026-06-14.
+  - Evidence: `SECURITY.md` is now Chinese-first and covers private vulnerability reporting, security scope, environment secret handling, production JWT/CORS guidance, and source/license note.
+
+- [x] **P5-05** Validate documentation changes and update workflow records.
+  - Scope: inspect changed files for Chinese primary language, attribution wording, command/path correctness, and license preservation.
+  - Output: update `validation.md` with changed files, validation evidence, and any attribution limits.
+  - Completed: 2026-06-14.
+  - Evidence: `validation.md` records changed files, source/license inspection, Chinese documentation inspection, link/command inspection, and the upstream URL attribution limit.

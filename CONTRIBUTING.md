@@ -1,36 +1,49 @@
-# Contributing
+# 贡献指南
 
-Thank you for considering contributing to this project.
+感谢你考虑参与这个项目。
 
-## Getting Started
+## 开始之前
 
-1. Fork and clone the repository.
-2. Follow the setup instructions in `README.md` to run both frontend and backend locally.
-3. Create a feature branch from `main`.
+1. Fork 并 clone 仓库。
+2. 按 `README.md` 中的说明分别启动前端和后端。
+3. 从 `main` 创建自己的功能分支。
 
-## Code Style
+## 技术栈
 
-- Frontend: TypeScript, Next.js App Router, Tailwind CSS.
-- Backend: Python, FastAPI, SQLAlchemy (async), Pydantic, Alembic.
-- Follow existing patterns in the codebase. When in doubt, look at neighboring files.
+- 前端：TypeScript、Next.js App Router、Tailwind CSS。
+- 后端：Python、FastAPI、SQLAlchemy async、Pydantic、Alembic。
+- 状态和数据请求：项目已有 Zustand 和 SWR，不要为小改动引入新的状态库。
 
-## Architecture Boundaries
+## 架构边界
 
-- `src/lib/api/`: typed API clients. No React.
-- `src/app/<route>/components/`: route-specific UI.
-- `src/components/`: shared UI used by more than one route.
-- `backend/app/models/`: SQLAlchemy models only.
-- `backend/app/schemas/`: Pydantic contracts only.
-- `backend/app/routers/`: thin HTTP routing.
-- `backend/app/services/`: business logic.
+请优先参考邻近文件的写法，保持改动小而聚焦。
 
-## Submitting Changes
+- `src/lib/api/`：类型化 API 客户端，不放 React 组件。
+- `src/app/<route>/components/`：路由内专用 UI 组件。
+- `src/components/`：多个路由共享的 UI 组件。
+- `backend/app/models/`：SQLAlchemy 数据库模型。
+- `backend/app/schemas/`：Pydantic 请求和响应契约。
+- `backend/app/routers/`：HTTP 路由、依赖注入和状态码，保持薄层。
+- `backend/app/services/`：业务逻辑。
 
-1. Ensure `npx tsc --noEmit` passes for frontend changes.
-2. Ensure backend imports cleanly (`python -c "from main import app"` in the backend directory).
-3. If you changed database models, add or update Alembic migrations under `backend/alembic/versions/`.
-4. Open a pull request against `main` with a clear description of what changed and why.
+## 提交前验证
 
-## Reporting Issues
+根据改动范围选择验证方式：
 
-Open a GitHub issue with steps to reproduce, expected behavior, and actual behavior.
+- 前端 TypeScript 改动：运行 `npx tsc --noEmit`。
+- 前端构建敏感改动：运行 `npm run build`。
+- 后端改动：在 `backend/` 目录运行 `python -c "from main import app"`，并优先运行相关测试。
+- 数据库模型改动：补充或更新 `backend/alembic/versions/` 下的迁移。
+
+如果验证失败但原因是已有问题，请在 PR 中明确说明第一处相关失败和判断依据。
+
+## 提交 PR
+
+1. 确认改动只覆盖本次任务范围。
+2. 不要提交 `.env`、私钥、令牌、数据库备份、生成缓存或个人敏感内容。
+3. 在 PR 描述中说明改了什么、为什么改、如何验证。
+4. 如果改动涉及前后端契约，请同时说明后端 schema 和前端 API 类型是否已同步。
+
+## 报告问题
+
+请通过 GitHub issue 提供复现步骤、期望行为、实际行为和相关截图或日志。安全漏洞不要公开发 issue，请按 `SECURITY.md` 私下报告。
