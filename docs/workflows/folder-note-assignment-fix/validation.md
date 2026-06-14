@@ -209,3 +209,32 @@ Result:
 
 - `https://blog.limengyang.me/notes`: `HTTP/2 200`, `x-opennext: 1`.
 - `https://blog.limengyang.me/write-note?folder_id=...`: `HTTP/2 200`, `x-opennext: 1`.
+
+## 2026-06-14 Public Folder API Recovery
+
+User-visible symptom:
+
+- Move dialog showed `暂无文件夹` even though the expected folder was `计算机网络`.
+
+Root cause:
+
+- `https://public-api.limengyang.me/api/folders` returned `HTTP/2 500`.
+- Backend log showed the old folder relationship error:
+
+```text
+TypeError: object of type 'Note' has no len()
+```
+
+Recovery action:
+
+```bash
+launchctl kickstart -k gui/501/com.blog.backend
+```
+
+Result:
+
+- Backend restarted from old PID `65869` to new PID `2663`.
+- `http://127.0.0.1:8000/api/folders`: `HTTP/1.1 200 OK`.
+- `https://public-api.limengyang.me/api/folders`: `HTTP/2 200`.
+- Response included folder `计算机网络` with `note_count: 1`.
+- `https://public-api.limengyang.me/api/health`: `HTTP/2 200`, body `{"status":"ok","db":"ok"}`.
