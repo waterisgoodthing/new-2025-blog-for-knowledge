@@ -172,3 +172,40 @@ Browser note:
 Residual validation gap:
 
 - A full authenticated browser move/create flow was not completed because the in-app Browser plugin blocked the localhost URL. API/type/build checks passed, and the local server returned the relevant pages.
+
+## 2026-06-14 Public Deployment Validation
+
+Code push:
+
+- Commit: `44e7fa9 fix notes folder assignment flow`
+- Branch: `notes-workspace-ux-upgrade`
+- Remote push: `mine/notes-workspace-ux-upgrade`
+- Push result: succeeded. GitHub reported the repository has moved to `https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git`, but the configured `mine` remote accepted the push.
+
+Public deployment command:
+
+```bash
+source ~/.zshrc && npm run deploy:full
+```
+
+Result:
+
+- `npx tsc --noEmit`: passed as part of `deploy:full`.
+- `opennextjs-cloudflare build`: passed.
+- `wrangler deploy --route 'blog.limengyang.me/*'`: passed.
+- Worker: `2025-blog-public`
+- Worker URL: `https://2025-blog-public.17527677392.workers.dev`
+- Route: `blog.limengyang.me/*`
+- Version ID: `9b3dfd5f-00ec-45d4-acca-47090a567373`
+
+Public HTTP checks:
+
+```bash
+curl -I --max-time 20 https://blog.limengyang.me/notes
+curl -I --max-time 20 'https://blog.limengyang.me/write-note?folder_id=00000000-0000-0000-0000-000000000000'
+```
+
+Result:
+
+- `https://blog.limengyang.me/notes`: `HTTP/2 200`, `x-opennext: 1`.
+- `https://blog.limengyang.me/write-note?folder_id=...`: `HTTP/2 200`, `x-opennext: 1`.
