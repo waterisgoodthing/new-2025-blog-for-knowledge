@@ -36,6 +36,7 @@ export default function NotesPage() {
 	const [moveTarget, setMoveTarget] = useState<{ slug: string; title: string } | null>(null)
 	const [draggingSlug, setDraggingSlug] = useState<string | null>(null)
 	const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+	const [folderRefreshKey, setFolderRefreshKey] = useState(0)
 	const [ctxMenu, setCtxMenu] = useState<{ slug: string; title: string; type: ContentType; x: number; y: number } | null>(null)
 
 	const handleTagChange = (tag: string | null) => {
@@ -49,6 +50,7 @@ export default function NotesPage() {
 			await moveNoteToFolder(draggingSlug, folderId)
 			toast.success(folderId ? '已移动到文件夹' : '已移回收件箱')
 			mutate()
+			setFolderRefreshKey(key => key + 1)
 		} catch (e: any) {
 			toast.error('移动失败: ' + e.message)
 		} finally {
@@ -130,7 +132,8 @@ export default function NotesPage() {
 	const getCreateAction = () => {
 		if (activeFilter === 'blog') return { label: '写博客', href: '/write' }
 		if (activeFilter === 'mistake') return { label: '写错题', href: '/write-mistake' }
-		return { label: '写笔记', href: '/write-note' }
+		const folderQuery = activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : ''
+		return { label: '写笔记', href: `/write-note${folderQuery}` }
 	}
 
 	return (
@@ -153,6 +156,7 @@ export default function NotesPage() {
 					onDragOverFolderChange={isAdmin ? setDragOverFolderId : undefined}
 					contentTypes={['note', 'blog']}
 					tags={pageTags}
+					refreshKey={folderRefreshKey}
 				/>
 
 				<div className='min-w-0 flex-1'>
@@ -305,6 +309,7 @@ export default function NotesPage() {
 					onClose={() => setMoveTarget(null)}
 					onMoved={() => {
 						mutate()
+						setFolderRefreshKey(key => key + 1)
 						setMoveTarget(null)
 					}}
 				/>

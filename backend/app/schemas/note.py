@@ -30,6 +30,7 @@ class NoteCreate(BaseModel):
     status: NoteStatus = NoteStatus.published
     hidden: bool = False
     tags: list[str] = []
+    folder_id: uuid.UUID | None = None
     sort_order: int = 0
 
     summary: str | None = None
@@ -89,6 +90,7 @@ class NoteOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    folder_id: uuid.UUID | None = None
     sort_order: int = 0
 
     summary: str | None = None
@@ -123,6 +125,7 @@ class NoteListItem(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    folder_id: uuid.UUID | None = None
     sort_order: int = 0
 
     summary: str | None = None

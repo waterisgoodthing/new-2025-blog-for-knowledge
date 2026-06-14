@@ -10,6 +10,7 @@ export interface NoteListItem {
   created_at: string;
   updated_at: string;
   tags: { id: number; name: string }[];
+  folder_id?: string | null;
   sort_order: number;
   summary?: string;
   cover?: string;
@@ -50,6 +51,7 @@ export interface NoteCreateInput {
   status?: "draft" | "published";
   hidden?: boolean;
   tags?: string[];
+  folder_id?: string | null;
   sort_order?: number;
   summary?: string;
   cover?: string;

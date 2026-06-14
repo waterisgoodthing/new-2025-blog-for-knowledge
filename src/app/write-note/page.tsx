@@ -33,6 +33,7 @@ export default function WriteNotePage() {
 function WriteNoteContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
+	const folderId = searchParams.get('folder_id')
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
 	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
@@ -133,6 +134,7 @@ function WriteNoteContent() {
 				summary: form.summary || undefined,
 				category: form.category || undefined,
 				cover: form.cover || undefined,
+				folder_id: folderId || undefined,
 				sort_order: form.sort_order,
 			})
 			router.push(getContentDetailHref(created.type, created.slug))

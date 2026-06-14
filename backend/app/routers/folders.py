@@ -78,7 +78,7 @@ def _build_tree(folders: list[Folder], parent_id: uuid.UUID | None = None) -> li
 @router.get("", response_model=list[FolderOut])
 async def list_folders(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Folder).options(selectinload(Folder.children))
+        select(Folder).options(selectinload(Folder.children), selectinload(Folder.notes))
     )
     folders = list(result.scalars().all())
     return _build_tree(folders, None)

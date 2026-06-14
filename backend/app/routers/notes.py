@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.models.folder import Folder
 from app.models.note import Category, Note, Subject, Tag, User
 from app.config import get_settings
 from app.routers.auth import get_current_user, get_optional_user, get_current_admin
@@ -246,6 +247,11 @@ async def create_note(
         from app.utils.slug import ensure_unique_slug
         req.slug = await ensure_unique_slug(db, req.slug)
 
+    if req.folder_id is not None:
+        folder = await db.get(Folder, req.folder_id)
+        if folder is None:
+            raise HTTPException(status_code=404, detail="Folder not found")
+
     tags = await _get_or_create_tags(db, req.tags)
 
     note = Note(
@@ -267,6 +273,7 @@ async def create_note(
         knowledge_points=req.knowledge_points,
         images=req.images,
         ai_metadata=req.ai_metadata,
+        folder_id=req.folder_id,
         sort_order=req.sort_order,
         tags=tags,
     )
@@ -288,7 +295,7 @@ async def create_note(
         request=request,
         entity_type=note.type,
         entity_id=str(note.id),
-        after={"slug": note.slug, "title": note.title},
+        after={"slug": note.slug, "title": note.title, "folder_id": str(note.folder_id) if note.folder_id else None},
     )
 
     return note

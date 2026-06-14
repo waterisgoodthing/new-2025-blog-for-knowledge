@@ -33,7 +33,7 @@ class Folder(Base):
     parent: Mapped["Folder | None"] = relationship(
         back_populates="children", remote_side="Folder.id", lazy="selectin"
     )
-    notes: Mapped[list] = relationship(
+    notes: Mapped[list["Note"]] = relationship(
         "Note", foreign_keys="[Note.folder_id]", lazy="selectin", viewonly=True
     )
 

@@ -33,6 +33,7 @@ type KnowledgeSidebarProps = {
 	contentTypes?: Array<'note' | 'blog' | 'mistake'>
 	tags?: TagType[]
 	canManage?: boolean
+	refreshKey?: number
 }
 
 export function KnowledgeSidebar({
@@ -48,7 +49,8 @@ export function KnowledgeSidebar({
 	onDragOverFolderChange,
 	contentTypes,
 	tags: externalTags,
-	canManage = false
+	canManage = false,
+	refreshKey = 0
 }: KnowledgeSidebarProps) {
 	const [folders, setFolders] = useState<FolderNode[]>([])
 	const [internalTags, setInternalTags] = useState<TagType[]>([])
@@ -71,7 +73,7 @@ export function KnowledgeSidebar({
 				.then(setInternalTags)
 				.catch(() => {})
 		}
-	}, [externalTags])
+	}, [externalTags, refreshKey])
 
 	const toggleFolder = (id: string) => {
 		setExpandedFolders(prev => {
