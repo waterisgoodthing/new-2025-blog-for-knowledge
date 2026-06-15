@@ -52,3 +52,29 @@ Checked `/manage?tab=music`:
 
 - Browser playback with a real audio file was not tested because the source folder is intentionally empty.
 - The scanner behavior with valid audio extensions is covered by `tests.test_local_music_source`.
+
+## Public Deployment Validation
+
+Validation date: 2026-06-15.
+
+Deployment command:
+
+- `npm run deploy:full`
+  - Result: PASS.
+  - Cloudflare Worker version: `7b882f66-15aa-495e-a35f-73fd8d6c4377`.
+  - Route: `blog.limengyang.me/*`.
+
+Public probes:
+
+- `GET https://public-api.limengyang.me/api/health`
+  - Result: PASS.
+  - Response: `{"status":"ok","db":"ok"}`.
+
+- `HEAD https://blog.limengyang.me/mymusic/.gitkeep`
+  - Result: PASS.
+  - Response status: `200`.
+
+- `GET https://blog.limengyang.me/manage?tab=music`
+  - Result: PASS.
+  - The deployed JS chunk contains `本地单曲音源`, `public/mymusic`, and `未检测到本地音乐文件`.
+  - The deployed JS chunks no longer contain old music-management strings: `手动列表`, `候选池`, `NetEase 配置`, `添加音乐`, or `手动管理音乐列表`.
