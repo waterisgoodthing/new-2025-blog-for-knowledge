@@ -52,3 +52,5 @@ class AnalyzeResponse(BaseModel):
     misread_signal: str = ""
     next_time_checklist: list[str] = Field(default_factory=list)
     latex_warnings: list[str] = Field(default_factory=list)
+    visual_context: str = ""
+    image_dependency: str = ""

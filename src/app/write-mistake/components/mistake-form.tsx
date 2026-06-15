@@ -142,6 +142,8 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 			misread_signal: result.misread_signal || '',
 			next_time_checklist: result.next_time_checklist || [],
 			latex_warnings: result.latex_warnings || [],
+			visual_context: result.visual_context || '',
+			image_dependency: result.image_dependency || '',
 		})
 	}
 
@@ -324,7 +326,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 		try {
 			const content = [
 				form.question && `## 题目\n\n${form.question}`,
-				form.my_answer && `## 我的错误答案\n\n${form.my_answer}`,
+				form.my_answer && `## 我的错误思路 / 当时答案\n\n${form.my_answer}`,
 				form.correct_answer && `## 正确答案\n\n${form.correct_answer}`,
 				form.analysis && `## 分析\n\n${form.analysis}`,
 				form.knowledge_points && `## 知识点\n\n${form.knowledge_points}`,
@@ -412,6 +414,49 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 			)}
 
 			<div className='space-y-4'>
+				<input
+					value={form.title}
+					onChange={e => {
+						update('title', e.target.value)
+						if (!form.slug && mode === 'create') {
+							const s = e.target.value.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '')
+							update('slug', s || `note-${Date.now()}`)
+						}
+					}}
+					placeholder='标题'
+					className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 text-lg backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+				/>
+
+				<div className='flex gap-3'>
+					<select
+						value={form.difficulty}
+						onChange={e => update('difficulty', e.target.value)}
+						className='rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none'
+					>
+						<option value='easy'>简单</option>
+						<option value='medium'>中等</option>
+						<option value='hard'>困难</option>
+					</select>
+					<input
+						value={form.subject}
+						onChange={e => update('subject', e.target.value)}
+						list='subject-options-mistake'
+						placeholder='科目'
+						className='flex-1 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none'
+					/>
+					<datalist id='subject-options-mistake'>
+						{subjects.map(s => <option key={s.id} value={s.name} />)}
+					</datalist>
+				</div>
+
+				<textarea value={form.question} onChange={e => update('question', e.target.value)} placeholder='题目内容...' rows={4} className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]' />
+
+				<section className='rounded-2xl border border-red-200/30 bg-red-50/20 p-4 backdrop-blur-sm'>
+					<h2 className='mb-3 text-sm font-semibold text-gray-700'>个人答题思路（用于 AI 个性化诊断）</h2>
+					<textarea value={form.my_answer} onChange={e => update('my_answer', e.target.value)} placeholder='我的错误思路 / 当时答案...' rows={3} className='mb-3 w-full rounded-xl border border-red-200/50 bg-red-50/30 px-4 py-3 text-sm outline-none focus:border-red-400' />
+					<textarea value={form.user_error_analysis} onChange={e => update('user_error_analysis', e.target.value)} placeholder='我当时的思路 / 我自己判断的错因（可选，用于 AI 个性化诊断）...' rows={2} className='w-full rounded-xl border border-orange-200/50 bg-orange-50/30 px-4 py-3 text-sm outline-none focus:border-orange-400' />
+				</section>
+
 				<section className='rounded-2xl border border-[var(--color-brand)]/25 bg-white/55 p-5 shadow-sm backdrop-blur-sm'>
 					<div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
 						<div className='flex items-center gap-3'>
@@ -420,7 +465,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 							</div>
 							<div>
 								<h2 className='text-base font-semibold text-gray-800'>AI 分析错题</h2>
-								<p className='mt-1 text-xs text-gray-500'>粘贴题目或上传图片，点击按钮自动填充。</p>
+								<p className='mt-1 text-xs text-gray-500'>粘贴题目或上传图片，点击按钮自动填充。上方填写个人思路可获得个性化诊断。</p>
 							</div>
 						</div>
 						<span className='rounded-full bg-[var(--color-brand)]/10 px-3 py-1 text-xs font-medium text-[var(--color-brand)]'>错题助手</span>
@@ -512,44 +557,6 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 					</div>
 				)}
 
-				<input
-					value={form.title}
-					onChange={e => {
-						update('title', e.target.value)
-						if (!form.slug && mode === 'create') {
-							const s = e.target.value.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '')
-							update('slug', s || `note-${Date.now()}`)
-						}
-					}}
-					placeholder='标题'
-					className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 text-lg backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-				/>
-
-				<div className='flex gap-3'>
-					<select
-						value={form.difficulty}
-						onChange={e => update('difficulty', e.target.value)}
-						className='rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none'
-					>
-						<option value='easy'>简单</option>
-						<option value='medium'>中等</option>
-						<option value='hard'>困难</option>
-					</select>
-					<input
-						value={form.subject}
-						onChange={e => update('subject', e.target.value)}
-						list='subject-options-mistake'
-						placeholder='科目'
-						className='flex-1 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none'
-					/>
-					<datalist id='subject-options-mistake'>
-						{subjects.map(s => <option key={s.id} value={s.name} />)}
-					</datalist>
-				</div>
-
-				<textarea value={form.question} onChange={e => update('question', e.target.value)} placeholder='题目内容...' rows={4} className='w-full rounded-xl border border-white/40 bg-white/60 px-4 py-3 text-sm backdrop-blur-sm outline-none focus:border-[var(--color-brand)]' />
-				<textarea value={form.my_answer} onChange={e => update('my_answer', e.target.value)} placeholder='我的错误答案...' rows={3} className='w-full rounded-xl border border-red-200/50 bg-red-50/30 px-4 py-3 text-sm outline-none focus:border-red-400' />
-				<textarea value={form.user_error_analysis} onChange={e => update('user_error_analysis', e.target.value)} placeholder='我当时的思路 / 我自己判断的错因（可选，用于 AI 个性化诊断）...' rows={2} className='w-full rounded-xl border border-orange-200/50 bg-orange-50/30 px-4 py-3 text-sm outline-none focus:border-orange-400' />
 				<textarea value={form.correct_answer} onChange={e => update('correct_answer', e.target.value)} placeholder='正确答案...' rows={3} className='w-full rounded-xl border border-green-200/50 bg-green-50/30 px-4 py-3 text-sm outline-none focus:border-green-400' />
 				<textarea value={form.analysis} onChange={e => update('analysis', e.target.value)} placeholder='分析与反思...' rows={3} className='w-full rounded-xl border border-blue-200/50 bg-blue-50/30 px-4 py-3 text-sm outline-none focus:border-blue-400' />
 				<input value={form.knowledge_points} onChange={e => update('knowledge_points', e.target.value)} placeholder='知识点总结' className='w-full rounded-xl border border-purple-200/50 bg-purple-50/30 px-4 py-3 text-sm outline-none focus:border-purple-400' />

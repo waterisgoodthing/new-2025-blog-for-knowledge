@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -16,6 +17,7 @@ from app.models.music_daily import (
 )
 from app.models.note import User
 from app.routers.auth import get_current_admin, get_passkey_admin
+from app.services.local_music_source import find_local_music_source
 from app.services.netease_service import (
     check_health,
     ensure_default_source_rules,
@@ -28,6 +30,24 @@ from app.services.netease_service import (
 )
 
 router = APIRouter(prefix="/api/music/manage", tags=["music-manage"])
+
+LOCAL_MUSIC_DIR = Path(__file__).resolve().parents[3] / "public" / "mymusic"
+LOCAL_MUSIC_PREFIX = "/mymusic"
+
+
+def _today_for_music() -> date:
+    now_shanghai = datetime.now(ZoneInfo("Asia/Shanghai"))
+    if now_shanghai.hour < 8:
+        return (now_shanghai - timedelta(days=1)).date()
+    return now_shanghai.date()
+
+
+def _local_music_status():
+    return find_local_music_source(
+        LOCAL_MUSIC_DIR,
+        public_prefix=LOCAL_MUSIC_PREFIX,
+        target_date=_today_for_music(),
+    )
 
 
 class NetEaseConfigUpdate(BaseModel):
@@ -56,12 +76,16 @@ async def get_config(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    config = await get_netease_config(db)
+    status = _local_music_status()
     return {
-        "api_base_url": config.api_base_url,
-        "enabled": config.enabled,
-        "timeout_seconds": config.timeout_seconds,
-        "retry_count": config.retry_count,
+        "api_base_url": "",
+        "enabled": status.exists,
+        "timeout_seconds": 0,
+        "retry_count": 0,
+        "source_type": "local_single",
+        "source_dir": status.source_dir,
+        "selected_file": status.selected_file,
+        "warnings": status.warnings,
     }
 
 
@@ -71,17 +95,7 @@ async def update_config(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_passkey_admin),
 ):
-    config = await get_netease_config(db)
-    if req.api_base_url is not None:
-        config.api_base_url = req.api_base_url
-    if req.enabled is not None:
-        config.enabled = req.enabled
-    if req.timeout_seconds is not None:
-        config.timeout_seconds = req.timeout_seconds
-    if req.retry_count is not None:
-        config.retry_count = req.retry_count
-    db.add(config)
-    return {"message": "Config updated"}
+    raise HTTPException(status_code=410, detail="External NetEase configuration is disabled; use public/mymusic as the only music source.")
 
 
 @router.get("/health")
@@ -89,8 +103,14 @@ async def health_check(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    config = await get_netease_config(db)
-    return await check_health(config.api_base_url, config.timeout_seconds)
+    status = _local_music_status()
+    return {
+        "status": "ok" if status.exists else "missing",
+        "source_type": "local_single",
+        "source_dir": status.source_dir,
+        "selected_file": status.selected_file,
+        "warnings": status.warnings,
+    }
 
 
 @router.get("/source-rules")
@@ -98,17 +118,7 @@ async def list_source_rules(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    rules = await ensure_default_source_rules(db)
-    return [
-        {
-            "id": r.id,
-            "source_type": r.source_type,
-            "source_value": r.source_value,
-            "enabled": r.enabled,
-            "sort_order": r.sort_order,
-        }
-        for r in rules
-    ]
+    return []
 
 
 @router.post("/source-rules")
@@ -117,15 +127,7 @@ async def create_source_rule(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    rule = MusicSourceRule(
-        source_type=req.source_type,
-        source_value=req.source_value,
-        enabled=req.enabled,
-        sort_order=req.sort_order,
-    )
-    db.add(rule)
-    await db.flush()
-    return {"id": rule.id, "source_type": rule.source_type, "source_value": rule.source_value}
+    raise HTTPException(status_code=410, detail="External source rules are disabled; use public/mymusic as the only music source.")
 
 
 @router.put("/source-rules/{rule_id}")
@@ -135,20 +137,7 @@ async def update_source_rule(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    result = await db.execute(select(MusicSourceRule).where(MusicSourceRule.id == rule_id))
-    rule = result.scalar_one_or_none()
-    if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
-    if req.source_type is not None:
-        rule.source_type = req.source_type
-    if req.source_value is not None:
-        rule.source_value = req.source_value
-    if req.enabled is not None:
-        rule.enabled = req.enabled
-    if req.sort_order is not None:
-        rule.sort_order = req.sort_order
-    db.add(rule)
-    return {"message": "Rule updated"}
+    raise HTTPException(status_code=410, detail="External source rules are disabled; use public/mymusic as the only music source.")
 
 
 @router.delete("/source-rules/{rule_id}")
@@ -157,12 +146,7 @@ async def delete_source_rule(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    result = await db.execute(select(MusicSourceRule).where(MusicSourceRule.id == rule_id))
-    rule = result.scalar_one_or_none()
-    if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
-    await db.delete(rule)
-    return {"message": "Rule deleted"}
+    raise HTTPException(status_code=410, detail="External source rules are disabled; use public/mymusic as the only music source.")
 
 
 @router.post("/sync")
@@ -170,8 +154,7 @@ async def sync_candidates(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    result = await sync_all_candidates(db)
-    return result
+    raise HTTPException(status_code=410, detail="External candidate sync is disabled; use public/mymusic as the only music source.")
 
 
 @router.post("/sync/{rule_id}")
@@ -180,13 +163,7 @@ async def sync_rule_candidates(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    result = await db.execute(select(MusicSourceRule).where(MusicSourceRule.id == rule_id))
-    rule = result.scalar_one_or_none()
-    if not rule:
-        raise HTTPException(status_code=404, detail="Rule not found")
-    config = await get_netease_config(db)
-    count = await sync_candidates_for_rule(db, config, rule)
-    return {"synced": count}
+    raise HTTPException(status_code=410, detail="External candidate sync is disabled; use public/mymusic as the only music source.")
 
 
 @router.get("/candidates")
@@ -196,33 +173,9 @@ async def list_candidates(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    count_result = await db.execute(select(MusicCandidate))
-    total_query = await db.execute(select(MusicCandidate))
-    all_items = list(total_query.scalars().all())
-    total = len(all_items)
-
-    result = await db.execute(
-        select(MusicCandidate)
-        .order_by(MusicCandidate.id.desc())
-        .offset((page - 1) * size)
-        .limit(size)
-    )
-    candidates = list(result.scalars().all())
     return {
-        "items": [
-            {
-                "id": c.id,
-                "netease_id": c.netease_id,
-                "title": c.title,
-                "artist": c.artist,
-                "album": c.album,
-                "artwork_url": c.artwork_url,
-                "netease_url": c.netease_url,
-                "synced_at": c.synced_at.isoformat() if c.synced_at else None,
-            }
-            for c in candidates
-        ],
-        "total": total,
+        "items": [],
+        "total": 0,
         "page": page,
         "size": size,
     }
@@ -233,20 +186,8 @@ async def get_daily_song(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    song = await get_or_create_today_song(db)
-    if not song:
-        return None
-    return {
-        "id": song.id,
-        "date": song.date.isoformat(),
-        "title": song.title,
-        "artist": song.artist,
-        "album": song.album,
-        "artwork_url": song.artwork_url,
-        "preview_url": song.preview_url,
-        "netease_url": song.netease_url,
-        "recommendation_reason": song.recommendation_reason,
-    }
+    status = _local_music_status()
+    return status.track
 
 
 @router.post("/generate-song")
@@ -254,23 +195,10 @@ async def generate_song(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    now_shanghai = datetime.now(ZoneInfo("Asia/Shanghai"))
-    if now_shanghai.hour < 8:
-        today = (now_shanghai - timedelta(days=1)).date()
-    else:
-        today = now_shanghai.date()
-    result = await db.execute(select(DailySong).where(DailySong.date == today))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Today's song already exists")
-    song = await generate_daily_song(db, today)
-    if not song:
-        raise HTTPException(status_code=404, detail="No candidates available")
-    return {
-        "id": song.id,
-        "date": song.date.isoformat(),
-        "title": song.title,
-        "artist": song.artist,
-    }
+    status = _local_music_status()
+    if not status.track:
+        raise HTTPException(status_code=404, detail="No local music file available in public/mymusic")
+    return status.track
 
 
 @router.get("/history")
@@ -279,21 +207,7 @@ async def song_history(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    songs = await get_song_history(db, limit)
-    return [
-        {
-            "id": s.id,
-            "date": s.date.isoformat(),
-            "title": s.title,
-            "artist": s.artist,
-            "album": s.album,
-            "artwork_url": s.artwork_url,
-            "preview_url": s.preview_url,
-            "netease_url": s.netease_url,
-            "recommendation_reason": s.recommendation_reason,
-        }
-        for s in songs
-    ]
+    return []
 
 
 @router.get("/sync-logs")
@@ -321,20 +235,8 @@ async def list_sync_logs(
 
 @router.get("/daily-song/public")
 async def get_public_daily_song(db: AsyncSession = Depends(get_db)):
-    song = await get_or_create_today_song(db)
-    if not song:
-        return None
-    return {
-        "id": song.id,
-        "date": song.date.isoformat(),
-        "title": song.title,
-        "artist": song.artist,
-        "album": song.album,
-        "artwork_url": song.artwork_url,
-        "preview_url": song.preview_url,
-        "netease_url": song.netease_url,
-        "recommendation_reason": song.recommendation_reason,
-    }
+    status = _local_music_status()
+    return status.track
 
 
 @router.get("/history/public")
@@ -342,17 +244,37 @@ async def public_song_history(
     limit: int = Query(30, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    songs = await get_song_history(db, limit)
-    return [
-        {
-            "id": s.id,
-            "date": s.date.isoformat(),
-            "title": s.title,
-            "artist": s.artist,
-            "album": s.album,
-            "artwork_url": s.artwork_url,
-            "preview_url": s.preview_url,
-            "netease_url": s.netease_url,
-        }
-        for s in songs
-    ]
+    return []
+
+
+@router.get("/diagnostics")
+async def diagnostics(
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    today = _today_for_music()
+    status = _local_music_status()
+    track = status.track
+
+    return {
+        "today": today.isoformat(),
+        "today_song_exists": track is not None,
+        "today_song": {
+            "id": track["id"],
+            "title": track["title"],
+            "artist": track["artist"],
+        } if track else None,
+        "history_count": 0,
+        "candidate_pool_count": status.file_count,
+        "netease_configured": False,
+        "netease_reachable": False,
+        "netease_error": "",
+        "last_sync": None,
+        "source_type": "local_single",
+        "source_dir": status.source_dir,
+        "public_prefix": status.public_prefix,
+        "local_source_exists": status.exists,
+        "local_file_count": status.file_count,
+        "selected_file": status.selected_file,
+        "warnings": status.warnings,
+    }

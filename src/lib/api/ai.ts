@@ -30,6 +30,8 @@ export interface AnalyzeResponse {
   misread_signal?: string;
   next_time_checklist?: string[];
   latex_warnings?: string[];
+  visual_context?: string;
+  image_dependency?: string;
 }
 
 export type StreamEvent =

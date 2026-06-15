@@ -1,12 +1,10 @@
 import json
 from datetime import date, timedelta
 
-import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.config import get_settings
 from app.models.note import Note
 from app.models.recommendation import DailyRecommendation
 
@@ -101,37 +99,20 @@ SYSTEM_PROMPT = """你是一个个人学习助手。根据用户的学习上下�
 
 
 async def call_llm(context: str) -> dict | None:
-    settings = get_settings()
-    if not settings.AI_API_KEY:
-        return None
+    from app.services.ai_service import call_general_model
 
     user_prompt = f"用户学习上下文：\n\n{context}\n\n请推荐今天最值得关注的一项内容。"
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                f"{settings.AI_BASE_URL}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.AI_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": settings.AI_MODEL,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "max_tokens": 500,
-                    "response_format": {"type": "json_object"},
-                },
-            )
-
-        if response.status_code != 200:
-            return None
-
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-        return json.loads(content)
+        result = await call_general_model(
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=500,
+            json_mode=True,
+        )
+        return result if isinstance(result, dict) else None
     except Exception:
         return None
 

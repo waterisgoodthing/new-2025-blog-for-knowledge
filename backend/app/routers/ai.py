@@ -2,6 +2,7 @@ import json
 import re
 import time
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -36,14 +37,47 @@ async def get_ai_config(
 ):
     from app.config import get_settings
     settings = get_settings()
+    general_key = settings.DASHSCOPE_API_KEY or settings.AI_API_KEY
+    if settings.DASHSCOPE_API_KEY:
+        general_model = settings.AI_MODEL
+        if "dashscope" in settings.DASHSCOPE_BASE_URL and not general_model.startswith("qwen"):
+            general_model = "qwen3.7-plus"
+        general_base_url = settings.DASHSCOPE_BASE_URL
+    else:
+        general_model = settings.AI_MODEL
+        general_base_url = settings.AI_BASE_URL
     return {
-        "ai_model": settings.AI_MODEL,
-        "ai_base_url": settings.AI_BASE_URL,
+        "ai_model": general_model,
+        "ai_base_url": general_base_url,
         "dashscope_model": settings.DASHSCOPE_MODEL,
         "deepseek_model": settings.DEEPSEEK_MODEL,
-        "has_ai_key": bool(settings.AI_API_KEY),
+        "has_ai_key": bool(general_key),
         "has_dashscope_key": bool(settings.DASHSCOPE_API_KEY),
         "has_deepseek_key": bool(settings.DEEPSEEK_API_KEY),
+        "general_provider": f"{general_model} (DashScope)" if settings.DASHSCOPE_API_KEY else f"{settings.AI_MODEL} (Custom)",
+        "providers": [
+            {
+                "name": "Qwen3.7 Plus",
+                "model": general_model,
+                "base_url": general_base_url,
+                "role": "general, fallback",
+                "configured": bool(general_key),
+            },
+            {
+                "name": "DashScope Vision",
+                "model": settings.DASHSCOPE_MODEL,
+                "base_url": settings.DASHSCOPE_BASE_URL,
+                "role": "OCR/vision primary",
+                "configured": bool(settings.DASHSCOPE_API_KEY),
+            },
+            {
+                "name": "DeepSeek",
+                "model": settings.DEEPSEEK_MODEL,
+                "base_url": settings.DEEPSEEK_BASE_URL,
+                "role": "text primary",
+                "configured": bool(settings.DEEPSEEK_API_KEY),
+            },
+        ],
     }
 
 
@@ -55,7 +89,7 @@ def _check_rate_limit(key: str = "global") -> None:
         raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {RATE_LIMIT_MAX} requests per {RATE_LIMIT_WINDOW}s.")
     _rate_limit_store[key].append(now)
 
-OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责从用户上传的错题图片中提取题目信息，并输出结构化 JSON。
+OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别与解题助手，负责从用户上传的错题图片中提取题目信息，必要时进行解题，并输出结构化 JSON。
 
 你的核心任务是：
 
@@ -63,12 +97,13 @@ OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责�
 2. 判断题目所属学科、题型、难度和知识点。
 3. 提取题目原文，保持题干、条件、选项、公式的完整性。
 4. 如果图片中已经包含答案或解析，需要一并提取。
-5. 如果图片中没有答案或解析，不要编造答案，只根据可见内容填写。
-6. 如果识别出题目属于算法、数据结构或编程题，需要在 tags 和 knowledge_points 中体现，但不要强行生成完整代码。完整代码由解题 AI 负责。
+5. 如果图片中没有答案或解析，但题目信息足够完整，你应该进行解题并给出正确答案和详细解析。
+6. 如果图片信息不足以解题，明确指出缺失的具体信息，不要编造。
+7. 如果识别出题目属于算法、数据结构或编程题，需要在 tags 和 knowledge_points 中体现，但不要强行生成完整代码。完整代码由解题 AI 负责。
 
 请严格遵守以下规则：
 
-* 只根据图片中可见内容进行识别。
+* 只根据图片中可见内容进行识别和推断。
 * 不要臆造图片中不存在的信息。
 * 数学公式尽量使用 LaTeX 表示。
 * 选择题需要保留所有选项。
@@ -79,13 +114,20 @@ OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责�
 * 不要使用 ```json 代码块。
 * 不要在 JSON 前后添加任何解释性文字。
 
+## 确定性分析规则
+
+* 最终的 correct_answer、analysis、error_reason、key_step 中不得使用"可能""也许""似乎""大概""推测"等模糊词语来推导结论。
+* 如果 OCR 识别不确定，可以在专门的 OCR 说明中标注，但不能用模糊词语作为最终推理依据。
+* 如果信息不足以确定答案，必须明确说明"信息不足"并列出缺失条件，而不是用"可能"继续推导。
+* 对于计算题，中间值必须前后一致。如果出现矛盾，必须指出矛盾而非强行解释。
+
 请按照以下 JSON 格式返回：
 
 {
   "title": "题目标题，若图片中没有明确标题，则根据题目内容概括一个简短标题",
   "question": "完整题目内容，包括题干、条件、选项、公式、图表文字信息等",
-  "correct_answer": "图片中可见的答案；如果图片中没有答案，填写空字符串",
-  "analysis": "图片中可见的解析；如果图片中没有解析，填写识别说明或空字符串；如果存在识别不确定内容，需要在这里说明",
+  "correct_answer": "正确答案；如果图片中已有答案则提取，如果题目信息足够则求解；信息不足时填写空字符串",
+  "analysis": "详细解析；如果图片中已有解析则提取，如果题目信息足够则给出完整解题过程；信息不足时说明缺失内容",
   "knowledge_points": "题目涉及的知识点，多个知识点用中文逗号分隔",
   "subject": "学科名称，例如：数学、英语、计算机、数据结构、算法、物理、化学、政治、未知",
   "difficulty": "easy|medium|hard",
@@ -96,7 +138,9 @@ OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责�
   "generalization": "这类题可迁移的一般方法；无法判断时填写空字符串",
   "review_advice": "复习建议；无法判断时填写空字符串",
   "variant_questions": ["变式题1", "变式题2"],
-  "diagrams": [{"type": "flowchart", "title": "图示标题", "mermaid": "graph TD; A-->B"}]
+  "diagrams": [{"type": "flowchart", "title": "图示标题", "mermaid": "graph TD; A-->B"}],
+  "visual_context": "图片中与解题相关的视觉元素描述，如图表、几何图形、网络拓扑、流程图等；纯文字题目填写空字符串",
+  "image_dependency": "none|partial|full — 题目是否依赖图片中的视觉元素才能完整理解或解答"
 }
 
 字段要求：
@@ -114,14 +158,16 @@ OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责�
    * 编程题需要保留输入格式、输出格式、样例输入、样例输出和数据范围。
 
 3. correct_answer
-   * 只填写图片中已经出现的答案。
-   * 图片中没有答案时，填写空字符串。
-   * 不要主动求解。
+   * 如果图片中已有答案，提取之。
+   * 如果图片中没有答案但题目信息足够，进行求解。
+   * 如果信息不足以求解，填写空字符串。
+   * 不得使用模糊词语作为推导依据。
 
 4. analysis
-   * 只填写图片中可见的解析。
-   * 图片中没有解析时，可以填写空字符串。
+   * 如果图片中已有解析，提取之。
+   * 如果图片中没有解析但题目信息足够，给出完整解题过程。
    * 如果 OCR 不确定，需要写明，例如："部分公式识别不确定：第 2 行分母可能为 x+1。"
+   * 不得使用"可能因…所以答案是…"这种模糊推导。
 
 5. knowledge_points
    * 根据题目内容提取知识点。
@@ -153,9 +199,16 @@ OCR_SYSTEM_PROMPT = r"""你是一个严谨的错题图片识别助手，负责�
    * review_advice 给出当天、3 天后、7 天后的复习建议。
    * variant_questions 返回 0 到 3 道短变式题。
 
-再次强调：
+10. visual_context
+    * 描述图片中与解题直接相关的视觉元素。
+    * 纯文字题目填写空字符串。
+    * 包含图表、几何图形、网络拓扑、流程图等时，简要描述其内容和与题目的关系。
 
-你只负责识别与结构化提取，不负责完整解题。
+11. image_dependency
+    * none：题目完全是文字，不依赖图片。
+    * partial：图片提供了辅助信息但文字已足够理解。
+    * full：题目必须看图才能完整理解或解答。
+
 输出必须是严格合法 JSON。
 
 ## 数学公式规范
@@ -337,6 +390,26 @@ TEXT_SYSTEM_PROMPT = r"""你是一个严谨的学习解题助手，负责根据�
 每个 diagram 的 mermaid 字段必须是有效的 Mermaid 语法字符串。"""
 
 
+def _build_personal_context(my_answer: str | None, correct_answer: str | None, user_error_analysis: str | None) -> str | None:
+    if not my_answer and not correct_answer and not user_error_analysis:
+        return None
+    ctx = "\n\n--- 个人答题上下文 ---"
+    if my_answer:
+        ctx += f"\n我的错误思路 / 当时答案: {my_answer}"
+    if correct_answer:
+        ctx += f"\n正确答案: {correct_answer}"
+    if user_error_analysis:
+        ctx += f"\n我自己判断的错因: {user_error_analysis}"
+    ctx += (
+        "\n\n请结合以上个人答题上下文："
+        "\n1. 在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断。"
+        "\n2. 在 misread_signal 字段指出学生可能忽略的题目信号。"
+        "\n3. 在 next_time_checklist 字段给出下次做题的检查清单。"
+        "\n4. 如果学生的错误思路暴露了特定知识点薄弱，在 analysis 中针对性强化。"
+    )
+    return ctx
+
+
 def _list_of_strings(value) -> list[str]:
     if value is None:
         return []
@@ -346,6 +419,61 @@ def _list_of_strings(value) -> list[str]:
         normalized = value.replace("，", ",").replace("、", ",").replace("\n", ",")
         return [item.strip() for item in normalized.split(",") if item.strip()]
     return [str(value)]
+
+
+_HEDGE_WORDS = re.compile(r'(?:可能|也许|似乎|大概|推测)')
+_HEDGE_ALLOWED_CONTEXT = re.compile(r'(?:识别不确定|OCR|信息不足|缺失|无法确定|不确定|模糊|遮挡)')
+
+
+def _check_deterministic_fields(result: dict) -> list[str]:
+    warnings = []
+    strict_fields = ['correct_answer', 'analysis', 'error_reason', 'key_step']
+    for field in strict_fields:
+        value = result.get(field, '')
+        if not isinstance(value, str) or not value:
+            continue
+        if _HEDGE_WORDS.search(value) and not _HEDGE_ALLOWED_CONTEXT.search(value):
+            warnings.append(f"{field} 包含模糊表述，可能影响结论确定性")
+    return warnings
+
+
+async def _repair_deterministic_result(
+    result: dict,
+    model_call: Callable[[list[dict], int], Awaitable[dict]],
+) -> tuple[dict, list[str]]:
+    warnings = _check_deterministic_fields(result)
+    if not warnings:
+        return result, []
+
+    repair_messages = [
+        {
+            "role": "system",
+            "content": (
+                "你是错题分析结果的确定性校对器。你会收到上一轮 AI 输出的 JSON。"
+                "请只返回修正后的完整 JSON，不要添加解释文字。"
+                "必须修复以下问题："
+                "1. correct_answer、analysis、error_reason、key_step 中不得使用“可能”“也许”“似乎”“大概”“推测”等模糊词来形成最终结论；"
+                "2. correct_answer 必须与 analysis 的推导结论一致；"
+                "3. 如果题目信息足够，必须给出唯一确定结论；"
+                "4. 如果题目信息不足，correct_answer 留空，analysis 明确写“信息不足”并列出缺失条件；"
+                "5. 不要讨论教材预期、其他理解、也不要保留互相矛盾的答案。"
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(result, ensure_ascii=False),
+        },
+    ]
+
+    try:
+        repaired = await model_call(repair_messages, 4000)
+    except Exception as e:
+        return result, warnings + [f"确定性修复调用失败: {str(e)[:120]}"]
+
+    repaired_warnings = _check_deterministic_fields(repaired)
+    if repaired_warnings:
+        return repaired, repaired_warnings
+    return repaired, []
 
 
 _LATEX_COMMANDS = re.compile(r'\\(?:frac|sqrt|int|sum|prod|lim|log|ln|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega|infty|partial|nabla|pm|mp|times|div|cdot|leq|geq|neq|approx|equiv|subset|supset|subseteq|supseteq|cup|cap|emptyset|forall|exists|in|notin|rightarrow|leftarrow|Rightarrow|Leftarrow|ldots|cdots|vdots|ddots|quad|qquad|text|mathrm|mathbf|mathit|overline|underline|hat|bar|vec|tilde|dot|ddot)')
@@ -445,7 +573,11 @@ def _repair_latex_in_result(result: dict) -> tuple[dict, list[str]]:
     return result, all_warnings
 
 
-def _parse_result(result: dict, related_notes: list[dict] | None = None) -> AnalyzeResponse:
+def _parse_result(
+    result: dict,
+    related_notes: list[dict] | None = None,
+    extra_warnings: list[str] | None = None,
+) -> AnalyzeResponse:
     result, latex_warnings = _repair_latex_in_result(result)
 
     from app.services.tag_canonicalization import canonicalize_tags
@@ -457,13 +589,16 @@ def _parse_result(result: dict, related_notes: list[dict] | None = None) -> Anal
     diagrams = []
     for d in raw_diagrams:
         if isinstance(d, dict) and d.get("mermaid"):
+            mermaid_code = d["mermaid"].strip()
+            if len(mermaid_code) < 5:
+                continue
             dtype = d.get("type", "flowchart")
             if dtype not in _VALID_DIAGRAM_TYPES:
                 dtype = "flowchart"
             diagrams.append(DiagramItem(
                 type=dtype,
                 title=d.get("title", ""),
-                mermaid=d["mermaid"],
+                mermaid=mermaid_code,
             ))
     return AnalyzeResponse(
         title=result.get("title", ""),
@@ -485,7 +620,9 @@ def _parse_result(result: dict, related_notes: list[dict] | None = None) -> Anal
         personalized_diagnosis=result.get("personalized_diagnosis", ""),
         misread_signal=result.get("misread_signal", ""),
         next_time_checklist=_list_of_strings(result.get("next_time_checklist")),
-        latex_warnings=_list_of_strings(result.get("latex_warnings")) + latex_warnings,
+        latex_warnings=_list_of_strings(result.get("latex_warnings")) + latex_warnings + _check_deterministic_fields(result) + (extra_warnings or []),
+        visual_context=result.get("visual_context", ""),
+        image_dependency=result.get("image_dependency", ""),
     )
 
 
@@ -538,19 +675,12 @@ async def analyze_mistake(
             }
         )
 
-    if req.my_answer or req.correct_answer or req.user_error_analysis:
-        personal_ctx = "\n\n--- 个人答题上下文 ---"
-        if req.my_answer:
-            personal_ctx += f"\n我的答案: {req.my_answer}"
-        if req.correct_answer:
-            personal_ctx += f"\n正确答案: {req.correct_answer}"
-        if req.user_error_analysis:
-            personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
-        personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+    personal_ctx = _build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
         content.append({"type": "text", "text": personal_ctx})
 
     messages = [
-        {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
+        {"role": "system", "content": "你是一个严谨的错题图片识别与解题助手。请始终以 JSON 格式回复。"},
         {"role": "user", "content": content},
     ]
 
@@ -561,8 +691,9 @@ async def analyze_mistake(
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
+    result, deterministic_warnings = await _repair_deterministic_result(result, call_ocr_model)
     related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
-    return _parse_result(result, related)
+    return _parse_result(result, related, deterministic_warnings)
 
 
 @router.post("/analyze-text", response_model=AnalyzeResponse)
@@ -584,15 +715,8 @@ async def analyze_text(
     )
 
     user_content = req.text
-    if req.my_answer or req.correct_answer or req.user_error_analysis:
-        personal_ctx = "\n\n--- 个人答题上下文 ---"
-        if req.my_answer:
-            personal_ctx += f"\n我的答案: {req.my_answer}"
-        if req.correct_answer:
-            personal_ctx += f"\n正确答案: {req.correct_answer}"
-        if req.user_error_analysis:
-            personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
-        personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+    personal_ctx = _build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
         user_content += personal_ctx
 
     messages = [
@@ -607,8 +731,9 @@ async def analyze_text(
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
+    result, deterministic_warnings = await _repair_deterministic_result(result, call_text_model)
     related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
-    return _parse_result(result, related)
+    return _parse_result(result, related, deterministic_warnings)
 
 
 @router.post("/analyze-stream")
@@ -647,19 +772,12 @@ async def analyze_mistake_stream(
                     "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
                 })
 
-            if req.my_answer or req.correct_answer or req.user_error_analysis:
-                personal_ctx = "\n\n--- 个人答题上下文 ---"
-                if req.my_answer:
-                    personal_ctx += f"\n我的答案: {req.my_answer}"
-                if req.correct_answer:
-                    personal_ctx += f"\n正确答案: {req.correct_answer}"
-                if req.user_error_analysis:
-                    personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
-                personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+            personal_ctx = _build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+            if personal_ctx:
                 content.append({"type": "text", "text": personal_ctx})
 
             messages = [
-                {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
+                {"role": "system", "content": "你是一个严谨的错题图片识别与解题助手。请始终以 JSON 格式回复。"},
                 {"role": "user", "content": content},
             ]
 
@@ -675,6 +793,8 @@ async def analyze_mistake_stream(
                 yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
                 return
 
+            result, deterministic_warnings = await _repair_deterministic_result(result, call_ocr_model)
+
             yield f"data: {json.dumps({'type': 'progress', 'step': 'parsing_model_output', 'label': '正在解析AI分析结果...'})}\n\n"
             await asyncio.sleep(0)
 
@@ -684,7 +804,7 @@ async def analyze_mistake_stream(
             related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
             await asyncio.sleep(0)
 
-            parsed = _parse_result(result, related)
+            parsed = _parse_result(result, related, deterministic_warnings)
             yield f"data: {json.dumps({'type': 'result', 'data': parsed.model_dump()})}\n\n"
             yield f"data: {json.dumps({'type': 'done', 'label': '分析完成'})}\n\n"
 
@@ -728,15 +848,8 @@ async def analyze_text_stream(
             await asyncio.sleep(0)
 
             user_content = req.text
-            if req.my_answer or req.correct_answer or req.user_error_analysis:
-                personal_ctx = "\n\n--- 个人答题上下文 ---"
-                if req.my_answer:
-                    personal_ctx += f"\n我的答案: {req.my_answer}"
-                if req.correct_answer:
-                    personal_ctx += f"\n正确答案: {req.correct_answer}"
-                if req.user_error_analysis:
-                    personal_ctx += f"\n我自己判断的错因: {req.user_error_analysis}"
-                personal_ctx += "\n\n请结合以上个人答题上下文，在 personalized_diagnosis 字段给出针对该学生具体错误的个性化诊断，在 misread_signal 字段指出学生可能忽略的题目信号，在 next_time_checklist 字段给出下次做题的检查清单。"
+            personal_ctx = _build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+            if personal_ctx:
                 user_content += personal_ctx
 
             messages = [
@@ -756,6 +869,8 @@ async def analyze_text_stream(
                 yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
                 return
 
+            result, deterministic_warnings = await _repair_deterministic_result(result, call_text_model)
+
             yield f"data: {json.dumps({'type': 'progress', 'step': 'parsing_model_output', 'label': '正在解析AI分析结果...'})}\n\n"
             await asyncio.sleep(0)
 
@@ -765,7 +880,7 @@ async def analyze_text_stream(
             related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
             await asyncio.sleep(0)
 
-            parsed = _parse_result(result, related)
+            parsed = _parse_result(result, related, deterministic_warnings)
             yield f"data: {json.dumps({'type': 'result', 'data': parsed.model_dump()})}\n\n"
             yield f"data: {json.dumps({'type': 'done', 'label': '分析完成'})}\n\n"
 
@@ -1083,3 +1198,156 @@ async def knowledge_summary(
         title=result.get("title", ""),
         blocks=blocks,
     )
+
+
+PROMPT_TEMPLATES = {
+    "mistake": {
+        "ocr": {
+            "name": "错题 OCR 识别",
+            "description": "从图片中提取题目信息，必要时解题",
+            "prompt": OCR_SYSTEM_PROMPT[:500] + "...",
+            "route": "OCR/vision",
+            "full_prompt": OCR_SYSTEM_PROMPT,
+        },
+        "text_analysis": {
+            "name": "错题文本分析",
+            "description": "分析文本题目，给出答案和解析",
+            "prompt": TEXT_SYSTEM_PROMPT[:500] + "...",
+            "route": "text JSON",
+            "full_prompt": TEXT_SYSTEM_PROMPT,
+        },
+        "variant": {
+            "name": "变式题生成",
+            "description": "根据知识点生成变式练习题",
+            "prompt": VARIANT_SYSTEM_PROMPT,
+            "route": "text JSON",
+        },
+        "knowledge_card": {
+            "name": "知识卡片生成",
+            "description": "生成结构化知识卡片",
+            "prompt": KNOWLEDGE_CARD_SYSTEM_PROMPT,
+            "route": "text JSON",
+        },
+    },
+    "polish": {
+        "polish": {
+            "name": "文本润色",
+            "description": "优化表达，修正语法",
+            "prompt": "你是一个文本润色助手。请优化以下文本的表达，修正语法错误，提升可读性，保持原意不变。直接返回润色后的文本，不要解释。",
+            "route": "text stream",
+        },
+        "summarize": {
+            "name": "内容摘要",
+            "description": "提取核心要点",
+            "prompt": "请对以下内容提取核心要点，生成简洁的摘要。用要点列表形式输出。",
+            "route": "text stream",
+        },
+        "tags": {
+            "name": "标签推荐",
+            "description": "推荐关键词标签",
+            "prompt": '从以下内容中推荐 3-5 个关键词标签。返回 JSON 数组格式，例如 ["标签1", "标签2"]。不要输出其他内容。',
+            "route": "text stream",
+        },
+    },
+    "knowledge": {
+        "summary": {
+            "name": "知识总结",
+            "description": "带引用的知识总结",
+            "prompt": KNOWLEDGE_SUMMARY_SYSTEM_PROMPT[:500] + "...",
+            "route": "text JSON",
+            "full_prompt": KNOWLEDGE_SUMMARY_SYSTEM_PROMPT,
+        },
+    },
+}
+
+
+@router.get("/prompts")
+async def get_prompts(
+    _admin=Depends(get_current_admin),
+):
+    result = {}
+    for group, templates in PROMPT_TEMPLATES.items():
+        result[group] = {}
+        for key, tmpl in templates.items():
+            result[group][key] = {
+                "name": tmpl["name"],
+                "description": tmpl["description"],
+                "prompt": tmpl["prompt"],
+                "route": tmpl["route"],
+            }
+    return result
+
+
+@router.post("/prompt-test")
+async def prompt_test(
+    req: dict,
+    _admin=Depends(get_current_admin),
+):
+    prompt_key = req.get("prompt_key", "")
+    sample_input = req.get("sample_input", "")
+    custom_prompt = req.get("custom_prompt", "")
+    route = req.get("route", "text JSON")
+
+    if not sample_input:
+        raise HTTPException(status_code=400, detail="sample_input is required")
+
+    system_prompt = custom_prompt
+    if not system_prompt and prompt_key:
+        group, _, key = prompt_key.partition(".")
+        tmpl = PROMPT_TEMPLATES.get(group, {}).get(key, {})
+        system_prompt = tmpl.get("full_prompt") or tmpl.get("prompt", "")
+    if not system_prompt:
+        raise HTTPException(status_code=400, detail="No prompt found")
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": sample_input},
+    ]
+
+    import time as _time
+    start = _time.monotonic()
+    attempts = []
+
+    try:
+        from app.services.ai_service import _call_with_fallback
+        caps = {"text", "json"} if "json" in route.lower() else {"text"}
+        preferred = "deepseek" if "text" in route.lower() else "dashscope_vision"
+        result = await _call_with_fallback(
+            required_caps=caps,
+            messages=messages,
+            max_tokens=2000,
+            response_format={"type": "json_object"} if "json" in route.lower() else None,
+            preferred=preferred,
+            parse_json="json" in route.lower(),
+        )
+        latency = int((_time.monotonic() - start) * 1000)
+        return {
+            "success": True,
+            "provider_used": result.provider_used,
+            "fallback_used": result.fallback_used,
+            "latency_ms": latency,
+            "output": result.data if isinstance(result.data, str) else result.data,
+            "attempts": [
+                {"provider": a.provider, "model": a.model, "success": a.success, "latency_ms": a.latency_ms, "error": a.error}
+                for a in result.attempts
+            ],
+        }
+    except Exception as e:
+        latency = int((_time.monotonic() - start) * 1000)
+        return {
+            "success": False,
+            "provider_used": "",
+            "fallback_used": False,
+            "latency_ms": latency,
+            "output": None,
+            "error": str(e)[:300],
+            "attempts": [],
+        }
+
+
+@router.get("/provider-status")
+async def provider_status(
+    _admin=Depends(get_current_admin),
+):
+    from app.services.ai_service import get_provider_status
+    return await get_provider_status()

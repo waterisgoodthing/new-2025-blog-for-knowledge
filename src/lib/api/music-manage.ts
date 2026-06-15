@@ -5,6 +5,10 @@ export interface NetEaseConfig {
   enabled: boolean;
   timeout_seconds: number;
   retry_count: number;
+  source_type?: "local_single";
+  source_dir?: string;
+  selected_file?: string | null;
+  warnings?: string[];
 }
 
 export interface SourceRule {
@@ -58,7 +62,14 @@ export async function updateNetEaseConfig(data: Partial<NetEaseConfig>): Promise
   });
 }
 
-export async function checkNetEaseHealth(): Promise<{ status: string; data?: any }> {
+export async function checkNetEaseHealth(): Promise<{
+  status: string;
+  data?: any;
+  source_type?: "local_single";
+  source_dir?: string;
+  selected_file?: string | null;
+  warnings?: string[];
+}> {
   return apiFetch("/api/music/manage/health");
 }
 
@@ -114,4 +125,33 @@ export async function getPublicDailySong(): Promise<DailySongItem | null> {
 
 export async function getPublicSongHistory(limit = 30): Promise<DailySongItem[]> {
   return apiFetch(`/api/music/manage/history/public?limit=${limit}`);
+}
+
+export interface MusicDiagnostics {
+  today: string;
+  today_song_exists: boolean;
+  today_song: { id: number; title: string; artist: string } | null;
+  history_count: number;
+  candidate_pool_count: number;
+  netease_configured: boolean;
+  netease_reachable: boolean;
+  netease_error: string;
+  source_type?: "local_single";
+  source_dir?: string;
+  public_prefix?: string;
+  local_source_exists?: boolean;
+  local_file_count?: number;
+  selected_file?: string | null;
+  warnings?: string[];
+  last_sync: {
+    action: string;
+    status: string;
+    candidates_found: number;
+    error_message: string | null;
+    created_at: string | null;
+  } | null;
+}
+
+export async function getMusicDiagnostics(): Promise<MusicDiagnostics> {
+  return apiFetch("/api/music/manage/diagnostics");
 }

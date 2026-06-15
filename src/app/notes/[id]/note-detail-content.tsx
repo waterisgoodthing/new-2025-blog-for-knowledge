@@ -125,7 +125,22 @@ export default function NoteDetailContent() {
 
 							<div className='space-y-3'>
 								<StudyBlock title='题目' tone='neutral' content={note.question} fallback={note.content} />
-								{isAdmin && <StudyBlock title='我的答案' tone='danger' content={note.my_answer} />}
+								{(() => {
+									const vc = note.ai_metadata?.visual_context ? String(note.ai_metadata.visual_context) : ''
+									const id = note.ai_metadata?.image_dependency ? String(note.ai_metadata.image_dependency) : ''
+									return vc ? (
+										<section className='rounded-xl border border-cyan-200/70 bg-cyan-50/50 p-4'>
+											<h2 className='mb-2 text-sm font-semibold text-cyan-800'>视觉上下文</h2>
+											<RichText content={vc} className='text-sm leading-6 text-cyan-900' />
+											{id && id !== 'none' && (
+												<div className='mt-2 text-xs text-cyan-700'>
+													图片依赖: {id === 'full' ? '完全依赖图片' : '部分依赖图片'}
+												</div>
+											)}
+										</section>
+									) : null
+								})()}
+								{isAdmin && <StudyBlock title='我的错误思路' tone='danger' content={note.my_answer} />}
 								<StudyBlock title='正确答案' tone='success' content={note.correct_answer} />
 							</div>
 						</section>

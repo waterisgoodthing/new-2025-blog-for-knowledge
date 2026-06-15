@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     ENABLE_REGISTRATION: bool = True
     REGISTRATION_KEY: str = ""
     AI_API_KEY: str = ""
-    AI_BASE_URL: str = "https://api.openai.com/v1"
-    AI_MODEL: str = "gpt-4o"
+    AI_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    AI_MODEL: str = "qwen3.7-plus"
 
     DASHSCOPE_API_KEY: str = ""
     DASHSCOPE_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
