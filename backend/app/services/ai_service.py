@@ -297,11 +297,11 @@ async def get_provider_status() -> list[dict]:
         })
 
     providers.append({
-        "name": "DashScope Vision",
+        "name": "Qwen3.7 Plus Vision",
         "model": settings.DASHSCOPE_MODEL,
         "base_url": settings.DASHSCOPE_BASE_URL,
         "base_url_label": "DashScope",
-        "role": "OCR/vision primary",
+        "role": "OCR/vision primary, general model",
         "configured": bool(settings.DASHSCOPE_API_KEY),
     })
     providers.append({

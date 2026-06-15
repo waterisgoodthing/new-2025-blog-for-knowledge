@@ -17,11 +17,11 @@ class Settings(BaseSettings):
 
     DASHSCOPE_API_KEY: str = ""
     DASHSCOPE_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    DASHSCOPE_MODEL: str = "qwen-vl-max"
+    DASHSCOPE_MODEL: str = "qwen3.7-plus"
 
     DEEPSEEK_API_KEY: str = ""
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
-    DEEPSEEK_MODEL: str = "deepseek-chat"
+    DEEPSEEK_MODEL: str = "deepseekv4pro"
 
     KEEP_ALIVE_ENABLED: bool = False
     KEEP_ALIVE_INTERVAL: int = 300
