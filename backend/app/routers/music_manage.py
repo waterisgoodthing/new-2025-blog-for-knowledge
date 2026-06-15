@@ -17,7 +17,12 @@ from app.models.music_daily import (
 )
 from app.models.note import User
 from app.routers.auth import get_current_admin, get_passkey_admin
-from app.services.local_music_source import find_local_music_source
+from app.services.local_music_source import (
+    CLOUDFLARE_WORKERS_ASSET_LIMIT_BYTES,
+    SUPPORTED_AUDIO_EXTENSIONS,
+    find_local_music_source,
+    write_local_music_selection,
+)
 from app.services.netease_service import (
     check_health,
     ensure_default_source_rules,
@@ -71,6 +76,28 @@ class SourceRuleUpdate(BaseModel):
     sort_order: int | None = None
 
 
+class LocalSelectionUpdate(BaseModel):
+    selected_file: str = Field(..., min_length=1, max_length=255)
+
+
+def _validate_local_selection(selected_file: str) -> Path:
+    selected_path = Path(selected_file)
+    if selected_path.name != selected_file:
+        raise HTTPException(status_code=400, detail="selected_file must be a file name in public/mymusic")
+
+    file_path = LOCAL_MUSIC_DIR / selected_file
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Selected local music file does not exist")
+
+    if file_path.suffix.lower() not in SUPPORTED_AUDIO_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Selected file type is not supported for browser playback")
+
+    if file_path.stat().st_size > CLOUDFLARE_WORKERS_ASSET_LIMIT_BYTES:
+        raise HTTPException(status_code=400, detail="Selected file exceeds Cloudflare Workers 25 MiB asset limit")
+
+    return file_path
+
+
 @router.get("/config")
 async def get_config(
     db: AsyncSession = Depends(get_db),
@@ -85,6 +112,7 @@ async def get_config(
         "source_type": "local_single",
         "source_dir": status.source_dir,
         "selected_file": status.selected_file,
+        "configured_selected_file": status.configured_selected_file,
         "warnings": status.warnings,
     }
 
@@ -109,6 +137,7 @@ async def health_check(
         "source_type": "local_single",
         "source_dir": status.source_dir,
         "selected_file": status.selected_file,
+        "configured_selected_file": status.configured_selected_file,
         "warnings": status.warnings,
     }
 
@@ -201,6 +230,23 @@ async def generate_song(
     return status.track
 
 
+@router.put("/local-selection")
+async def update_local_selection(
+    req: LocalSelectionUpdate,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    _validate_local_selection(req.selected_file)
+    write_local_music_selection(LOCAL_MUSIC_DIR, req.selected_file)
+    status = _local_music_status()
+    return {
+        "selected_file": status.selected_file,
+        "configured_selected_file": status.configured_selected_file,
+        "track": status.track,
+        "warnings": status.warnings,
+    }
+
+
 @router.get("/history")
 async def song_history(
     limit: int = Query(30, ge=1, le=100),
@@ -275,6 +321,19 @@ async def diagnostics(
         "public_prefix": status.public_prefix,
         "local_source_exists": status.exists,
         "local_file_count": status.file_count,
+        "deployable_file_count": status.deployable_file_count,
         "selected_file": status.selected_file,
+        "configured_selected_file": status.configured_selected_file,
+        "files": [
+            {
+                "name": file.name,
+                "size_bytes": file.size_bytes,
+                "supported": file.supported,
+                "deployable": file.deployable,
+                "selected": file.selected,
+                "reason": file.reason,
+            }
+            for file in status.files
+        ],
         "warnings": status.warnings,
     }

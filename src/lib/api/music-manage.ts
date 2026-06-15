@@ -8,6 +8,7 @@ export interface NetEaseConfig {
   source_type?: "local_single";
   source_dir?: string;
   selected_file?: string | null;
+  configured_selected_file?: string | null;
   warnings?: string[];
 }
 
@@ -127,6 +128,27 @@ export async function getPublicSongHistory(limit = 30): Promise<DailySongItem[]>
   return apiFetch(`/api/music/manage/history/public?limit=${limit}`);
 }
 
+export interface LocalMusicFile {
+  name: string;
+  size_bytes: number;
+  supported: boolean;
+  deployable: boolean;
+  selected: boolean;
+  reason: string | null;
+}
+
+export async function updateLocalMusicSelection(selectedFile: string): Promise<{
+  selected_file: string | null;
+  configured_selected_file: string | null;
+  track: DailySongItem | null;
+  warnings: string[];
+}> {
+  return apiFetch("/api/music/manage/local-selection", {
+    method: "PUT",
+    body: JSON.stringify({ selected_file: selectedFile }),
+  });
+}
+
 export interface MusicDiagnostics {
   today: string;
   today_song_exists: boolean;
@@ -141,7 +163,10 @@ export interface MusicDiagnostics {
   public_prefix?: string;
   local_source_exists?: boolean;
   local_file_count?: number;
+  deployable_file_count?: number;
   selected_file?: string | null;
+  configured_selected_file?: string | null;
+  files?: LocalMusicFile[];
   warnings?: string[];
   last_sync: {
     action: string;

@@ -332,6 +332,41 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				form.knowledge_points && `## 知识点\n\n${form.knowledge_points}`,
 			].filter(Boolean).join('\n\n')
 
+			const existingMeta = aiMetadata || {}
+			const existingInterp = existingMeta.ai_error_interpretation as { id?: string; version?: number } | null | undefined
+			const existingDraft = existingMeta.question_ai_draft as { question?: string } | null | undefined
+			const existingReason = (existingMeta.user_error_reason || existingMeta.user_error_analysis || '') as string
+
+			const questionChanged = existingDraft && existingDraft.question !== form.question
+			const reasonChanged = existingReason && existingReason !== form.user_error_analysis
+			const hasStagedMeta = existingMeta.error_interpretation_status === 'accepted'
+
+			let mergedMeta: Record<string, unknown> = {
+				...existingMeta,
+				...(form.user_error_analysis ? { user_error_analysis: form.user_error_analysis } : {}),
+			}
+
+			if (hasStagedMeta && reasonChanged) {
+				mergedMeta.user_error_reason = form.user_error_analysis
+			}
+
+			if (hasStagedMeta && (questionChanged || reasonChanged)) {
+				if (existingMeta.final_analysis) {
+					mergedMeta.final_analysis = {
+						...(existingMeta.final_analysis as Record<string, unknown>),
+						stale: true,
+						stale_reason: questionChanged ? '题目已修改' : '错因已修改',
+					}
+				}
+				if (existingMeta.diagram) {
+					mergedMeta.diagram = {
+						...(existingMeta.diagram as Record<string, unknown>),
+						stale: true,
+						stale_reason: questionChanged ? '题目已修改' : '错因已修改',
+					}
+				}
+			}
+
 			const payload = {
 				title: form.title,
 				content,
@@ -345,10 +380,7 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				analysis: form.analysis,
 				knowledge_points: form.knowledge_points,
 				images: uploadedImages,
-				ai_metadata: {
-					...(aiMetadata || {}),
-					...(form.user_error_analysis ? { user_error_analysis: form.user_error_analysis } : {}),
-				},
+				ai_metadata: mergedMeta,
 			}
 
 			let result: NoteDetail

@@ -242,3 +242,187 @@ export async function analyzeTextStream(
     onEvent({ type: 'error', message: '读取响应失败' })
   }
 }
+
+
+// --- Staged mistake workflow types and functions ---
+
+export interface ImageInput {
+  base64: string;
+  mime_type: string;
+}
+
+export interface QuestionDraftResponse {
+  title: string;
+  question: string;
+  options: string[];
+  visual_context: string;
+  key_conditions: string[];
+  candidate_answer: string;
+  knowledge_points: string;
+  question_type: string;
+  subject: string;
+  difficulty: string;
+  tags: string[];
+  image_dependency: string;
+}
+
+export interface QuestionDraftConfirmResponse {
+  status: "confirmed";
+  draft: QuestionDraftResponse;
+  confirmed_at: string;
+}
+
+export interface ErrorInterpretationResponse {
+  interpretation_id: string;
+  version: number;
+  summary: string;
+  diagnosis: string;
+  root_cause: string;
+  knowledge_gap: string;
+  suggested_correction: string;
+  reasoning_trace: string;
+}
+
+export interface FinalAnalysisResponse {
+  analysis: string;
+  error_reason: string;
+  key_step: string;
+  similar_traps: string[];
+  generalization: string;
+  review_advice: string;
+  variant_questions: string[];
+  accepted_interpretation_id: string;
+  accepted_interpretation_version: number;
+}
+
+export interface StructuredDiagramNode {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  highlighted: boolean;
+  annotation: string;
+}
+
+export interface StructuredDiagramEdge {
+  source: string;
+  target: string;
+  label: string;
+  highlighted: boolean;
+  weight: string;
+}
+
+export interface StructuredDiagramTableRow {
+  cells: string[];
+}
+
+export interface StructuredDiagramTable {
+  headers: string[];
+  rows: StructuredDiagramTableRow[];
+  caption: string;
+}
+
+export interface StructuredDiagramData {
+  diagram_type: "graph" | "table" | "flowchart" | "packet_slices";
+  title: string;
+  nodes: StructuredDiagramNode[];
+  edges: StructuredDiagramEdge[];
+  table: StructuredDiagramTable | null;
+  mermaid: string;
+  caption: string;
+  error_reason_annotation: string;
+}
+
+export interface DiagramResponse {
+  strategy: "structured" | "qwen_image_fallback";
+  strategy_reason: string;
+  structured_data: StructuredDiagramData | null;
+  image_url: string;
+  image_prompt: string;
+  accepted_interpretation_id: string;
+  accepted_interpretation_version: number;
+  uses_error_interpretation: boolean;
+}
+
+export async function generateQuestionDraft(
+  images: ImageInput[],
+  text: string
+): Promise<QuestionDraftResponse> {
+  return apiFetch<QuestionDraftResponse>("/api/ai/mistake/question-draft", {
+    method: "POST",
+    body: JSON.stringify({ images, text }),
+  });
+}
+
+export async function confirmQuestionDraft(
+  draft: QuestionDraftResponse
+): Promise<QuestionDraftConfirmResponse> {
+  return apiFetch<QuestionDraftConfirmResponse>("/api/ai/mistake/question-draft/confirm", {
+    method: "POST",
+    body: JSON.stringify({ draft }),
+  });
+}
+
+export async function generateErrorInterpretation(
+  questionDraft: QuestionDraftResponse,
+  userErrorReason: string,
+  rejectionHistory: string[] = []
+): Promise<ErrorInterpretationResponse> {
+  return apiFetch<ErrorInterpretationResponse>("/api/ai/mistake/error-interpretation", {
+    method: "POST",
+    body: JSON.stringify({
+      question_draft: questionDraft,
+      user_error_reason: userErrorReason,
+      rejection_history: rejectionHistory,
+    }),
+  });
+}
+
+export async function rejectErrorInterpretation(
+  questionDraft: QuestionDraftResponse,
+  userErrorReason: string,
+  currentInterpretation: ErrorInterpretationResponse,
+  rejectionReason: string,
+  rejectionHistory: string[] = []
+): Promise<ErrorInterpretationResponse> {
+  return apiFetch<ErrorInterpretationResponse>("/api/ai/mistake/error-interpretation/reject", {
+    method: "POST",
+    body: JSON.stringify({
+      question_draft: questionDraft,
+      user_error_reason: userErrorReason,
+      current_interpretation: currentInterpretation,
+      rejection_reason: rejectionReason,
+      rejection_history: rejectionHistory,
+    }),
+  });
+}
+
+export async function generateFinalAnalysis(
+  questionDraft: QuestionDraftResponse,
+  userErrorReason: string,
+  acceptedInterpretation: ErrorInterpretationResponse
+): Promise<FinalAnalysisResponse> {
+  return apiFetch<FinalAnalysisResponse>("/api/ai/mistake/final-analysis", {
+    method: "POST",
+    body: JSON.stringify({
+      question_draft: questionDraft,
+      user_error_reason: userErrorReason,
+      accepted_interpretation: acceptedInterpretation,
+    }),
+  });
+}
+
+export async function generateDiagram(
+  questionDraft: QuestionDraftResponse,
+  acceptedInterpretation: ErrorInterpretationResponse,
+  finalAnalysis: FinalAnalysisResponse
+): Promise<DiagramResponse> {
+  return apiFetch<DiagramResponse>("/api/ai/mistake/diagram", {
+    method: "POST",
+    body: JSON.stringify({
+      question_draft: questionDraft,
+      accepted_interpretation: acceptedInterpretation,
+      final_analysis: finalAnalysis,
+    }),
+  });
+}

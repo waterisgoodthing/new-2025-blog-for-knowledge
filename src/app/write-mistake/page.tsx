@@ -1,12 +1,12 @@
 'use client'
 
-import { MistakeForm } from './components/mistake-form'
+import { StagedMistakeForm } from './components/staged-mistake-form'
 import { AuthGate } from '@/components/auth-gate'
 
 export default function WriteMistakePage() {
 	return (
 		<AuthGate>
-			<MistakeForm mode='create' />
+			<StagedMistakeForm />
 		</AuthGate>
 	)
 }

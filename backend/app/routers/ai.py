@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import time
 from collections import defaultdict
@@ -12,7 +13,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.note import Note
 from app.routers.auth import get_current_admin
-from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, DiagramItem, TextAnalyzeRequest
+from app.schemas.ai import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    DiagramItem,
+    DiagramResponse,
+    DiagramStrategyRequest,
+    ErrorInterpretationRequest,
+    ErrorInterpretationResponse,
+    FinalAnalysisRequest,
+    FinalAnalysisResponse,
+    InterpretationRejectionRequest,
+    QuestionDraftConfirmRequest,
+    QuestionDraftConfirmResponse,
+    QuestionDraftRequest,
+    QuestionDraftResponse,
+    TextAnalyzeRequest,
+)
 from app.schemas.knowledge import (
     CitationBlock,
     CitationBlockType,
@@ -78,6 +95,11 @@ async def get_ai_config(
                 "configured": bool(settings.DEEPSEEK_API_KEY),
             },
         ],
+        "image_generation": {
+            "model": "qwen-image-2.0-pro",
+            "configured": bool(os.environ.get("DASHSCOPE_IMAGE_API_KEY")),
+            "status": "configured" if os.environ.get("DASHSCOPE_IMAGE_API_KEY") else "disabled",
+        },
     }
 
 
@@ -1228,6 +1250,34 @@ PROMPT_TEMPLATES = {
             "prompt": KNOWLEDGE_CARD_SYSTEM_PROMPT,
             "route": "text JSON",
         },
+        "question_draft": {
+            "name": "题目识别(分阶段)",
+            "description": "从图片/文本中提取题目信息，不推断错因",
+            "prompt": "只提取题目信息，不推断学生错误原因...",
+            "route": "OCR/vision or text JSON",
+            "full_prompt": "见 mistake_staged_service.py QUESTION_DRAFT_SYSTEM_PROMPT",
+        },
+        "error_interpretation": {
+            "name": "错因理解(分阶段)",
+            "description": "理解学生自述的错因，给出结构化解读",
+            "prompt": "以学生自述错因为唯一真相来源...",
+            "route": "text JSON",
+            "full_prompt": "见 mistake_staged_service.py ERROR_INTERPRETATION_SYSTEM_PROMPT",
+        },
+        "final_analysis": {
+            "name": "最终解析(分阶段)",
+            "description": "基于已采纳的错因理解生成最终分析",
+            "prompt": "围绕已采纳的错因理解展开分析...",
+            "route": "text JSON",
+            "full_prompt": "见 mistake_staged_service.py FINAL_ANALYSIS_SYSTEM_PROMPT",
+        },
+        "diagram_structured": {
+            "name": "结构化图解",
+            "description": "生成结构化图解数据(JSON节点/边/表格)",
+            "prompt": "输出 constrained JSON schema 的图解数据...",
+            "route": "text JSON",
+            "full_prompt": "见 diagram_service.py DIAGRAM_STRUCTURED_SYSTEM_PROMPT",
+        },
     },
     "polish": {
         "polish": {
@@ -1351,3 +1401,204 @@ async def provider_status(
 ):
     from app.services.ai_service import get_provider_status
     return await get_provider_status()
+
+
+# --- Staged mistake workflow endpoints ---
+
+
+@router.post("/mistake/question-draft", response_model=QuestionDraftResponse)
+async def mistake_question_draft(
+    req: QuestionDraftRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+    if not req.images and not req.text.strip():
+        raise HTTPException(status_code=400, detail="At least one image or text is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_question_draft", after={"image_count": len(req.images), "has_text": bool(req.text.strip())},
+    )
+
+    try:
+        from app.services.mistake_staged_service import generate_question_draft
+        result = await generate_question_draft(
+            images=[img.model_dump() for img in req.images],
+            text=req.text,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return QuestionDraftResponse(**result)
+
+
+@router.post("/mistake/question-draft/confirm", response_model=QuestionDraftConfirmResponse)
+async def mistake_question_draft_confirm(
+    req: QuestionDraftConfirmRequest,
+    _admin=Depends(get_current_admin),
+):
+    now = __import__("datetime").datetime.utcnow().isoformat() + "Z"
+    return QuestionDraftConfirmResponse(
+        status="confirmed",
+        draft=req.draft,
+        confirmed_at=now,
+    )
+
+
+@router.post("/mistake/error-interpretation", response_model=ErrorInterpretationResponse)
+async def mistake_error_interpretation(
+    req: ErrorInterpretationRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+    if not req.user_error_reason.strip():
+        raise HTTPException(status_code=400, detail="user_error_reason is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_error_interpretation", after={"reason_length": len(req.user_error_reason)},
+    )
+
+    try:
+        from app.services.mistake_staged_service import generate_error_interpretation
+        result = await generate_error_interpretation(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            rejection_history=req.rejection_history,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return ErrorInterpretationResponse(**result)
+
+
+@router.post("/mistake/error-interpretation/reject", response_model=ErrorInterpretationResponse)
+async def mistake_error_interpretation_reject(
+    req: InterpretationRejectionRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+    if not req.rejection_reason.strip():
+        raise HTTPException(status_code=400, detail="rejection_reason is required")
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_interpretation_reject", after={"rejection_reason": req.rejection_reason[:100]},
+    )
+
+    updated_history = list(req.rejection_history) + [req.rejection_reason]
+
+    try:
+        from app.services.mistake_staged_service import generate_error_interpretation
+        result = await generate_error_interpretation(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            rejection_history=updated_history,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return ErrorInterpretationResponse(**result)
+
+
+@router.post("/mistake/final-analysis", response_model=FinalAnalysisResponse)
+async def mistake_final_analysis(
+    req: FinalAnalysisRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_final_analysis",
+        after={"interpretation_id": req.accepted_interpretation.interpretation_id},
+    )
+
+    try:
+        from app.services.mistake_staged_service import generate_final_analysis
+        result = await generate_final_analysis(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            accepted_interpretation=req.accepted_interpretation.model_dump(),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return FinalAnalysisResponse(**result)
+
+
+@router.post("/mistake/diagram", response_model=DiagramResponse)
+async def mistake_diagram(
+    req: DiagramStrategyRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    _check_rate_limit()
+
+    from app.services.audit_service import audit_action
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_diagram",
+        after={"interpretation_id": req.accepted_interpretation.interpretation_id},
+    )
+
+    from app.services.diagram_service import classify_diagram_strategy, generate_structured_diagram
+
+    strategy, reason = classify_diagram_strategy(req.question_draft.model_dump())
+
+    if strategy == "structured":
+        structured_data = await generate_structured_diagram(
+            question_draft=req.question_draft.model_dump(),
+            accepted_interpretation=req.accepted_interpretation.model_dump(),
+            final_analysis=req.final_analysis.model_dump(),
+        )
+        return DiagramResponse(
+            strategy="structured",
+            strategy_reason=reason,
+            structured_data=structured_data,
+            accepted_interpretation_id=req.accepted_interpretation.interpretation_id,
+            accepted_interpretation_version=req.accepted_interpretation.version,
+            uses_error_interpretation=True,
+        )
+
+    from app.services.diagram_service import generate_qwen_image_fallback
+    image_url, image_prompt = await generate_qwen_image_fallback(
+        question_draft=req.question_draft.model_dump(),
+        accepted_interpretation=req.accepted_interpretation.model_dump(),
+        final_analysis=req.final_analysis.model_dump(),
+    )
+    return DiagramResponse(
+        strategy="qwen_image_fallback",
+        strategy_reason=reason,
+        image_url=image_url,
+        image_prompt=image_prompt,
+        accepted_interpretation_id=req.accepted_interpretation.interpretation_id,
+        accepted_interpretation_version=req.accepted_interpretation.version,
+        uses_error_interpretation=True,
+    )

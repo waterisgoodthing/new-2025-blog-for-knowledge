@@ -35,6 +35,7 @@ interface TestResult {
 
 export function AITab() {
 	const [providers, setProviders] = useState<ProviderInfo[]>([])
+	const [imageGen, setImageGen] = useState<{ model: string; configured: boolean; status: string } | null>(null)
 	const [prompts, setPrompts] = useState<PromptGroups>({})
 	const [loading, setLoading] = useState(true)
 	const [selectedGroup, setSelectedGroup] = useState('')
@@ -48,11 +49,16 @@ export function AITab() {
 		setLoading(true)
 		try {
 			const API_BASE = getApiBase()
-			const [provRes, promptRes] = await Promise.all([
+			const [provRes, promptRes, configRes] = await Promise.all([
 				fetch(`${API_BASE}/api/ai/provider-status`, { credentials: 'include' }),
 				fetch(`${API_BASE}/api/ai/prompts`, { credentials: 'include' }),
+				fetch(`${API_BASE}/api/ai/config`, { credentials: 'include' }),
 			])
 			if (provRes.ok) setProviders(await provRes.json())
+			if (configRes.ok) {
+				const config = await configRes.json()
+				if (config.image_generation) setImageGen(config.image_generation)
+			}
 			if (promptRes.ok) {
 				const data = await promptRes.json()
 				setPrompts(data)
@@ -146,6 +152,22 @@ export function AITab() {
 						</div>
 					))}
 				</div>
+				{imageGen && (
+					<div className='mt-4 rounded-xl bg-white/40 p-4'>
+						<div className='flex items-center justify-between'>
+							<span className='text-sm font-medium'>图像生成 (Qwen Image)</span>
+							<span className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+								imageGen.configured ? 'bg-green-500/10 text-green-600' : 'bg-gray-500/10 text-gray-500'
+							}`}>
+								{imageGen.configured ? '已配置' : '未配置（降级为结构化图表）'}
+							</span>
+						</div>
+						<div className='mt-2 space-y-1 text-xs text-gray-500'>
+							<div>Model: <span className='font-mono text-gray-700'>{imageGen.model}</span></div>
+							<div>Role: 错题图解兜底（仅当结构化渲染不适用时使用）</div>
+						</div>
+					</div>
+				)}
 			</div>
 
 			<div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
