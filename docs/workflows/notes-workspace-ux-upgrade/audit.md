@@ -59,3 +59,56 @@ Checked planning documents for front/back completeness before implementation:
 
 The workflow documents are complete enough to request approval for implementation. No source implementation should begin until `tasks.md` is explicitly approved in conversation.
 
+---
+
+## 2026-06-15 Follow-Up Audit
+
+### Audit Date
+
+2026-06-15
+
+### Scope
+
+Checked planning documents for the follow-up hardening round before implementation:
+
+- `README.md`
+- `requirements.md` (REQ-13 through REQ-19)
+- `design.md` (2026-06-15 Follow-Up Design section)
+- `tasks.md` (Phase 8)
+- `validation.md` (2026-06-15 Follow-Up Planning Evidence)
+- `diff-report.md`
+- `handoff-prompt.md`
+
+### Requirement To Design Coverage (Follow-Up)
+
+| Requirement | Design Coverage | Task Coverage |
+| --- | --- | --- |
+| REQ-13 OS-like folder navigation | Breadcrumb bar, active-location clarity | P0-17 |
+| REQ-14 Create note inside current folder | `folder_id` URL sync, back/cancel threading | P0-16, P0-18 |
+| REQ-15 Restore AI tag generation | AbortController, parse/apply hardening | P0-20 |
+| REQ-16 Preserve folder context after edit back | URL-based folder context through detail/edit | P0-19 |
+| REQ-17 Scheduled weekly summary folder | Idempotent persistence, scheduling approach | P1-09 |
+| REQ-18 Evidence-based AI suggestions | Raised weakness threshold, neutral wording | P1-10 |
+| REQ-19 Streaming UI render hardening | RAF ref cleanup, abort callback, stale check | P0-21 |
+
+### Decision Coverage (Follow-Up)
+
+| Decision | Status | Documented In |
+| --- | --- | --- |
+| Folder context via URL query params (not new state store) | Complete | `design.md` |
+| Weakness threshold raised to ≥ 3 | Complete | `design.md`, `tasks.md` P1-10 |
+| Weekly summary idempotent by week slug | Complete | `design.md`, `tasks.md` P1-09 |
+| AbortController for all streaming UI | Complete | `design.md`, `tasks.md` P0-20, P0-21 |
+
+### Findings
+
+- Complete: every follow-up requirement has design coverage and task items.
+- Complete: `diff-report.md` created with pre-existing dirty files and planned changes documented.
+- Complete: `handoff-prompt.md` updated with follow-up feedback items.
+- Pre-existing dirty files (`ai-assistant-panel.tsx`, `tag-suggestion-dialog.tsx`) must be preserved and hardened, not replaced.
+- Phase 8 tasks require explicit user approval before implementation.
+
+### Conclusion
+
+Follow-up workflow documents are complete. Implementation should not start until Phase 8 `tasks.md` is explicitly approved.
+

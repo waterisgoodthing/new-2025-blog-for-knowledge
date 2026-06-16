@@ -50,3 +50,18 @@ Implementation must not start until this task list is explicitly approved in the
 - [x] **P0-13** Run TypeScript validation — `npx tsc --noEmit` passes with no errors.
 - [x] **P0-14** Browser-check `/notes`, `/write-note`, and `/write-mistake` — all routes return HTTP 200; compiled bundles verified to contain: `defaultExpanded`, `getContextMenuItems`, `analyzeMistakeStream`, `TagSuggestionDialog`, `ContextMenu`, `getContentEditHref`, `custom_prompt`, dynamic button labels, 7 template categories, expanded insert blocks, context menu labels, tooltip strings, AI custom prompt placeholder, and tag suggestion dialog strings. Backend SSE endpoint accessible.
 - [x] **P0-15** Update `validation.md` with evidence, residual risks, and next-round requirements.
+
+## Phase 8: 2026-06-15 Follow-Up Hardening
+
+Implementation must not start until this follow-up task list is explicitly approved in the conversation.
+
+- [x] **P0-16** Reproduce and verify current folder context behavior before editing: selected-folder create, edit/detail/back/cancel return paths, and whether production/backend data differs from local code.
+- [x] **P0-17** Make folder navigation more OS-like within the existing notes sidebar: active location clarity, child-folder creation placement, and create-note destination clarity without introducing a new route or state library.
+- [x] **P0-18** Close the create-inside-folder loop so a note created from a selected folder is saved into that folder and returns to the same folder context.
+- [x] **P0-19** Preserve folder context when entering edit/detail from folder-scoped overview and returning to `/notes`.
+- [x] **P0-20** Restore AI tag generation in both empty-tag save and AI assistant tag action, including parsing/apply failure handling.
+- [x] **P1-09** Implement or wire scheduled weekly summary behavior for Monday 08:00, with idempotent persistence into a dedicated weekly-summary folder.
+- [x] **P1-10** Tighten AI suggestion evidence rules so weak-point claims require mistake/review/knowledge-point evidence and recent upload volume only produces neutral activity/organization suggestions.
+- [x] **P0-21** Harden the existing streaming RAF fix in `ai-assistant-panel.tsx` and `tag-suggestion-dialog.tsx`: cancel pending frames on unmount/done/error/abort and ignore stale request updates.
+- [x] **P0-22** Validate with `npx tsc --noEmit`, targeted backend checks if backend files change, and browser or HTTP checks for `/notes` and `/write-note`.
+- [x] **P0-23** Update `validation.md`, `diff-report.md`, and handoff notes with exact evidence, residual risks, and any unverified production scheduling limits.

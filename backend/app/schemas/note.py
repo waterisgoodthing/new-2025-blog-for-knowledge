@@ -70,6 +70,7 @@ class NoteUpdate(BaseModel):
     knowledge_points: str | None = None
     images: list[str] | None = None
     ai_metadata: dict | None = None
+    folder_id: uuid.UUID | None = None
 
 
 class TagOut(BaseModel):

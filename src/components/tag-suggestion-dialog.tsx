@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Sparkles, X, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -20,19 +20,44 @@ export function TagSuggestionDialog({ open, content, title, existingTags, onAppl
 	const [loading, setLoading] = useState(false)
 	const [suggestedTags, setSuggestedTags] = useState<string[]>([])
 	const [error, setError] = useState('')
+	const abortRef = useRef<AbortController | null>(null)
+	const requestIdRef = useRef(0)
+	const rafRef = useRef(0)
 
 	useEffect(() => {
-		if (open) { setSuggestedTags([]); setError(''); setLoading(false) }
+		if (open) {
+			setSuggestedTags([])
+			setError('')
+			setLoading(false)
+		}
+		return () => {
+			++requestIdRef.current
+			abortRef.current?.abort()
+			if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+		}
 	}, [open])
 
 	const generateTags = async () => {
+		abortRef.current?.abort()
+		const controller = new AbortController()
+		abortRef.current = controller
+		const currentId = ++requestIdRef.current
+
 		setLoading(true)
 		setError('')
 		let accumulated = ''
 
 		await streamPolish(content || title || '无内容', 'tags', {
-			onChunk: chunk => { accumulated += chunk },
+			onChunk: chunk => {
+				if (currentId !== requestIdRef.current) return
+				accumulated += chunk
+				if (!rafRef.current) {
+					rafRef.current = requestAnimationFrame(() => { rafRef.current = 0 })
+				}
+			},
 			onDone: () => {
+				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 				try {
 					let cleaned = accumulated.trim()
 					const fenceMatch = cleaned.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/)
@@ -45,8 +70,17 @@ export function TagSuggestionDialog({ open, content, title, existingTags, onAppl
 					setSuggestedTags(lines.filter(t => !existingTags.includes(t)))
 				}
 				setLoading(false)
+				abortRef.current = null
 			},
-			onError: err => { setError(err); setLoading(false) },
+			onError: err => {
+				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setError(err)
+				setLoading(false)
+				abortRef.current = null
+			},
+		}, {
+			signal: controller.signal,
 		})
 	}
 

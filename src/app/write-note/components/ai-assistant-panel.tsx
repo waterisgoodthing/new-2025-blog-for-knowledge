@@ -84,11 +84,16 @@ export function AIAssistantPanel({
 	const [lastAction, setLastAction] = useState<ActionMeta | null>(null)
 	const abortRef = useRef<AbortController | null>(null)
 	const requestIdRef = useRef(0)
+	const rafRef = useRef(0)
 	const isMobile = useIsMobile()
 	const [customPrompt, setCustomPrompt] = useState('')
 
 	useEffect(() => {
-		return () => { abortRef.current?.abort() }
+		return () => {
+			++requestIdRef.current
+			abortRef.current?.abort()
+			if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+		}
 	}, [])
 
 	const runAction = async (action: PolishAction, label: string) => {
@@ -116,15 +121,23 @@ export function AIAssistantPanel({
 			onChunk: chunk => {
 				if (currentId !== requestIdRef.current) return
 				accumulated += chunk
-				setResult(accumulated)
+				if (!rafRef.current) {
+					rafRef.current = requestAnimationFrame(() => {
+						rafRef.current = 0
+						if (currentId === requestIdRef.current) setResult(accumulated)
+					})
+				}
 			},
 			onDone: () => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setResult(accumulated)
 				setLoading(false)
 				abortRef.current = null
 			},
 			onError: err => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 				setError(err)
 				setLoading(false)
 				abortRef.current = null
@@ -139,8 +152,10 @@ export function AIAssistantPanel({
 	}
 
 	const handleStop = () => {
+		++requestIdRef.current
 		abortRef.current?.abort()
 		abortRef.current = null
+		if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 		setLoading(false)
 	}
 
@@ -171,15 +186,23 @@ export function AIAssistantPanel({
 			onChunk: chunk => {
 				if (currentId !== requestIdRef.current) return
 				accumulated += chunk
-				setResult(accumulated)
+				if (!rafRef.current) {
+					rafRef.current = requestAnimationFrame(() => {
+						rafRef.current = 0
+						if (currentId === requestIdRef.current) setResult(accumulated)
+					})
+				}
 			},
 			onDone: () => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setResult(accumulated)
 				setLoading(false)
 				abortRef.current = null
 			},
 			onError: err => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 				setError(err)
 				setLoading(false)
 				abortRef.current = null

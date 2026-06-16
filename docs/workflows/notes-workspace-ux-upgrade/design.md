@@ -186,3 +186,34 @@ Events:
   - AI assistant custom request.
   - mistake analysis progress states.
 - If backend stream changes, run FastAPI import/start or targeted tests if present.
+
+## 2026-06-15 Follow-Up Design
+
+### Initial Findings
+
+- `src/app/notes/page.tsx` already passes `folder_id` into `/write-note` when `activeFolderId` is set.
+- `src/app/write-note/page.tsx` already reads `folder_id` from search params and sends it in `createNote`.
+- The remaining folder-create complaint is likely in context preservation, route/back links, or a production/backend mismatch, not simply a missing create payload.
+- `src/app/write-note/page.tsx` returns to plain `/notes` from the back and cancel links, so it can lose folder context.
+- `src/app/notes/components/weekly-summary-card.tsx` saves a weekly summary note manually, but does not create/use a dedicated folder and does not schedule Monday 08:00 generation.
+- `backend/app/services/knowledge_assistant.py` currently emits weak-point suggestions from aggregate mistake subjects/knowledge points, and recent-upload summaries from recent notes. The wording needs to distinguish organization/review evidence from upload frequency.
+- Current dirty changes throttle streaming in `AIAssistantPanel` and `TagSuggestionDialog`, but need unmount cleanup and a clearer stale-request/cancel boundary.
+
+### Proposed Direction
+
+- Preserve folder context through URL query parameters first because `/notes` already supports `folder_id` as the API filter input and this avoids a new global state store.
+- Add folder-aware back/cancel/create/detail/edit links where the notes flow owns the navigation.
+- Re-check backend folder assignment contract before changing it; the earlier `folder-note-assignment-fix` workflow says this was already implemented and deployed.
+- Restore AI tags by inspecting both `TagSuggestionDialog` and `AIAssistantPanel` tag flows, then fixing the smallest broken parsing/apply path.
+- Implement weekly-summary persistence idempotently by week slug and a dedicated folder. Scheduling must be explicit: either backend scheduler/cron support if present, or a documented deployment cron endpoint if not.
+- Update AI suggestions so weak-point claims require mistake/review evidence, while recent uploads only create neutral "recent activity" or organization suggestions.
+- Harden streaming render throttling with a reusable helper or local refs/effects that cancel pending `requestAnimationFrame` callbacks on unmount, stop, done, error, and stale request transitions.
+
+### Follow-Up Validation Plan
+
+- Run `npx tsc --noEmit` for frontend TypeScript changes.
+- Run targeted backend import/compile checks if backend AI/folder/weekly code changes.
+- Browser-check `/notes` and `/write-note` folder-context round trips.
+- Verify AI tag suggestion UI in both empty-tag save and AI assistant tag action.
+- Verify weekly-summary persistence is idempotent for the same week.
+- Record all results in `validation.md`.

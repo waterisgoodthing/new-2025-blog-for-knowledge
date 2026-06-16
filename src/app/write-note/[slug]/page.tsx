@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import { motion } from 'motion/react'
@@ -24,6 +24,9 @@ const NotePreviewContent = dynamic(() => import('../components/note-preview-cont
 export default function EditNotePage() {
 	const { slug } = useParams<{ slug: string }>()
 	const router = useRouter()
+	const searchParams = useSearchParams()
+	const folderId = searchParams.get('folder_id')
+	const folderQuery = folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
 	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
@@ -207,7 +210,7 @@ export default function EditNotePage() {
 				ai_metadata: form.type === 'mistake' ? aiMetadata : undefined,
 				sort_order: form.sort_order,
 			})
-			router.push(getContentDetailHref(updated.type, updated.slug))
+			router.push(getContentDetailHref(updated.type, updated.slug) + (folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -426,7 +429,7 @@ export default function EditNotePage() {
 					<button onClick={handleSave} disabled={saving} className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50'>
 						{saving ? '保存中...' : '保存'}
 					</button>
-					<button onClick={() => router.back()} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
+					<button onClick={() => router.push(`/notes${folderQuery}`)} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
 				</div>
 			</div>
 

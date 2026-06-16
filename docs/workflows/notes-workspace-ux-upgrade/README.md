@@ -17,10 +17,24 @@ Upgrade the notes workspace and writing flows based on the June 7, 2026 feedback
 
 ## Current Status
 
-- Status: phase implementation complete; TypeScript validation passes, follow-up tooltip verification is recorded, and the current build is deployed to `https://blog.limengyang.me`.
-- Source implementation has been completed for the approved task list.
-- Existing dirty worktree must be preserved.
-- Non-blocking residual risks remain documented in `validation.md`, including category API dev-port mismatch and viewport-aware tooltip positioning.
+- Status: Phase 0–7 original implementation complete and deployed. Phase 8 follow-up hardening (2026-06-15) implementation complete — all 10 tasks done.
+- Source implementation has been completed for both original and follow-up task lists.
+- Follow-up round modified 13 files across frontend and backend.
+- `npx tsc --noEmit` and backend syntax checks pass.
+- Remaining residual risk: weekly summary cron scheduling needs deployment configuration (endpoint exists).
+- `diff-report.md` documents all changes from both rounds.
+
+## 2026-06-15 Follow-Up Feedback
+
+New user-reported issues:
+
+1. The first folder placement is not OS-like enough.
+2. Creating a note while located in a folder still requires manual classification afterward.
+3. AI-generated tags disappeared.
+4. Returning from the note edit page to overview does not restore the previous main folder.
+5. Weekly summary should run every Monday at 08:00, display in the workspace, and be saved into a dedicated folder.
+6. AI suggestions are too broad and should not infer weak knowledge from frequent recent uploads alone.
+7. Streaming render performance was already patched in `ai-assistant-panel.tsx` and `tag-suggestion-dialog.tsx`; this round should harden that fix with cleanup and regression protection.
 
 ## Source Feedback
 
@@ -34,5 +48,6 @@ Upgrade the notes workspace and writing flows based on the June 7, 2026 feedback
 - [design.md](design.md)
 - [tasks.md](tasks.md)
 - [audit.md](audit.md)
+- [diff-report.md](diff-report.md)
 - [validation.md](validation.md)
 - [handoff-prompt.md](handoff-prompt.md)

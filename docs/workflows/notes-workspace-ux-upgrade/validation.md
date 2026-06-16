@@ -94,3 +94,88 @@
 4. Backend model changes for richer folder operations if needed
 5. Full `npm run build` validation once static asset issues are resolved
 6. Dev-environment API base URL normalization for metadata endpoints such as `listCategories()`
+
+## 2026-06-15 Follow-Up Planning Evidence
+
+- `git status --short` before planning showed existing dirty files:
+  - `src/app/write-note/components/ai-assistant-panel.tsx`
+  - `src/components/tag-suggestion-dialog.tsx`
+- Touched domains identified for the follow-up:
+  - `notes`
+  - `write-note`
+  - backend/frontend AI suggestions
+  - weekly summary
+  - shared folder navigation context
+- Read before planning:
+  - `src/app/notes/page.tsx`
+  - `src/app/notes/components/knowledge-sidebar.tsx`
+  - `src/app/notes/components/weekly-summary-card.tsx`
+  - `src/app/notes/components/suggestion-card.tsx`
+  - `src/app/write-note/page.tsx`
+  - `src/app/write-note/components/ai-assistant-panel.tsx` diff
+  - `src/components/tag-suggestion-dialog.tsx` diff
+  - `src/lib/api/notes.ts`
+  - `src/lib/api/knowledge-assistant.ts`
+  - `backend/app/routers/suggestions.py`
+  - `backend/app/services/knowledge_assistant.py`
+- Initial conclusion: implementation is not started in this follow-up pass; `tasks.md` now requires explicit approval before source changes.
+
+## 2026-06-15 Follow-Up Implementation Validation
+
+### TypeScript
+
+- Command: `npx tsc --noEmit`
+- Result: **Pass** — no errors.
+
+### Python Syntax
+
+- Command: `python3 -c "import ast; ast.parse(open('backend/app/routers/suggestions.py').read()); ast.parse(open('backend/app/services/knowledge_assistant.py').read())"`
+- Result: **Pass** — no syntax errors.
+
+### Files Modified (Follow-Up Round)
+
+| File | Changes |
+| --- | --- |
+| `src/app/notes/page.tsx` | URL-synced `folder_id`, breadcrumb bar, `handleFolderChange` with URL update, folder tree loading |
+| `src/app/notes/components/weekly-summary-card.tsx` | Idempotent save (try update before create), dedicated "周度总结" folder via `ensureWeeklyFolder()` |
+| `src/app/notes/components/suggestion-card.tsx` | Added `activity` type and color for neutral organization suggestions |
+| `src/app/write-note/page.tsx` | `folderQuery` threaded through back link, cancel link, and post-save redirect |
+| `src/app/write-note/[slug]/page.tsx` | `folder_id` from search params, deterministic cancel link with folder context, post-save redirect with folder_id |
+| `src/app/notes/[id]/note-detail-content.tsx` | `useSearchParams` for `folder_id`, back links and edit link include folder context |
+| `src/app/write-note/components/ai-assistant-panel.tsx` | `rafRef` for unmount-safe RAF cleanup, `handleStop` cancels RAF |
+| `src/components/tag-suggestion-dialog.tsx` | `AbortController` with abort on unmount/open-change, `rafRef` for cleanup, stale request protection |
+| `src/lib/api/folders.ts` | Added `findFolderPath()` utility for breadcrumb path resolution |
+| `src/lib/content-routes.ts` | `getContentListHref` accepts optional `folderId` param |
+| `src/lib/api/ai-polish.ts` | `AbortError` now calls `callbacks.onDone()` instead of silent return |
+| `backend/app/services/knowledge_assistant.py` | Weakness threshold raised to `>= 3`, recent suggestion type changed to `activity`/`organize` |
+| `backend/app/routers/suggestions.py` | Added `POST /api/ai/weekly-summary/generate` endpoint for idempotent scheduled generation |
+
+### Residual Risks (Follow-Up)
+
+1. **Scheduling**: The backend `POST /api/ai/weekly-summary/generate` endpoint exists but no cron trigger is configured. Deployment cron setup (e.g., Cloudflare Workers Cron Triggers or external cron service) is needed for Monday 08:00 automation.
+2. **Browser QA**: Full interactive testing (breadcrumb navigation, folder context round trips, AI tag generation, streaming abort) deferred to manual QA.
+3. **Pre-existing risks**: All original residual risks (static assets, type debt, AI progress granularity, tooltip positioning, category API dev-port mismatch) remain.
+
+## 2026-06-15 Code Review Fix Round
+
+### Issues Found And Fixed
+
+| # | Issue | Fix |
+| --- | --- | --- |
+| 1 | `handleFilterChange` called `handleFolderChange(null)`, immediately clearing folder when sidebar clicked a folder (sidebar calls `onFolderChange` then `onFilterChange`) | Removed `handleFolderChange(null)` from `handleFilterChange`; type pill buttons already clear folder explicitly |
+| 2 | Card links and context menu "打开" action did not pass `folder_id`, so detail page lost folder context | Added `folderQuery` to card `<Link>`, context menu "打开", and "复制链接" actions |
+| 3 | Backend `weekly-summary/generate` used `now - 7 days` (rolling) instead of Monday 00:00 boundary | Fixed to calculate `days_since_monday = now.weekday()` and use `replace(hour=0, minute=0, ...)` |
+| 4 | Existing weekly note update did not set `folder_id`, so old notes stayed outside dedicated folder | Added `folder_id` to both backend update path and frontend `updateNote` call; added `folder_id` to `NoteUpdateInput` TypeScript type and `NoteUpdate` Pydantic schema |
+| 5 | Abort → `onDone` in `ai-polish.ts` could still trigger state updates after dialog close/unmount | Added `++requestIdRef.current` before abort in both `tag-suggestion-dialog.tsx` and `ai-assistant-panel.tsx` cleanup effects, so stale check catches post-abort callbacks |
+
+### Additional Schema Changes
+
+| File | Change |
+| --- | --- |
+| `backend/app/schemas/note.py` | Added `folder_id: uuid.UUID \| None = None` to `NoteUpdate` |
+| `src/lib/api/notes.ts` | Added `folder_id?: string \| null` to `NoteUpdateInput` |
+
+### Re-Validation After Fixes
+
+- `npx tsc --noEmit`: **Pass**
+- Backend syntax (suggestions.py, knowledge_assistant.py, note.py): **Pass**

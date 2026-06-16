@@ -6,8 +6,30 @@ import { Calendar, BookOpen, AlertCircle, CheckCircle, Save, ChevronDown, Chevro
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getWeeklySummary, type WeeklySummary } from '@/lib/api/knowledge-assistant'
-import { createNote } from '@/lib/api/notes'
+import { createNote, getNote, updateNote } from '@/lib/api/notes'
+import { createFolder, listFolders } from '@/lib/api/folders'
 import dayjs from 'dayjs'
+
+const WEEKLY_FOLDER_NAME = '周度总结'
+const WEEKLY_FOLDER_KEY = 'weekly_summary_folder_id'
+
+async function ensureWeeklyFolder(): Promise<string | null> {
+	const cached = localStorage.getItem(WEEKLY_FOLDER_KEY)
+	if (cached) return cached
+	try {
+		const folders = await listFolders()
+		const existing = folders.find(f => f.name === WEEKLY_FOLDER_NAME)
+		if (existing) {
+			localStorage.setItem(WEEKLY_FOLDER_KEY, existing.id)
+			return existing.id
+		}
+		const created = await createFolder({ name: WEEKLY_FOLDER_NAME })
+		localStorage.setItem(WEEKLY_FOLDER_KEY, created.id)
+		return created.id
+	} catch {
+		return null
+	}
+}
 
 export function WeeklySummaryCard() {
 	const [summary, setSummary] = useState<WeeklySummary | null>(null)
@@ -27,6 +49,7 @@ export function WeeklySummaryCard() {
 		setSaving(true)
 		try {
 			const weekLabel = `${dayjs(summary.week_start).format('MM-DD')} ~ ${dayjs(summary.week_end).format('MM-DD')}`
+			const weekSlug = `weekly-${dayjs(summary.week_start).format('YYYYMMDD')}`
 			const content = [
 				`# 周度学习总结 (${weekLabel})`,
 				'',
@@ -47,14 +70,28 @@ export function WeeklySummaryCard() {
 				] : []),
 			].join('\n')
 
-			await createNote({
-				slug: `weekly-${dayjs(summary.week_start).format('YYYYMMDD')}`,
-				title: `周度学习总结 (${weekLabel})`,
-				content,
-				type: 'note',
-				tags: ['周度总结', '自动生成'],
-			})
-			toast.success('已保存为笔记')
+			const folderId = await ensureWeeklyFolder()
+
+			try {
+				await getNote(weekSlug)
+				await updateNote(weekSlug, {
+					title: `周度学习总结 (${weekLabel})`,
+					content,
+					tags: ['周度总结', '自动生成'],
+					folder_id: folderId || undefined,
+				})
+				toast.success('已更新本周总结')
+			} catch {
+				await createNote({
+					slug: weekSlug,
+					title: `周度学习总结 (${weekLabel})`,
+					content,
+					type: 'note',
+					tags: ['周度总结', '自动生成'],
+					folder_id: folderId || undefined,
+				})
+				toast.success('已保存为笔记')
+			}
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {

@@ -11,8 +11,8 @@ export function getContentEditHref(type: ContentType, slug: string): string {
 	return `/write-note/${slug}`
 }
 
-export function getContentListHref(type: ContentType): string {
-	if (type === 'blog') return '/blog'
-	if (type === 'mistake') return '/mistakes'
-	return '/notes'
+export function getContentListHref(type: ContentType, folderId?: string | null): string {
+	const base = type === 'blog' ? '/blog' : type === 'mistake' ? '/mistakes' : '/notes'
+	if (folderId) return `${base}?folder_id=${encodeURIComponent(folderId)}`
+	return base
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import useSWR from 'swr'
 import Link from 'next/link'
@@ -89,6 +89,8 @@ const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
 
 export default function NoteDetailContent() {
 	const { id } = useParams<{ id: string }>()
+	const searchParams = useSearchParams()
+	const folderId = searchParams.get('folder_id')
 	const router = useRouter()
 	const [deleting, setDeleting] = useState(false)
 	const { isAdmin } = useAdminAuth()
@@ -107,7 +109,7 @@ export default function NoteDetailContent() {
 		setDeleting(true)
 		try {
 			await deleteNote(id)
-			router.push(note ? getContentListHref(note.type) : '/notes')
+			router.push(note ? getContentListHref(note.type, folderId) : '/notes')
 		} catch (e: any) {
 			toast.error('删除失败: ' + (e?.message || '未知错误'))
 			setDeleting(false)
@@ -120,7 +122,7 @@ export default function NoteDetailContent() {
 	const actionBar = isAdmin ? (
 		<div className='flex gap-3'>
 			<Link
-				href={getContentEditHref(note.type, note.slug)}
+				href={getContentEditHref(note.type, note.slug) + (folderId ? `?folder_id=${encodeURIComponent(folderId)}` : '')}
 				className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white hover:scale-105 active:scale-95'
 			>
 				编辑
@@ -141,9 +143,9 @@ export default function NoteDetailContent() {
 		return (
 			<div className='mx-auto max-w-6xl px-4 py-8'>
 				<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-					<Link href={getContentListHref(note.type)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
-						← 返回错题集
-					</Link>
+				<Link href={getContentListHref(note.type, folderId)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
+					← 返回错题集
+				</Link>
 
 					<div className='mb-5 flex flex-wrap items-center gap-2'>
 						<span className={cn('rounded-full px-2 py-0.5 text-xs', typeColors[note.type])}>{typeLabels[note.type]}</span>
@@ -476,7 +478,7 @@ export default function NoteDetailContent() {
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-				<Link href={getContentListHref(note.type)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
+				<Link href={getContentListHref(note.type, folderId)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
 					← 返回列表
 				</Link>
 

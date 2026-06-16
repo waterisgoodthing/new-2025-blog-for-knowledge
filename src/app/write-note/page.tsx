@@ -34,6 +34,7 @@ function WriteNoteContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const folderId = searchParams.get('folder_id')
+	const folderQuery = folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
 	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
@@ -137,7 +138,7 @@ function WriteNoteContent() {
 				folder_id: folderId || undefined,
 				sort_order: form.sort_order,
 			})
-			router.push(getContentDetailHref(created.type, created.slug))
+			router.push(getContentDetailHref(created.type, created.slug) + (folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -149,7 +150,7 @@ function WriteNoteContent() {
 		<div className='mx-auto max-w-3xl px-4 py-8'>
 			<div className='mb-6 flex items-center gap-4'>
 				<Link
-					href='/notes'
+					href={`/notes${folderQuery}`}
 					aria-label='返回笔记'
 					className='flex h-9 w-9 items-center justify-center rounded-xl border border-white/40 bg-white/60 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-800'
 				>
@@ -336,7 +337,7 @@ function WriteNoteContent() {
 						{saving ? '保存中...' : '发布'}
 					</button>
 					<Link
-						href='/notes'
+						href={`/notes${folderQuery}`}
 						className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'
 					>
 						取消

@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
-import { MoreHorizontal, GripVertical, ExternalLink, Pencil, Trash2, Copy } from 'lucide-react'
+import { MoreHorizontal, GripVertical, ExternalLink, Pencil, Trash2, Copy, ChevronRight, X } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
@@ -13,9 +13,9 @@ import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
 import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
 import { EmptyState } from '@/components/empty-state'
-import { moveNoteToFolder } from '@/lib/api/folders'
+import { moveNoteToFolder, listFolders, findFolderPath, type FolderNode } from '@/lib/api/folders'
 import { deleteNote } from '@/lib/api/notes'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getContentEditHref, getContentDetailHref, type ContentType } from '@/lib/content-routes'
 import { toast } from 'sonner'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
@@ -26,18 +26,45 @@ const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yel
 
 export default function NotesPage() {
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const { isAdmin } = useAdminAuth()
 	const [type, setType] = useState<string>('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
 	const [activeFilter, setActiveFilter] = useState('all')
-	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
+	const [activeFolderId, setActiveFolderId] = useState<string | null>(searchParams.get('folder_id'))
 	const [activeTag, setActiveTag] = useState<string | null>(null)
 	const [moveTarget, setMoveTarget] = useState<{ slug: string; title: string } | null>(null)
 	const [draggingSlug, setDraggingSlug] = useState<string | null>(null)
 	const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
 	const [folderRefreshKey, setFolderRefreshKey] = useState(0)
 	const [ctxMenu, setCtxMenu] = useState<{ slug: string; title: string; type: ContentType; x: number; y: number } | null>(null)
+	const [folderTree, setFolderTree] = useState<FolderNode[]>([])
+
+	const folderPath = useMemo(() => {
+		if (!activeFolderId || folderTree.length === 0) return null
+		return findFolderPath(folderTree, activeFolderId)
+	}, [activeFolderId, folderTree])
+
+	useEffect(() => {
+		listFolders().then(setFolderTree).catch(() => {})
+	}, [folderRefreshKey])
+
+	useEffect(() => {
+		const urlFolderId = searchParams.get('folder_id')
+		if (urlFolderId !== activeFolderId) {
+			setActiveFolderId(urlFolderId)
+		}
+	}, [searchParams])
+
+	const handleFolderChange = (folderId: string | null) => {
+		setActiveFolderId(folderId)
+		const params = new URLSearchParams(window.location.search)
+		if (folderId) params.set('folder_id', folderId)
+		else params.delete('folder_id')
+		const qs = params.toString()
+		router.replace(`/notes${qs ? `?${qs}` : ''}`, { scroll: false })
+	}
 
 	const handleTagChange = (tag: string | null) => {
 		setActiveTag(tag)
@@ -94,20 +121,21 @@ export default function NotesPage() {
 
 	const getContextMenuItems = (): ContextMenuItem[] => {
 		if (!ctxMenu) return []
+		const folderQuery = activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : ''
 		const items: ContextMenuItem[] = [
-			{ label: '打开', icon: <ExternalLink size={14} />, onClick: () => router.push(getContentDetailHref(ctxMenu.type, ctxMenu.slug)) },
+			{ label: '打开', icon: <ExternalLink size={14} />, onClick: () => router.push(getContentDetailHref(ctxMenu.type, ctxMenu.slug) + folderQuery) },
 			{
 				label: '复制链接',
 				icon: <Copy size={14} />,
 				onClick: () => {
-					navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}`)
+					navigator.clipboard.writeText(`${window.location.origin}${getContentDetailHref(ctxMenu.type, ctxMenu.slug)}${folderQuery}`)
 					toast.success('链接已复制')
 				}
 			}
 		]
 		if (isAdmin) {
 			items.push(
-				{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug)) },
+				{ label: '编辑', icon: <Pencil size={14} />, onClick: () => router.push(getContentEditHref(ctxMenu.type, ctxMenu.slug) + (activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : '')) },
 				{ label: '移动到文件夹', icon: <GripVertical size={14} />, onClick: () => setMoveTarget({ slug: ctxMenu.slug, title: ctxMenu.title }) },
 				{
 					label: '删除',
@@ -148,7 +176,7 @@ export default function NotesPage() {
 					activeFolderId={activeFolderId}
 					activeTag={activeTag}
 					onFilterChange={handleFilterChange}
-					onFolderChange={setActiveFolderId}
+					onFolderChange={handleFolderChange}
 					onTagChange={handleTagChange}
 					canManage={isAdmin}
 					onDropNote={isAdmin ? handleDropToFolder : undefined}
@@ -178,7 +206,7 @@ export default function NotesPage() {
 										setType(t)
 										setPage(1)
 										setActiveFilter(t || 'all')
-										setActiveFolderId(null)
+										handleFolderChange(null)
 										setActiveTag(null)
 									}}
 									className={cn(
@@ -204,6 +232,39 @@ export default function NotesPage() {
 
 					{isAdmin && <SuggestionCard onExecuted={() => mutate()} defaultExpanded={showDashboard} />}
 					{isAdmin && showDashboard && <WeeklySummaryCard />}
+
+					{folderPath && (
+						<div className='mb-4 flex items-center gap-1 text-sm text-gray-500'>
+							<button
+								type='button'
+								onClick={() => handleFolderChange(null)}
+								className='rounded px-1 transition-colors hover:bg-white/60 hover:text-gray-700'>
+								全部
+							</button>
+							{folderPath.map((node, i) => (
+								<span key={node.id} className='flex items-center gap-1'>
+									<ChevronRight size={12} className='text-gray-300' />
+									{i < folderPath.length - 1 ? (
+										<button
+											type='button'
+											onClick={() => handleFolderChange(node.id)}
+											className='rounded px-1 transition-colors hover:bg-white/60 hover:text-gray-700'>
+											{node.name}
+										</button>
+									) : (
+										<span className='font-medium text-gray-700'>{node.name}</span>
+									)}
+								</span>
+							))}
+							<button
+								type='button'
+								onClick={() => handleFolderChange(null)}
+								aria-label='清除文件夹筛选'
+								className='ml-1 rounded p-0.5 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'>
+								<X size={12} />
+							</button>
+						</div>
+					)}
 
 					{isLoading ? (
 						<div className='py-20 text-center text-gray-400'>加载中...</div>
@@ -237,7 +298,7 @@ export default function NotesPage() {
 									}}
 									className={cn(draggingSlug === item.slug && 'opacity-50')}>
 									<Link
-										href={getContentDetailHref(item.type, item.slug)}
+										href={getContentDetailHref(item.type, item.slug) + (activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : '')}
 										className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'>
 										<div className='mb-2 flex items-center gap-2'>
 											<span className={cn('rounded-full px-2 py-0.5 text-xs', typeColors[item.type])}>{typeLabels[item.type]}</span>

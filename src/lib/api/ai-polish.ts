@@ -36,7 +36,7 @@ export async function streamPolish(
 			signal: options?.signal,
 		})
 	} catch (err: any) {
-		if (err.name === 'AbortError') return
+		if (err.name === 'AbortError') { callbacks.onDone(); return }
 		callbacks.onError('网络错误')
 		return
 	}
@@ -97,7 +97,7 @@ export async function streamPolish(
 		}
 		callbacks.onDone()
 	} catch (err: any) {
-		if (err.name === 'AbortError') return
+		if (err.name === 'AbortError') { callbacks.onDone(); return }
 		callbacks.onError('读取响应失败')
 	}
 }

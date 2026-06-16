@@ -87,6 +87,7 @@ export interface NoteUpdateInput {
   knowledge_points?: string;
   images?: string[];
   ai_metadata?: Record<string, unknown> | null;
+  folder_id?: string | null;
 }
 
 export interface NoteListParams {

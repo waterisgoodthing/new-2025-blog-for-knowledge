@@ -101,6 +101,7 @@ export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false 
 		folder: <FolderOpen size={14} />,
 		review: <AlertTriangle size={14} />,
 		summary: <Lightbulb size={14} />,
+		activity: <Lightbulb size={14} />,
 	}
 
 	const typeColors: Record<string, string> = {
@@ -108,6 +109,7 @@ export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false 
 		folder: 'border-amber-200/70 bg-amber-50/50',
 		review: 'border-red-200/70 bg-red-50/50',
 		summary: 'border-green-200/70 bg-green-50/50',
+		activity: 'border-green-200/70 bg-green-50/50',
 	}
 
 	const isActionable = (action: string) => ['add_tag', 'move_to_folder'].includes(action)

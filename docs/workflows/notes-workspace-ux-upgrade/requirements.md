@@ -159,3 +159,61 @@ Candidate template families:
 - Backend data model changes for folders/tags unless existing APIs are insufficient.
 - Replacing the entire editor with a rich-text editor.
 - Production-grade multi-user collaborative editing.
+
+## 2026-06-15 Follow-Up Requirements
+
+### REQ-13 OS-Like Folder Navigation
+
+- Input: user expects folder placement and folder navigation to behave like an operating-system file browser.
+- Processing: folder selection, child folder creation, and active folder context must be visually and behaviorally obvious.
+- Output: the user can tell where they are and where new content will be created.
+- Failure handling: ambiguous folder state should fall back to inbox/all-content without silently losing context.
+- Acceptance: folder context is visible, selectable, and preserved through the supported create/edit/back flows.
+
+### REQ-14 Create Note Inside Current Folder
+
+- Input: user is currently inside a folder and clicks the create-note action.
+- Processing: `/write-note` receives and preserves `folder_id`, saves the note with that folder, and returns to the same folder-aware notes context.
+- Output: the newly created note is already classified into the current folder.
+- Failure handling: invalid or deleted `folder_id` is rejected by the backend and shown clearly in the UI.
+- Acceptance: creating from a selected folder produces a note whose `folder_id` matches the selected folder, without manual move.
+
+### REQ-15 Restore AI Tag Generation
+
+- Input: user saves a note with missing tags or requests tag generation in the AI assistant.
+- Processing: tag generation streams or resolves reliably, parses the JSON/tag list, and offers explicit apply/merge controls.
+- Output: suggested tags are visible and can be applied to the note.
+- Failure handling: AI/tag parse failures show a usable error and do not block saving.
+- Acceptance: empty-tag save and AI assistant tag generation both expose tag suggestions again.
+
+### REQ-16 Preserve Folder Context After Edit Back
+
+- Input: user enters edit/detail from a folder-scoped overview and then returns.
+- Processing: route links or navigation state preserve the previous folder context.
+- Output: overview returns to the same main folder instead of all content.
+- Failure handling: if context is missing, default to all content.
+- Acceptance: folder-scoped navigation round trip keeps the active folder.
+
+### REQ-17 Scheduled Weekly Summary Folder
+
+- Input: every Monday at 08:00 local time, the user wants a weekly summary generated, displayed, and saved under a dedicated folder.
+- Processing: determine whether scheduling belongs in backend service, deployment cron, or on-demand idempotent generation, then implement the smallest reliable path.
+- Output: weekly summaries are persisted as notes/files in a weekly-summary folder and displayed in the notes workspace.
+- Failure handling: duplicate runs for the same week must not create duplicate summaries.
+- Acceptance: the system can prove where the summary is stored and how Monday 08:00 generation is triggered.
+
+### REQ-18 Evidence-Based AI Suggestions
+
+- Input: the system produces organization or weak-point suggestions.
+- Processing: suggestions must be based on stable evidence such as mistakes, review outcomes, knowledge points, missing metadata, or repeated failed reviews, not merely frequent recent uploads.
+- Output: suggestion text explains the evidence and avoids overclaiming user weakness.
+- Failure handling: insufficient evidence yields neutral organization suggestions instead of diagnosis.
+- Acceptance: uploading many computer-network notes alone does not produce "you are bad at computer networking" style weak-point claims.
+
+### REQ-19 Streaming UI Render Hardening
+
+- Input: long AI/tag streaming responses arrive rapidly while the user switches desktops or the component unmounts.
+- Processing: render updates are throttled with `requestAnimationFrame`, pending animation frames are canceled on completion/error/unmount, and stale request ids are ignored.
+- Output: no runaway React re-render loop from per-chunk updates.
+- Failure handling: abort/stop and unmount clean up pending work.
+- Acceptance: code has shared or clearly duplicated cleanup paths and TypeScript validation passes.
