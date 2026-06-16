@@ -179,3 +179,42 @@
 
 - `npx tsc --noEmit`: **Pass**
 - Backend syntax (suggestions.py, knowledge_assistant.py, note.py): **Pass**
+
+## 2026-06-16 Public Deployment Verification
+
+### Production Build Fix
+
+- Initial isolated deploy command: `npm run deploy:full`
+- Initial result: **Fail** during Next.js production prerendering.
+- Failure: `/notes` used `useSearchParams()` without a Suspense boundary, which Next.js 16 requires for production static generation.
+- Fix: added route-local Suspense boundaries around the client content that reads search params:
+  - `src/app/notes/page.tsx`
+  - `src/app/write-note/page.tsx`
+  - `src/app/write-note/[slug]/page.tsx`
+  - `src/app/notes/[id]/note-detail-content.tsx`
+
+### Local Validation
+
+- Command: `npx tsc --noEmit`
+- Result: **Pass**
+
+### Isolated Deployment
+
+- Deployment worktree: `/tmp/notes-phase8-deploy.OJEy0y`
+- Command: `npm run deploy:full`
+- Result: **Pass** — OpenNext build completed and Wrangler deployed the Worker.
+- Worker URL: `https://2025-blog-public.17527677392.workers.dev`
+- Route: `blog.limengyang.me/*`
+- Worker Version ID: `13ece371-366f-4f98-92af-2e8568f6624c`
+- Build ID: `wrfDXeAzGJjcq1q4PAAuq`
+
+### Public Smoke Checks
+
+- `curl -I https://blog.limengyang.me/notes`: **HTTP 200**, `x-opennext: 1`
+- `curl -I 'https://blog.limengyang.me/write-note?folder_id=00000000-0000-0000-0000-000000000000'`: **HTTP 200**, `x-opennext: 1`
+- `curl -sS https://public-api.limengyang.me/api/health`: `{"status":"ok","db":"ok"}`
+- Build identity check: local `.open-next/assets/BUILD_ID` and `https://blog.limengyang.me/BUILD_ID` both returned `wrfDXeAzGJjcq1q4PAAuq`.
+
+### Remaining Public-Deployment Risk
+
+- Weekly summary scheduling still needs a deployment-side cron trigger for Monday 08:00. The backend endpoint exists and deployed frontend routes are healthy, but recurring invocation is not configured by this repository deploy command.

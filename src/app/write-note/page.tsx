@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useRef, useEffect } from 'react'
+import { Suspense, useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
@@ -25,7 +25,9 @@ const NotePreviewContent = dynamic(() => import('./components/note-preview-conte
 export default function WriteNotePage() {
 	return (
 		<AuthGate>
-			<WriteNoteContent />
+			<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+				<WriteNoteContent />
+			</Suspense>
 		</AuthGate>
 	)
 }

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import { motion } from 'motion/react'
 import { getNote, updateNote, uploadImage, type NoteDetail } from '@/lib/api/notes'
@@ -22,6 +22,14 @@ import { getContentDetailHref } from '@/lib/content-routes'
 const NotePreviewContent = dynamic(() => import('../components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function EditNotePage() {
+	return (
+		<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+			<EditNoteContent />
+		</Suspense>
+	)
+}
+
+function EditNoteContent() {
 	const { slug } = useParams<{ slug: string }>()
 	const router = useRouter()
 	const searchParams = useSearchParams()

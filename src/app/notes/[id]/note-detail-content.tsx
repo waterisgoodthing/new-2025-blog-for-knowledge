@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
 import dayjs from 'dayjs'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getContentEditHref, getContentListHref } from '@/lib/content-routes'
 import { resolveImageUrl } from '@/lib/api/images'
@@ -88,6 +88,14 @@ const diffColors = { easy: 'text-emerald-600', medium: 'text-yellow-600', hard: 
 const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
 
 export default function NoteDetailContent() {
+	return (
+		<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+			<NoteDetailContentInner />
+		</Suspense>
+	)
+}
+
+function NoteDetailContentInner() {
 	const { id } = useParams<{ id: string }>()
 	const searchParams = useSearchParams()
 	const folderId = searchParams.get('folder_id')

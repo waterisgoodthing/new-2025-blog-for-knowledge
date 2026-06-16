@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { Suspense, useState, useMemo, useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { MoreHorizontal, GripVertical, ExternalLink, Pencil, Trash2, Copy, ChevronRight, X } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
@@ -25,6 +25,14 @@ const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/2
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 
 export default function NotesPage() {
+	return (
+		<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+			<NotesPageContent />
+		</Suspense>
+	)
+}
+
+function NotesPageContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { isAdmin } = useAdminAuth()
