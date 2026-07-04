@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { RichText } from '@/components/rich-text'
 import dayjs from 'dayjs'
+import { AuthGate } from '@/components/auth-gate'
 
 const qualityLabels = [
 	{ q: 0, label: '完全忘记', color: 'bg-red-500' },
@@ -22,6 +23,14 @@ const qualityLabels = [
 type ReviewResult = { slug: string; title: string; quality: number; nextReview: string | null }
 
 export default function ReviewPage() {
+	return (
+		<AuthGate>
+			<ReviewPageContent />
+		</AuthGate>
+	)
+}
+
+function ReviewPageContent() {
 	const [queue, setQueue] = useState<NoteDetail[]>([])
 	const [current, setCurrent] = useState(0)
 	const [showAnswer, setShowAnswer] = useState(false)

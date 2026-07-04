@@ -19,9 +19,9 @@ export function useContextPack(request: ContextPackRequest | null) {
   );
 }
 
-export function useWeakPoints(days: number = 30) {
+export function useWeakPoints(days: number = 30, enabled = true) {
   return useSWR<WeakPointsResponse>(
-    `/api/knowledge/weak-points?days=${days}`,
+    enabled ? `/api/knowledge/weak-points?days=${days}` : null,
     () => getWeakPoints(days),
     { revalidateOnFocus: false }
   );

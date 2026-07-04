@@ -1,11 +1,14 @@
 import { apiFetch } from "./client";
+import {
+  createSubject as createTaxonomySubject,
+  deleteSubject as deleteTaxonomySubject,
+  listSubjects as listTaxonomySubjects,
+} from "./taxonomy";
+import type { Subject } from "./taxonomy";
+
+export type { Subject } from "./taxonomy";
 
 export interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface Subject {
   id: number;
   name: string;
 }
@@ -46,18 +49,15 @@ export async function mergeTag(sourceId: number, targetId: number): Promise<Tag>
 }
 
 export async function listSubjects(): Promise<Subject[]> {
-  return apiFetch<Subject[]>("/api/subjects");
+  return listTaxonomySubjects();
 }
 
 export async function createSubject(name: string): Promise<Subject> {
-  return apiFetch<Subject>("/api/subjects", {
-    method: "POST",
-    body: JSON.stringify({ name }),
-  });
+  return createTaxonomySubject({ name });
 }
 
 export async function deleteSubject(id: number): Promise<void> {
-  return apiFetch<void>(`/api/subjects/${id}`, { method: "DELETE" });
+  return deleteTaxonomySubject(id);
 }
 
 export async function listCategories(): Promise<Category[]> {

@@ -18,14 +18,17 @@ import { SlashCommandMenu } from '../components/slash-command-menu'
 import { AIAssistantPanel } from '../components/ai-assistant-panel'
 import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
 import { getContentDetailHref } from '@/lib/content-routes'
+import { AuthGate } from '@/components/auth-gate'
 
 const NotePreviewContent = dynamic(() => import('../components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function EditNotePage() {
 	return (
-		<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
-			<EditNoteContent />
-		</Suspense>
+		<AuthGate>
+			<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+				<EditNoteContent />
+			</Suspense>
+		</AuthGate>
 	)
 }
 

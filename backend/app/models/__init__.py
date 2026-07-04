@@ -7,6 +7,11 @@ from app.models.session import AdminSession, PasskeyCredential, AdminPassword
 from app.models.audit import AuditLog
 from app.models.music_daily import MusicSourceRule, MusicCandidate, DailySong, MusicSyncLog, NetEaseApiConfig
 from app.models.guest_message import GuestMessage, GuestMessageBan
+from app.models.taxonomy import Chapter, KnowledgePoint, KnowledgePointLink
+from app.models.question import DraftItem, Question, QuestionDraft, QuestionSource
+from app.models.mistake import Mistake, MistakeDraft
+from app.models.review_item import ReviewItem, ReviewRecord
+from app.models.attachment import Attachment, AttachmentLink
 
 __all__ = [
     "Note",
@@ -29,5 +34,18 @@ __all__ = [
     "NetEaseApiConfig",
     "GuestMessage",
     "GuestMessageBan",
+    "Chapter",
+    "KnowledgePoint",
+    "KnowledgePointLink",
+    "DraftItem",
+    "Question",
+    "QuestionDraft",
+    "QuestionSource",
+    "Mistake",
+    "MistakeDraft",
+    "ReviewItem",
+    "ReviewRecord",
+    "Attachment",
+    "AttachmentLink",
     "note_tags",
 ]

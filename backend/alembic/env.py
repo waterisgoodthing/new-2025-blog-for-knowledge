@@ -9,6 +9,11 @@ from app.database import Base
 from app.models.note import Category, Note, Subject, Tag, User
 from app.models.music import MusicItem
 from app.models.recommendation import DailyRecommendation
+from app.models.taxonomy import Chapter, KnowledgePoint, KnowledgePointLink
+from app.models.question import DraftItem, Question, QuestionDraft, QuestionSource
+from app.models.mistake import Mistake, MistakeDraft
+from app.models.review_item import ReviewItem, ReviewRecord
+from app.models.attachment import Attachment, AttachmentLink
 
 config = context.config
 if config.config_file_name is not None:

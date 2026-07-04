@@ -1,6 +1,8 @@
 import argparse
 import asyncio
+from dataclasses import dataclass
 import json
+import secrets
 import sys
 import threading
 import webbrowser
@@ -21,6 +23,56 @@ from app.services.passkey_service import (
     verify_registration,
 )
 from app.utils.auth import hash_password
+
+
+DEFAULT_TEMP_ADMIN_USERNAME = "temp-admin"
+
+
+@dataclass(frozen=True)
+class TempAdminBootstrapResult:
+    user: User
+    created: bool
+
+
+def generate_temp_admin_password() -> str:
+    return secrets.token_urlsafe(24)
+
+
+async def bootstrap_temp_admin(
+    session: AsyncSession,
+    *,
+    username: str,
+    password: str,
+) -> TempAdminBootstrapResult:
+    result = await session.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
+    password_hash = hash_password(password)
+
+    if user:
+        user.password_hash = password_hash
+        user.is_admin = True
+        created = False
+    else:
+        user = User(username=username, password_hash=password_hash, is_admin=True)
+        created = True
+
+    session.add(user)
+    await session.flush()
+    await session.refresh(user)
+    return TempAdminBootstrapResult(user=user, created=created)
+
+
+async def disable_temp_admin(session: AsyncSession, *, username: str) -> bool:
+    result = await session.execute(select(User).where(User.username == username))
+    user = result.scalar_one_or_none()
+    if not user:
+        return False
+
+    user.password_hash = "disabled"
+    user.is_admin = False
+    session.add(user)
+    await session.flush()
+    return True
 
 
 REGISTRATION_HTML = """<!DOCTYPE html>
@@ -304,6 +356,74 @@ def cmd_set_password(args):
     print("Admin password updated successfully.")
 
 
+def cmd_create_temp_admin(args):
+    settings = get_settings()
+    db_url = settings.DATABASE_URL
+    username = args.username.strip()
+    if not username:
+        print("Username cannot be empty. Aborted.")
+        return
+
+    password = generate_temp_admin_password()
+
+    async def _create():
+        engine = create_async_engine(db_url)
+        try:
+            async with async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)() as session:
+                result = await bootstrap_temp_admin(session, username=username, password=password)
+                await session.commit()
+                return result
+        finally:
+            await engine.dispose()
+
+    loop = asyncio.new_event_loop()
+    try:
+        result = loop.run_until_complete(_create())
+    finally:
+        loop.close()
+
+    action = "created" if result.created else "rotated"
+    print(f"Temporary admin account {action}.")
+    print(f"Username: {result.user.username}")
+    print(f"Password: {password}")
+    print("This password is shown once. Rotate or disable this account after recovery.")
+
+
+def cmd_disable_temp_admin(args):
+    settings = get_settings()
+    db_url = settings.DATABASE_URL
+    username = args.username.strip()
+    if not username:
+        print("Username cannot be empty. Aborted.")
+        return
+
+    confirm = input(f"This will disable admin access for '{username}'. Type 'yes' to confirm: ")
+    if confirm.lower() != "yes":
+        print("Aborted.")
+        return
+
+    async def _disable():
+        engine = create_async_engine(db_url)
+        try:
+            async with async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)() as session:
+                disabled = await disable_temp_admin(session, username=username)
+                await session.commit()
+                return disabled
+        finally:
+            await engine.dispose()
+
+    loop = asyncio.new_event_loop()
+    try:
+        disabled = loop.run_until_complete(_disable())
+    finally:
+        loop.close()
+
+    if disabled:
+        print(f"Temporary admin account disabled: {username}")
+    else:
+        print(f"No matching temporary admin account found: {username}")
+
+
 def cmd_reset_password(args):
     settings = get_settings()
     db_url = settings.DATABASE_URL
@@ -348,6 +468,24 @@ def main():
 
     subparsers.add_parser("reset-passkey", help="Remove existing passkey")
     subparsers.add_parser("set-password", help="Set or change admin password")
+    temp_admin = subparsers.add_parser(
+        "create-temp-admin",
+        help="Create or rotate a temporary admin user and print a generated password once",
+    )
+    temp_admin.add_argument(
+        "--username",
+        default=DEFAULT_TEMP_ADMIN_USERNAME,
+        help=f"Temporary admin username (default: {DEFAULT_TEMP_ADMIN_USERNAME})",
+    )
+    disable_temp = subparsers.add_parser(
+        "disable-temp-admin",
+        help="Disable a temporary admin user after recovery",
+    )
+    disable_temp.add_argument(
+        "--username",
+        default=DEFAULT_TEMP_ADMIN_USERNAME,
+        help=f"Temporary admin username (default: {DEFAULT_TEMP_ADMIN_USERNAME})",
+    )
     subparsers.add_parser("reset-password", help="Clear admin password")
 
     args = parser.parse_args()
@@ -358,6 +496,10 @@ def main():
         cmd_reset_passkey(args)
     elif args.command == "set-password":
         cmd_set_password(args)
+    elif args.command == "create-temp-admin":
+        cmd_create_temp_admin(args)
+    elif args.command == "disable-temp-admin":
+        cmd_disable_temp_admin(args)
     elif args.command == "reset-password":
         cmd_reset_password(args)
     else:

@@ -14,8 +14,19 @@ branch_labels = None
 depends_on = None
 
 
+def _folder_parent_fk() -> dict | None:
+    for foreign_key in sa.inspect(op.get_bind()).get_foreign_keys("folders"):
+        if foreign_key.get("constrained_columns") == ["parent_id"]:
+            return foreign_key
+    return None
+
+
 def upgrade() -> None:
-    op.drop_constraint("folders_parent_id_fkey", "folders", type_="foreignkey")
+    foreign_key = _folder_parent_fk()
+    if foreign_key and (foreign_key.get("options") or {}).get("ondelete") == "SET NULL":
+        return
+    if foreign_key:
+        op.drop_constraint(foreign_key["name"], "folders", type_="foreignkey")
     op.create_foreign_key(
         "folders_parent_id_fkey",
         "folders",
@@ -27,7 +38,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("folders_parent_id_fkey", "folders", type_="foreignkey")
+    foreign_key = _folder_parent_fk()
+    if foreign_key and (foreign_key.get("options") or {}).get("ondelete") == "CASCADE":
+        return
+    if foreign_key:
+        op.drop_constraint(foreign_key["name"], "folders", type_="foreignkey")
     op.create_foreign_key(
         "folders_parent_id_fkey",
         "folders",

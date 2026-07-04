@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useWeakPoints } from "@/hooks/use-knowledge";
 
-export function WeakPointsPanel() {
-  const { data, isLoading, error } = useWeakPoints(30);
+export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
+  const { data, isLoading, error } = useWeakPoints(30, enabled);
 
   if (isLoading) {
     return (

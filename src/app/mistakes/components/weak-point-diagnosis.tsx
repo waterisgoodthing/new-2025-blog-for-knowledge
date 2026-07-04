@@ -36,11 +36,11 @@ const SEVERITY_LABELS = {
   low: '低',
 }
 
-export function WeakPointDiagnosis() {
+export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
   const [days, setDays] = useState<TimeRange>(30)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [selectedCluster, setSelectedCluster] = useState<WeakPointCluster | null>(null)
-  const { data, isLoading, error } = useWeakPoints(days)
+  const { data, isLoading, error } = useWeakPoints(days, enabled)
   const [generatingVariant, setGeneratingVariant] = useState(false)
   const [generatingCard, setGeneratingCard] = useState(false)
   const [variantResult, setVariantResult] = useState<any>(null)

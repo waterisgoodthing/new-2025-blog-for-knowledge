@@ -5,8 +5,17 @@ import useSWR from 'swr'
 import { getNote, type NoteDetail } from '@/lib/api/notes'
 import { MistakeForm } from '../components/mistake-form'
 import { EmptyState } from '@/components/empty-state'
+import { AuthGate } from '@/components/auth-gate'
 
 export default function EditMistakePage() {
+	return (
+		<AuthGate>
+			<EditMistakeContent />
+		</AuthGate>
+	)
+}
+
+function EditMistakeContent() {
 	const { slug } = useParams<{ slug: string }>()
 	const { data: note, isLoading } = useSWR<NoteDetail>(
 		slug ? `/api/notes/${slug}` : null,

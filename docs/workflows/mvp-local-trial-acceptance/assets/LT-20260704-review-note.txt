@@ -1,0 +1,5 @@
+LT-20260704 MVP local trial attachment
+
+Purpose: private local acceptance testing only.
+Content: Hash-table review note — track previously seen values and their indices.
+Contains no credentials, tokens, personal information, screenshots, or copied problem text.
