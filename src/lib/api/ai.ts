@@ -41,10 +41,15 @@ export type StreamEvent =
   | { type: 'result'; data: AnalyzeResponse }
   | { type: 'error'; message: string }
 
-export async function analyzeMistake(images: { base64: string; mime_type: string }[], options?: AnalyzeTextOptions): Promise<AnalyzeResponse> {
+export async function analyzeMistake(
+  images: { base64: string; mime_type: string }[],
+  options?: AnalyzeTextOptions,
+  requestOptions?: Pick<RequestInit, "signal">
+): Promise<AnalyzeResponse> {
   return apiFetch<AnalyzeResponse>("/api/ai/analyze", {
     method: "POST",
     body: JSON.stringify({ images, ...options }),
+    signal: requestOptions?.signal,
   });
 }
 
@@ -56,10 +61,15 @@ export interface AnalyzeTextOptions {
   analysis_mode?: string;
 }
 
-export async function analyzeText(text: string, options?: AnalyzeTextOptions): Promise<AnalyzeResponse> {
+export async function analyzeText(
+  text: string,
+  options?: AnalyzeTextOptions,
+  requestOptions?: Pick<RequestInit, "signal">
+): Promise<AnalyzeResponse> {
   return apiFetch<AnalyzeResponse>("/api/ai/analyze-text", {
     method: "POST",
     body: JSON.stringify({ text, ...options }),
+    signal: requestOptions?.signal,
   });
 }
 
@@ -424,5 +434,128 @@ export async function generateDiagram(
       accepted_interpretation: acceptedInterpretation,
       final_analysis: finalAnalysis,
     }),
+  });
+}
+
+// --- AI Call Log (Batch 9 Gateway 日志) ---
+
+export interface AiCallLogEntry {
+  id: string;
+  task_type: string;
+  provider_used: string;
+  model: string;
+  latency_ms: number;
+  success: boolean;
+  error: string | null;
+  fallback_used: boolean;
+  attempts: Array<Record<string, unknown>> | null;
+  created_at: string;
+}
+
+export interface AiCallLogStatsItem {
+  task_type: string;
+  total: number;
+  success_count: number;
+  avg_latency_ms: number;
+}
+
+export interface AiCallLogStatsResponse {
+  items: AiCallLogStatsItem[];
+}
+
+export interface AiProviderStatusItem {
+  name: string;
+  model: string;
+  base_url: string;
+  base_url_label: string;
+  role: string;
+  configured: boolean;
+}
+
+export interface AiUsageCostStatsItem {
+  date: string;
+  task_type: string;
+  provider: string;
+  model: string;
+  call_count: number;
+  success_count: number;
+  failure_count: number;
+  fallback_count: number;
+  avg_latency_ms: number;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  estimated_cost: string | number | null;
+  currency: string | null;
+  usage_source: "unknown" | string;
+  cost_source: "unknown" | string;
+}
+
+export interface AiUsageCostStatsResponse {
+  items: AiUsageCostStatsItem[];
+}
+
+export type AiProviderHealthStatus = "unknown" | "healthy" | "degraded" | string;
+
+export interface AiProviderHealthSnapshotItem {
+  provider: string;
+  model: string;
+  status: AiProviderHealthStatus;
+  call_count: number;
+  success_count: number;
+  failure_count: number;
+  fallback_count: number;
+  failure_rate: number;
+  fallback_rate: number;
+  avg_latency_ms: number;
+  source: "ai_call_logs_recent" | string;
+  reason: string;
+}
+
+export interface AiProviderHealthSnapshotResponse {
+  items: AiProviderHealthSnapshotItem[];
+}
+
+export interface GetCallLogsParams {
+  task_type?: string;
+  success?: boolean;
+  provider?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export async function getCallLogs(params?: GetCallLogsParams): Promise<AiCallLogEntry[]> {
+  const qs = new URLSearchParams();
+  if (params?.task_type) qs.set("task_type", params.task_type);
+  if (params?.success !== undefined) qs.set("success", String(params.success));
+  if (params?.provider) qs.set("provider", params.provider);
+  if (params?.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params?.offset !== undefined) qs.set("offset", String(params.offset));
+  const query = qs.toString();
+  return apiFetch<AiCallLogEntry[]>(`/api/ai/call-logs${query ? `?${query}` : ""}`, {
+    method: "GET",
+  });
+}
+
+export async function getCallLogStats(): Promise<AiCallLogStatsResponse> {
+  return apiFetch<AiCallLogStatsResponse>("/api/ai/call-logs/stats", {
+    method: "GET",
+  });
+}
+
+export async function getProviderStatus(): Promise<AiProviderStatusItem[]> {
+  return apiFetch<AiProviderStatusItem[]>("/api/ai/provider-status", {
+    method: "GET",
+  });
+}
+
+export async function getUsageCostStats(): Promise<AiUsageCostStatsResponse> {
+  return apiFetch<AiUsageCostStatsResponse>("/api/ai/call-logs/usage-cost", {
+    method: "GET",
+  });
+}
+
+export async function getProviderHealthSnapshot(): Promise<AiProviderHealthSnapshotResponse> {
+  return apiFetch<AiProviderHealthSnapshotResponse>("/api/ai/provider-health-snapshot", {
+    method: "GET",
   });
 }

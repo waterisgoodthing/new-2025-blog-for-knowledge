@@ -11,7 +11,7 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import { Home, Menu, PenLine, Settings, Compass, MessageSquare } from 'lucide-react'
+import { Home, Menu, PenLine, Compass, MessageSquare } from 'lucide-react'
 
 const primaryItems = [
 	{ icon: Home, iconActive: Home, label: '首页', href: '/' },
@@ -26,9 +26,7 @@ const interactionItems = [
 	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于', href: '/about' },
 ]
 
-const manageItem = { icon: Settings, iconActive: Settings, label: '管理', href: '/manage' }
-
-const allMoreItems = [...interactionItems, manageItem]
+const allMoreItems = [...interactionItems]
 
 export default function MobileNav() {
 	const pathname = usePathname()
@@ -118,26 +116,6 @@ export default function MobileNav() {
 										</Link>
 									)
 								})}
-								<div className='mx-2 my-1.5 border-t border-gray-200/60' />
-								{(() => {
-									const isActive = activeHref === manageItem.href
-									const Icon = isActive ? manageItem.iconActive : manageItem.icon
-									return (
-										<Link
-											key={manageItem.href}
-											href={manageItem.href}
-											onClick={() => setMoreOpen(false)}
-											aria-label={manageItem.label}
-											title={manageItem.label}
-											className={cn(
-												'flex items-center gap-3 rounded-xl px-4 py-3 transition-colors',
-												isActive ? 'bg-[var(--color-brand)]/10 font-medium text-[var(--color-brand)]' : 'text-gray-400 hover:bg-white/60'
-											)}>
-											<Icon className='h-5 w-5' />
-											<span className='text-sm'>{manageItem.label}</span>
-										</Link>
-									)
-								})()}
 							</div>
 						</motion.div>
 					</>

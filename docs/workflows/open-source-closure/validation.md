@@ -150,3 +150,114 @@ Result: **PASS**.
 ### Residual Follow-Up
 
 If the original upstream repository URL is later confirmed, update `README.md` `来源与致谢` with the exact project name, link, and any additional attribution required by the upstream project.
+## 2026-06-16 Open-Source Structure Audit
+
+Touched domain: shared infrastructure.
+
+Commands and evidence:
+
+- `git status --short`: confirmed unrelated dirty work exists in notes/AI files and the notes workspace workflow; this audit did not touch those files.
+- `git ls-files`: confirmed `.github/` is absent and local `backend/.env`, `backend/.venv/`, `__pycache__/`, and `*.pyc` are not tracked.
+- Direct reads: `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `package.json`, `.gitignore`, `backend/.env.example`, and `backend/app/config.py`.
+- File inventory: confirmed backend Alembic migrations and targeted backend tests exist.
+
+Result:
+
+- Open-source baseline exists.
+- Remaining missing structure is documented in `audit.md`.
+- No product code was changed.
+
+## 2026-06-16 Phase 7 Full Open-Source Preparation
+
+Touched domain: shared infrastructure.
+
+### Changed Files
+
+| File | Action | Task |
+|---|---|---|
+| `.env.example` | Created | P7-01 |
+| `backend/.env.example` | Expanded | P7-01 |
+| `scripts/setup.mjs` | Created | P7-02 |
+| `package.json` | Updated (metadata + scripts) | P7-02, P7-05 |
+| `README.md` | Rewritten | P7-03 |
+| `.github/workflows/ci.yml` | Created | P7-04 |
+| `.github/ISSUE_TEMPLATE/bug_report.yml` | Created | P7-06 |
+| `.github/ISSUE_TEMPLATE/feature_request.yml` | Created | P7-06 |
+| `.github/pull_request_template.md` | Created | P7-06 |
+
+### Frontend TypeScript Check
+
+```
+npx tsc --noEmit
+```
+
+Result: **PASS** — zero errors.
+
+### Backend Import Check
+
+```
+cd backend && python -c "from main import app"
+```
+
+Result: **PASS** — backend imports cleanly.
+
+### Setup Script Check-Only
+
+```
+node scripts/setup.mjs --check
+```
+
+Result: **PASS** — 4 warnings (all expected for current environment):
+- Docker not found (not required; PostgreSQL is running locally).
+- Root `.env` missing (will be created by `npm run init` or `npm run setup`).
+- Port 2025 in use (frontend dev server is running).
+- Port 8000 in use (backend server is running).
+
+### New File Tracking Check
+
+```
+git check-ignore .env.example .github/workflows/ci.yml scripts/setup.mjs .github/ISSUE_TEMPLATE/bug_report.yml .github/pull_request_template.md
+```
+
+Result: **PASS** — none of the new files are ignored by `.gitignore`.
+
+### Secret/Cache Exclusion Check
+
+```
+git check-ignore .env backend/.env backend/.venv/ __pycache__/ *.pyc .next/ .output/ node_modules/
+```
+
+Result: **PASS** — all secrets, caches, and generated outputs are properly excluded.
+
+### Environment Example Inspection
+
+- Root `.env.example`: documents `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_IMAGE_BASE_URL` with placeholders.
+- `backend/.env.example`: covers all settings in `backend/app/config.py` including `ENV`, `DATABASE_URL`, `JWT_*`, `ALLOWED_ORIGINS`, `ENABLE_REGISTRATION`, `REGISTRATION_KEY`, `AI_*`, `DASHSCOPE_*`, `DEEPSEEK_*`, `DASHSCOPE_IMAGE_*`, `KEEP_ALIVE_*`, `AUTH_BYPASS*`, `WEBAUTHN_*`, `OPERATOR_REGISTRATION_KEY`, `IMAGE_BASE_URL`.
+- All examples use placeholder values only; no real secrets or local-only production values.
+
+### Package Metadata Inspection
+
+- `license`: MIT ✓
+- `repository`: points to `https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git` ✓
+- `bugs`: points to issues URL ✓
+- `homepage`: points to repository readme ✓
+- `"private": true` preserved ✓
+
+### CI Workflow Inspection
+
+- `.github/workflows/ci.yml`: runs frontend install/typecheck/build and backend install/import/test.
+- Uses PostgreSQL service container for backend tests.
+- Does not require production secrets.
+
+### Template Inspection
+
+- Bug report: Chinese/English mixed, collects description, steps, environment, screenshots, security impact.
+- Feature request: Chinese/English mixed, collects motivation, proposal, alternatives, context.
+- PR template: Chinese/English mixed, collects summary, changes, testing, screenshots, security/env checklist.
+
+### Residual Risks
+
+1. **Setup script is new and untested in diverse environments**: `scripts/setup.mjs` has been validated in check-only mode on the current macOS environment. It should be tested on Linux and Windows before relying on it for external contributors.
+2. **CI workflow uses ubuntu-latest**: should be verified on first PR push.
+3. **Docker Compose is deferred**: the setup script detects Docker and prints guidance, but does not provide automated Docker-backed PostgreSQL. This is acceptable per design.md decision.
+4. **Upstream attribution limit remains**: the upstream project URL is still unknown from repository evidence.

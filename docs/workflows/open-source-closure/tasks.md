@@ -127,3 +127,106 @@ Status: completed on 2026-06-14 after user approval.
   - Output: update `validation.md` with changed files, validation evidence, and any attribution limits.
   - Completed: 2026-06-14.
   - Evidence: `validation.md` records changed files, source/license inspection, Chinese documentation inspection, link/command inspection, and the upstream URL attribution limit.
+
+## Phase 6: Open-Source Structure Audit
+
+Status: completed on 2026-06-16 after user requested a current open-source project structure review.
+
+- [x] **P6-01** Inventory repository-facing open-source files and tracked project structure.
+  - Scope: README, license, contribution/security docs, package metadata, environment templates, CI/templates, tests, backend migrations, and workflow records.
+  - Completed: 2026-06-16.
+  - Evidence: `git status --short`, `git ls-files`, targeted `find`, and direct reads of `README.md`, `package.json`, `CONTRIBUTING.md`, `SECURITY.md`, `backend/.env.example`, `.gitignore`, `backend/app/config.py`, and `LICENSE`.
+
+- [x] **P6-02** Record what is still missing for open-source readiness.
+  - Scope: classify required, recommended, and optional gaps without changing product code.
+  - Completed: 2026-06-16.
+  - Evidence: See `audit.md`.
+
+## Phase 7: Full Open-Source Preparation
+
+Status: completed on 2026-06-16. Materials are mixed Chinese/English.
+
+- [x] **P7-01** Add and complete environment examples.
+  - Scope: create root `.env.example`; expand `backend/.env.example` to cover settings in `backend/app/config.py`.
+  - Completion standard: examples use placeholders only and do not copy real secrets or local-only production values.
+  - Completed: 2026-06-16.
+  - Evidence: Root `.env.example` created with `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_IMAGE_BASE_URL`. `backend/.env.example` expanded to cover `ENV`, `DATABASE_URL`, `JWT_*`, `ALLOWED_ORIGINS`, `ENABLE_REGISTRATION`, `REGISTRATION_KEY`, `AI_*`, `DASHSCOPE_*`, `DEEPSEEK_*`, `DASHSCOPE_IMAGE_*`, `KEEP_ALIVE_*`, `AUTH_BYPASS*`, `WEBAUTHN_*`, `OPERATOR_REGISTRATION_KEY`, `IMAGE_BASE_URL`. All values are placeholders.
+
+- [x] **P7-02** Add platform-neutral one-command setup/check entry.
+  - Scope: add scripts and documented commands for local initialization and repository validation, such as `npm run init`, `npm run setup`, and `npm run check`.
+  - Completed: 2026-06-16.
+  - Evidence: `scripts/setup.mjs` created with `--check`, `--init`, and `--setup` modes. `package.json` updated with `check`, `init`, and `setup` scripts. Script supports prerequisite detection (Node.js, Python, PostgreSQL, Docker), env file creation, dependency installation, JWT secret generation, database migration, registration mode configuration, operator passkey setup, AI provider preset registry with 14 presets, capability-based assignment (general/text/OCR/image), and masked secret output. Check-only mode validated successfully.
+
+- [x] **P7-03** Update README for full open-source setup.
+  - Scope: add database bootstrap, Alembic migration, validation command matrix, contributor navigation, configuration notes, setup/check command usage, AI setup behavior, and admin credential guidance.
+  - Completed: 2026-06-16.
+  - Evidence: `README.md` rewritten with quick-start section (check/init/setup), manual setup guide, database bootstrap with Alembic, admin credential setup, validation command matrix table, configuration tables (env vars, AI providers, admin credentials), architecture navigation (backend/frontend layers), and contributor links.
+
+- [x] **P7-04** Add GitHub Actions CI baseline.
+  - Scope: create `.github/workflows/ci.yml` for frontend install/typecheck/build and backend install/test/import checks.
+  - Completed: 2026-06-16.
+  - Evidence: `.github/workflows/ci.yml` created with frontend job (Node.js 20, npm ci, tsc, build) and backend job (Python 3.12, PostgreSQL 16 service container, pip install, import check, pytest). Does not require production secrets.
+
+- [x] **P7-05** Update package metadata for public repository identity.
+  - Scope: add `license`, `repository`, `bugs`, and `homepage` metadata using verified repository evidence.
+  - Completed: 2026-06-16.
+  - Evidence: `package.json` updated with `license: "MIT"`, `repository` pointing to `https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git`, `bugs` and `homepage` URLs derived from repository. `"private": true` preserved.
+
+- [x] **P7-06** Add GitHub issue and pull request templates.
+  - Scope: create bug report and feature request issue templates plus PR template under `.github/`.
+  - Completed: 2026-06-16.
+  - Evidence: `.github/ISSUE_TEMPLATE/bug_report.yml` (description, steps, environment, screenshots, security impact), `.github/ISSUE_TEMPLATE/feature_request.yml` (motivation, proposal, alternatives, context), `.github/pull_request_template.md` (summary, changes, testing, screenshots, security/env checklist). All mixed Chinese/English.
+
+- [x] **P7-07** Re-check tracked structure and ignored local artifacts.
+  - Scope: verify `.github/`, env examples, scripts, and metadata are tracked candidates; confirm `.env`, virtualenvs, caches, generated outputs, and unrelated dirty files remain excluded.
+  - Completed: 2026-06-16.
+  - Evidence: `git check-ignore` confirmed all new files are NOT ignored; `.env`, `backend/.env`, `backend/.venv/`, `__pycache__/`, `*.pyc`, `.next/`, `.output/`, `node_modules/` are properly excluded.
+
+- [x] **P7-08** Run final validation and record results.
+  - Scope: run targeted frontend/backend checks feasible in the local environment, run setup/check dry-run or check-only paths, inspect new docs/templates, and verify secret-safety behavior.
+  - Completed: 2026-06-16.
+  - Evidence: See `validation.md` Phase 7 section. TypeScript check PASS, backend import PASS, setup check-only PASS (4 expected warnings), file tracking PASS, secret exclusion PASS.
+
+- [x] **P7-09** Review Phase 7 closure.
+  - Scope: compare implemented files against `requirements.md`, `design.md`, `tasks.md`, and `audit.md`.
+  - Completed: 2026-06-16.
+  - Evidence: See closure review below.
+
+### Phase 7 Closure Review
+
+**Requirements coverage:**
+
+| Req | Description | Status |
+|---|---|---|
+| 11 | CI provides PR health baseline | ✅ P7-04 |
+| 12 | Env examples cover frontend + backend settings | ✅ P7-01 |
+| 13 | Database bootstrap with Alembic documented | ✅ P7-03 |
+| 14 | package.json has repo metadata | ✅ P7-05 |
+| 15 | `npm run init/setup/check` exist | ✅ P7-02 |
+| 16 | Two setup modes (conservative + fuller) | ✅ P7-02 |
+| 17 | Missing tool detection + explicit permission | ✅ P7-02 |
+| 18 | AI config can be skipped | ✅ P7-02 |
+| 19 | Multiple AI providers + custom | ✅ P7-02 |
+| 20 | Provider presets mapped via OpenAI-compatible | ✅ P7-02 |
+| 21 | Check-only/dry-run path | ✅ P7-02 |
+| 22 | AI capability labels (general/text/OCR/image) | ✅ P7-02 |
+
+**Audit gap coverage:**
+
+| Gap | Status |
+|---|---|
+| No CI workflow | ✅ Closed |
+| No issue/PR templates | ✅ Closed |
+| No frontend env template | ✅ Closed |
+| backend/.env.example incomplete | ✅ Closed |
+| Database bootstrap under-documented | ✅ Closed |
+| package.json sparse metadata | ✅ Closed |
+
+**Deferred items (out of approved scope):**
+
+1. **Docker Compose**: explicitly deferred per `design.md`. Setup script detects Docker and prints guidance but does not automate database creation.
+2. **CODEOWNERS / support policy**: optional for personal project, not in approved scope.
+3. **Upstream project URL**: requires external information not available in repository evidence.
+4. **Setup script cross-platform testing**: validated on macOS; Linux/Windows testing needed before external contributors rely on it.
+
+**Verdict**: Phase 7 is **closed**. All 9 tasks completed. All required gaps from `audit.md` are addressed. All acceptance criteria from `requirements.md` that are in scope are met. Residual risks are recorded in `validation.md`.

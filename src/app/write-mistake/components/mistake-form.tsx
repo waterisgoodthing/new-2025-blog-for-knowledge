@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import { createNote, updateNote, uploadImage, type NoteDetail } from '@/lib/api/notes'
-import { analyzeMistake, analyzeText, analyzeMistakeStream, analyzeTextStream, type AnalyzeResponse } from '@/lib/api/ai'
+import { analyzeMistake, analyzeText, type AnalyzeResponse } from '@/lib/api/ai'
 import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -181,22 +181,17 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 			})
 			const images = await Promise.all(base64Promises)
 
-			await analyzeMistakeStream(images, (event) => {
-				if (event.type === 'progress' || event.type === 'received') {
-					setPhaseText(event.label)
-				} else if (event.type === 'result') {
-					applyResult(event.data)
-				} else if (event.type === 'error') {
-					setAnalyzeError(event.message)
-					toast.error('处理失败: ' + event.message)
-				} else if (event.type === 'done') {
-					// handled by result
-				}
-			}, controller.signal, {
+			setPhaseText('正在调用 AI 模型分析...')
+			const result = await analyzeMistake(images, {
 				my_answer: form.my_answer || undefined,
 				correct_answer: form.correct_answer || undefined,
 				user_error_analysis: form.user_error_analysis || undefined,
+			}, {
+				signal: controller.signal,
 			})
+			if (controller.signal.aborted) return
+			applyResult(result)
+			toast.success('AI 分析完成，已填入下方表单')
 		} catch (err: any) {
 			if (err.name === 'AbortError') return
 			setAnalyzeError(err.message || '分析失败')
@@ -237,23 +232,19 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 		setPhaseText('正在分析文本...')
 		lastAnalyzeRef.current = async () => { await handleTextAnalyze() }
 		try {
-			await analyzeTextStream(text, (event) => {
-				if (event.type === 'progress' || event.type === 'received') {
-					setPhaseText(event.label)
-				} else if (event.type === 'result') {
-					applyResult(event.data)
-					setPasteText('')
-					toast.success('AI 分析完成，已填入下方表单')
-				} else if (event.type === 'error') {
-					setAnalyzeError(event.message)
-					toast.error('AI 分析失败: ' + event.message)
-				}
-			}, controller.signal, {
+			setPhaseText('正在调用 AI 模型分析...')
+			const result = await analyzeText(text, {
 				question: form.question || undefined,
 				my_answer: form.my_answer || undefined,
 				correct_answer: form.correct_answer || undefined,
 				user_error_analysis: form.user_error_analysis || undefined,
+			}, {
+				signal: controller.signal,
 			})
+			if (controller.signal.aborted) return
+			applyResult(result)
+			setPasteText('')
+			toast.success('AI 分析完成，已填入下方表单')
 		} catch (err: any) {
 			if (err.name === 'AbortError') return
 			setAnalyzeError(err.message || 'AI 分析失败')

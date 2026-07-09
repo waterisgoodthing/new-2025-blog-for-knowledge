@@ -6,6 +6,10 @@ Remove the GitHub sync write path and finish the remaining architecture and rele
 
 Current extension: update the GitHub-facing repository content into Chinese and clearly state that this project is adapted from an original open-source project.
 
+Current audit extension: review the repository as an open-source project structure and identify remaining missing materials without changing product code.
+
+Current preparation extension: prepare the repository for a fuller open-source release with mixed Chinese/English contributor-facing materials.
+
 ## Touched Domains
 
 - `sync`: backend sync router/service and frontend sync API client. **Removed.**
@@ -28,10 +32,16 @@ GitHub-facing Chinese content and upstream-origin disclosure extension completed
 - CONTRIBUTING.md and SECURITY.md added.
 - TypeScript check passes. Backend import check passes.
 - Chinese repository-facing docs and original open-source project attribution completed.
+- Open-source structure audit completed on 2026-06-16; remaining gaps are recorded in `audit.md`.
+- Full open-source preparation (Phase 7) completed on 2026-06-16. All 9 tasks closed.
+  - Environment examples, setup/check scripts, CI, issue/PR templates, package metadata, README rewrite all done.
+  - Validation recorded in `validation.md`.
+  - Deferred: Docker Compose, CODEOWNERS, upstream URL, cross-platform setup script testing.
 
 ## Workflow Files
 
 - [requirements.md](./requirements.md)
 - [design.md](./design.md)
 - [tasks.md](./tasks.md)
+- [audit.md](./audit.md)
 - [validation.md](./validation.md)

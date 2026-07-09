@@ -12,6 +12,9 @@ from app.models.question import DraftItem, Question, QuestionDraft, QuestionSour
 from app.models.mistake import Mistake, MistakeDraft
 from app.models.review_item import ReviewItem, ReviewRecord
 from app.models.attachment import Attachment, AttachmentLink
+from app.models.ai_call_log import AiCallLog
+from app.models.ai_run import AiRun
+from app.models.capture import CaptureItem
 
 __all__ = [
     "Note",
@@ -47,5 +50,8 @@ __all__ = [
     "ReviewRecord",
     "Attachment",
     "AttachmentLink",
+    "AiCallLog",
+    "AiRun",
+    "CaptureItem",
     "note_tags",
 ]

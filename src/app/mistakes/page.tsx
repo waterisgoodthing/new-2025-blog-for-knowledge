@@ -102,7 +102,7 @@ export default function MistakesPage() {
 								</p>
 							</div>
 							<Link
-								href='/mistakes/review'
+								href='/manage/review'
 								className='shrink-0 rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'
 							>
 								开始复习
@@ -170,7 +170,7 @@ export default function MistakesPage() {
 			<div className='mb-6 flex flex-wrap items-center gap-3'>
 				{isAdmin && (stats?.due_today ?? 0) > 0 && (
 					<Link
-						href='/mistakes/review'
+						href='/manage/review'
 						className='rounded-xl bg-orange-500 px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
 					>
 						开始复习 ({stats?.due_today})
@@ -194,7 +194,7 @@ export default function MistakesPage() {
 				</select>
 				{isAdmin && (
 					<Link
-						href='/write-mistake'
+						href='/manage/capture'
 						className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
 					>
 						添加错题
@@ -210,7 +210,7 @@ export default function MistakesPage() {
 						variant='no-content'
 						title='还没有错题'
 						description={isAdmin ? '记录第一道错题，开始系统化复习' : '当前没有公开错题'}
-						action={isAdmin ? { label: '添加错题', href: '/write-mistake' } : undefined}
+						action={isAdmin ? { label: '添加错题', href: '/manage/capture' } : undefined}
 					/>
 				</div>
 			) : (

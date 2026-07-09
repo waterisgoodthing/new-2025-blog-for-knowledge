@@ -1,6 +1,6 @@
 import unittest
 
-from app.routers.ai import _repair_deterministic_result
+from app.services.ai_repair_service import _repair_deterministic_result
 
 
 class DeterministicRepairTest(unittest.IsolatedAsyncioTestCase):

@@ -18,8 +18,7 @@ const defaults: Record<EmptyStateVariant, { icon: ReactNode; title: string; desc
 	'no-content': {
 		icon: <FileText className='h-10 w-10' />,
 		title: '还没有内容',
-		description: '创建你的第一篇笔记开始记录吧',
-		action: { label: '新建笔记', href: '/write-note' }
+		description: '暂时没有可展示的内容'
 	},
 	'no-results': {
 		icon: <Search className='h-10 w-10' />,

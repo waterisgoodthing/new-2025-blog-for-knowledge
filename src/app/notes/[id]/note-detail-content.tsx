@@ -170,7 +170,7 @@ function NoteDetailContentInner() {
 									{isAdmin && <p className='mt-1 text-sm text-gray-500'>先看题目和自己的答案，再对照正确步骤复盘。</p>}
 								</div>
 								{isAdmin && (
-									<Link href='/mistakes/review' className='rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'>
+									<Link href='/manage/review' className='rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'>
 										开始复习
 									</Link>
 								)}

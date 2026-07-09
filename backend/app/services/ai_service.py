@@ -75,11 +75,21 @@ def _get_providers() -> list[dict]:
     return providers
 
 
-def _select_providers(required_caps: set[str], preferred: str | None = None) -> list[dict]:
+def _select_providers(
+    required_caps: set[str],
+    preferred: str | None = None,
+    fallback_chain: tuple[str, ...] | list[str] | None = None,
+) -> list[dict]:
     providers = _get_providers()
     capable = [p for p in providers if required_caps.issubset(p["capabilities"])]
     if not capable:
         capable = [p for p in providers if "text" in p["capabilities"] or "json" in p["capabilities"]]
+
+    if fallback_chain:
+        by_name = {p["name"]: p for p in capable}
+        ordered = [by_name[name] for name in dict.fromkeys(fallback_chain) if name in by_name]
+        if ordered:
+            return ordered
 
     if preferred:
         def sort_key(p):
@@ -143,9 +153,10 @@ async def _call_with_fallback(
     max_tokens: int,
     response_format: dict | None = None,
     preferred: str | None = None,
+    fallback_chain: tuple[str, ...] | list[str] | None = None,
     parse_json: bool = True,
 ) -> CallResult:
-    providers = _select_providers(required_caps, preferred)
+    providers = _select_providers(required_caps, preferred, fallback_chain)
     if not providers:
         raise ValueError("No AI provider configured with required capabilities")
 
@@ -203,6 +214,7 @@ async def _call_with_fallback(
 
 
 async def call_ocr_model(messages: list[dict], max_tokens: int = 4000) -> dict:
+    """Internal — use ai_gateway.call_vision."""
     result = await _call_with_fallback(
         required_caps={"vision", "json"},
         messages=messages,
@@ -218,6 +230,7 @@ async def call_ocr_model(messages: list[dict], max_tokens: int = 4000) -> dict:
 
 
 async def call_text_model(messages: list[dict], max_tokens: int = 8000) -> dict:
+    """Internal — use ai_gateway.call_text."""
     result = await _call_with_fallback(
         required_caps={"text", "json"},
         messages=messages,
@@ -233,6 +246,7 @@ async def call_text_model(messages: list[dict], max_tokens: int = 8000) -> dict:
 
 
 async def call_text_model_no_json(messages: list[dict], max_tokens: int = 8000) -> str:
+    """Internal — use ai_gateway.call_text with json_mode=False."""
     result = await _call_with_fallback(
         required_caps={"text"},
         messages=messages,
@@ -244,6 +258,7 @@ async def call_text_model_no_json(messages: list[dict], max_tokens: int = 8000) 
 
 
 async def call_general_model(messages: list[dict], max_tokens: int = 8000, json_mode: bool = True) -> dict | str:
+    """Internal — use ai_gateway.call_general."""
     settings = get_settings()
     general_key = settings.DASHSCOPE_API_KEY or settings.AI_API_KEY
     if not general_key:

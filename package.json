@@ -2,22 +2,29 @@
   "name": "2025-blog",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/waterisgoodthing/new-2025-blog-for-knowledge/issues"
+  },
+  "homepage": "https://github.com/waterisgoodthing/new-2025-blog-for-knowledge#readme",
   "scripts": {
     "dev": "next dev --turbopack -p 2025",
     "svg": "node scripts/gen-svgs-index.js",
     "build": "next build",
     "start": "next start",
-    "build:cf": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare deploy",
-    "deploy:full": "npx tsc --noEmit && npm run build:cf && npx wrangler deploy --route 'blog.limengyang.me/*'",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "check": "node scripts/setup.mjs --check",
+    "check:project": "node scripts/check-project.mjs",
+    "init": "node scripts/setup.mjs --init",
+    "setup": "node scripts/setup.mjs --setup"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@opennextjs/cloudflare": "^1.14.4",
     "@types/jsrsasign": "^10.5.15",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
@@ -57,7 +64,6 @@
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "wrangler": "^4.53.0"
+    "typescript": "^5"
   }
 }

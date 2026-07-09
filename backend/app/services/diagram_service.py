@@ -1,7 +1,9 @@
 import json
 import os
 
-from app.services.ai_service import call_text_model, call_text_model_no_json
+from app.services.ai_gateway import call_text
+from app.services.ai_prompt_registry import build_text_messages
+from app.services.ai_task_types import AiTaskType
 
 
 STRUCTURED_TYPES = {
@@ -41,38 +43,6 @@ def classify_diagram_strategy(question_draft: dict) -> tuple[str, str]:
     return "qwen_image_fallback", "no structured renderer matched this question type"
 
 
-DIAGRAM_STRUCTURED_SYSTEM_PROMPT = r"""你是一个教学图解生成器。根据题目信息和已采纳的错因理解，生成结构化的图解数据。
-
-输出严格合法 JSON，格式如下：
-
-{
-  "diagram_type": "graph|table|flowchart|packet_slices",
-  "title": "图解标题",
-  "nodes": [
-    {"id": "A", "label": "节点A", "x": 0, "y": 0, "highlighted": false, "annotation": ""}
-  ],
-  "edges": [
-    {"source": "A", "target": "B", "label": "边标签", "highlighted": false, "weight": ""}
-  ],
-  "table": null,
-  "mermaid": "",
-  "caption": "图解说明",
-  "error_reason_annotation": "结合学生错因的标注说明"
-}
-
-规则：
-- 网络拓扑题：用 graph 类型，节点=路由器/设备，边=链路(标注cost)
-- IP分片题：用 table 或 packet_slices 类型，展示分片偏移/长度/MF
-- 算法/流程题：用 flowchart 类型
-- 数学计算题：用 table 类型展示推导步骤
-- highlighted=true 标注正确路径或关键位置
-- error_reason_annotation 说明学生错在哪里
-- 不要生成原始 SVG 或 HTML
-- 如果可以用 Mermaid 表达，填入 mermaid 字段
-
-输出必须是严格合法 JSON。"""
-
-
 async def generate_structured_diagram(
     question_draft: dict,
     accepted_interpretation: dict,
@@ -92,12 +62,12 @@ async def generate_structured_diagram(
 key_step: {final_analysis.get('key_step', '')}
 error_reason: {final_analysis.get('error_reason', '')}"""
 
-    messages = [
-        {"role": "system", "content": DIAGRAM_STRUCTURED_SYSTEM_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
+    messages = build_text_messages(AiTaskType.DIAGRAM_STRUCTURED, user_content)
 
-    result = await call_text_model(messages)
+    gw = await call_text(AiTaskType.DIAGRAM_STRUCTURED, messages)
+    if not gw.success:
+        raise RuntimeError(gw.error or "AI call failed")
+    result = gw.data
 
     diagram_type = result.get("diagram_type", "graph")
     if diagram_type not in ("graph", "table", "flowchart", "packet_slices"):
@@ -154,14 +124,6 @@ error_reason: {final_analysis.get('error_reason', '')}"""
     }
 
 
-QWEN_IMAGE_FALLBACK_PROMPT = r"""你是一个教学图解 prompt 编写器。请为以下题目编写一个适合图片生成模型的英文 prompt。
-
-要求：
-- 生成教学图解，不是装饰性图片
-- 必须体现学生的错误原因
-- 使用简洁的英文描述
-- 输出格式：直接输出 prompt 文本，不要 JSON"""
-
 QWEN_IMAGE_CONFIGURED = bool(os.environ.get("DASHSCOPE_IMAGE_API_KEY"))
 QWEN_IMAGE_MODEL = os.environ.get("DASHSCOPE_IMAGE_MODEL", "qwen-image-2.0-pro")
 QWEN_IMAGE_BASE_URL = os.environ.get(
@@ -185,12 +147,12 @@ async def generate_qwen_image_fallback(
 学生错因: {accepted_interpretation.get('summary', '')}
 关键步骤: {final_analysis.get('key_step', '')}"""
 
-    messages = [
-        {"role": "system", "content": QWEN_IMAGE_FALLBACK_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
+    messages = build_text_messages(AiTaskType.DIAGRAM_FALLBACK, user_content)
 
-    result = await call_text_model_no_json(messages)
+    gw = await call_text(AiTaskType.DIAGRAM_FALLBACK, messages)
+    if not gw.success:
+        raise RuntimeError(gw.error or "AI call failed")
+    result = gw.data
     image_prompt = result.strip() if isinstance(result, str) else str(result)
 
     if not QWEN_IMAGE_CONFIGURED:

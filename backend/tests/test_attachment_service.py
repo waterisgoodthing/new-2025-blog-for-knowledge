@@ -93,15 +93,13 @@ class AttachmentSchemaTest(unittest.TestCase):
 class AttachmentServiceTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.session = async_session()
+        self.addAsyncCleanup(engine.dispose)
+        self.addAsyncCleanup(self.session.close)
+        self.addAsyncCleanup(self.session.rollback)
         await self.session.begin()
         self.tmp = TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
         self.upload_root = Path(self.tmp.name)
-
-    async def asyncTearDown(self):
-        await self.session.rollback()
-        await self.session.close()
-        await engine.dispose()
-        self.tmp.cleanup()
 
     async def test_upload_persists_private_metadata_without_absolute_path(self):
         attachment = await create_attachment_from_bytes(

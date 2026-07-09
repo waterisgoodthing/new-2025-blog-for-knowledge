@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     DEEPSEEK_API_KEY: str = ""
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
-    DEEPSEEK_MODEL: str = "deepseekv4pro"
+    DEEPSEEK_MODEL: str = "deepseek-v4-pro"
 
     KEEP_ALIVE_ENABLED: bool = False
     KEEP_ALIVE_INTERVAL: int = 300

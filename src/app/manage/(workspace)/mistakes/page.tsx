@@ -7,7 +7,7 @@ export default function ManageMistakesPage() {
       <ManagePageHeader
         eyebrow='Batch 4 · 私有错题'
         title='错题'
-        description='从正式题目创建错题草稿，人工确认后进入私有错题与复习队列。'
+        description='管理新私有错题。历史公开错题不在此处编辑。从正式题目创建错题草稿，人工确认后进入复习队列。'
       />
       <MistakeWorkspace />
     </div>

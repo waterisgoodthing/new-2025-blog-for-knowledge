@@ -10,7 +10,7 @@ from sqlalchemy import text
 
 from app.config import get_settings
 from app.database import engine, Base, async_session
-from app.routers import admin_mistakes, ai, ai_polish, attachments, audit, auth, categories, chapters, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
+from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, chapters, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
 
@@ -80,12 +80,14 @@ app.include_router(admin_mistakes.router)
 app.include_router(review_items.router)
 app.include_router(attachments.router)
 app.include_router(attachments.links_router)
+app.include_router(captures.router)
 app.include_router(categories.router)
 
 app.include_router(music.router)
 app.include_router(recommendations.router)
 app.include_router(ai.router)
 app.include_router(ai_polish.router)
+app.include_router(ai_runs.router)
 app.include_router(folders.router)
 app.include_router(knowledge.router)
 app.include_router(suggestions.router)

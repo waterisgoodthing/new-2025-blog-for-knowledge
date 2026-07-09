@@ -46,12 +46,10 @@ class QuestionDraftSchemaTest(unittest.TestCase):
 class QuestionDraftServiceTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.session = async_session()
+        self.addAsyncCleanup(engine.dispose)
+        self.addAsyncCleanup(self.session.close)
+        self.addAsyncCleanup(self.session.rollback)
         await self.session.begin()
-
-    async def asyncTearDown(self):
-        await self.session.rollback()
-        await self.session.close()
-        await engine.dispose()
 
     async def test_manual_draft_preserves_taxonomy_links(self):
         subject = await create_subject(

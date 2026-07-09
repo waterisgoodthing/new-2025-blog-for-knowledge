@@ -35,7 +35,7 @@ export default function WriteButton() {
 		<HomeDraggableLayer cardKey='writeButtons' x={x} y={y} width={styles.width} height={styles.height}>
 			<motion.div initial={{ left: x, top: y }} animate={{ left: x, top: y }} className='absolute flex items-center gap-4'>
 				<motion.button
-					onClick={() => router.push('/write')}
+					onClick={() => router.push('/manage/dashboard')}
 					initial={{ opacity: 0, scale: 0.6 }}
 					animate={{ opacity: 1, scale: 1 }}
 					whileHover={{ scale: 1.05 }}
@@ -61,7 +61,7 @@ export default function WriteButton() {
 					animate={{ opacity: 1, scale: 1 }}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					onClick={() => router.push('/manage')}
+					onClick={() => router.push('/manage/dashboard')}
 					aria-label='打开管理面板'
 					title='打开管理面板'
 					className='p-2'>

@@ -72,7 +72,7 @@ export default function BlogDetailContent() {
 	const tags = blog?.config.tags || []
 
 	const handleEdit = () => {
-		router.push(`/write/${slug}`)
+		router.push('/manage/dashboard')
 	}
 
 	if (!slug) {

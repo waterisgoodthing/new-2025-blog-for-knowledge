@@ -82,7 +82,7 @@ function ReviewPageContent() {
 					<div className='mb-4 text-6xl'>🎉</div>
 					<h2 className='mb-2 text-xl font-bold'>今日无待复习题目</h2>
 					<p className='mb-6 text-gray-500'>所有错题都已复习完毕或暂无错题</p>
-					<Link href='/mistakes' className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white'>
+					<Link href='/manage/mistakes' className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white'>
 						返回错题集
 					</Link>
 				</motion.div>
@@ -151,10 +151,10 @@ function ReviewPageContent() {
 					)}
 
 					<div className='mb-8 flex flex-col gap-3 sm:flex-row'>
-						<Link href='/mistakes' className='flex-1 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-center text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98]'>
+						<Link href='/manage/mistakes' className='flex-1 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-center text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98]'>
 							回到错题集
 						</Link>
-						<Link href='/write-mistake' className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-center text-sm transition-colors hover:bg-white/80'>
+						<Link href='/manage/capture' className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-center text-sm transition-colors hover:bg-white/80'>
 							继续整理
 						</Link>
 						<button onClick={() => window.location.reload()} className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-sm transition-colors hover:bg-white/80'>
@@ -169,7 +169,7 @@ function ReviewPageContent() {
 	return (
 		<div className='mx-auto max-w-2xl px-4 py-8'>
 			<div className='mb-6 flex items-center justify-between'>
-				<Link href='/mistakes' className='text-sm text-gray-500 hover:text-gray-700'>← 返回</Link>
+				<Link href='/manage/mistakes' className='text-sm text-gray-500 hover:text-gray-700'>← 返回</Link>
 				<span className='text-sm text-gray-500'>{current + 1} / {queue.length}</span>
 			</div>
 

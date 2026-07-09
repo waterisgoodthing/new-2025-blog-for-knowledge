@@ -284,9 +284,9 @@ function OverviewTab() {
       <div className='rounded-2xl border border-white/40 bg-white/60 p-6 backdrop-blur-sm'>
         <h3 className='mb-3 font-medium'>快速操作</h3>
         <div className='flex flex-wrap gap-2'>
-          <Link href='/write-note' className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white hover:scale-105'>写笔记</Link>
-          <Link href='/write' className='rounded-xl bg-green-500/20 px-4 py-2 text-sm text-green-700 hover:bg-green-500/30'>写博客</Link>
-          <Link href='/write-mistake' className='rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-700 hover:bg-red-500/30'>写错题</Link>
+          <Link href='/manage/dashboard' className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white hover:scale-105'>写笔记</Link>
+          <Link href='/manage/dashboard' className='rounded-xl bg-green-500/20 px-4 py-2 text-sm text-green-700 hover:bg-green-500/30'>写博客</Link>
+          <Link href='/manage/capture' className='rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-700 hover:bg-red-500/30'>写错题</Link>
         </div>
       </div>
     </div>
@@ -659,6 +659,13 @@ function ManagePageInner() {
 
   return (
     <div className='mx-auto max-w-5xl px-4 py-8'>
+      {/* Route Cutover: 旧管理面板降级提示 */}
+      <div className='mb-6 rounded-xl border border-[var(--color-brand)]/30 bg-[var(--color-brand)]/10 px-4 py-3 text-sm'>
+        <div className='flex items-center justify-between gap-3'>
+          <span className='text-gray-700'>新学习空间已上线，题目 / 错题 / 复习 / 图片采集请使用工作区。旧管理面板仅保留历史内容维护。</span>
+          <Link href='/manage/dashboard' className='shrink-0 rounded-lg bg-[var(--color-brand)] px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'>进入工作区</Link>
+        </div>
+      </div>
       <div className='mb-6 flex items-center justify-between'>
         <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='text-2xl font-bold'>
           管理面板

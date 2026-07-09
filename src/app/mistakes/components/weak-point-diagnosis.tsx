@@ -123,7 +123,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
       subject: selectedCluster.subject || data.subject,
       difficulty: data.difficulty,
     }))
-    window.open('/write-mistake?ai_prefill=1', '_blank')
+    window.open('/manage/capture', '_blank')
   }
 
   const handleNavigateWithCard = (data: any) => {
@@ -134,7 +134,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
       knowledge_points: data.knowledge_points,
       subject: selectedCluster.subject || data.subject,
     }))
-    window.open('/write-note?ai_prefill=1', '_blank')
+    window.open('/manage/dashboard', '_blank')
   }
 
   return (
@@ -325,7 +325,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
 
               <div className='flex flex-wrap gap-2'>
                 <Link
-                  href='/mistakes/review'
+                  href='/manage/review'
                   onClick={() => setDrawerOpen(false)}
                   className='inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)] px-3 py-1.5 text-xs text-white'
                 >

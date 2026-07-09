@@ -6,9 +6,9 @@ export function getContentDetailHref(type: ContentType, slug: string): string {
 }
 
 export function getContentEditHref(type: ContentType, slug: string): string {
-	if (type === 'blog') return `/write/${slug}`
-	if (type === 'mistake') return `/write-mistake/${slug}`
-	return `/write-note/${slug}`
+	// Route Cutover: 旧 write-* 编辑入口已停用，统一指向 /manage/* 主线
+	if (type === 'mistake') return `/manage/mistakes`
+	return `/manage/dashboard`
 }
 
 export function getContentListHref(type: ContentType, folderId?: string | null): string {

@@ -228,22 +228,13 @@ async def sync_all_candidates(db: AsyncSession) -> dict:
     return {"total_synced": total, "rules": results}
 
 
-RECOMMENDATION_REASON_PROMPT = """你是一个音乐推荐助手。根据以下歌曲信息，生成一段简短、有温度的推荐理由（2-4 句话，60-120 字）。
-
-要求：
-- 说明为什么推荐这首歌
-- 可以提及歌手风格、歌曲氛围、适合的场景
-- 语言自然、有感染力
-- 不要使用"我"这个人称
-- 输出纯文本，不要 JSON
-
-歌曲信息：
-{song_info}"""
+from app.services.ai_prompt_registry import build_text_messages, render_user_content
+from app.services.ai_task_types import AiTaskType
 
 
 async def _generate_ai_reason(title: str, artist: str | None, album: str | None, source_value: str | None) -> str | None:
     try:
-        from app.services.ai_service import call_text_model_no_json
+        from app.services.ai_gateway import call_text
 
         song_info = f"歌曲: {title}"
         if artist:
@@ -253,12 +244,16 @@ async def _generate_ai_reason(title: str, artist: str | None, album: str | None,
         if source_value:
             song_info += f"\n推荐来源: {source_value}"
 
-        messages = [
-            {"role": "system", "content": "你是一个有品味的音乐推荐助手。用简洁优美的中文推荐歌曲。"},
-            {"role": "user", "content": RECOMMENDATION_REASON_PROMPT.format(song_info=song_info)},
-        ]
+        user_content = render_user_content(
+            AiTaskType.NETEASE_REASON,
+            {"song_info": song_info},
+        )
+        messages = build_text_messages(AiTaskType.NETEASE_REASON, user_content)
 
-        result = await call_text_model_no_json(messages, max_tokens=300)
+        gw = await call_text(AiTaskType.NETEASE_REASON, messages)
+        if not gw.success:
+            raise RuntimeError(gw.error or "AI call failed")
+        result = gw.data
         reason = result.strip()
         if reason and len(reason) >= 10:
             return reason

@@ -7,6 +7,8 @@ from sqlalchemy.orm import selectinload
 
 from app.models.note import Note
 from app.models.recommendation import DailyRecommendation
+from app.services.ai_prompt_registry import build_text_messages
+from app.services.ai_task_types import AiTaskType
 
 
 async def collect_context(db: AsyncSession) -> str:
@@ -78,41 +80,17 @@ async def collect_context(db: AsyncSession) -> str:
     return "\n\n".join(sections) if sections else "暂无足够上下文，建议推荐写一篇新笔记。"
 
 
-SYSTEM_PROMPT = """你是一个个人学习助手。根据用户的学习上下文，推荐今天最值得关注的一项内容。
-
-请严格返回 JSON，不要包含其他内容：
-{
-  "title": "推荐标题",
-  "type": "note|mistake|review|resource",
-  "reason": "推荐理由（一句话）",
-  "target": "跳转路径（如有，如 /notes/xxx）",
-  "actionLabel": "操作按钮文字"
-}
-
-规则：
-- 只返回一条推荐
-- 优先推荐需要复习的错题（review 类型）
-- 其次推荐最近编辑的笔记
-- 如果上下文中有分享资源，也可以推荐
-- 不要编造不存在的链接
-- 如果上下文不足，推荐"写一篇新笔记"，type 为 note，target 为 null"""
-
-
 async def call_llm(context: str) -> dict | None:
-    from app.services.ai_service import call_general_model
+    from app.services.ai_gateway import call_general
 
     user_prompt = f"用户学习上下文：\n\n{context}\n\n请推荐今天最值得关注的一项内容。"
 
     try:
-        result = await call_general_model(
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=500,
-            json_mode=True,
-        )
-        return result if isinstance(result, dict) else None
+        messages = build_text_messages(AiTaskType.RECOMMENDATION, user_prompt)
+        gw = await call_general(AiTaskType.RECOMMENDATION, messages)
+        if not gw.success or not isinstance(gw.data, dict):
+            return None
+        return gw.data
     except Exception:
         return None
 

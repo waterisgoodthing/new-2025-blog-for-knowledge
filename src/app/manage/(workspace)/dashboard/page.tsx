@@ -42,10 +42,10 @@ const workspaceStatus = [
   },
   {
     label: 'AI 控制台',
-    value: '占位；第一版暂未启用',
+    value: '调用日志与统计已接入',
     href: '/manage/ai',
     icon: Bot,
-    batch: 'Batch 6',
+    batch: 'Batch 9',
   },
   {
     label: '任务观察',

@@ -19,14 +19,13 @@ import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { HomeDraggableLayer } from '@/app/(home)/home-draggable-layer'
-import { Home, PenLine, Settings, Compass, MessageSquare } from 'lucide-react'
+import { Home, PenLine, Compass, MessageSquare } from 'lucide-react'
 
 type NavItem = { icon: React.ElementType; iconActive: React.ElementType; label: string; href: string }
 
 const publicContentItems: NavItem[] = [
 	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '博客', href: '/blog' },
 	{ icon: PenLine, iconActive: PenLine, label: '笔记', href: '/notes' },
-	{ icon: ProjectsOutlineSVG, iconActive: ProjectsFilledSVG, label: '错题', href: '/mistakes' },
 ]
 
 const interactionItems: NavItem[] = [
@@ -34,8 +33,6 @@ const interactionItems: NavItem[] = [
 	{ icon: MessageSquare, iconActive: MessageSquare, label: '留言', href: '/guestbook' },
 	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于', href: '/about' },
 ]
-
-const manageItem: NavItem = { icon: Settings, iconActive: Settings, label: '管理', href: '/manage' }
 
 const allNavItems = [...publicContentItems, ...interactionItems]
 
@@ -207,19 +204,6 @@ export default function NavCard() {
 										)
 									})}
 								</div>
-							</div>
-
-							<div className='shrink-0 border-t border-white/30 pt-1.5'>
-								<Link
-									href='/manage'
-									aria-label='管理'
-									title='管理'
-									className='text-secondary hover:text-primary flex w-full items-center gap-3 rounded-full px-4 py-1.5 text-sm transition-colors hover:bg-white/55'>
-									<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
-										<Settings className='h-4 w-4' />
-									</div>
-									<span className='text-xs'>管理</span>
-								</Link>
 							</div>
 						</div>
 					)}

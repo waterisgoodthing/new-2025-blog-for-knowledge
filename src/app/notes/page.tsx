@@ -166,11 +166,12 @@ function NotesPageContent() {
 	}
 
 	const getCreateAction = () => {
-		if (activeFilter === 'blog') return { label: '写博客', href: '/write' }
-		if (activeFilter === 'mistake') return { label: '写错题', href: '/write-mistake' }
-		const folderQuery = activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : ''
-		return { label: '写笔记', href: `/write-note${folderQuery}` }
+		// Route Cutover: 旧 write-* 入口已停用，统一指向 /manage/* 主线
+		if (activeFilter === 'mistake') return { label: '采集错题', href: '/manage/capture' }
+		return { label: '工作区', href: '/manage/dashboard' }
 	}
+
+	const emptyDescription = isAdmin ? '可以从工作区创建和整理内容' : '暂时没有公开笔记'
 
 	return (
 		<div className='mx-auto max-w-6xl px-4 py-8'>
@@ -281,7 +282,7 @@ function NotesPageContent() {
 							<EmptyState
 								variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
 								title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
-								description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : '登录后可以创建和整理内容'}
+								description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : emptyDescription}
 								action={isAdmin ? getCreateAction() : null}
 							/>
 						</div>

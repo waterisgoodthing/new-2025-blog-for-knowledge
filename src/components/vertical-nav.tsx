@@ -13,7 +13,7 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import { Home, PenLine, Settings, Compass, MessageSquare } from 'lucide-react'
+import { Home, PenLine, Compass, MessageSquare } from 'lucide-react'
 
 type NavItem = { icon: React.ElementType; iconActive: React.ElementType; label: string; href: string }
 
@@ -41,8 +41,6 @@ export default function VerticalNav() {
 		const match = allNavItems.find(item => pathname.startsWith(item.href))
 		return match?.href ?? null
 	}, [pathname])
-	const isManageActive = pathname.startsWith('/manage')
-
 	const handleMouseEnter = useCallback(() => setExpanded(true), [])
 	const handleMouseLeave = useCallback(() => setExpanded(false), [])
 
@@ -105,45 +103,6 @@ export default function VerticalNav() {
 						expanded={expanded}
 					/>
 				</nav>
-
-				<div className='mx-2 border-t border-white/30' />
-
-				<div className='shrink-0 px-2 pb-2 pt-1'>
-					<Link
-						href='/manage'
-						aria-label='管理'
-						title='管理'
-						className={cn(
-							'mx-0 my-0.5 flex shrink-0 rounded-xl transition-colors',
-							expanded ? 'items-center gap-2.5 px-2 py-2' : 'flex-col items-center gap-0.5 px-1 py-1.5',
-							isManageActive ? 'bg-[var(--color-brand)]/15 font-medium text-[var(--color-brand)]' : 'text-gray-400 hover:bg-white/60 hover:text-gray-500'
-						)}>
-						<div className='flex h-7 w-7 shrink-0 items-center justify-center'>
-							<Settings className='h-[18px] w-[18px]' />
-						</div>
-						<AnimatePresence>
-							{expanded ? (
-								<motion.span
-									className='relative z-10 truncate text-[13px]'
-									initial={{ opacity: 0, x: -8 }}
-									animate={{ opacity: 1, x: 0 }}
-									exit={{ opacity: 0, x: -8 }}
-									transition={{ duration: 0.15 }}>
-									管理
-								</motion.span>
-							) : (
-								<motion.span
-									className='text-[10px] leading-none'
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 0.15 }}>
-									管理
-								</motion.span>
-							)}
-						</AnimatePresence>
-					</Link>
-				</div>
 			</div>
 		</motion.nav>
 	)

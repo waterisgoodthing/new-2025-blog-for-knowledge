@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { ArrowUpRight, Brain, ClipboardCheck, Upload } from 'lucide-react'
 import { useCenterStore } from '@/hooks/use-center'
 import { useSize } from '@/hooks/use-size'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 const learningLinks = [
   {
@@ -32,8 +33,13 @@ const learningLinks = [
 ] as const
 
 export default function LearningSpaceCard() {
+  const { isAdmin } = useAdminAuth()
   const center = useCenterStore()
   const { maxSM } = useSize()
+
+  // Route Cutover: 学习空间入口仅对管理员显示，未登录不展示
+  if (!isAdmin) return null
+
   const width = 360
   const x = center.x - width / 2
   const y = Math.max(24, center.y - 272)

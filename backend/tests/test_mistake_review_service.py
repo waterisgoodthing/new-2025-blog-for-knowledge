@@ -44,12 +44,10 @@ class MistakeDraftSchemaTest(unittest.TestCase):
 class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.session = async_session()
+        self.addAsyncCleanup(engine.dispose)
+        self.addAsyncCleanup(self.session.close)
+        self.addAsyncCleanup(self.session.rollback)
         await self.session.begin()
-
-    async def asyncTearDown(self):
-        await self.session.rollback()
-        await self.session.close()
-        await engine.dispose()
 
     async def _question(self, suffix: str):
         subject = await create_subject(
@@ -67,6 +65,9 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
             ),
         )
         return await convert_question_draft(self.session, draft.item.id, version=1)
+
+    def _review_item_ids(self, due_items):
+        return {item.id for item, _mistake in due_items}
 
     async def test_conversion_is_idempotent_and_creates_one_review_item(self):
         question = await self._question("conversion")
@@ -91,19 +92,31 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_unconfirmed_draft_does_not_enter_review_queue(self):
         question = await self._question("pending")
+        due_at = datetime.now(timezone.utc) + timedelta(minutes=1)
+        queue_before = await list_due_items(
+            self.session,
+            now=due_at,
+        )
         await create_mistake_draft(
             self.session,
             MistakeDraftCreate(question_id=question.id),
         )
 
-        mistake_count = await self.session.scalar(select(func.count()).select_from(Mistake))
+        mistake_count = await self.session.scalar(
+            select(func.count())
+            .select_from(Mistake)
+            .where(Mistake.question_id == question.id)
+        )
         queue = await list_due_items(
             self.session,
-            now=datetime.now(timezone.utc) + timedelta(minutes=1),
+            now=due_at,
         )
 
         self.assertEqual(mistake_count, 0)
-        self.assertEqual(queue, [])
+        self.assertEqual(
+            self._review_item_ids(queue),
+            self._review_item_ids(queue_before),
+        )
 
     async def test_review_uses_fixed_interval_and_rejects_stale_submission(self):
         question = await self._question("review")
@@ -133,7 +146,11 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
             expected = updated.next_review_at
 
         self.assertEqual(
-            await self.session.scalar(select(func.count()).select_from(ReviewRecord)),
+            await self.session.scalar(
+                select(func.count())
+                .select_from(ReviewRecord)
+                .where(ReviewRecord.review_item_id == item.id)
+            ),
             6,
         )
 
