@@ -1,6 +1,6 @@
 # Tasks — Public Deployment Config Restore
 
-> Status: `in progress`
+> Status: `completed`
 >
 > Rule: Do not restore config, install dependencies, commit, push, or deploy until this task list is explicitly approved by the user.
 
@@ -25,30 +25,30 @@
 
 ## PDR-03 — Commit And Push Restore
 
-- [ ] Stage only deployment restore and workflow evidence.
-- [ ] Commit restore.
-- [ ] Push to `mine/notes-workspace-ux-upgrade`.
+- [x] Stage only deployment restore and workflow evidence.
+- [x] Commit restore.
+- [x] Push to `mine/notes-workspace-ux-upgrade`.
 
 ## PDR-04 — Public Deploy
 
-- [ ] Run `npx wrangler whoami`.
-- [ ] Run `npm run deploy:full`.
-- [ ] Record Cloudflare deployment output.
+- [x] Run `npx wrangler whoami`.
+- [x] Run `npm run deploy:full`.
+- [x] Record Cloudflare deployment output.
 
 ## PDR-05 — Public Verification
 
-- [ ] Verify `https://blog.limengyang.me/`.
-- [ ] Verify `https://blog.limengyang.me/blog`.
-- [ ] Verify `https://blog.limengyang.me/notes`.
-- [ ] Verify `https://blog.limengyang.me/manage`.
-- [ ] Verify `https://public-api.limengyang.me/api/health`.
-- [ ] Record verification in `validation.md`.
+- [x] Verify `https://blog.limengyang.me/`.
+- [x] Verify `https://blog.limengyang.me/blog`.
+- [x] Verify `https://blog.limengyang.me/notes`.
+- [x] Verify `https://blog.limengyang.me/manage`.
+- [x] Verify `https://public-api.limengyang.me/api/health`.
+- [x] Record verification in `validation.md`.
 
 ## Closure
 
-- [ ] Update `diff-report.md`.
-- [ ] Update final workflow status.
+- [x] Update `diff-report.md`.
+- [x] Update final workflow status.
 
 ## Stop Rule
 
-- [ ] If restore, validation, push, deploy, or public verification is blocked, record evidence and stop without speculative fixes.
+- [x] If restore, validation, push, deploy, or public verification is blocked, record evidence and stop without speculative fixes.

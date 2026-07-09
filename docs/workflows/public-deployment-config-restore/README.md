@@ -14,9 +14,9 @@ This workflow exists because the Git cleanup release pushed commit `2b5453f`, th
 
 ## Current Status
 
-Status: `tasks.md pending user approval`.
+Status: `completed`.
 
-No code restore has been performed yet.
+Deployment config was restored, committed, pushed, deployed, and publicly verified.
 
 ## Known Restore Source
 
