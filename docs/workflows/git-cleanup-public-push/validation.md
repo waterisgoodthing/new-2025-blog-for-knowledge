@@ -88,7 +88,7 @@ To https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git
 Follow-up status-record commit:
 
 ```text
-pending at time of this validation update
+71d958b docs: record public deployment blocker
 ```
 
 ## Public Deployment Result
