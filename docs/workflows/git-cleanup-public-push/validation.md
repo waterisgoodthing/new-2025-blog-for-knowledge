@@ -1,6 +1,6 @@
 # Validation — Git Cleanup And Public Push
 
-Status: `in progress`
+Status: `completed with deployment blocked`
 
 Validation date: 2026-07-09.
 
@@ -69,3 +69,40 @@ Conclusion:
 - Git commit and push can proceed after validation.
 - Public Cloudflare deployment cannot proceed from this committed tree without restoring or replacing the deployment configuration in a separately approved repair task.
 - This workflow will not invent a new deployment path.
+
+## Git Commit And Push
+
+Release commit:
+
+```text
+2b5453f feat: finalize AI learning system acceptance
+```
+
+Push result:
+
+```text
+To https://github.com/waterisgoodthing/new-2025-blog-for-knowledge.git
+   1cb7c7a..2b5453f  notes-workspace-ux-upgrade -> notes-workspace-ux-upgrade
+```
+
+Follow-up status-record commit:
+
+```text
+pending at time of this validation update
+```
+
+## Public Deployment Result
+
+No public deployment was run.
+
+Reason:
+
+- The pushed commit does not contain the previously documented Cloudflare/OpenNext deployment path.
+- `wrangler.toml` and `open-next.config.ts` are deleted.
+- The package scripts and dependencies required for the old deployment path are removed.
+
+Decision:
+
+- Stop at the approved safety boundary.
+- Do not recreate deployment config or invent a new deployment architecture in this workflow.
+- A new deployment-repair task is required before pushing the current frontend to `blog.limengyang.me`.

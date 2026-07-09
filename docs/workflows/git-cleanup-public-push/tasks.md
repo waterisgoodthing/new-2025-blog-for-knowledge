@@ -1,6 +1,6 @@
 # Tasks — Git Cleanup And Public Push
 
-> Status: `in progress`
+> Status: `completed with deployment blocked`
 >
 > Rule: Do not stage, commit, push, or deploy until this task list is explicitly approved by the user.
 
@@ -26,34 +26,34 @@
 
 ## GCP-03 — Git Cleanup, Commit, Push
 
-- [ ] Stage the approved current update set.
-- [ ] Inspect staged stat and ensure no secrets/caches are staged.
-- [ ] Commit with a release/acceptance message.
-- [ ] Push to the configured remote branch.
+- [x] Stage the approved current update set.
+- [x] Inspect staged stat and ensure no secrets/caches are staged.
+- [x] Commit with a release/acceptance message.
+- [x] Push to the configured remote branch.
 
 ## GCP-04 — Public Deployment
 
-- [ ] Create an isolated deployment worktree from the pushed commit if deployment config exists.
-- [ ] Install dependencies in the deploy worktree.
-- [ ] Prepare required generated/ignored build inputs without copying unrelated local state.
-- [ ] Run the existing Cloudflare/OpenNext deploy command if available.
-- [ ] If deploy config is missing, record blocker instead of inventing a new deploy path.
+- [x] Create an isolated deployment worktree from the pushed commit if deployment config exists. Skipped: deployment config does not exist in the pushed commit.
+- [x] Install dependencies in the deploy worktree. Skipped: deployment config does not exist in the pushed commit.
+- [x] Prepare required generated/ignored build inputs without copying unrelated local state. Skipped: deployment config does not exist in the pushed commit.
+- [x] Run the existing Cloudflare/OpenNext deploy command if available. Skipped: no existing deploy command is available in the pushed commit.
+- [x] If deploy config is missing, record blocker instead of inventing a new deploy path.
 
 ## GCP-05 — Public Verification
 
-- [ ] Verify `https://blog.limengyang.me/`.
-- [ ] Verify `https://blog.limengyang.me/blog`.
-- [ ] Verify `https://blog.limengyang.me/notes`.
-- [ ] Verify `https://blog.limengyang.me/manage`.
-- [ ] Verify `https://public-api.limengyang.me/api/health`.
-- [ ] Record deployment and verification results.
+- [x] Verify `https://blog.limengyang.me/`. Skipped: no new public deployment was run.
+- [x] Verify `https://blog.limengyang.me/blog`. Skipped: no new public deployment was run.
+- [x] Verify `https://blog.limengyang.me/notes`. Skipped: no new public deployment was run.
+- [x] Verify `https://blog.limengyang.me/manage`. Skipped: no new public deployment was run.
+- [x] Verify `https://public-api.limengyang.me/api/health`. Skipped: no new public deployment was run.
+- [x] Record deployment and verification results.
 
 ## Closure
 
-- [ ] Update `validation.md`.
-- [ ] Update `diff-report.md`.
-- [ ] Update final workflow status.
+- [x] Update `validation.md`.
+- [x] Update `diff-report.md`.
+- [x] Update final workflow status.
 
 ## Stop Rule
 
-- [ ] If validation, git push, or deployment is blocked, record evidence and stop instead of using destructive or speculative fixes.
+- [x] If validation, git push, or deployment is blocked, record evidence and stop instead of using destructive or speculative fixes.

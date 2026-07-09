@@ -15,7 +15,7 @@ This is an operational release workflow. It must preserve unrelated user changes
 
 ## Current Status
 
-Status: `tasks.md pending user approval`.
+Status: `completed with deployment blocked`.
 
 The working tree is very large and dirty. Initial inspection found:
 
@@ -25,7 +25,7 @@ The working tree is very large and dirty. Initial inspection found:
 - `wrangler.toml` is currently deleted
 - `open-next.config.ts` is currently deleted
 
-Because deployment config appears absent from the current working tree, public deployment may be blocked until the intended deployment path is confirmed or restored in a separately approved scope.
+Git commit and push completed. Public deployment is blocked because deployment config is absent from the pushed commit; the intended deployment path must be confirmed or restored in a separately approved scope.
 
 ## Workflow Files
 
