@@ -9,9 +9,25 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.config import get_settings
-from app.database import engine, Base, async_session
+from app.database import engine, async_session
 from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, chapters, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
+
+EXPECTED_ALEMBIC_REVISION = "018"
+
+
+async def validate_database_readiness() -> None:
+    """Run read-only startup checks without creating or mutating schema."""
+    async with async_session() as session:
+        await session.execute(text("SELECT 1"))
+        result = await session.execute(text("SELECT version_num FROM alembic_version"))
+        versions = {row[0] for row in result}
+
+    if EXPECTED_ALEMBIC_REVISION not in versions:
+        raise RuntimeError(
+            "Database schema is not at the expected Alembic revision "
+            f"{EXPECTED_ALEMBIC_REVISION}; found {sorted(versions) or ['<none>']}."
+        )
 
 
 @asynccontextmanager
@@ -38,8 +54,7 @@ async def lifespan(app: FastAPI):
             print("="*80 + "\n")
             sys.exit("CORS config is insecure for production.")
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await validate_database_readiness()
 
     stop_event = None
     if settings.KEEP_ALIVE_ENABLED:

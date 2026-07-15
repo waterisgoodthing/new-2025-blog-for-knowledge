@@ -63,7 +63,7 @@ class Note(Base):
     folder_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True
     )
-    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    sort_order: Mapped[int | None] = mapped_column(Integer, default=0, nullable=True)
 
     search_vector = mapped_column(TSVECTOR, nullable=True)
 
@@ -73,6 +73,7 @@ class Note(Base):
         Index("idx_notes_status", "status"),
         Index("idx_notes_next_review", "next_review", postgresql_where="type = 'mistake'"),
         Index("idx_notes_search", "search_vector", postgresql_using="gin"),
+        Index("idx_notes_folder_id", "folder_id"),
     )
 
 
