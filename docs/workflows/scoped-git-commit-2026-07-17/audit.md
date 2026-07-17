@@ -10,8 +10,12 @@ The mixed worktree maps primarily to the existing Batch 2 taxonomy, Batch 3 ques
 
 ## Current Gate
 
-`C0-02` is complete. `C0-03` is pending explicit approval of the selected groups and commit messages. No path is staged.
+`C0-02` and `C0-03` are complete. The approved scope has been staged, validated, and committed.
 
 ## Approval — C0-03
 
 Approved in conversation: groups A–H, including `backend/alembic/versions/019_align_subject_knowledge_tree.py`, `backend/alembic/versions/020_add_canonical_question_contract.py`, and deletion of `backend/app/routers/chapters.py`.
+
+## Closure
+
+Primary commit `d02764c` completed the approved scope. The post-commit worktree was clean; no push, deployment, migration, or database write was performed.

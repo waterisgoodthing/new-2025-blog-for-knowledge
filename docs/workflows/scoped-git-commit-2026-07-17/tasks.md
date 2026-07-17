@@ -16,8 +16,8 @@ Implementation must not start until this task list is explicitly approved in the
 ## Phase 2: Validation And Commit
 
 - [x] **C2-01** Run validation appropriate to the approved staged domains and record failures as pre-existing, in-scope, or blocked. TypeScript passed; full backend tests passed (244); frontend tests passed (26); Alembic `check` remains failed on knowledge-point index/constraint drift; cached whitespace check remains failed on approved docs and one migration line.
-- [ ] **C2-02** Create the approved commit(s) with clear messages. **IN PROGRESS**
-- [ ] **C2-03** Record commit hash, validation evidence, remaining dirty paths, and whether push was intentionally not performed.
+- [x] **C2-02** Create the approved commit(s) with clear messages. Primary commit: `d02764c feat: close personal learning system batches 2-7`.
+- [x] **C2-03** Record commit hash, validation evidence, remaining dirty paths, and whether push was intentionally not performed. Primary commit was created successfully; post-commit worktree is clean and push was intentionally not performed.
 
 ## Phase 3: Optional Publish
 

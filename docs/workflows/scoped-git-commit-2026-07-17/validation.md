@@ -15,3 +15,11 @@
 - `npm test -- --run`: PASS — 8 test files, 26 tests.
 - `PYTHONPATH=. .venv/bin/alembic check`: FAIL — detected knowledge-point index removals and a unique-constraint addition as new upgrade operations. No migration was executed.
 - No migration, database write, push, or deployment executed.
+
+## Commit Closure
+
+- Primary commit: `d02764c feat: close personal learning system batches 2-7`.
+- Primary commit scope: 256 paths — 190 added, 65 modified, 1 deleted.
+- Post-commit worktree: clean.
+- Branch relation after primary commit: ahead 2, behind 0 relative to `mine/notes-workspace-ux-upgrade`.
+- Push: intentionally not performed.
