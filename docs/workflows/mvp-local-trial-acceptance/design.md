@@ -93,3 +93,54 @@ source_note: 仅用于本地试运行，不公开展示
 4. 样例内容需要复制 LeetCode 原题大段文本或批量采集。
 5. 公开页面出现本地测试题、公开附件或管理员操作泄露。
 6. 执行阶段 `tasks.md` 尚未获得用户明确批准。
+
+## 项目验收与演示准备设计
+
+本阶段只整理验收结论和现场演示路径，不改变代码、数据库或部署状态。
+
+演示分为三条证据线：
+
+1. **Public Read**：未登录查看首页、博客、笔记和错题公开内容，证明公开读取可用且不显示管理操作。
+2. **Private Manage**：展示管理入口的登录保护，并在已授权本地会话下展示 subject → question → mistake → review → attachment 的已验证结果。
+3. **Closure Evidence**：展示 Batch 7 validation、数据库 `020 (head)`、counts、已知条件项和明确未进入的范围。
+
+默认演示优先使用已记录的真实验收证据和只读页面浏览。若需要现场重新写入样例或重新登录，必须在执行前单独批准，并使用本地私有、可清理的演示数据。
+
+## DEMO-ISSUE-001 修复设计
+
+### 根因
+
+`next.config.ts` 将公开 `/mistakes` 直接重定向到私有 `/manage/mistakes`。这条规则覆盖了现有公开 `src/app/mistakes/page.tsx`，导致匿名用户无法到达公开错题列表。
+
+### 最小修复
+
+- 删除仅针对 `/mistakes` 的 redirect。
+- 保留 `/mistakes/review` → `/manage/review`，因为复习页是私有操作入口。
+- 保留 `/write-*` 旧入口的既有兼容重定向/保护行为。
+- 不修改 `src/app/mistakes/page.tsx`、后端 API、schema、数据库或数据。
+
+### 回归契约
+
+1. 匿名 `GET /mistakes` 返回公开页面，不跳转到 `/manage/**`。
+2. 匿名 `/mistakes` 不显示编辑、删除、AI、上传或复习提交操作。
+3. `/mistakes/review` 仍进入私有管理保护。
+4. Batch 7 前端路由契约测试和现场浏览器演示均通过后，关闭 `DEMO-ISSUE-001`。
+
+## LT-ISSUE-002 Auth Error Handling Cleanup 设计
+
+### 根因
+
+`disable_temp_admin()` 使用 \"disabled\" 作为不可登录标记，但 `login()` 直接把该值交给 `bcrypt.checkpw()`。无效 bcrypt hash 引发异常，导致禁用账号密码登录返回 500。
+
+### 最小修复
+
+- 在 `verify_password()` 这一密码校验边界捕获无效 hash，返回 `False`。
+- 保持 `login()` 现有统一的 `401 Invalid credentials` 行为。
+- 不修改数据库字段、schema、禁用标记、session 撤销逻辑或生产配置。
+
+### 回归契约
+
+1. 合法 bcrypt hash + 正确密码仍返回 `True`。
+2. 合法 bcrypt hash + 错误密码返回 `False`。
+3. \"disabled\"、空值或 malformed hash 返回 `False`，不抛异常。
+4. 禁用临时管理员后密码登录返回 401，不创建 session。

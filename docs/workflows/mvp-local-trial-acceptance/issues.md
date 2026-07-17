@@ -28,7 +28,8 @@
 | ID | 标题 | 严重程度 | 链路节点 | 状态 | 是否阻塞验收 | 关联样例 |
 | --- | --- | --- | --- | --- | --- | --- |
 | LT-ISSUE-001 | 本地 Passkey RP 配置与 localhost 运行域名不匹配 | P2 | non-target compatibility | wont-fix | 否 | 全部 |
-| LT-ISSUE-002 | 禁用临时管理员后密码登录返回 500 | P1 | auth cleanup | confirmed | 否 | 全部 |
+| LT-ISSUE-002 | 禁用临时管理员后密码登录返回 500 | P1 | auth cleanup | fixed-in-separate-workflow | 否（已修复） | 全部 |
+| DEMO-ISSUE-001 | 匿名 `/mistakes` 被重定向到管理工作区 | P0 | public boundary / route compatibility | fixed-in-separate-workflow | 否（已复验） | 现场演示 |
 
 ## 问题模板
 
@@ -106,13 +107,13 @@
 | 字段 | 内容 |
 | --- | --- |
 | 严重程度 | P1 |
-| 状态 | confirmed |
+| 状态 | fixed-in-separate-workflow |
 | 发现日期 | 2026-07-04 |
 | 发现人 | Codex |
 | 关联样例 | 全部 |
 | 链路节点 | auth cleanup |
 | 是否阻塞本地 MVP 验收 | 否 |
-| 是否已获准修复 | 否 |
+| 是否已获准修复 | 是 |
 
 #### 现象
 
@@ -143,8 +144,79 @@
 
 #### 下一步
 
-- [x] 作为“有条件通过”的唯一条件项保留。
-- [x] 后续进入独立的 Auth Error Handling Cleanup。
+- [x] 修复前作为“有条件通过”的唯一条件项保留。
+- [x] 已进入并完成独立的 Auth Error Handling Cleanup。
+
+#### 修复结果（2026-07-17）
+
+- [x] 在 `backend/app/utils/auth.py` 的 `verify_password()` 边界捕获 `TypeError` / `ValueError`，将 malformed/disabled hash 视为不匹配。
+- [x] 禁用账号密码登录回归测试返回 401 `Invalid credentials`。
+- [x] 认证与全量后端测试通过；未修改 schema、migration 或数据。
+- [x] LT-ISSUE-002 关闭。
+
+### DEMO-ISSUE-001：匿名 `/mistakes` 被重定向到管理工作区
+
+| 字段 | 内容 |
+| --- | --- |
+| 严重程度 | P0 |
+| 状态 | fixed-in-separate-workflow |
+| 发现日期 | 2026-07-16 |
+| 发现人 | Codex |
+| 关联样例 | 无；只读现场演示 |
+| 链路节点 | public boundary / route compatibility |
+| 是否阻塞项目验收 | 否（已复验） |
+| 是否已获准修复 | 是 |
+
+#### 现象
+
+- 匿名访问 `http://localhost:2025/mistakes` 时，浏览器最终进入 `/manage` 或 `/manage/mistakes`，无法看到公开错题列表。
+- 直接 HTTP 检查返回 `307 Location: /manage/mistakes`。
+
+#### 复现步骤
+
+1. 在未登录状态打开 `http://localhost:2025/mistakes`。
+2. 等待客户端导航完成。
+3. 检查浏览器 URL 和页面内容。
+
+#### 预期结果
+
+- 匿名用户留在 `/mistakes`，可以读取已发布、未隐藏的公开错题。
+- 页面不调用管理员复习、附件、AI 或 Capture API。
+
+#### 实际结果
+
+- 服务端返回 307，目标为 `/manage/mistakes`。
+- 浏览器进入管理侧，未登录时显示登录保护，因此公开错题列表不可达。
+
+#### 证据
+
+- HTTP：`curl -I http://localhost:2025/mistakes` → `307 Location: /manage/mistakes`。
+- 浏览器：最终 URL 为 `http://localhost:2025/manage` 或 `http://localhost:2025/manage/mistakes`。
+- 代码定位：`next.config.ts` 存在 `/mistakes` → `/manage/mistakes` redirect 规则。
+
+#### 影响范围
+
+- 匿名公开错题列表不可访问。
+- 与 Batch 7 public read contract 冲突，阻塞项目验收的无条件通过结论。
+- 未观察到私有数据泄露或未授权写入。
+
+#### 临时处理
+
+- 本次只记录，不修改 redirect、不修改页面、不重启服务。
+
+#### 建议归属
+
+- [x] 权限 / AuthGate / public route compatibility
+- [ ] subject / knowledge point
+- [ ] question / mistake / review
+- [ ] attachment
+- [ ] 后续独立修复 workflow
+
+#### 下一步
+
+- [x] P0-16 删除错误 redirect。
+- [x] P0-17 只读浏览器复验通过。
+- [x] 保留 `/mistakes/review` 私有重定向并复验通过。
 
 ## 当前记录
 

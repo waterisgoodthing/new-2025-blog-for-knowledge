@@ -107,3 +107,59 @@ Batch 0–7 开发实现阶段已进入有条件通过状态，未发现 P0 阻�
 6. 主链路各节点都有实际结果和可复核证据。
 7. 所有失败项均进入 `issues.md`，并转化为剩余风险或明确归档。
 8. 没有修改业务代码、脚本、迁移、公开内容或部署配置。
+
+## 项目验收与演示准备需求
+
+### REQ-DEMO-01 验收摘要
+
+- 输出：一页式项目验收摘要，说明已通过链路、条件项、数据状态和范围外事项。
+- 标准：结论必须区分 `pass`、`conditional pass`、`blocked` 与 `not run`，不得把条件项写成完全通过。
+
+### REQ-DEMO-02 演示脚本
+
+- 输出：按 10–15 分钟组织的演示步骤、页面、讲解重点和失败恢复说明。
+- 标准：覆盖 Public Read、Private Manage、核心学习闭环和 Closure Evidence；不得要求 AI/OCR、云部署或新功能。
+
+### REQ-DEMO-03 现场执行边界
+
+- 默认只做只读演示，不新增数据库数据。
+- 若需现场写入、登录或重新试跑，必须重新批准对应任务，并继续使用本地私有数据、现有认证和既有接口。
+- 不使用 `AUTH_BYPASS`，不展示真实密码、token、私钥或敏感附件。
+
+## DEMO-ISSUE-001 修复需求
+
+### REQ-FIX-01 公开错题入口恢复
+
+- `/mistakes` 必须作为公开读取页可匿名访问。
+- 不得将 `/mistakes` 重定向到 `/manage/mistakes`。
+- `/mistakes/review` 仍必须保持私有保护。
+
+### REQ-FIX-02 回归证据
+
+- 增加或调整测试，证明 `/mistakes` 的公开 route contract 和 `/mistakes/review` 的私有 route contract 同时成立。
+- 重新进行 P0-15 只读浏览器演示。
+- 发现其他问题只记录，不顺手修复。
+
+### REQ-FIX-03 数据与范围边界
+
+- 不新增或修改数据库数据。
+- 不创建 migration，不修改 schema，不改变后端 API 契约。
+- 不进入部署、AI/OCR/Capture、Search、Analytics、Practice 或 BKT。
+
+## LT-ISSUE-002 修复需求
+
+### REQ-AUTH-01 禁用账号登录错误码
+
+- 禁用临时管理员使用原密码登录必须返回 401 `Invalid credentials`。
+- 不得返回 500 或暴露 bcrypt/内部异常信息。
+
+### REQ-AUTH-02 密码校验健壮性
+
+- 无效、禁用或 malformed password hash 必须被视为凭据不匹配。
+- 合法密码校验行为保持不变。
+
+### REQ-AUTH-03 验收边界
+
+- 增加后端回归测试并运行相关权限/认证测试。
+- 不创建用户、不修改现有账号数据、不使用 `AUTH_BYPASS`。
+- 不进入 Passkey、认证架构重构、迁移、部署或其他条件项修复。

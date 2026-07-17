@@ -38,17 +38,23 @@ function ReviewPageContent() {
 	const [done, setDone] = useState(false)
 	const [reviewed, setReviewed] = useState(0)
 	const [loading, setLoading] = useState(true)
+	const [loadError, setLoadError] = useState<string | null>(null)
 	const [stats, setStats] = useState<ReviewStats | null>(null)
 	const [plan, setPlan] = useState<ReviewPlan | null>(null)
 	const [reviewResults, setReviewResults] = useState<ReviewResult[]>([])
 
 	useEffect(() => {
-		Promise.all([getReviewQueue(), getReviewStats(), getReviewPlan()]).then(([q, s, p]) => {
-			setQueue(q)
-			setStats(s)
-			setPlan(p)
-			setLoading(false)
-		})
+		Promise.all([getReviewQueue(), getReviewStats(), getReviewPlan()])
+			.then(([q, s, p]) => {
+				setQueue(q)
+				setStats(s)
+				setPlan(p)
+				setLoading(false)
+			})
+			.catch(() => {
+				setLoadError('复习数据加载失败，请返回错题管理页后重试。')
+				setLoading(false)
+			})
 	}, [])
 
 	const item = queue[current]
@@ -74,6 +80,18 @@ function ReviewPageContent() {
 	}, [item, submitting, current, queue.length])
 
 	if (loading) return <div className='py-20 text-center text-gray-400'>加载复习队列...</div>
+	if (loadError) {
+		return (
+			<div className='mx-auto max-w-xl px-4 py-20 text-center'>
+				<div role='alert' className='mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+					{loadError}
+				</div>
+				<Link href='/manage/mistakes' className='rounded-xl bg-[var(--color-brand)] px-5 py-2.5 text-sm text-white'>
+					返回错题管理
+				</Link>
+			</div>
+		)
+	}
 
 	if (queue.length === 0) {
 		return (

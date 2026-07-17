@@ -20,7 +20,7 @@ subject → knowledge point → question draft → question → mistake draft �
 
 ## 当前状态
 
-- 状态：MVP Rebuild 本轮开发与试运行验收已结束；总体结论为 **有条件通过**，可以进入日常试用观察。
+- 状态：MVP Rebuild 本轮开发与试运行验收已结束；`DEMO-ISSUE-001` 和 `LT-ISSUE-002` 均已修复并验证。当前结论为 **通过**；`LT-ISSUE-001` 保留为非目标 localhost 兼容归档项。
 - 执行方式：由 Codex 在本地环境使用少量人工转述样例试跑并记录证据。
 - 结论边界：3 条样例的核心写入、复习、附件链路和公开边界均已通过真实私有数据验证。唯一条件项为 `LT-ISSUE-002`；`LT-ISSUE-001` 属于非目标 localhost 环境兼容问题，不作为当前阻塞项。
 
@@ -66,5 +66,8 @@ source_note: 仅用于本地试运行，不公开展示
 - [trial-record.md](trial-record.md)
 - [issues.md](issues.md)
 - [validation.md](validation.md)
+- [acceptance-summary.md](acceptance-summary.md)
+- [demo-script.md](demo-script.md)
+- [demo-record.md](demo-record.md)
 - [risks.md](risks.md)
 - [next-requirements.md](next-requirements.md)

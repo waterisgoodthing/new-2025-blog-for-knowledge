@@ -50,8 +50,7 @@ const nextConfig: NextConfig = {
 			{ source: '/write-note/:slug', destination: '/manage/dashboard', permanent: false },
 			{ source: '/write', destination: '/manage/dashboard', permanent: false },
 			{ source: '/write/:slug', destination: '/manage/dashboard', permanent: false },
-			{ source: '/mistakes/review', destination: '/manage/review', permanent: false },
-			{ source: '/mistakes', destination: '/manage/mistakes', permanent: false }
+			{ source: '/mistakes/review', destination: '/manage/review', permanent: false }
 		]
 	}
 }

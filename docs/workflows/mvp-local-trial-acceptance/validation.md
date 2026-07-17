@@ -100,3 +100,25 @@ subject
 - 对“MVP Rebuild 本轮是否允许结束”：**是，有条件通过并进入日常使用观察。**
 - 唯一条件项：**LT-ISSUE-002**，后续进入独立的 Auth Error Handling Cleanup。
 - 明确不进入：localhost Passkey 专项、AI、OCR、BKT、完整练习、对象存储、云部署。
+
+## P0-16/P0-17 公开错题兼容修复复验
+
+- 根因：`next.config.ts` 的 `/mistakes` → `/manage/mistakes` redirect 覆盖了公开错题页。
+- 修复：删除该单条 redirect；保留 `/mistakes/review` → `/manage/review` 私有重定向。
+- 测试：修复前回归测试 1 failed；修复后 Batch 7 route contract 4 passed，full frontend 26 passed。
+- 构建：TypeScript 通过，`npm run build` 通过。
+- 浏览器：匿名 `/mistakes` 保持原 URL 并加载公开错题列表；`/mistakes/review` 仍进入 `/manage` 登录保护；`/blog`、`/notes` 正常。
+- 数据：未执行数据库写入、migration、数据迁移或部署；counts 与 revision 未变化。
+- 结论：`DEMO-ISSUE-001` fixed-in-separate-workflow；项目验收恢复为 conditional pass，剩余 `LT-ISSUE-002`。
+
+## P0-18/P0-19 Auth Error Handling Cleanup
+
+- 根因：临时管理员禁用时将 `password_hash` 设为 `disabled`；bcrypt 校验 malformed hash 抛 `ValueError`，导致登录接口 500。
+- 修复文件：`backend/app/utils/auth.py`；`verify_password()` 将 `TypeError` / `ValueError` 转换为 `False`。
+- 新增测试：`backend/tests/test_auth_error_handling.py`，覆盖 malformed/disabled hash 和 login 401 契约。
+- 定向认证/权限回归：`17 passed`。
+- 全量后端测试：`244 passed`，2 个既有 AI gateway RuntimeWarning，不影响本次修复。
+- Import check：177 routes。
+- 数据库：`020 (head)`；counts 保持 `notes=13`、`subjects=1`、`knowledge_points=3`、`questions=3`、`mistakes=3`、`review_items=3`、`review_records=4`、`attachments=1`、`attachment_links=1`。
+- 未执行 migration、数据迁移、数据写入、AUTH_BYPASS 或部署。
+- 结论：`LT-ISSUE-002` fixed-in-separate-workflow 并关闭；MVP 第一阶段验收结论更新为 **pass**。
