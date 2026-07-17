@@ -19,6 +19,7 @@ from app.services.attachment_service import (
     AttachmentValidationError,
     create_attachment_link,
     create_attachment_from_bytes,
+    create_attachment_from_stream,
     delete_attachment,
     delete_attachment_link,
     get_attachment_content_path,
@@ -59,6 +60,14 @@ class AttachmentSchemaTest(unittest.TestCase):
                 checksum_sha256="a" * 64,
             )
 
+        with self.assertRaises(ValidationError):
+            AttachmentUploadCreate(
+                original_name="bad\nname.txt",
+                mime_type="text/plain",
+                size_bytes=12,
+                checksum_sha256="a" * 64,
+            )
+
     def test_link_contract_allows_only_learning_targets(self):
         attachment_id = uuid.uuid4()
         target_id = uuid.uuid4()
@@ -87,6 +96,14 @@ class AttachmentSchemaTest(unittest.TestCase):
                 target_type="question",
                 target_id=target_id,
                 purpose="avatar",
+            )
+
+        with self.assertRaises(ValidationError):
+            AttachmentLinkCreate(
+                attachment_id=attachment_id,
+                target_type="question",
+                target_id=target_id,
+                purpose="ai_input",
             )
 
 
@@ -124,6 +141,33 @@ class AttachmentServiceTest(unittest.IsolatedAsyncioTestCase):
         row = await self.session.scalar(select(Attachment).where(Attachment.id == attachment.id))
         self.assertEqual(row.storage_key, attachment.storage_key)
 
+    async def test_stream_upload_reads_in_bounded_chunks_and_finalizes_atomically(self):
+        class Reader:
+            def __init__(self, content: bytes):
+                self.content = content
+                self.offset = 0
+                self.read_sizes = []
+
+            async def read(self, size: int):
+                self.read_sizes.append(size)
+                chunk = self.content[self.offset : self.offset + size]
+                self.offset += len(chunk)
+                return chunk
+
+        reader = Reader(b"a" * 32)
+        attachment = await create_attachment_from_stream(
+            self.session,
+            original_name="proof.txt",
+            mime_type="text/plain",
+            stream=reader,
+            upload_root=self.upload_root,
+            chunk_size=8,
+        )
+
+        self.assertEqual(max(reader.read_sizes), 8)
+        self.assertEqual(attachment.size_bytes, 32)
+        self.assertEqual((self.upload_root / attachment.storage_key).read_bytes(), b"a" * 32)
+
     async def test_content_path_is_resolved_from_storage_key_only(self):
         attachment = await create_attachment_from_bytes(
             self.session,
@@ -142,6 +186,27 @@ class AttachmentServiceTest(unittest.IsolatedAsyncioTestCase):
 
         attachment.storage_key = "../escape.txt"
         await self.session.flush()
+        with self.assertRaises(AttachmentValidationError):
+            await get_attachment_content_path(
+                self.session,
+                attachment.id,
+                upload_root=self.upload_root,
+            )
+
+    async def test_content_path_rejects_symlinked_files(self):
+        attachment = await create_attachment_from_bytes(
+            self.session,
+            original_name="source.txt",
+            content=b"hello",
+            mime_type="text/plain",
+            upload_root=self.upload_root,
+        )
+        path = self.upload_root / attachment.storage_key
+        target = self.upload_root / "real.txt"
+        target.write_bytes(b"real")
+        path.unlink()
+        path.symlink_to(target)
+
         with self.assertRaises(AttachmentValidationError):
             await get_attachment_content_path(
                 self.session,

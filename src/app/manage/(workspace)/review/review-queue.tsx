@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Brain, CheckCircle2, History } from 'lucide-react'
+import { CheckCircle2, History } from 'lucide-react'
 
 import {
   listDueReviewItems,
@@ -11,6 +11,9 @@ import {
   type ReviewRating,
   type ReviewRecord,
 } from '@/lib/api/review-items'
+
+import { ManageEmptyState } from '../../components/manage-empty-state'
+import { ManagePanel } from '../../components/manage-panel'
 
 function message(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback
@@ -80,37 +83,42 @@ export function ReviewQueue() {
 
   return (
     <section className='space-y-5'>
-      <div className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
-        <div className='flex items-center gap-3'>
-          <Brain className='h-5 w-5 text-[var(--color-brand)]' />
-          <div>
-            <h2 className='font-semibold text-slate-900'>今日到期</h2>
-            <p className='mt-1 text-sm text-slate-500'>固定间隔：0-2 分为 1 天，3 分 3 天，4 分 7 天，5 分 14 天。</p>
-          </div>
-        </div>
+      <ManagePanel
+        variant='heavy'
+        title='今日到期'
+        description='固定间隔：0-2 分为 1 天，3 分 3 天，4 分 7 天，5 分 14 天。'
+      >
         {success ? (
-          <p className='mt-4 inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700'>
+          <p className='inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700'>
             <CheckCircle2 className='h-4 w-4' />
             {success}
           </p>
         ) : null}
-        {error ? <p role='alert' className='mt-4 text-sm text-red-600'>{error}</p> : null}
-      </div>
+        {error ? (
+          <ManageEmptyState variant='error' message={error} />
+        ) : null}
+      </ManagePanel>
 
-      {loading ? <p className='rounded-3xl border border-slate-200/70 bg-white/80 p-6 text-sm text-slate-400'>正在加载复习队列…</p> : null}
+      {loading ? (
+        <ManagePanel variant='heavy'>
+          <ManageEmptyState variant='loading' message='正在加载复习队列…' />
+        </ManagePanel>
+      ) : null}
       {!loading && items.length === 0 ? (
-        <p className='rounded-3xl border border-slate-200/70 bg-white/80 p-6 text-sm text-slate-500'>当前没有到期复习项。好消息，今天的小怪兽暂时睡着了。</p>
+        <ManagePanel variant='heavy'>
+          <ManageEmptyState variant='empty' message='当前没有到期复习项。好消息，今天的小怪兽暂时睡着了。' />
+        </ManagePanel>
       ) : null}
 
       {items.map((item) => (
-        <article key={item.id} className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
+        <ManagePanel key={item.id} variant='heavy'>
           <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
             <div className='min-w-0 flex-1'>
               <p className='text-xs tracking-wider text-[var(--color-brand)] uppercase'>
                 {item.algorithm} · 第 {item.repetitions + 1} 次 · 当前间隔 {item.interval_days} 天
               </p>
               <h3 className='mt-2 whitespace-pre-wrap text-base font-semibold leading-7 text-slate-900'>{item.question_text}</h3>
-              {item.mistake_reason ? <p className='mt-3 rounded-2xl bg-amber-50 p-3 text-sm leading-6 text-amber-800'>错因：{item.mistake_reason}</p> : null}
+              {item.mistake_reason ? <p className='mt-3 rounded-lg bg-amber-50 p-3 text-sm leading-6 text-amber-800'>错因：{item.mistake_reason}</p> : null}
               <p className='mt-3 text-xs text-slate-400'>到期时间：{new Date(item.next_review_at).toLocaleString('zh-CN')}</p>
             </div>
             <div className='flex flex-wrap gap-2 lg:max-w-56 lg:justify-end'>
@@ -119,7 +127,7 @@ export function ReviewQueue() {
                   key={rating}
                   disabled={busyId === item.id}
                   onClick={() => void submit(item, rating)}
-                  className='h-10 w-10 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] disabled:opacity-45'
+                  className='h-10 w-10 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] disabled:opacity-45'
                   aria-label={`提交 ${rating} 分复习结果`}
                 >
                   {rating}
@@ -128,7 +136,7 @@ export function ReviewQueue() {
               <button
                 disabled={busyId === item.id}
                 onClick={() => void toggleRecords(item.id)}
-                className='inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm text-slate-600 disabled:opacity-45'
+                className='inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-3 text-sm text-slate-600 disabled:opacity-45'
               >
                 <History className='h-4 w-4' />
                 记录
@@ -147,7 +155,7 @@ export function ReviewQueue() {
               ))}
             </div>
           ) : null}
-        </article>
+        </ManagePanel>
       ))}
     </section>
   )

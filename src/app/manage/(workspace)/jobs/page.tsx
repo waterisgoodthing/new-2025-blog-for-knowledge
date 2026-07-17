@@ -3,9 +3,9 @@ import { FutureCapabilityPage } from '../components/future-capability-page'
 export default function ManageJobsPage() {
   return (
     <FutureCapabilityPage
-      eyebrow='Batch 6 · Jobs 占位'
-      title='任务观察'
-      description='未来用于观察 OCR、Capture、AI 和附件处理任务；当前不创建队列或 worker。'
+      eyebrow='系统'
+      title='处理记录'
+      description='这里目前没有后台任务能力。'
       sections={[
         {
           title: '队列状态',

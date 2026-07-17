@@ -4,24 +4,24 @@ from pydantic import ValidationError
 
 from app.database import async_session, engine
 from app.schemas.taxonomy import (
-    ChapterCreate,
     KnowledgePointCreate,
+    KnowledgePointUpdate,
     SubjectCreate,
     SubjectUpdate,
 )
 from app.services.taxonomy_service import (
     TaxonomyConflict,
     TaxonomyValidationError,
-    create_chapter,
+    archive_knowledge_point,
     create_knowledge_point,
     create_subject,
-    delete_chapter,
-    delete_subject,
+    get_subject_knowledge_tree,
+    update_knowledge_point,
     update_subject,
 )
 
 
-class SubjectSchemaTest(unittest.TestCase):
+class TaxonomySchemaTest(unittest.TestCase):
     def test_subject_names_are_trimmed_and_blank_names_are_rejected(self):
         created = SubjectCreate(name="  计算机网络  ")
         updated = SubjectUpdate(name="  数据结构  ")
@@ -33,6 +33,15 @@ class SubjectSchemaTest(unittest.TestCase):
             SubjectCreate(name="   ")
         with self.assertRaises(ValidationError):
             SubjectUpdate(name=None)
+
+    def test_status_values_are_limited(self):
+        self.assertEqual(SubjectCreate(name="数学").status, "active")
+        self.assertEqual(KnowledgePointCreate(subject_id=1, name="函数").status, "active")
+
+        with self.assertRaises(ValidationError):
+            SubjectCreate(name="数学", status="disabled")
+        with self.assertRaises(ValidationError):
+            KnowledgePointCreate(subject_id=1, name="函数", status="disabled")
 
 
 class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
@@ -67,30 +76,7 @@ class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
                 SubjectUpdate(name="Batch2 Subject Updated"),
             )
 
-    async def test_parent_records_with_dependencies_cannot_be_deleted(self):
-        subject = await create_subject(
-            self.session,
-            SubjectCreate(name="Batch2 Parent Subject"),
-        )
-        chapter = await create_chapter(
-            self.session,
-            ChapterCreate(subject_id=subject.id, name="Batch2 Chapter"),
-        )
-        await create_knowledge_point(
-            self.session,
-            KnowledgePointCreate(
-                subject_id=subject.id,
-                chapter_id=chapter.id,
-                name="Batch2 Knowledge Point",
-            ),
-        )
-
-        with self.assertRaises(TaxonomyConflict):
-            await delete_chapter(self.session, chapter.id)
-        with self.assertRaises(TaxonomyConflict):
-            await delete_subject(self.session, subject.id)
-
-    async def test_knowledge_point_rejects_chapter_from_another_subject(self):
+    async def test_knowledge_point_parent_must_belong_to_same_subject(self):
         first = await create_subject(
             self.session,
             SubjectCreate(name="Batch2 Subject One"),
@@ -99,9 +85,9 @@ class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
             self.session,
             SubjectCreate(name="Batch2 Subject Two"),
         )
-        chapter = await create_chapter(
+        parent = await create_knowledge_point(
             self.session,
-            ChapterCreate(subject_id=first.id, name="Batch2 Foreign Chapter"),
+            KnowledgePointCreate(subject_id=first.id, name="Batch2 Parent"),
         )
 
         with self.assertRaises(TaxonomyValidationError):
@@ -109,7 +95,86 @@ class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
                 self.session,
                 KnowledgePointCreate(
                     subject_id=second.id,
-                    chapter_id=chapter.id,
-                    name="Batch2 Invalid Knowledge Point",
+                    parent_id=parent.id,
+                    name="Batch2 Invalid Child",
                 ),
             )
+
+    async def test_knowledge_point_cannot_move_under_descendant(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch2 Cycle Subject"),
+        )
+        parent = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="Batch2 Cycle Parent"),
+        )
+        child = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(
+                subject_id=subject.id,
+                parent_id=parent.id,
+                name="Batch2 Cycle Child",
+            ),
+        )
+
+        with self.assertRaises(TaxonomyValidationError):
+            await update_knowledge_point(
+                self.session,
+                parent.id,
+                KnowledgePointUpdate(parent_id=child.id),
+            )
+
+    async def test_archiving_knowledge_point_archives_subtree(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch2 Archive Subject"),
+        )
+        parent = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="Batch2 Archive Parent"),
+        )
+        child = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(
+                subject_id=subject.id,
+                parent_id=parent.id,
+                name="Batch2 Archive Child",
+            ),
+        )
+
+        await archive_knowledge_point(self.session, parent.id)
+        tree = await get_subject_knowledge_tree(self.session, subject.id)
+
+        self.assertEqual(tree.nodes[0].status, "archived")
+        self.assertEqual(tree.nodes[0].children[0].status, "archived")
+        self.assertEqual(tree.nodes[0].children[0].id, child.id)
+
+    async def test_subject_knowledge_tree_is_nested(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch2 Tree Subject"),
+        )
+        parent = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="高等数学"),
+        )
+        child = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, parent_id=parent.id, name="函数"),
+        )
+        grandchild = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(
+                subject_id=subject.id,
+                parent_id=child.id,
+                name="三角函数",
+            ),
+        )
+
+        tree = await get_subject_knowledge_tree(self.session, subject.id)
+
+        self.assertEqual(tree.subject.id, subject.id)
+        self.assertEqual(tree.nodes[0].id, parent.id)
+        self.assertEqual(tree.nodes[0].children[0].id, child.id)
+        self.assertEqual(tree.nodes[0].children[0].children[0].id, grandchild.id)

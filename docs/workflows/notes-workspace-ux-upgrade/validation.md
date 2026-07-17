@@ -218,3 +218,25 @@
 ### Remaining Public-Deployment Risk
 
 - Weekly summary scheduling still needs a deployment-side cron trigger for Monday 08:00. The backend endpoint exists and deployed frontend routes are healthy, but recurring invocation is not configured by this repository deploy command.
+
+## 2026-07-15 Public Deployment
+
+- Scope: deploy the current dirty working tree as the current round's public frontend snapshot.
+- Domain: frontend/manage and shared frontend infrastructure. Backend, database, migrations, and production data were not changed.
+- Branch: `notes-workspace-ux-upgrade`.
+- Cloudflare authentication: `npx wrangler whoami` passed.
+- TypeScript: `npx tsc --noEmit` passed.
+- OpenNext build: `npm run build:cf` passed; 37 routes generated.
+- Deploy command: `npm run deploy:full`.
+- Worker: `2025-blog-public`.
+- Route: `blog.limengyang.me/*`.
+- Worker URL: `https://2025-blog-public.17527677392.workers.dev`.
+- Cloudflare Version ID: `96ac6579-c2ad-4781-857f-e6bb624e80e4`.
+- Worker `BUILD_ID` probe: returned `HTTP 200`, body `7OKrajEUpIsKCK1kVxyBe`.
+- Custom-domain smoke checks: `/`, `/manage`, `/notes`, and `/mistakes` returned `HTTP 200` during verification.
+- Backend health probe: returned `{"status":"ok","db":"ok"}`.
+
+### Deployment Residual Risk
+
+- Later probes to the custom-domain `/BUILD_ID` endpoint and backend health endpoint encountered intermittent SSL/connection resets, although the Worker direct URL and backend response body were confirmed healthy. Repeat monitoring is recommended before treating custom-domain stability as fully verified.
+- The deployment used the full existing dirty working tree. No Git commit or Git push was performed in this round.

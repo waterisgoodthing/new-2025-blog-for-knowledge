@@ -5,9 +5,9 @@ export default function ManageSubjectsPage() {
   return (
     <div className='space-y-8'>
       <ManagePageHeader
-        eyebrow='Batch 2 · 分类基础'
-        title='科目与知识点'
-        description='维护科目、章节和正式知识点，供后续题目与复习流程复用。'
+        eyebrow='Learning Foundation'
+        title='Subjects'
+        description='管理单人学习系统的科目与知识组织入口。'
       />
       <SubjectList />
     </div>

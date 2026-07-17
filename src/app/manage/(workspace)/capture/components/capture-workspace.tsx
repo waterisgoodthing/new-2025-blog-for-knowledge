@@ -102,7 +102,7 @@ export function CaptureWorkspace() {
   }, [refreshCaptures])
 
   useEffect(() => {
-    listSubjects({ is_active: true }).then(setSubjects).catch(() => {})
+    listSubjects({ status: 'active' }).then(setSubjects).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export function CaptureWorkspace() {
       setKnowledgePoints([])
       return
     }
-    listKnowledgePoints({ subject_id: selected.subject_id, is_active: true })
+    listKnowledgePoints({ subject_id: selected.subject_id, status: 'active' })
       .then(setKnowledgePoints)
       .catch(() => {})
   }, [selected?.subject_id])
@@ -337,7 +337,7 @@ function CaptureList({ captures, selectedId, onSelect }: CaptureListProps) {
           key={capture.id}
           onClick={() => onSelect(capture.id)}
           className={cn(
-            'flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
+            'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
             capture.id === selectedId
               ? 'bg-[var(--color-brand)]/14 font-medium text-[var(--color-brand)]'
               : 'text-slate-600 hover:bg-white/65',
@@ -464,14 +464,14 @@ function ImagePreview({ attachmentId }: { attachmentId: string }) {
 
   if (error) {
     return (
-      <div className='flex items-center justify-center rounded-xl bg-slate-100 p-8 text-sm text-slate-400'>
+      <div className='flex items-center justify-center rounded-lg bg-slate-100 p-8 text-sm text-slate-400'>
         图片加载失败
       </div>
     )
   }
   if (!url) {
     return (
-      <div className='flex items-center justify-center rounded-xl bg-slate-100 p-8'>
+      <div className='flex items-center justify-center rounded-lg bg-slate-100 p-8'>
         <Loader2 className='h-5 w-5 animate-spin text-slate-400' />
       </div>
     )
@@ -480,14 +480,14 @@ function ImagePreview({ attachmentId }: { attachmentId: string }) {
     <img
       src={url}
       alt='错题原图'
-      className='max-h-80 w-full rounded-xl object-contain'
+      className='max-h-80 w-full rounded-lg object-contain'
     />
   )
 }
 
 function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className='flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-600'>
+    <div className='flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600'>
       <XCircle className='mt-0.5 h-4 w-4 shrink-0' />
       <span>{message}</span>
     </div>
@@ -535,7 +535,7 @@ function RecognizedTextSection({
         onChange={(e) => setText(e.target.value)}
         rows={4}
         placeholder='识别文字将显示在这里，可手动修正'
-        className='w-full resize-y rounded-xl border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+        className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
       />
     </section>
   )
@@ -582,7 +582,7 @@ function ErrorContextSection({
         onChange={(e) => setText(e.target.value)}
         rows={2}
         placeholder='补充你的错误思路或混淆点（可选，帮助 AI 生成更准确的草稿）'
-        className='w-full resize-y rounded-xl border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+        className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
       />
     </section>
   )
@@ -652,7 +652,7 @@ function DraftFieldsSection({
           onChange={(e) => setQuestion(e.target.value)}
           rows={3}
           placeholder='题面草稿'
-          className='w-full resize-y rounded-xl border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
         />
       </div>
       <div className='space-y-2'>
@@ -662,7 +662,7 @@ function DraftFieldsSection({
           onChange={(e) => setAnalysis(e.target.value)}
           rows={3}
           placeholder='解析草稿'
-          className='w-full resize-y rounded-xl border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
         />
       </div>
       <div className='space-y-2'>
@@ -672,7 +672,7 @@ function DraftFieldsSection({
           onChange={(e) => setErrorSummary(e.target.value)}
           rows={2}
           placeholder='错因总结草稿'
-          className='w-full resize-y rounded-xl border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
         />
       </div>
       {capture.knowledge_point_suggestions.length > 0 && (
@@ -714,7 +714,7 @@ function ActionButtons({
         <button
           onClick={onRecognize}
           disabled={busy}
-          className='flex items-center gap-1.5 rounded-xl bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
+          className='flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
         >
           <RefreshCw className='h-4 w-4' />
           {capture.status === 'uploaded' ? '开始识别' : '重新识别'}
@@ -724,7 +724,7 @@ function ActionButtons({
         <button
           onClick={onDraft}
           disabled={busy}
-          className='flex items-center gap-1.5 rounded-xl bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
+          className='flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
         >
           <RefreshCw className='h-4 w-4' />
           {capture.question_draft_text ? '重新生成草稿' : '生成 AI 草稿'}
@@ -806,7 +806,7 @@ function ConvertForm({
         <select
           value={subjectId ?? ''}
           onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : null)}
-          className='w-full rounded-xl border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
         >
           <option value=''>选择学科</option>
           {subjects.map((s) => (
@@ -823,7 +823,7 @@ function ConvertForm({
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
           rows={3}
-          className='w-full resize-y rounded-xl border border-white/50 bg-white/80 p-3 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-white/80 p-3 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
         />
       </div>
 
@@ -833,7 +833,7 @@ function ConvertForm({
           <input
             value={myAnswer}
             onChange={(e) => setMyAnswer(e.target.value)}
-            className='w-full rounded-xl border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
           />
         </div>
         <div className='space-y-2'>
@@ -847,7 +847,7 @@ function ConvertForm({
                   : null,
               )
             }
-            className='w-full rounded-xl border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
           >
             <option value=''>不指定</option>
             <option value='easy'>简单</option>
@@ -867,7 +867,7 @@ function ConvertForm({
                 e.target.value as CaptureConvert['reason_category'],
               )
             }
-            className='w-full rounded-xl border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
           >
             <option value='unknown'>未分类</option>
             <option value='concept'>概念错误</option>
@@ -881,7 +881,7 @@ function ConvertForm({
           <input
             value={mistakeReason}
             onChange={(e) => setMistakeReason(e.target.value)}
-            className='w-full rounded-xl border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
           />
         </div>
       </div>
@@ -918,7 +918,7 @@ function ConvertForm({
       <button
         type='submit'
         disabled={!canConvert || converting}
-        className='flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand)]/90 disabled:opacity-50'
+        className='flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand)]/90 disabled:opacity-50'
       >
         {converting ? (
           <Loader2 className='h-4 w-4 animate-spin' />

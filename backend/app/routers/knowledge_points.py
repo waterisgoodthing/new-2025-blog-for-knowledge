@@ -11,7 +11,7 @@ from app.schemas.taxonomy import (
 from app.services import taxonomy_service
 
 router = APIRouter(
-    prefix="/api/knowledge-points",
+    prefix="/api/admin/knowledge-points",
     tags=["knowledge-points"],
     dependencies=[Depends(get_current_admin)],
 )
@@ -28,15 +28,15 @@ def _raise_http(error: taxonomy_service.TaxonomyError) -> None:
 @router.get("", response_model=list[KnowledgePointOut])
 async def list_knowledge_points(
     subject_id: int | None = None,
-    chapter_id: int | None = None,
-    is_active: bool | None = None,
+    parent_id: int | None = None,
+    status: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     return await taxonomy_service.list_knowledge_points(
         db,
         subject_id=subject_id,
-        chapter_id=chapter_id,
-        is_active=is_active,
+        parent_id=parent_id,
+        status=status,
     )
 
 
@@ -92,3 +92,14 @@ async def delete_knowledge_point(
     except taxonomy_service.TaxonomyError as error:
         _raise_http(error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{knowledge_point_id}/archive", response_model=KnowledgePointOut)
+async def archive_knowledge_point(
+    knowledge_point_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        return await taxonomy_service.archive_knowledge_point(db, knowledge_point_id)
+    except taxonomy_service.TaxonomyError as error:
+        _raise_http(error)

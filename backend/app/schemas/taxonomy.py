@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
+
+TaxonomyStatus = Literal["active", "archived"]
 
 
 class _NamedModel(BaseModel):
@@ -18,14 +21,14 @@ class _NamedModel(BaseModel):
 class SubjectCreate(_NamedModel):
     name: str = Field(max_length=100)
     description: str | None = None
-    is_active: bool = True
+    status: TaxonomyStatus = "active"
     sort_order: int = 0
 
 
 class SubjectUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=100)
     description: str | None = None
-    is_active: bool | None = None
+    status: TaxonomyStatus | None = None
     sort_order: int | None = None
 
     @field_validator("name")
@@ -43,7 +46,7 @@ class SubjectOut(BaseModel):
     id: int
     name: str
     description: str | None
-    is_active: bool
+    status: TaxonomyStatus
     sort_order: int
     created_at: datetime
     updated_at: datetime
@@ -51,59 +54,28 @@ class SubjectOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class ChapterCreate(_NamedModel):
-    subject_id: int
-    name: str = Field(max_length=150)
-    description: str | None = None
-    is_active: bool = True
-    sort_order: int = 0
-
-
-class ChapterUpdate(BaseModel):
-    name: str | None = Field(default=None, max_length=150)
-    description: str | None = None
-    is_active: bool | None = None
-    sort_order: int | None = None
-
-    @field_validator("name")
-    @classmethod
-    def normalize_name(cls, value: str | None) -> str | None:
-        if value is None:
-            raise ValueError("name must not be null")
-        normalized = value.strip()
-        if not normalized:
-            raise ValueError("name must not be blank")
-        return normalized
-
-
-class ChapterOut(BaseModel):
+class SubjectSummary(BaseModel):
     id: int
-    subject_id: int
     name: str
-    description: str | None
-    is_active: bool
-    sort_order: int
-    created_at: datetime
-    updated_at: datetime
 
     model_config = {"from_attributes": True}
 
 
 class KnowledgePointCreate(_NamedModel):
     subject_id: int
-    chapter_id: int | None = None
+    parent_id: int | None = None
     name: str = Field(max_length=200)
     description: str | None = None
-    is_active: bool = True
+    status: TaxonomyStatus = "active"
     sort_order: int = 0
 
 
 class KnowledgePointUpdate(BaseModel):
     subject_id: int | None = None
-    chapter_id: int | None = None
+    parent_id: int | None = None
     name: str | None = Field(default=None, max_length=200)
     description: str | None = None
-    is_active: bool | None = None
+    status: TaxonomyStatus | None = None
     sort_order: int | None = None
 
     @field_validator("name")
@@ -120,12 +92,21 @@ class KnowledgePointUpdate(BaseModel):
 class KnowledgePointOut(BaseModel):
     id: int
     subject_id: int
-    chapter_id: int | None
+    parent_id: int | None
     name: str
     description: str | None
-    is_active: bool
+    status: TaxonomyStatus
     sort_order: int
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class KnowledgePointTreeNode(KnowledgePointOut):
+    children: list["KnowledgePointTreeNode"] = Field(default_factory=list)
+
+
+class KnowledgeTreeOut(BaseModel):
+    subject: SubjectSummary
+    nodes: list[KnowledgePointTreeNode]

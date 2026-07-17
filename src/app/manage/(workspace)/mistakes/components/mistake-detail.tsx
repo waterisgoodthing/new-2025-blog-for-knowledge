@@ -18,6 +18,7 @@ import {
   type MistakeReason,
 } from '@/lib/api/mistakes'
 import type { Difficulty } from '@/lib/api/questions'
+import { ManageFormPanel } from '../../../components/manage-form-panel'
 import { KnowledgePointMultiSelect } from '../../../components/knowledge-point-select'
 
 const reasonLabels: Record<MistakeReason, string> = {
@@ -60,7 +61,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
     )
   }
 
-  const save = async (event: FormEvent) => {
+  const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setBusy(true)
     setError(null)
@@ -93,7 +94,9 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
   }
 
   const subjectId = record.subject_id
-  const active = kind === 'draft' ? draft?.status === 'pending' : mistake?.status === 'active'
+  const active = kind === 'draft'
+    ? draft?.status === 'pending' || draft?.status === 'needs_fix'
+    : mistake?.status === 'active'
 
   return (
     <div className='max-w-4xl space-y-7'>
@@ -110,108 +113,13 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
         </p>
       </header>
 
-      <form onSubmit={save} className='space-y-5 rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
-        <section className='rounded-2xl bg-slate-50 p-4'>
-          <h2 className='text-sm font-semibold text-slate-800'>题干快照</h2>
-          <p className='mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600'>{record.question_text}</p>
-        </section>
-
-        <div className='grid gap-4 md:grid-cols-2'>
-          <label className='block text-sm font-medium text-slate-700'>
-            我的答案
-            <textarea
-              disabled={!active || busy}
-              value={record.my_answer ?? ''}
-              onChange={(event) => {
-                if (kind === 'draft' && draft) setDraft({ ...draft, my_answer: event.target.value || null })
-                if (kind === 'mistake' && mistake) setMistake({ ...mistake, my_answer: event.target.value || null })
-              }}
-              rows={4}
-              className='mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm'
-            />
-          </label>
-          <label className='block text-sm font-medium text-slate-700'>
-            {kind === 'draft' ? '解析快照' : '解析'}
-            <textarea
-              disabled={kind === 'draft' || !active || busy}
-              value={kind === 'draft' ? draft?.explanation_snapshot ?? '' : mistake?.analysis ?? ''}
-              onChange={(event) => {
-                if (mistake) setMistake({ ...mistake, analysis: event.target.value || null })
-              }}
-              rows={4}
-              className='mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm disabled:bg-slate-50'
-            />
-          </label>
-        </div>
-
-        <div className='grid gap-4 md:grid-cols-2'>
-          <label className='block text-sm font-medium text-slate-700'>
-            错因类型
-            <select
-              disabled={!active || busy}
-              value={record.reason_category}
-              onChange={(event) => {
-                const next = event.target.value as MistakeReason
-                if (draft) setDraft({ ...draft, reason_category: next })
-                if (mistake) setMistake({ ...mistake, reason_category: next })
-              }}
-              className='mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm'
-            >
-              {Object.entries(reasonLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </label>
-          <label className='block text-sm font-medium text-slate-700'>
-            难度
-            <select
-              disabled={!active || busy}
-              value={record.difficulty ?? ''}
-              onChange={(event) => {
-                const next = (event.target.value || null) as Difficulty | null
-                if (draft) setDraft({ ...draft, difficulty: next })
-                if (mistake) setMistake({ ...mistake, difficulty: next })
-              }}
-              className='mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm'
-            >
-              <option value=''>未设置</option>
-              <option value='easy'>简单</option>
-              <option value='medium'>中等</option>
-              <option value='hard'>困难</option>
-            </select>
-          </label>
-        </div>
-
-        <label className='block text-sm font-medium text-slate-700'>
-          错因说明
-          <textarea
-            disabled={!active || busy}
-            value={record.mistake_reason ?? ''}
-            onChange={(event) => {
-              const next = event.target.value || null
-              if (draft) setDraft({ ...draft, mistake_reason: next })
-              if (mistake) setMistake({ ...mistake, mistake_reason: next })
-            }}
-            rows={4}
-            className='mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm'
-          />
-        </label>
-
-        <KnowledgePointMultiSelect
-          disabled={!active || busy}
-          subjectId={subjectId}
-          values={record.knowledge_point_ids}
-          onChange={(values) => {
-            if (draft) setDraft({ ...draft, knowledge_point_ids: values })
-            if (mistake) setMistake({ ...mistake, knowledge_point_ids: values })
-          }}
-        />
-
-        {error ? <p role='alert' className='text-sm text-red-600'>{error}</p> : null}
-
-        {active ? (
-          <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='flex gap-3'>
+      <ManageFormPanel
+        variant='heavy'
+        onSubmit={save}
+        error={error ?? undefined}
+        actions={active ? (
+          <>
+            <div className='mr-auto flex gap-3'>
               {kind === 'draft' && draft ? (
                 <>
                   <button
@@ -229,7 +137,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                         setBusy(false)
                       }
                     }}
-                    className='inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-45'
+                    className='inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-45'
                   >
                     <CheckCircle2 className='h-4 w-4' />确认入错题
                   </button>
@@ -247,7 +155,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                         setBusy(false)
                       }
                     }}
-                    className='inline-flex items-center gap-2 rounded-xl border border-rose-200 px-4 py-2 text-sm text-rose-700 disabled:opacity-45'
+                    className='inline-flex items-center gap-2 rounded-lg border border-rose-200 px-4 py-2 text-sm text-rose-700 disabled:opacity-45'
                   >
                     <XCircle className='h-4 w-4' />拒绝
                   </button>
@@ -268,7 +176,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                       setBusy(false)
                     }
                   }}
-                  className='inline-flex items-center gap-2 rounded-xl border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
+                  className='inline-flex items-center gap-2 rounded-lg border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
                 >
                   <Archive className='h-4 w-4' />归档
                 </button>
@@ -276,13 +184,109 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
             </div>
             <button
               disabled={busy}
-              className='rounded-xl bg-[var(--color-brand)] px-5 py-2 text-sm text-white disabled:opacity-45'
+              className='rounded-lg bg-[var(--color-brand)] px-5 py-2 text-sm text-white disabled:opacity-45'
             >
               {busy ? '处理中…' : '保存'}
             </button>
-          </div>
-        ) : null}
-      </form>
+          </>
+        ) : undefined}
+      >
+        <section className='rounded-lg bg-slate-50 p-4'>
+          <h2 className='text-sm font-semibold text-slate-800'>题干快照</h2>
+          <p className='mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600'>{record.question_text}</p>
+        </section>
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          <label className='block text-sm font-medium text-slate-700'>
+            我的答案
+            <textarea
+              disabled={!active || busy}
+              value={record.my_answer ?? ''}
+              onChange={(event) => {
+                if (kind === 'draft' && draft) setDraft({ ...draft, my_answer: event.target.value || null })
+                if (kind === 'mistake' && mistake) setMistake({ ...mistake, my_answer: event.target.value || null })
+              }}
+              rows={4}
+              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+            />
+          </label>
+          <label className='block text-sm font-medium text-slate-700'>
+            {kind === 'draft' ? '解析快照' : '解析'}
+            <textarea
+              disabled={kind === 'draft' || !active || busy}
+              value={kind === 'draft' ? draft?.explanation_snapshot ?? '' : mistake?.analysis ?? ''}
+              onChange={(event) => {
+                if (mistake) setMistake({ ...mistake, analysis: event.target.value || null })
+              }}
+              rows={4}
+              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm disabled:bg-slate-50'
+            />
+          </label>
+        </div>
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          <label className='block text-sm font-medium text-slate-700'>
+            错因类型
+            <select
+              disabled={!active || busy}
+              value={record.reason_category}
+              onChange={(event) => {
+                const next = event.target.value as MistakeReason
+                if (draft) setDraft({ ...draft, reason_category: next })
+                if (mistake) setMistake({ ...mistake, reason_category: next })
+              }}
+              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+            >
+              {Object.entries(reasonLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className='block text-sm font-medium text-slate-700'>
+            难度
+            <select
+              disabled={!active || busy}
+              value={record.difficulty ?? ''}
+              onChange={(event) => {
+                const next = (event.target.value || null) as Difficulty | null
+                if (draft) setDraft({ ...draft, difficulty: next })
+                if (mistake) setMistake({ ...mistake, difficulty: next })
+              }}
+              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+            >
+              <option value=''>未设置</option>
+              <option value='easy'>简单</option>
+              <option value='medium'>中等</option>
+              <option value='hard'>困难</option>
+            </select>
+          </label>
+        </div>
+
+        <label className='block text-sm font-medium text-slate-700'>
+          错因说明
+          <textarea
+            disabled={!active || busy}
+            value={record.mistake_reason ?? ''}
+            onChange={(event) => {
+              const next = event.target.value || null
+              if (draft) setDraft({ ...draft, mistake_reason: next })
+              if (mistake) setMistake({ ...mistake, mistake_reason: next })
+            }}
+            rows={4}
+            className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+          />
+        </label>
+
+        <KnowledgePointMultiSelect
+          disabled={!active || busy}
+          subjectId={subjectId}
+          values={record.knowledge_point_ids}
+          onChange={(values) => {
+            if (draft) setDraft({ ...draft, knowledge_point_ids: values })
+            if (mistake) setMistake({ ...mistake, knowledge_point_ids: values })
+          }}
+        />
+      </ManageFormPanel>
     </div>
   )
 }

@@ -136,10 +136,13 @@ class Question(Base):
         nullable=False,
     )
     title: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    stem_md: Mapped[str] = mapped_column(Text, nullable=False, default="")
     question_text: Mapped[str] = mapped_column(Text, nullable=False)
     question_type: Mapped[str] = mapped_column(String(30), nullable=False)
     options: Mapped[list[str]] = mapped_column(JSON, default=list, server_default="[]", nullable=False)
+    answer_data: Mapped[dict] = mapped_column(JSON, default=dict, server_default="{}", nullable=False)
     correct_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    analysis_md: Mapped[str | None] = mapped_column(Text, nullable=True)
     explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
     difficulty: Mapped[str | None] = mapped_column(String(20), nullable=True)
     status: Mapped[str] = mapped_column(
@@ -163,7 +166,7 @@ class Question(Base):
             name="ck_questions_type",
         ),
         CheckConstraint(
-            "difficulty IS NULL OR difficulty IN ('easy', 'medium', 'hard')",
+            "difficulty IS NULL OR difficulty IN ('unspecified', 'easy', 'medium', 'hard')",
             name="ck_questions_difficulty",
         ),
         CheckConstraint("status IN ('active', 'archived')", name="ck_questions_status"),
@@ -185,13 +188,44 @@ class QuestionSource(Base):
     )
     source_type: Mapped[str] = mapped_column(String(30), nullable=False)
     source_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    source_ref: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_title: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    source_ref: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     __table_args__ = (
-        CheckConstraint("source_type = 'manual'", name="ck_question_sources_type"),
-        UniqueConstraint("source_type", "source_ref", name="uq_question_sources_ref"),
+        CheckConstraint("source_type IN ('manual', 'book', 'exam', 'note', 'url', 'other')", name="ck_question_sources_type"),
         Index("idx_question_sources_question", "question_id"),
+    )
+
+
+class QuestionKnowledgePoint(Base):
+    __tablename__ = "question_knowledge_points"
+
+    question_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("questions.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    knowledge_point_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("knowledge_points.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    role: Mapped[str] = mapped_column(String(20), default="primary", server_default="primary")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('primary', 'secondary', 'prerequisite')",
+            name="ck_question_knowledge_points_role",
+        ),
+        Index("idx_question_knowledge_points_question", "question_id", "sort_order"),
+        Index("idx_question_knowledge_points_knowledge_point", "knowledge_point_id"),
     )

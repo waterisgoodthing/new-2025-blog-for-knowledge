@@ -38,6 +38,8 @@
 
 ## 文档导航
 
+- [个人学习系统 V2 最高层架构](./personal-learning-system-v2.md)
+- [架构决策记录](../adr/README.md)
 - [MVP 第一版范围冻结](./mvp-scope.md)
 - [学习系统总流程](./learning-system-flow.md)
 - [功能域边界](./domains.md)

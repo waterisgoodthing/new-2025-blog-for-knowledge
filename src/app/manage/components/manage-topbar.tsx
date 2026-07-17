@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { ArrowLeft, Home } from 'lucide-react'
+import { Home } from 'lucide-react'
 
 export function ManageTopbar() {
   return (
-    <header className='flex flex-wrap items-center justify-between gap-3 border-b border-white/45 pb-5'>
+    <header className='hidden flex-wrap items-center justify-between gap-3 border-b border-white/45 pb-5 md:flex'>
       <div>
         <p className='text-xs font-medium tracking-[0.18em] text-[var(--color-brand)]/80 uppercase'>
           Personal learning
@@ -13,16 +13,9 @@ export function ManageTopbar() {
 
       <div className='flex items-center gap-2 text-sm'>
         <Link
-          href='/manage'
-          className='inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-slate-500 transition-colors hover:bg-white/65 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
-        >
-          <ArrowLeft className='h-4 w-4' aria-hidden='true' />
-          旧管理面板
-        </Link>
-        <Link
           href='/'
           aria-label='返回公开首页'
-          className='inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/55 text-slate-500 transition-colors hover:bg-white/80 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
+          className='inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white/55 text-slate-500 transition-colors hover:bg-white/80 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
         >
           <Home className='h-4 w-4' aria-hidden='true' />
         </Link>

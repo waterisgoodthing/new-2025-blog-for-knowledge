@@ -4,62 +4,61 @@ import {
   ArrowUpRight,
   Bot,
   Brain,
-  ClipboardCheck,
+  ClipboardList,
   Library,
-  ListChecks,
+  Search,
   Settings,
 } from 'lucide-react'
 import { ManagePageHeader } from '../../components/manage-page-header'
 
-const workspaceStatus = [
+const workspaceEntries = [
   {
-    label: '待审核',
-    value: '尚未接入',
-    href: '/manage/drafts',
-    icon: ClipboardCheck,
-    batch: 'Batch 3',
-  },
-  {
-    label: '待复习',
-    value: '尚未接入',
-    href: '/manage/review',
-    icon: Brain,
-    batch: 'Batch 4',
-  },
-  {
-    label: '科目与知识点',
-    value: '尚未接入',
+    label: 'Subjects',
+    value: 'Coming Soon',
     href: '/manage/subjects',
     icon: Library,
-    batch: 'Batch 2',
   },
   {
-    label: '附件',
-    value: '私有上传已接入；OCR 暂未启用',
+    label: 'Questions',
+    value: 'Coming Soon',
+    href: '/manage/questions',
+    icon: ClipboardList,
+  },
+  {
+    label: 'Mistakes',
+    value: 'Coming Soon',
+    href: '/manage/mistakes',
+    icon: Brain,
+  },
+  {
+    label: 'Review',
+    value: 'Coming Soon',
+    href: '/manage/review',
+    icon: Brain,
+  },
+  {
+    label: 'Attachments',
+    value: 'Coming Soon',
     href: '/manage/attachments',
     icon: Archive,
-    batch: 'Batch 5',
   },
   {
-    label: 'AI 控制台',
-    value: '调用日志与统计已接入',
+    label: 'Search',
+    value: 'Coming Soon',
+    href: '/manage/search',
+    icon: Search,
+  },
+  {
+    label: 'AI',
+    value: 'Coming Soon',
     href: '/manage/ai',
     icon: Bot,
-    batch: 'Batch 9',
   },
   {
-    label: '任务观察',
-    value: '占位；无后台队列',
-    href: '/manage/jobs',
-    icon: ListChecks,
-    batch: 'Batch 6',
-  },
-  {
-    label: '系统设置',
-    value: '占位；无保存请求',
+    label: 'Settings',
+    value: 'Coming Soon',
     href: '/manage/settings',
     icon: Settings,
-    batch: 'Batch 6',
   },
 ] as const
 
@@ -67,36 +66,33 @@ export default function ManageDashboardPage() {
   return (
     <div className='space-y-10'>
       <ManagePageHeader
-        eyebrow='Batch 1 · 工作区壳层'
-        title='总览'
-        description='这里先建立清晰的管理入口。业务数据会在对应批次完成后接入。'
+        eyebrow='Learning Workspace'
+        title='Learning Workspace'
+        description='Coming Soon. This Batch 1 dashboard is a static management shell only.'
       />
 
       <section aria-labelledby='workspace-status-title'>
         <div className='flex items-end justify-between gap-4 border-b border-white/55 pb-3'>
-          <div>
-            <h2 id='workspace-status-title' className='font-medium text-slate-800'>
-              MVP 工作区
-            </h2>
-            <p className='mt-1 text-xs text-slate-400'>当前仅提供导航，不展示虚构数据。</p>
-          </div>
-          <span className='text-xs text-slate-400'>{workspaceStatus.length} 个入口</span>
+          <h2 id='workspace-status-title' className='font-medium text-slate-800'>
+            Static workspace containers
+          </h2>
+          <span className='text-xs text-slate-400'>No API connected</span>
         </div>
 
         <div>
-          {workspaceStatus.map(({ label, value, href, icon: Icon, batch }) => (
+          {workspaceEntries.map(({ label, value, href, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className='group flex items-center gap-4 border-b border-white/45 py-5 transition-colors hover:bg-white/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
             >
-              <span className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-brand)]/9 text-[var(--color-brand)]'>
+              <span className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)]/9 text-[var(--color-brand)]'>
                 <Icon className='h-4 w-4' aria-hidden='true' />
               </span>
               <span className='min-w-0 flex-1'>
                 <span className='block font-medium text-slate-700'>{label}</span>
                 <span className='mt-0.5 block text-xs text-slate-400'>
-                  {batch} · {value}
+                  {value}
                 </span>
               </span>
               <ArrowUpRight

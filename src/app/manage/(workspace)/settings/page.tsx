@@ -3,9 +3,9 @@ import { FutureCapabilityPage } from '../components/future-capability-page'
 export default function ManageSettingsPage() {
   return (
     <FutureCapabilityPage
-      eyebrow='Batch 6 · Settings 占位'
-      title='系统设置'
-      description='未来用于管理 AI、OCR、上传、任务和隐私设置；当前只说明设置归属。'
+      eyebrow='系统'
+      title='设置'
+      description='这里还没有可以保存的设置项。'
       sections={[
         {
           title: 'AI / OCR',

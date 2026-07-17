@@ -10,6 +10,7 @@ AttachmentVisibility = Literal["private"]
 AttachmentStatus = Literal["active", "missing", "deleted"]
 AttachmentTargetType = Literal["question_draft", "question", "mistake"]
 AttachmentPurpose = Literal["source", "question", "answer", "inline", "ai_input", "ai_output"]
+AttachmentCreatePurpose = Literal["source", "question", "answer", "inline"]
 
 ALLOWED_MIME_TYPES = {
     "image/png",
@@ -24,7 +25,12 @@ def _clean_name(value: str) -> str:
     cleaned = value.strip()
     if not cleaned:
         raise ValueError("original_name must not be blank")
-    if "/" in cleaned or "\\" in cleaned or cleaned in {".", ".."} or ".." in cleaned.split("."):
+    if (
+        "/" in cleaned
+        or "\\" in cleaned
+        or cleaned in {".", ".."}
+        or any(ord(char) < 32 or ord(char) == 127 for char in cleaned)
+    ):
         raise ValueError("original_name must be a file name, not a path")
     return cleaned
 
@@ -79,7 +85,7 @@ class AttachmentLinkCreate(BaseModel):
     attachment_id: uuid.UUID
     target_type: AttachmentTargetType
     target_id: uuid.UUID
-    purpose: AttachmentPurpose
+    purpose: AttachmentCreatePurpose
     sort_order: int = 0
 
 

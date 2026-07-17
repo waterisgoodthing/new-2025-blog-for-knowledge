@@ -4,13 +4,14 @@ from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.note import Subject
-from app.models.taxonomy import Chapter, KnowledgePoint, KnowledgePointLink
+from app.models.taxonomy import KnowledgePoint, KnowledgePointLink
 from app.schemas.taxonomy import (
-    ChapterCreate,
-    ChapterUpdate,
     KnowledgePointCreate,
+    KnowledgePointTreeNode,
     KnowledgePointUpdate,
+    KnowledgeTreeOut,
     SubjectCreate,
+    SubjectSummary,
     SubjectUpdate,
 )
 
@@ -31,7 +32,7 @@ class TaxonomyValidationError(TaxonomyError):
     pass
 
 
-ModelT = TypeVar("ModelT", Subject, Chapter, KnowledgePoint)
+ModelT = TypeVar("ModelT", Subject, KnowledgePoint)
 
 
 async def _one_or_none(session: AsyncSession, statement: Select) -> object | None:
@@ -54,11 +55,11 @@ async def _get_or_raise(
 async def list_subjects(
     session: AsyncSession,
     *,
-    is_active: bool | None = None,
+    status: str | None = None,
 ) -> list[Subject]:
     statement = select(Subject)
-    if is_active is not None:
-        statement = statement.where(Subject.is_active == is_active)
+    if status is not None:
+        statement = statement.where(Subject.status == status)
     result = await session.execute(statement.order_by(Subject.sort_order, Subject.id))
     return list(result.scalars().all())
 
@@ -109,93 +110,13 @@ async def update_subject(
 
 async def delete_subject(session: AsyncSession, subject_id: int) -> None:
     subject = await get_subject(session, subject_id)
-    chapter = await _one_or_none(
-        session,
-        select(Chapter.id).where(Chapter.subject_id == subject_id).limit(1),
-    )
     knowledge_point = await _one_or_none(
         session,
         select(KnowledgePoint.id).where(KnowledgePoint.subject_id == subject_id).limit(1),
     )
-    if chapter is not None or knowledge_point is not None:
-        raise TaxonomyConflict("Subject still has chapters or knowledge points")
-    await session.delete(subject)
-    await session.flush()
-
-
-async def list_chapters(
-    session: AsyncSession,
-    *,
-    subject_id: int | None = None,
-    is_active: bool | None = None,
-) -> list[Chapter]:
-    statement = select(Chapter)
-    if subject_id is not None:
-        statement = statement.where(Chapter.subject_id == subject_id)
-    if is_active is not None:
-        statement = statement.where(Chapter.is_active == is_active)
-    result = await session.execute(statement.order_by(Chapter.sort_order, Chapter.id))
-    return list(result.scalars().all())
-
-
-async def get_chapter(session: AsyncSession, chapter_id: int) -> Chapter:
-    return await _get_or_raise(session, Chapter, chapter_id, "Chapter")
-
-
-async def create_chapter(session: AsyncSession, payload: ChapterCreate) -> Chapter:
-    await get_subject(session, payload.subject_id)
-    duplicate = await _one_or_none(
-        session,
-        select(Chapter).where(
-            Chapter.subject_id == payload.subject_id,
-            Chapter.name == payload.name,
-        ),
-    )
-    if duplicate is not None:
-        raise TaxonomyConflict("Chapter already exists in this subject")
-
-    chapter = Chapter(**payload.model_dump())
-    session.add(chapter)
-    await session.flush()
-    await session.refresh(chapter)
-    return chapter
-
-
-async def update_chapter(
-    session: AsyncSession,
-    chapter_id: int,
-    payload: ChapterUpdate,
-) -> Chapter:
-    chapter = await get_chapter(session, chapter_id)
-    changes = payload.model_dump(exclude_unset=True)
-    if "name" in changes:
-        duplicate = await _one_or_none(
-            session,
-            select(Chapter).where(
-                Chapter.subject_id == chapter.subject_id,
-                Chapter.name == changes["name"],
-                Chapter.id != chapter_id,
-            ),
-        )
-        if duplicate is not None:
-            raise TaxonomyConflict("Chapter already exists in this subject")
-
-    for field, value in changes.items():
-        setattr(chapter, field, value)
-    await session.flush()
-    await session.refresh(chapter)
-    return chapter
-
-
-async def delete_chapter(session: AsyncSession, chapter_id: int) -> None:
-    chapter = await get_chapter(session, chapter_id)
-    knowledge_point = await _one_or_none(
-        session,
-        select(KnowledgePoint.id).where(KnowledgePoint.chapter_id == chapter_id).limit(1),
-    )
     if knowledge_point is not None:
-        raise TaxonomyConflict("Chapter still has knowledge points")
-    await session.delete(chapter)
+        raise TaxonomyConflict("Subject still has knowledge points")
+    await session.delete(subject)
     await session.flush()
 
 
@@ -203,16 +124,16 @@ async def list_knowledge_points(
     session: AsyncSession,
     *,
     subject_id: int | None = None,
-    chapter_id: int | None = None,
-    is_active: bool | None = None,
+    parent_id: int | None = None,
+    status: str | None = None,
 ) -> list[KnowledgePoint]:
     statement = select(KnowledgePoint)
     if subject_id is not None:
         statement = statement.where(KnowledgePoint.subject_id == subject_id)
-    if chapter_id is not None:
-        statement = statement.where(KnowledgePoint.chapter_id == chapter_id)
-    if is_active is not None:
-        statement = statement.where(KnowledgePoint.is_active == is_active)
+    if parent_id is not None:
+        statement = statement.where(KnowledgePoint.parent_id == parent_id)
+    if status is not None:
+        statement = statement.where(KnowledgePoint.status == status)
     result = await session.execute(
         statement.order_by(KnowledgePoint.sort_order, KnowledgePoint.id)
     )
@@ -231,33 +152,53 @@ async def get_knowledge_point(
     )
 
 
-async def _validate_chapter_subject(
+async def _validate_parent(
     session: AsyncSession,
+    *,
     subject_id: int,
-    chapter_id: int | None,
+    parent_id: int | None,
+    moving_id: int | None = None,
 ) -> None:
     await get_subject(session, subject_id)
-    if chapter_id is None:
+    if parent_id is None:
         return
-    chapter = await get_chapter(session, chapter_id)
-    if chapter.subject_id != subject_id:
-        raise TaxonomyValidationError("Chapter does not belong to the selected subject")
+    if moving_id is not None and parent_id == moving_id:
+        raise TaxonomyValidationError("Knowledge point cannot be its own parent")
+
+    parent = await get_knowledge_point(session, parent_id)
+    if parent.subject_id != subject_id:
+        raise TaxonomyValidationError("Parent does not belong to the selected subject")
+
+    if moving_id is None:
+        return
+
+    current_parent_id = parent.parent_id
+    while current_parent_id is not None:
+        if current_parent_id == moving_id:
+            raise TaxonomyValidationError("Knowledge point cannot move under its descendant")
+        ancestor = await get_knowledge_point(session, current_parent_id)
+        current_parent_id = ancestor.parent_id
 
 
 async def create_knowledge_point(
     session: AsyncSession,
     payload: KnowledgePointCreate,
 ) -> KnowledgePoint:
-    await _validate_chapter_subject(session, payload.subject_id, payload.chapter_id)
+    await _validate_parent(
+        session,
+        subject_id=payload.subject_id,
+        parent_id=payload.parent_id,
+    )
     duplicate = await _one_or_none(
         session,
         select(KnowledgePoint).where(
             KnowledgePoint.subject_id == payload.subject_id,
+            KnowledgePoint.parent_id == payload.parent_id,
             KnowledgePoint.name == payload.name,
         ),
     )
     if duplicate is not None:
-        raise TaxonomyConflict("Knowledge point already exists in this subject")
+        raise TaxonomyConflict("Knowledge point already exists under this parent")
 
     knowledge_point = KnowledgePoint(**payload.model_dump())
     session.add(knowledge_point)
@@ -274,21 +215,27 @@ async def update_knowledge_point(
     knowledge_point = await get_knowledge_point(session, knowledge_point_id)
     changes = payload.model_dump(exclude_unset=True)
     subject_id = changes.get("subject_id", knowledge_point.subject_id)
-    chapter_id = changes.get("chapter_id", knowledge_point.chapter_id)
-    await _validate_chapter_subject(session, subject_id, chapter_id)
+    parent_id = changes.get("parent_id", knowledge_point.parent_id)
+    await _validate_parent(
+        session,
+        subject_id=subject_id,
+        parent_id=parent_id,
+        moving_id=knowledge_point_id,
+    )
 
-    if "name" in changes or "subject_id" in changes:
+    if {"name", "subject_id", "parent_id"}.intersection(changes):
         name = changes.get("name", knowledge_point.name)
         duplicate = await _one_or_none(
             session,
             select(KnowledgePoint).where(
                 KnowledgePoint.subject_id == subject_id,
+                KnowledgePoint.parent_id == parent_id,
                 KnowledgePoint.name == name,
                 KnowledgePoint.id != knowledge_point_id,
             ),
         )
         if duplicate is not None:
-            raise TaxonomyConflict("Knowledge point already exists in this subject")
+            raise TaxonomyConflict("Knowledge point already exists under this parent")
 
     for field, value in changes.items():
         setattr(knowledge_point, field, value)
@@ -302,6 +249,12 @@ async def delete_knowledge_point(
     knowledge_point_id: int,
 ) -> None:
     knowledge_point = await get_knowledge_point(session, knowledge_point_id)
+    child = await _one_or_none(
+        session,
+        select(KnowledgePoint.id).where(KnowledgePoint.parent_id == knowledge_point_id).limit(1),
+    )
+    if child is not None:
+        raise TaxonomyConflict("Knowledge point still has children")
     link = await _one_or_none(
         session,
         select(KnowledgePointLink.id)
@@ -312,3 +265,66 @@ async def delete_knowledge_point(
         raise TaxonomyConflict("Knowledge point is still in use")
     await session.delete(knowledge_point)
     await session.flush()
+
+
+async def archive_knowledge_point(
+    session: AsyncSession,
+    knowledge_point_id: int,
+) -> KnowledgePoint:
+    root = await get_knowledge_point(session, knowledge_point_id)
+    descendants = await _collect_descendants(session, knowledge_point_id)
+    for item in [root, *descendants]:
+        item.status = "archived"
+    await session.flush()
+    await session.refresh(root)
+    return root
+
+
+async def _collect_descendants(
+    session: AsyncSession,
+    knowledge_point_id: int,
+) -> list[KnowledgePoint]:
+    result = await session.execute(
+        select(KnowledgePoint)
+        .where(KnowledgePoint.parent_id == knowledge_point_id)
+        .order_by(KnowledgePoint.sort_order, KnowledgePoint.id)
+    )
+    children = list(result.scalars().all())
+    descendants: list[KnowledgePoint] = []
+    for child in children:
+        descendants.append(child)
+        descendants.extend(await _collect_descendants(session, child.id))
+    return descendants
+
+
+async def get_subject_knowledge_tree(
+    session: AsyncSession,
+    subject_id: int,
+    *,
+    status: str | None = None,
+) -> KnowledgeTreeOut:
+    subject = await get_subject(session, subject_id)
+    points = await list_knowledge_points(session, subject_id=subject_id, status=status)
+    by_parent: dict[int | None, list[KnowledgePoint]] = {}
+    for point in points:
+        by_parent.setdefault(point.parent_id, []).append(point)
+
+    def build(point: KnowledgePoint) -> KnowledgePointTreeNode:
+        return KnowledgePointTreeNode(
+            id=point.id,
+            subject_id=point.subject_id,
+            parent_id=point.parent_id,
+            name=point.name,
+            description=point.description,
+            status=point.status,
+            sort_order=point.sort_order,
+            created_at=point.created_at,
+            updated_at=point.updated_at,
+            children=[build(child) for child in by_parent.get(point.id, [])],
+        )
+
+    roots = [build(point) for point in by_parent.get(None, [])]
+    return KnowledgeTreeOut(
+        subject=SubjectSummary.model_validate(subject),
+        nodes=roots,
+    )

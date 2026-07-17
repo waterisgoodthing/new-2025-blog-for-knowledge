@@ -33,9 +33,9 @@ export function FutureCapabilityPage({
             <Ban className='h-4 w-4' aria-hidden='true' />
           </span>
           <div>
-            <h2 className='font-semibold text-amber-900'>第一版暂未启用</h2>
+            <h2 className='font-semibold text-amber-900'>还没有这个功能</h2>
             <p className='mt-1 text-sm leading-6 text-amber-800'>
-              这里是未来能力的管理入口占位。当前不会发起模型、OCR、任务队列或设置保存请求。
+              这个功能还在准备中，暂时不能使用。
             </p>
           </div>
         </div>

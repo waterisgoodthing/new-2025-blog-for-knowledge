@@ -5,7 +5,7 @@ from app.routers.auth import get_current_admin
 
 
 class QuestionRouteContractTest(unittest.TestCase):
-    def test_admin_routes_are_registered_without_direct_question_create(self):
+    def test_admin_routes_include_direct_question_crud(self):
         contracts = {
             (route.path, method)
             for route in main.app.routes
@@ -15,9 +15,10 @@ class QuestionRouteContractTest(unittest.TestCase):
         self.assertIn(("/api/admin/drafts/questions", "POST"), contracts)
         self.assertIn(("/api/admin/drafts/{draft_item_id}/convert", "POST"), contracts)
         self.assertIn(("/api/admin/questions", "GET"), contracts)
+        self.assertIn(("/api/admin/questions", "POST"), contracts)
         self.assertIn(("/api/admin/questions/{question_id}", "PUT"), contracts)
+        self.assertIn(("/api/admin/questions/{question_id}", "PATCH"), contracts)
         self.assertIn(("/api/admin/questions/{question_id}", "DELETE"), contracts)
-        self.assertNotIn(("/api/admin/questions", "POST"), contracts)
 
     def test_every_draft_and_question_route_depends_on_admin(self):
         protected = [

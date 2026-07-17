@@ -1,6 +1,7 @@
 import { AuthGate } from '@/components/auth-gate'
 import { ManageSidebar } from '../components/manage-sidebar'
 import { ManageTopbar } from '../components/manage-topbar'
+import { ManageMobileNav } from '../components/manage-mobile-nav'
 
 export default function ManageWorkspaceLayout({
   children,
@@ -11,8 +12,9 @@ export default function ManageWorkspaceLayout({
         <div className='mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:gap-6'>
           <ManageSidebar />
           <section className='w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border border-white/45 bg-white/48 p-5 shadow-[0_24px_90px_-46px_rgba(66,107,113,0.5)] backdrop-blur-xl sm:p-7 lg:p-9'>
+            <ManageMobileNav />
             <ManageTopbar />
-            <main className='pt-8'>{children}</main>
+            <main className='pt-4 md:pt-8'>{children}</main>
           </section>
         </div>
       </div>

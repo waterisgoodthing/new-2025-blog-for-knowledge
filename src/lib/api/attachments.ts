@@ -11,6 +11,7 @@ export type AttachmentPurpose =
   | 'inline'
   | 'ai_input'
   | 'ai_output'
+export type AttachmentCreatePurpose = 'source' | 'question' | 'answer' | 'inline'
 
 export interface Attachment {
   id: string
@@ -31,7 +32,7 @@ export interface AttachmentLink {
   attachment_id: string
   target_type: AttachmentTargetType
   target_id: string
-  purpose: AttachmentPurpose
+  purpose: AttachmentCreatePurpose
   sort_order: number
   created_at: string
 }
@@ -70,12 +71,12 @@ export function getAttachment(id: string): Promise<Attachment> {
   return apiFetch<Attachment>(`/api/admin/attachments/${id}`)
 }
 
-export function getAttachmentContentUrl(id: string): string {
-  return `${getApiBase()}/api/admin/attachments/${id}/content`
+export function getAttachmentContentUrl(id: string, disposition: 'inline' | 'attachment' = 'inline'): string {
+  return `${getApiBase()}/api/admin/attachments/${id}/content?disposition=${disposition}`
 }
 
-export function deleteAttachment(id: string): Promise<Attachment> {
-  return apiFetch<Attachment>(`/api/admin/attachments/${id}`, {
+export function deleteAttachment(id: string): Promise<void> {
+  return apiFetch<void>(`/api/admin/attachments/${id}`, {
     method: 'DELETE',
   })
 }

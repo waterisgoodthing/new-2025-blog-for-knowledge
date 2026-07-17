@@ -1,6 +1,10 @@
 import hashlib
+import os
+import tempfile
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -47,9 +51,17 @@ def _safe_original_name(name: str) -> str:
 
 
 def _safe_content_path(root: Path, storage_key: str) -> Path:
-    candidate = (root / storage_key).resolve()
+    relative = Path(storage_key)
+    if relative.is_absolute():
+        raise AttachmentValidationError("Invalid storage key")
+    candidate = (root / relative).resolve()
     if candidate != root and root not in candidate.parents:
         raise AttachmentValidationError("Invalid storage key")
+    current = root
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink():
+            raise AttachmentValidationError("Invalid storage path")
     return candidate
 
 
@@ -60,35 +72,27 @@ def _validate_mime(mime_type: str) -> str:
     return cleaned
 
 
-async def create_attachment_from_bytes(
+async def _create_attachment_from_temp(
     session: AsyncSession,
     *,
     original_name: str,
-    content: bytes,
     mime_type: str,
+    temporary: Path,
+    size_bytes: int,
+    checksum_sha256: str,
     upload_root: Path | str | None = None,
     created_by=None,
 ) -> Attachment:
-    if not content:
-        raise AttachmentValidationError("Attachment must not be empty")
-    settings = get_settings()
-    if len(content) > settings.MAX_UPLOAD_BYTES:
-        raise AttachmentValidationError("Attachment is too large")
-
     clean_name = _safe_original_name(original_name)
     clean_mime = _validate_mime(mime_type)
     root = _upload_root(upload_root)
     root.mkdir(parents=True, exist_ok=True)
-
-    checksum = hashlib.sha256(content).hexdigest()
     storage_key = _storage_key(clean_name)
     destination = _safe_content_path(root, storage_key)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_suffix(destination.suffix + ".tmp")
 
     try:
-        temporary.write_bytes(content)
-        temporary.replace(destination)
+        os.replace(temporary, destination)
     except Exception:
         if temporary.exists():
             temporary.unlink()
@@ -99,8 +103,8 @@ async def create_attachment_from_bytes(
         storage_provider="local",
         storage_key=storage_key,
         mime_type=clean_mime,
-        size_bytes=len(content),
-        checksum_sha256=checksum,
+        size_bytes=size_bytes,
+        checksum_sha256=checksum_sha256,
         visibility="private",
         status="active",
         created_by=created_by,
@@ -114,6 +118,93 @@ async def create_attachment_from_bytes(
         raise
     await session.refresh(attachment)
     return attachment
+
+
+async def create_attachment_from_stream(
+    session: AsyncSession,
+    *,
+    original_name: str,
+    mime_type: str,
+    stream: Any,
+    upload_root: Path | str | None = None,
+    created_by=None,
+    chunk_size: int = 1024 * 1024,
+) -> Attachment:
+    if chunk_size <= 0:
+        raise AttachmentValidationError("Invalid upload chunk size")
+    clean_name = _safe_original_name(original_name)
+    clean_mime = _validate_mime(mime_type)
+    settings = get_settings()
+    root = _upload_root(upload_root)
+    root.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    size_bytes = 0
+    digest = hashlib.sha256()
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb", prefix=".attachment-", suffix=".tmp", dir=root, delete=False
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            while True:
+                chunk = await stream.read(chunk_size)
+                if not chunk:
+                    break
+                size_bytes += len(chunk)
+                if size_bytes > settings.MAX_UPLOAD_BYTES:
+                    raise AttachmentValidationError("Attachment is too large")
+                digest.update(chunk)
+                temporary.write(chunk)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+
+        if size_bytes == 0:
+            raise AttachmentValidationError("Attachment must not be empty")
+
+        attachment = await _create_attachment_from_temp(
+            session,
+            original_name=clean_name,
+            mime_type=clean_mime,
+            temporary=temporary_path,
+            size_bytes=size_bytes,
+            checksum_sha256=digest.hexdigest(),
+            upload_root=root,
+            created_by=created_by,
+        )
+        temporary_path = None
+        return attachment
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
+
+
+async def create_attachment_from_bytes(
+    session: AsyncSession,
+    *,
+    original_name: str,
+    content: bytes,
+    mime_type: str,
+    upload_root: Path | str | None = None,
+    created_by=None,
+) -> Attachment:
+    class BytesStream:
+        def __init__(self, value: bytes):
+            self.value = value
+            self.offset = 0
+
+        async def read(self, size: int):
+            chunk = self.value[self.offset : self.offset + size]
+            self.offset += len(chunk)
+            return chunk
+
+    return await create_attachment_from_stream(
+        session,
+        original_name=original_name,
+        mime_type=mime_type,
+        stream=BytesStream(content),
+        upload_root=upload_root,
+        created_by=created_by,
+    )
 
 
 async def list_attachments(
@@ -142,7 +233,7 @@ async def get_attachment_content_path(
     upload_root: Path | str | None = None,
 ) -> Path:
     attachment = await get_attachment(session, attachment_id)
-    if attachment.status == "deleted":
+    if attachment.status != "active":
         raise AttachmentNotFound("Attachment not found")
     root = _upload_root(upload_root)
     path = _safe_content_path(root, attachment.storage_key)
@@ -163,6 +254,7 @@ async def delete_attachment(
     if attachment.status == "deleted":
         return attachment
     attachment.status = "deleted"
+    attachment.deleted_at = datetime.now(timezone.utc)
     await session.flush()
     await session.refresh(attachment)
     return attachment

@@ -1,10 +1,16 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 import { listQuestions, type Question, type QuestionStatus } from '@/lib/api/questions'
+
+import { ManageEmptyState } from '../../../components/manage-empty-state'
+import { ManageStatusBadge } from '../../../components/manage-status-badge'
+import {
+  ManageListRow,
+  ManageTableContainer,
+} from '../../../components/manage-table-container'
 
 export function QuestionList() {
   const [questions, setQuestions] = useState<Question[]>([])
@@ -22,24 +28,51 @@ export function QuestionList() {
 
   return (
     <section>
-      <div className='flex items-center justify-between gap-4 border-b border-slate-200/70 pb-3'>
-        <h2 className='font-medium text-slate-800'>题目列表</h2>
-        <select aria-label='题目状态' value={status} onChange={(event) => setStatus(event.target.value as QuestionStatus)} className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm'>
-          <option value='active'>使用中</option><option value='archived'>已归档</option>
-        </select>
-      </div>
-      {loading ? <p className='py-7 text-sm text-slate-400'>正在加载题库…</p> : null}
-      {error ? <p role='alert' className='py-5 text-sm text-red-600'>{error}</p> : null}
-      {!loading && questions.length === 0 ? <p className='py-7 text-sm text-slate-500'>当前没有正式题目；请先确认一份草稿。</p> : null}
-      {questions.map((question) => (
-        <Link key={question.id} href={`/manage/questions/${question.id}`} className='group flex items-center gap-4 border-b border-slate-200/55 py-4'>
-          <span className='min-w-0 flex-1'>
-            <span className='block truncate font-medium text-slate-800'>{question.title || question.question_text}</span>
-            <span className='mt-1 block text-xs text-slate-400'>{question.question_type} · {question.status} · v{question.version}</span>
-          </span>
-          <ArrowRight className='h-4 w-4 text-slate-300 group-hover:text-[var(--color-brand)]' />
-        </Link>
-      ))}
+      <ManageTableContainer
+        header={
+          <>
+            <h2 className='font-medium text-slate-800'>题目列表</h2>
+            <div className='flex items-center gap-3'>
+              <Link href='/manage/questions/new' className='rounded-lg bg-[var(--color-brand)] px-3 py-2 text-sm text-white'>新建题目</Link>
+              <span className='text-xs text-slate-400'>{questions.length} 道</span>
+              <select
+                aria-label='题目状态'
+                value={status}
+                onChange={(event) => setStatus(event.target.value as QuestionStatus)}
+                className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm'
+              >
+                <option value='active'>使用中</option>
+                <option value='archived'>已归档</option>
+              </select>
+            </div>
+          </>
+        }
+      >
+        {loading ? (
+          <ManageEmptyState variant='loading' message='正在加载题库…' />
+        ) : null}
+        {!loading && error ? (
+          <ManageEmptyState variant='error' message={error} />
+        ) : null}
+        {!loading && !error && questions.length === 0 ? (
+          <ManageEmptyState
+            variant={status === 'active' ? 'filtered-empty' : 'empty'}
+            message='当前没有正式题目；请先确认一份草稿。'
+          />
+        ) : null}
+        {questions.map((question) => (
+          <ManageListRow
+            key={question.id}
+            href={`/manage/questions/${question.id}`}
+            title={question.title || question.question_text}
+            meta={`${question.question_type} · v${question.version}`}
+          >
+            <ManageStatusBadge tone={question.status === 'active' ? 'success' : 'neutral'}>
+              {question.status === 'active' ? '使用中' : '已归档'}
+            </ManageStatusBadge>
+          </ManageListRow>
+        ))}
+      </ManageTableContainer>
     </section>
   )
 }

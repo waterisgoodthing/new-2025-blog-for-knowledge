@@ -7,7 +7,7 @@ from app.schemas.taxonomy import SubjectCreate, SubjectOut, SubjectUpdate
 from app.services import taxonomy_service
 
 router = APIRouter(
-    prefix="/api/subjects",
+    prefix="/api/admin/subjects",
     tags=["subjects"],
     dependencies=[Depends(get_current_admin)],
 )
@@ -23,10 +23,10 @@ def _raise_http(error: taxonomy_service.TaxonomyError) -> None:
 
 @router.get("", response_model=list[SubjectOut])
 async def list_subjects(
-    is_active: bool | None = None,
+    status: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    return await taxonomy_service.list_subjects(db, is_active=is_active)
+    return await taxonomy_service.list_subjects(db, status=status)
 
 
 @router.get("/{subject_id}", response_model=SubjectOut)
@@ -67,3 +67,19 @@ async def delete_subject(subject_id: int, db: AsyncSession = Depends(get_db)):
     except taxonomy_service.TaxonomyError as error:
         _raise_http(error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{subject_id}/knowledge-tree")
+async def get_subject_knowledge_tree(
+    subject_id: int,
+    status: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        return await taxonomy_service.get_subject_knowledge_tree(
+            db,
+            subject_id,
+            status=status,
+        )
+    except taxonomy_service.TaxonomyError as error:
+        _raise_http(error)

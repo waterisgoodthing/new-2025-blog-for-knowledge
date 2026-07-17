@@ -6,7 +6,13 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.note import Subject
-from app.models.question import DraftItem, Question, QuestionDraft, QuestionSource
+from app.models.question import (
+    DraftItem,
+    Question,
+    QuestionDraft,
+    QuestionKnowledgePoint,
+    QuestionSource,
+)
 from app.models.taxonomy import KnowledgePoint, KnowledgePointLink
 from app.schemas.question import QuestionDraftCreate, QuestionDraftUpdate
 from app.services.question_service import QuestionRecord, get_question
@@ -279,7 +285,26 @@ async def convert_question_draft(
     )
 
     question = Question(
-        **validated.model_dump(exclude={"knowledge_point_ids"}),
+        subject_id=validated.subject_id,
+        title=validated.title,
+        stem_md=validated.question_text,
+        question_text=validated.question_text,
+        question_type=validated.question_type,
+        options=[{"key": chr(65 + index), "text": value} for index, value in enumerate(validated.options)],
+        answer_data={
+            "kind": validated.question_type,
+            "value": (
+                [item.strip() for item in (validated.correct_answer or "").split(",") if item.strip()]
+                if validated.question_type in {"single_choice", "multiple_choice"}
+                else validated.correct_answer or ""
+            ),
+        },
+        correct_answer=validated.correct_answer,
+        analysis_md=validated.explanation,
+        explanation=validated.explanation,
+        # Legacy MistakeDraft accepts NULL for an unspecified difficulty.
+        # QuestionRecord exposes that legacy NULL as the canonical "unspecified" value.
+        difficulty=validated.difficulty,
         status="active",
         visibility="private",
         version=1,
@@ -290,10 +315,17 @@ async def convert_question_draft(
         question_id=question.id,
         source_type="manual",
         source_name="手工录入",
+        source_title="手工录入",
         source_ref=str(record.item.id),
     )
     session.add(source)
     for knowledge_point_id in validated.knowledge_point_ids:
+        session.add(
+            QuestionKnowledgePoint(
+                question_id=question.id,
+                knowledge_point_id=knowledge_point_id,
+            )
+        )
         session.add(
             KnowledgePointLink(
                 knowledge_point_id=knowledge_point_id,

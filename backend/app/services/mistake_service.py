@@ -124,15 +124,38 @@ async def list_mistakes(session,status=None):
 
 async def convert_mistake_draft(session,item_id,version):
     r=await get_mistake_draft(session,item_id,True)
-    if r.item.status=="converted": return await get_mistake(session,uuid.UUID(r.item.target_id))
+    if r.item.status=="converted":
+        try:
+            target_id = uuid.UUID(r.item.target_id or "")
+        except (ValueError, AttributeError) as error:
+            raise MistakeConflict("Converted draft has an invalid target") from error
+        target = await session.get(Mistake, target_id)
+        if target is None or target.source_draft_item_id != r.item.id:
+            raise MistakeConflict("Converted draft target is inconsistent")
+        try:
+            return await get_mistake(session, target_id)
+        except MistakeError as error:
+            raise MistakeConflict("Converted draft target is incomplete") from error
     if r.item.status=="rejected": raise MistakeConflict("Rejected draft cannot be converted")
     if r.item.version!=version: raise MistakeConflict("Draft version conflict")
     question_id=r.question_id
     if question_id is None:
         qdraft=await session.get(QuestionDraft,r.question_draft_id)
         source_item=await session.get(DraftItem,qdraft.draft_item_id)
-        if source_item.status!="converted" or not source_item.target_id: raise MistakeConflict("Question draft must be converted first")
-        question_id=uuid.UUID(source_item.target_id)
+        if (
+            qdraft is None
+            or source_item is None
+            or source_item.status != "converted"
+            or source_item.target_type != "question"
+            or not source_item.target_id
+        ):
+            raise MistakeConflict("Question draft must be converted first")
+        try:
+            question_id=uuid.UUID(source_item.target_id)
+        except ValueError as error:
+            raise MistakeConflict("Question draft conversion target is invalid") from error
+        if await session.get(Question, question_id) is None:
+            raise MistakeConflict("Question draft conversion target is missing")
     m=Mistake(source_draft_item_id=r.item.id,question_id=question_id,subject_id=r.subject_id,title=r.title,
         question_text=r.question_text,my_answer=r.my_answer,correct_answer=r.correct_answer_snapshot,
         analysis=r.explanation_snapshot,reason_category=r.reason_category,mistake_reason=r.mistake_reason,

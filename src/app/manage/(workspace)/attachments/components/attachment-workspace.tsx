@@ -83,7 +83,7 @@ export function AttachmentWorkspace() {
               disabled={busy}
               accept='image/png,image/jpeg,image/webp,application/pdf,text/plain'
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className='mt-2 block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm'
+              className='mt-2 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm'
             />
           </label>
           {file ? (
@@ -94,7 +94,7 @@ export function AttachmentWorkspace() {
           {error ? <p role='alert' className='text-sm text-red-600'>{error}</p> : null}
           <button
             disabled={busy || !file}
-            className='inline-flex items-center gap-2 rounded-xl bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+            className='inline-flex items-center gap-2 rounded-lg bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
           >
             <FileUp className='h-4 w-4' />
             {busy ? '上传中…' : '上传附件'}
@@ -117,7 +117,7 @@ export function AttachmentWorkspace() {
                 setStatus(next)
                 void load(next)
               }}
-              className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm'
+              className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm'
             >
               <option value='active'>active</option>
               <option value='missing'>missing</option>
@@ -127,7 +127,7 @@ export function AttachmentWorkspace() {
             <button
               type='button'
               onClick={() => void load()}
-              className='inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600'
+              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600'
             >
               <RefreshCcw className='h-4 w-4' />
               刷新

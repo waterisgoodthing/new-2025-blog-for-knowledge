@@ -13,8 +13,8 @@ import {
   getAttachmentContentUrl,
   listAttachmentLinks,
   type Attachment,
+  type AttachmentCreatePurpose,
   type AttachmentLink,
-  type AttachmentPurpose,
   type AttachmentTargetType,
 } from '@/lib/api/attachments'
 
@@ -34,7 +34,7 @@ export function AttachmentDetail({ id }: { id: string }) {
   const [links, setLinks] = useState<AttachmentLink[]>([])
   const [targetType, setTargetType] = useState<AttachmentTargetType>('question')
   const [targetId, setTargetId] = useState('')
-  const [purpose, setPurpose] = useState<AttachmentPurpose>('source')
+  const [purpose, setPurpose] = useState<AttachmentCreatePurpose>('source')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,6 +52,7 @@ export function AttachmentDetail({ id }: { id: string }) {
   }, [id])
 
   const contentUrl = useMemo(() => getAttachmentContentUrl(id), [id])
+  const downloadUrl = useMemo(() => getAttachmentContentUrl(id, 'attachment'), [id])
 
   if (!attachment) {
     return (
@@ -114,13 +115,13 @@ export function AttachmentDetail({ id }: { id: string }) {
             </dl>
           </div>
           <a
-            href={contentUrl}
+            href={downloadUrl}
             target='_blank'
             rel='noreferrer'
-            className='inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700'
+            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700'
           >
             <ExternalLink className='h-4 w-4' />
-            新窗口打开
+            下载附件
           </a>
           {attachment.status !== 'deleted' ? (
             <button
@@ -138,7 +139,7 @@ export function AttachmentDetail({ id }: { id: string }) {
                   setBusy(false)
                 }
               }}
-              className='inline-flex items-center gap-2 rounded-xl border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
+              className='inline-flex items-center gap-2 rounded-lg border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
             >
               <Archive className='h-4 w-4' />
               标记删除
@@ -160,7 +161,7 @@ export function AttachmentDetail({ id }: { id: string }) {
               value={targetType}
               disabled={busy || attachment.status !== 'active'}
               onChange={(event) => setTargetType(event.target.value as AttachmentTargetType)}
-              className='mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
             >
               <option value='question_draft'>question_draft</option>
               <option value='question'>question</option>
@@ -174,7 +175,7 @@ export function AttachmentDetail({ id }: { id: string }) {
               disabled={busy || attachment.status !== 'active'}
               onChange={(event) => setTargetId(event.target.value)}
               placeholder='UUID'
-              className='mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
             />
           </label>
           <label className='text-sm font-medium text-slate-700'>
@@ -182,8 +183,8 @@ export function AttachmentDetail({ id }: { id: string }) {
             <select
               value={purpose}
               disabled={busy || attachment.status !== 'active'}
-              onChange={(event) => setPurpose(event.target.value as AttachmentPurpose)}
-              className='mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              onChange={(event) => setPurpose(event.target.value as AttachmentCreatePurpose)}
+              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
             >
               <option value='source'>source</option>
               <option value='question'>question</option>
@@ -193,7 +194,7 @@ export function AttachmentDetail({ id }: { id: string }) {
           </label>
           <button
             disabled={busy || attachment.status !== 'active' || !targetId.trim()}
-            className='self-end rounded-xl bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+            className='self-end rounded-lg bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
           >
             关联
           </button>
@@ -222,7 +223,7 @@ export function AttachmentDetail({ id }: { id: string }) {
                     setBusy(false)
                   }
                 }}
-                className='rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 disabled:opacity-45'
+                className='rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 disabled:opacity-45'
               >
                 解除关联
               </button>
@@ -232,7 +233,7 @@ export function AttachmentDetail({ id }: { id: string }) {
       </section>
 
       <section className='rounded-3xl border border-dashed border-slate-300 bg-slate-50/80 p-5'>
-        <h2 className='font-semibold text-slate-900'>OCR 第一版暂未启用</h2>
+        <h2 className='font-semibold text-slate-900'>OCR 还没有开启</h2>
         <p className='mt-2 text-sm leading-6 text-slate-500'>
           这个附件可以作为未来 OCR / Capture Router 的输入来源，但当前版本不会自动识别、
           不会拆分 PDF，也不会把识别结果写入草稿或正式题库。

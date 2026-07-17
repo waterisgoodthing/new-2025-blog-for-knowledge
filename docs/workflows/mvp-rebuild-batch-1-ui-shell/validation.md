@@ -166,3 +166,31 @@ AUTH_BYPASS。
 - 首页卡片不进入旧拖拽配置是本批硬约束，不进入下一轮需求。
 - Batch 2 需求来源使用既有 `batch-2-subject-taxonomy/spec.md`，不把 Batch 1 的
   非问题转换为额外范围。
+
+## 2026-07-15 冻结复核
+
+本轮按“Batch 1 只建立管理端骨架”的冻结要求复核并收口当前入口：
+
+- `/manage/(workspace)` 可访问 `page.tsx` 入口已保持为静态壳层或静态占位。
+- Sidebar 预留 Dashboard、Subjects、Knowledge Points、Questions、Mistakes、
+  Review、Attachments、AI、Jobs、Search、Analytics、Settings。
+- `/manage/dashboard` 显示 Learning Workspace / Coming Soon 静态入口，不展示真实统计。
+- 可访问 Batch 1 page entry、layout、manage shell component、`LearningSpaceCard`
+  经扫描无 `@/lib/api`、`fetch(`、`axios` 或 `/api/` 依赖。
+- 未修改 backend、数据库迁移、API client 或真实学习业务合同。
+
+验证结果：
+
+```text
+npm run lint  -> FAIL，package.json 无 lint script
+npm run build -> PASS
+npm test      -> PASS，5 files / 16 tests
+git diff --check -> PASS
+```
+
+本轮额外生成：
+
+- `docs/batch1-route-current-state.md`
+- `docs/batch1-ui-shell-design.md`
+- `docs/batch1-ui-shell-validation.md`
+- `docs/batch1-handoff.md`

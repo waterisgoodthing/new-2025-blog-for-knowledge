@@ -1,21 +1,12 @@
 import { apiFetch } from './client'
 
+export type TaxonomyStatus = 'active' | 'archived'
+
 export interface Subject {
   id: number
   name: string
   description: string | null
-  is_active: boolean
-  sort_order: number
-  created_at: string
-  updated_at: string
-}
-
-export interface Chapter {
-  id: number
-  subject_id: number
-  name: string
-  description: string | null
-  is_active: boolean
+  status: TaxonomyStatus
   sort_order: number
   created_at: string
   updated_at: string
@@ -24,41 +15,41 @@ export interface Chapter {
 export interface KnowledgePoint {
   id: number
   subject_id: number
-  chapter_id: number | null
+  parent_id: number | null
   name: string
   description: string | null
-  is_active: boolean
+  status: TaxonomyStatus
   sort_order: number
   created_at: string
   updated_at: string
 }
 
+export interface KnowledgePointTreeNode extends KnowledgePoint {
+  children: KnowledgePointTreeNode[]
+}
+
+export interface KnowledgeTree {
+  subject: Pick<Subject, 'id' | 'name'>
+  nodes: KnowledgePointTreeNode[]
+}
+
 export interface SubjectInput {
   name: string
   description?: string | null
-  is_active?: boolean
-  sort_order?: number
-}
-
-export interface ChapterInput {
-  subject_id: number
-  name: string
-  description?: string | null
-  is_active?: boolean
+  status?: TaxonomyStatus
   sort_order?: number
 }
 
 export interface KnowledgePointInput {
   subject_id: number
-  chapter_id?: number | null
+  parent_id?: number | null
   name: string
   description?: string | null
-  is_active?: boolean
+  status?: TaxonomyStatus
   sort_order?: number
 }
 
 export type SubjectUpdate = Partial<SubjectInput>
-export type ChapterUpdate = Partial<Omit<ChapterInput, 'subject_id'>>
 export type KnowledgePointUpdate = Partial<KnowledgePointInput>
 
 function queryString(filters: Record<string, string | number | boolean | undefined>): string {
@@ -70,72 +61,78 @@ function queryString(filters: Record<string, string | number | boolean | undefin
   return query ? `?${query}` : ''
 }
 
-export function listSubjects(filters: { is_active?: boolean } = {}): Promise<Subject[]> {
-  return apiFetch<Subject[]>(`/api/subjects${queryString(filters)}`)
+function normalizeStatusFilter(filters: {
+  status?: TaxonomyStatus
+  is_active?: boolean
+}): { status?: TaxonomyStatus } {
+  if (filters.status) return { status: filters.status }
+  if (filters.is_active === true) return { status: 'active' }
+  if (filters.is_active === false) return { status: 'archived' }
+  return {}
+}
+
+export function listSubjects(
+  filters: { status?: TaxonomyStatus; is_active?: boolean } = {},
+): Promise<Subject[]> {
+  return apiFetch<Subject[]>(
+    `/api/admin/subjects${queryString(normalizeStatusFilter(filters))}`,
+  )
 }
 
 export function getSubject(id: number): Promise<Subject> {
-  return apiFetch<Subject>(`/api/subjects/${id}`)
+  return apiFetch<Subject>(`/api/admin/subjects/${id}`)
 }
 
 export function createSubject(input: SubjectInput): Promise<Subject> {
-  return apiFetch<Subject>('/api/subjects', {
+  return apiFetch<Subject>('/api/admin/subjects', {
     method: 'POST',
     body: JSON.stringify(input),
   })
 }
 
 export function updateSubject(id: number, input: SubjectUpdate): Promise<Subject> {
-  return apiFetch<Subject>(`/api/subjects/${id}`, {
+  return apiFetch<Subject>(`/api/admin/subjects/${id}`, {
     method: 'PUT',
     body: JSON.stringify(input),
   })
 }
 
 export function deleteSubject(id: number): Promise<void> {
-  return apiFetch<void>(`/api/subjects/${id}`, { method: 'DELETE' })
+  return apiFetch<void>(`/api/admin/subjects/${id}`, { method: 'DELETE' })
 }
 
-export function listChapters(
-  filters: { subject_id?: number; is_active?: boolean } = {},
-): Promise<Chapter[]> {
-  return apiFetch<Chapter[]>(`/api/chapters${queryString(filters)}`)
-}
-
-export function getChapter(id: number): Promise<Chapter> {
-  return apiFetch<Chapter>(`/api/chapters/${id}`)
-}
-
-export function createChapter(input: ChapterInput): Promise<Chapter> {
-  return apiFetch<Chapter>('/api/chapters', {
-    method: 'POST',
-    body: JSON.stringify(input),
-  })
-}
-
-export function updateChapter(id: number, input: ChapterUpdate): Promise<Chapter> {
-  return apiFetch<Chapter>(`/api/chapters/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(input),
-  })
-}
-
-export function deleteChapter(id: number): Promise<void> {
-  return apiFetch<void>(`/api/chapters/${id}`, { method: 'DELETE' })
+export function getSubjectKnowledgeTree(
+  subjectId: number,
+  filters: { status?: TaxonomyStatus } = {},
+): Promise<KnowledgeTree> {
+  return apiFetch<KnowledgeTree>(
+    `/api/admin/subjects/${subjectId}/knowledge-tree${queryString(filters)}`,
+  )
 }
 
 export function listKnowledgePoints(
-  filters: { subject_id?: number; chapter_id?: number; is_active?: boolean } = {},
+  filters: {
+    subject_id?: number
+    parent_id?: number
+    status?: TaxonomyStatus
+    is_active?: boolean
+  } = {},
 ): Promise<KnowledgePoint[]> {
-  return apiFetch<KnowledgePoint[]>(`/api/knowledge-points${queryString(filters)}`)
+  const { is_active: _isActive, status, ...rest } = filters
+  return apiFetch<KnowledgePoint[]>(
+    `/api/admin/knowledge-points${queryString({
+      ...rest,
+      ...normalizeStatusFilter({ status, is_active: _isActive }),
+    })}`,
+  )
 }
 
 export function getKnowledgePoint(id: number): Promise<KnowledgePoint> {
-  return apiFetch<KnowledgePoint>(`/api/knowledge-points/${id}`)
+  return apiFetch<KnowledgePoint>(`/api/admin/knowledge-points/${id}`)
 }
 
 export function createKnowledgePoint(input: KnowledgePointInput): Promise<KnowledgePoint> {
-  return apiFetch<KnowledgePoint>('/api/knowledge-points', {
+  return apiFetch<KnowledgePoint>('/api/admin/knowledge-points', {
     method: 'POST',
     body: JSON.stringify(input),
   })
@@ -145,12 +142,18 @@ export function updateKnowledgePoint(
   id: number,
   input: KnowledgePointUpdate,
 ): Promise<KnowledgePoint> {
-  return apiFetch<KnowledgePoint>(`/api/knowledge-points/${id}`, {
+  return apiFetch<KnowledgePoint>(`/api/admin/knowledge-points/${id}`, {
     method: 'PUT',
     body: JSON.stringify(input),
   })
 }
 
+export function archiveKnowledgePoint(id: number): Promise<KnowledgePoint> {
+  return apiFetch<KnowledgePoint>(`/api/admin/knowledge-points/${id}/archive`, {
+    method: 'POST',
+  })
+}
+
 export function deleteKnowledgePoint(id: number): Promise<void> {
-  return apiFetch<void>(`/api/knowledge-points/${id}`, { method: 'DELETE' })
+  return apiFetch<void>(`/api/admin/knowledge-points/${id}`, { method: 'DELETE' })
 }

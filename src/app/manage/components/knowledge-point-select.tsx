@@ -40,7 +40,7 @@ export function KnowledgePointSelect({
     setLoading(true)
     setError(null)
 
-    listKnowledgePoints({ subject_id: subjectId, is_active: true })
+    listKnowledgePoints({ subject_id: subjectId, status: 'active' })
       .then((items) => {
         if (active) setOptions(items)
       })
@@ -101,7 +101,7 @@ export function KnowledgePointMultiSelect({
     let active = true
     setLoading(true)
     setError(null)
-    listKnowledgePoints({ subject_id: subjectId, is_active: true })
+    listKnowledgePoints({ subject_id: subjectId, status: 'active' })
       .then((items) => {
         if (active) setOptions(items)
       })

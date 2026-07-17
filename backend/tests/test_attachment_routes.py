@@ -43,6 +43,23 @@ class AttachmentRouteContractTest(unittest.TestCase):
             calls = {dependency.call for dependency in route.dependant.dependencies}
             self.assertIn(get_current_admin, calls, route.path)
 
+    def test_delete_contract_returns_no_content_and_content_has_disposition(self):
+        delete_routes = [
+            route for route in main.app.routes
+            if route.path == "/api/admin/attachments/{attachment_id}"
+            and "DELETE" in getattr(route, "methods", set())
+        ]
+        content_routes = [
+            route for route in main.app.routes
+            if route.path == "/api/admin/attachments/{attachment_id}/content"
+            and "GET" in getattr(route, "methods", set())
+        ]
+
+        self.assertEqual(len(delete_routes), 1)
+        self.assertEqual(delete_routes[0].status_code, 204)
+        self.assertEqual(len(content_routes), 1)
+        self.assertIn("disposition", content_routes[0].dependant.query_params[0].name)
+
     def test_anonymous_requests_are_rejected(self):
         client = TestClient(main.app)
         for path in (

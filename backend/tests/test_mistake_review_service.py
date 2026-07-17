@@ -90,6 +90,52 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(after, before + 1)
         self.assertEqual(first.visibility, "private")
 
+    async def test_converted_draft_with_missing_target_is_a_conflict(self):
+        question = await self._question("invalid-target")
+        draft = await create_mistake_draft(
+            self.session,
+            MistakeDraftCreate(question_id=question.id),
+        )
+        first = await convert_mistake_draft(self.session, draft.item.id, version=1)
+        item = await self.session.get(type(draft.item), draft.item.id)
+        item.target_id = str(uuid.uuid4())
+        await self.session.flush()
+
+        with self.assertRaises(MistakeConflict):
+            await convert_mistake_draft(self.session, draft.item.id, version=item.version)
+
+        self.assertIsNotNone(first.id)
+
+    async def test_question_draft_source_resolves_to_formal_question_id(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch4 Question Draft Source"),
+        )
+        question_draft = await create_question_draft(
+            self.session,
+            QuestionDraftCreate(
+                subject_id=subject.id,
+                question_text="Draft source question",
+                question_type="short_answer",
+            ),
+        )
+        mistake_draft = await create_mistake_draft(
+            self.session,
+            MistakeDraftCreate(question_draft_id=question_draft.id),
+        )
+        question = await convert_question_draft(
+            self.session,
+            question_draft.item.id,
+            version=1,
+        )
+        mistake = await convert_mistake_draft(
+            self.session,
+            mistake_draft.item.id,
+            version=1,
+        )
+
+        self.assertEqual(mistake.question_id, question.id)
+
     async def test_unconfirmed_draft_does_not_enter_review_queue(self):
         question = await self._question("pending")
         due_at = datetime.now(timezone.utc) + timedelta(minutes=1)

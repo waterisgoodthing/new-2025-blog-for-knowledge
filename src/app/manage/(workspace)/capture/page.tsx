@@ -1,15 +1,12 @@
-import { ManagePageHeader } from '../../components/manage-page-header'
-import { CaptureWorkspace } from './components/capture-workspace'
+import { ManagePlaceholderPage } from '../../components/manage-placeholder-page'
 
 export default function ManageCapturePage() {
   return (
-    <div className='space-y-8'>
-      <ManagePageHeader
-        eyebrow='Batch 8 · 图片错题采集'
-        title='图片采集'
-        description='用于图片错题采集，生成私有错题草稿。上传错题图片，OCR 识别文字，AI 生成草稿，人工确认后转为错题草稿。'
-      />
-      <CaptureWorkspace />
-    </div>
+    <ManagePlaceholderPage
+      batch='Batch 6 · OCR/Capture Placeholder'
+      title='Capture'
+      description='OCR 与 Capture 尚未启用；附件上传仍由 Batch 5 私有附件页面负责。'
+      futureScope='本批不上传文件、不读取 capture_items、不执行 OCR、不分类内容，也不会自动创建题目或错题草稿。'
+    />
   )
 }

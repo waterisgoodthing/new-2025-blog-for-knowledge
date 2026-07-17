@@ -27,7 +27,7 @@ from .question import DraftItem, Question, QuestionDraft, QuestionSource
 from .recommendation import DailyRecommendation
 from .review_item import ReviewItem, ReviewRecord
 from .session import AdminPassword, AdminSession, PasskeyCredential
-from .taxonomy import Chapter, KnowledgePoint, KnowledgePointLink
+from .taxonomy import KnowledgePoint, KnowledgePointLink
 
 MODEL_REGISTRY = (
     User,
@@ -48,7 +48,6 @@ MODEL_REGISTRY = (
     DailySong,
     MusicSyncLog,
     ManagedContentEntry,
-    Chapter,
     KnowledgePoint,
     KnowledgePointLink,
     DraftItem,

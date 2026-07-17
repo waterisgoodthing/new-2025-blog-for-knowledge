@@ -10,10 +10,10 @@ from sqlalchemy import text
 
 from app.config import get_settings
 from app.database import engine, async_session
-from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, chapters, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
+from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
-EXPECTED_ALEMBIC_REVISION = "018"
+EXPECTED_ALEMBIC_REVISION = "020"
 
 
 async def validate_database_readiness() -> None:
@@ -86,7 +86,6 @@ app.include_router(notes.router)
 app.include_router(review.router)
 app.include_router(tags.router)
 app.include_router(subjects.router)
-app.include_router(chapters.router)
 app.include_router(knowledge_points.router)
 app.include_router(drafts.router)
 app.include_router(questions.router)

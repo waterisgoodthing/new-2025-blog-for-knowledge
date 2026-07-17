@@ -1,4 +1,5 @@
 import uuid
+from typing import Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
@@ -47,12 +48,11 @@ async def upload_attachment(
     admin: User = Depends(get_current_admin),
 ):
     try:
-        content = await file.read()
-        return await attachment_service.create_attachment_from_bytes(
+        return await attachment_service.create_attachment_from_stream(
             db,
             original_name=file.filename or "attachment",
-            content=content,
             mime_type=file.content_type or "application/octet-stream",
+            stream=file,
             created_by=admin.id,
         )
     except attachment_service.AttachmentError as error:
@@ -73,6 +73,7 @@ async def get_attachment(
 @router.get("/{attachment_id}/content")
 async def get_attachment_content(
     attachment_id: uuid.UUID,
+    disposition: Literal["inline", "attachment"] = Query(default="inline"),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -82,18 +83,19 @@ async def get_attachment_content(
             path,
             media_type=attachment.mime_type,
             filename=attachment.original_name,
+            content_disposition_type=disposition,
         )
     except attachment_service.AttachmentError as error:
         _raise_http(error)
 
 
-@router.delete("/{attachment_id}", response_model=AttachmentOut)
+@router.delete("/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_attachment(
     attachment_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        return await attachment_service.delete_attachment(db, attachment_id)
+        await attachment_service.delete_attachment(db, attachment_id)
     except attachment_service.AttachmentError as error:
         _raise_http(error)
 
