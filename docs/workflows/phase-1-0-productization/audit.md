@@ -462,3 +462,7 @@ No deployment action occurred. No target endpoint, production configuration, cre
 ## 2026-07-19 DEP-P0-01 Release-Boundary Freeze
 
 Read-only Git inventory found branch `notes-workspace-ux-upgrade` at committed baseline `939ad1f`, with a mixed set of modified and untracked backend, frontend, tests and workflow paths. This is not a clean or attributable release artifact, and no exact publish file set or commit has been approved. The release strategy is therefore an isolated clean worktree created only from a future user-approved commit. The current worktree was preserved exactly: no staging, commit, cleanup, push, target access or deployment occurred.
+
+## 2026-07-19 DEP-P1-01 Scoped Release Artifact
+
+The user explicitly authorized pushing only this round. The staged set was limited to the v1.0 productization code, tests, release baseline and Phase 1.0 workflow evidence; unrelated `docs/project-assessment/` and `docs/workflows/mvp-goal-gap-analysis/` remained unstaged. Cached path review and whitespace checks passed. Commit `57915a8` was then checked out in a temporary detached worktree, whose status was clean, before that temporary worktree was removed. This establishes a traceable release artifact without modifying or cleaning unrelated worktree paths. No predeploy, target access or deployment occurred.

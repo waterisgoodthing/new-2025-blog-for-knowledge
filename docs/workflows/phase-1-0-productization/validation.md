@@ -811,3 +811,14 @@ Prepared tasks are `DEP-P0-01` through `DEP-P1-05`. This is planning evidence on
 | Staging / commit / push / target access / deployment | NONE |
 
 `DEP-P0-01` is complete as a boundary decision. The exact release path set and commit remain an explicit user-approval prerequisite for `DEP-P1-01`.
+
+## 2026-07-19 DEP-P1-01 Scoped Release Artifact Validation
+
+| Check | Result |
+|---|---|
+| User authorization | PASS — explicit instruction limited publication to this round |
+| Cached scope / whitespace | PASS — exact staged paths reviewed; `git diff --cached --check` passed |
+| Excluded paths | PASS — `docs/project-assessment/` and `docs/workflows/mvp-goal-gap-analysis/` remained unstaged |
+| Commit | PASS — `57915a8` |
+| Isolated worktree | PASS — detached worktree at the commit had clean status; temporary worktree removed after verification |
+| Predeploy / target access / deployment | NONE |
