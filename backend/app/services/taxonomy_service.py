@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.note import Subject
@@ -194,7 +194,7 @@ async def create_knowledge_point(
         select(KnowledgePoint).where(
             KnowledgePoint.subject_id == payload.subject_id,
             KnowledgePoint.parent_id == payload.parent_id,
-            KnowledgePoint.name == payload.name,
+            func.lower(KnowledgePoint.name) == func.lower(payload.name),
         ),
     )
     if duplicate is not None:
@@ -230,7 +230,7 @@ async def update_knowledge_point(
             select(KnowledgePoint).where(
                 KnowledgePoint.subject_id == subject_id,
                 KnowledgePoint.parent_id == parent_id,
-                KnowledgePoint.name == name,
+                func.lower(KnowledgePoint.name) == func.lower(name),
                 KnowledgePoint.id != knowledge_point_id,
             ),
         )

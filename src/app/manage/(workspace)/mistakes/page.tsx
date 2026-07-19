@@ -5,8 +5,8 @@ export default function ManageMistakesPage() {
   return (
     <div className='space-y-8'>
       <ManagePageHeader
-        eyebrow='Mistake System'
-        title='Mistakes'
+        eyebrow='内容管理'
+        title='错题'
         description='查看已确认的私有错题与复盘入口。'
       />
       <MistakeWorkspace />

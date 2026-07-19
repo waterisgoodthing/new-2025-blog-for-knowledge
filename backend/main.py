@@ -10,10 +10,15 @@ from sqlalchemy import text
 
 from app.config import get_settings
 from app.database import engine, async_session
-from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, content, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
+from app.middleware.request_observability import request_observability
+from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
 EXPECTED_ALEMBIC_REVISION = "020"
+
+
+def _is_enabled(value: str) -> bool:
+    return value.lower() == "true"
 
 
 async def validate_database_readiness() -> None:
@@ -36,23 +41,16 @@ async def lifespan(app: FastAPI):
     
     # 生产安全检查
     if settings.ENV == "production":
+        if _is_enabled(settings.AUTH_BYPASS) and _is_enabled(settings.AUTH_BYPASS_ALLOW):
+            raise RuntimeError("AUTH_BYPASS and AUTH_BYPASS_ALLOW cannot both be enabled in production.")
+
         # 1. 默认 JWT 密钥检测并阻断
         if settings.JWT_SECRET_KEY == "your-secret-key-change-this":
-            import sys
-            print("\n" + "="*80)
-            print("CRITICAL SECURITY ERROR: JWT_SECRET_KEY must be changed in production!")
-            print("Please set JWT_SECRET_KEY environment variable to a strong random key.")
-            print("="*80 + "\n")
-            sys.exit("JWT_SECRET_KEY is insecure for production.")
+            raise RuntimeError("JWT_SECRET_KEY is insecure for production.")
         
         # 2. 生产环境 CORS 通配符 * 检测并阻断
         if not settings.ALLOWED_ORIGINS or "*" in settings.ALLOWED_ORIGINS:
-            import sys
-            print("\n" + "="*80)
-            print("CRITICAL SECURITY ERROR: CORS ALLOWED_ORIGINS must be configured in production and cannot contain '*'!")
-            print("Please set ALLOWED_ORIGINS environment variable to explicit origins.")
-            print("="*80 + "\n")
-            sys.exit("CORS config is insecure for production.")
+            raise RuntimeError("CORS config is insecure for production.")
 
     await validate_database_readiness()
 
@@ -68,6 +66,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Blog + Notes + Mistakes API", version="1.0.0", lifespan=lifespan)
+app.middleware("http")(request_observability)
 
 settings = get_settings()
 origins = [origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",") if origin.strip()]
@@ -81,6 +80,8 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(dashboard.router)
+app.include_router(diagnostics.router)
 app.include_router(content.router)
 app.include_router(notes.router)
 app.include_router(review.router)
@@ -116,11 +117,4 @@ app.mount("/images", StaticFiles(directory=_images_dir), name="images")
 
 @app.get("/api/health")
 async def health():
-    db_ok = True
-    try:
-        async with async_session() as session:
-            await session.execute(text("SELECT 1"))
-    except Exception:
-        db_ok = False
-
-    return {"status": "ok", "db": "ok" if db_ok else "error"}
+    return {"status": "ok"}

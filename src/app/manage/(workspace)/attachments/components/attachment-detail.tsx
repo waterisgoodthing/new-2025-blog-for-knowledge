@@ -17,6 +17,13 @@ import {
   type AttachmentLink,
   type AttachmentTargetType,
 } from '@/lib/api/attachments'
+import {
+  attachmentPurposeLabel,
+  attachmentStatusLabel,
+  attachmentTargetLabel,
+  attachmentVisibilityLabel,
+  formatChineseDateTime,
+} from '@/lib/manage-display'
 
 function message(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback
@@ -89,7 +96,7 @@ export function AttachmentDetail({ id }: { id: string }) {
       <BackLink />
       <header>
         <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75 uppercase'>
-          {attachment.status} · {attachment.visibility} · {attachment.storage_provider}
+          {attachmentStatusLabel(attachment.status)} · {attachmentVisibilityLabel(attachment.visibility)} · {attachment.storage_provider === 'local' ? '本地存储' : attachment.storage_provider}
         </p>
         <h1 className='mt-2 break-words text-2xl font-semibold text-slate-900'>{attachment.original_name}</h1>
         <p className='mt-2 text-sm text-slate-500'>{attachment.mime_type} · {formatBytes(attachment.size_bytes)}</p>
@@ -111,7 +118,7 @@ export function AttachmentDetail({ id }: { id: string }) {
               <Meta label='MIME' value={attachment.mime_type} />
               <Meta label='大小' value={formatBytes(attachment.size_bytes)} />
               <Meta label='SHA-256' value={attachment.checksum_sha256} />
-              <Meta label='创建时间' value={new Date(attachment.created_at).toLocaleString('zh-CN')} />
+              <Meta label='创建时间' value={formatChineseDateTime(attachment.created_at)} />
             </dl>
           </div>
           <a
@@ -152,7 +159,7 @@ export function AttachmentDetail({ id }: { id: string }) {
       <section className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
         <h2 className='font-semibold text-slate-900'>业务关联</h2>
         <p className='mt-1 text-sm text-slate-500'>
-          第一版通过 attachment links 关联草稿、题目或错题；附件表本身不保存 owner 字段。
+          第一版通过附件关联记录连接草稿、题目或错题；附件表本身不保存所有者字段。
         </p>
         <form onSubmit={addLink} className='mt-5 grid gap-3 md:grid-cols-[160px_minmax(0,1fr)_160px_auto]'>
           <label className='text-sm font-medium text-slate-700'>
@@ -163,9 +170,9 @@ export function AttachmentDetail({ id }: { id: string }) {
               onChange={(event) => setTargetType(event.target.value as AttachmentTargetType)}
               className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
             >
-              <option value='question_draft'>question_draft</option>
-              <option value='question'>question</option>
-              <option value='mistake'>mistake</option>
+              <option value='question_draft'>题目草稿</option>
+              <option value='question'>题目</option>
+              <option value='mistake'>错题</option>
             </select>
           </label>
           <label className='text-sm font-medium text-slate-700'>
@@ -186,10 +193,10 @@ export function AttachmentDetail({ id }: { id: string }) {
               onChange={(event) => setPurpose(event.target.value as AttachmentCreatePurpose)}
               className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
             >
-              <option value='source'>source</option>
-              <option value='question'>question</option>
-              <option value='answer'>answer</option>
-              <option value='inline'>inline</option>
+              <option value='source'>学习资料</option>
+              <option value='question'>题目附件</option>
+              <option value='answer'>答案附件</option>
+              <option value='inline'>正文插图</option>
             </select>
           </label>
           <button
@@ -205,7 +212,7 @@ export function AttachmentDetail({ id }: { id: string }) {
           {links.map((link) => (
             <div key={link.id} className='flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between'>
               <div className='min-w-0 text-sm'>
-                <p className='font-medium text-slate-800'>{link.target_type} · {link.purpose}</p>
+                <p className='font-medium text-slate-800'>{attachmentTargetLabel(link.target_type)} · {attachmentPurposeLabel(link.purpose)}</p>
                 <p className='mt-1 break-all text-xs text-slate-400'>{link.target_id}</p>
               </div>
               <button
@@ -256,7 +263,7 @@ function AttachmentPreview({
   contentUrl: string
 }) {
   if (attachment.status !== 'active') {
-    return <p className='p-6 text-sm text-slate-500'>附件状态为 {attachment.status}，无法预览。</p>
+    return <p className='p-6 text-sm text-slate-500'>附件状态为“{attachmentStatusLabel(attachment.status)}”，无法预览。</p>
   }
   if (attachment.mime_type.startsWith('image/')) {
     return <img src={contentUrl} alt={attachment.original_name} className='max-h-[560px] w-full object-contain' />

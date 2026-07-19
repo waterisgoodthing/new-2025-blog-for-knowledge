@@ -5,8 +5,8 @@ export default function ManageKnowledgePointsPage() {
   return (
     <div className='space-y-8'>
       <ManagePageHeader
-        eyebrow='Learning Foundation'
-        title='Knowledge Points'
+        eyebrow='知识体系'
+        title='知识点'
         description='知识点以科目下的树组织；请先选择一个科目进入树管理。'
       />
       <Link

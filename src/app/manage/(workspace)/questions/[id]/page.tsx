@@ -7,8 +7,8 @@ export default async function QuestionDetailPage({ params }: { params: Promise<{
   return (
     <div className='space-y-8'>
       <ManagePageHeader
-        eyebrow='Question System'
-        title={id === 'new' ? 'New Question' : 'Question Detail'}
+        eyebrow='内容管理'
+        title={id === 'new' ? '新建题目' : '题目详情'}
         description={id === 'new' ? '创建可复用的正式题目。' : '查看并维护正式题目的内容与知识组织。'}
       />
       {id === 'new' ? <QuestionCreateForm /> : <QuestionEditor questionId={id} />}

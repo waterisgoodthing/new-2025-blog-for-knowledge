@@ -3,10 +3,10 @@ import { ManagePlaceholderPage } from '../../../components/manage-placeholder-pa
 export default function ManageAiRunsPage() {
   return (
     <ManagePlaceholderPage
-      batch='Batch 6 · AI Run Placeholder'
-      title='AI Runs'
-      description='AI 调用审计尚未启用；当前页面不读取历史运行记录。'
-      futureScope='本批不显示 ai_runs 或 ai_call_logs，不创建、不重试、不统计任何运行记录。'
+      batch='工具 · 后续能力'
+      title='AI 运行记录'
+      description='当前版本未开放 AI 运行记录产品页面。'
+      futureScope='已有 ai_runs 与 ai_call_logs 数据合同保持不变；本页面不读取、不重试，也不提交人工决定。'
     />
   )
 }

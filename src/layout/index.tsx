@@ -76,15 +76,15 @@ export default function Layout({ children }: PropsWithChildren) {
 
 			{!maxSM && isInnerPage && <VerticalNav />}
 
-			<main className={`relative z-10 h-full ${maxSM && isInnerPage ? 'pb-14' : ''}`}>
+			<main className={`relative z-10 h-full ${maxSM && !isWrite ? 'pb-14' : ''}`}>
 				{children}
 				<NavCard />
 
 				{!maxSM && cardStyles.musicCard?.enabled !== false && <MusicCard />}
 			</main>
 
-			{maxSM && isInnerPage && <MobileNav />}
-			{maxSM && init && <ScrollTopButton className={`bg-brand/20 fixed z-50 shadow-md ${maxSM && isInnerPage ? 'right-4 bottom-16' : 'right-6 bottom-8'}`} />}
+			{maxSM && !isWrite && <MobileNav />}
+			{maxSM && init && <ScrollTopButton className={`bg-brand/20 fixed z-50 shadow-md ${maxSM && !isWrite ? 'right-4 bottom-16' : 'right-6 bottom-8'}`} />}
 		</>
 	)
 }

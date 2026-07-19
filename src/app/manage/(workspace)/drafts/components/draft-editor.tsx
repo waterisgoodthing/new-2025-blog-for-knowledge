@@ -77,7 +77,7 @@ export function DraftEditor({ draftId }: { draftId: string }) {
     <div className='max-w-3xl space-y-7'>
       <Link href='/manage/drafts' className='inline-flex items-center gap-2 text-sm text-slate-500'><ArrowLeft className='h-4 w-4' />返回草稿</Link>
       <div>
-        <p className='text-xs tracking-wider text-[var(--color-brand)] uppercase'>{draft.item.status} · v{draft.item.version}</p>
+        <p className='text-xs tracking-wider text-[var(--color-brand)]'>{draft.item.status === 'pending' ? '待确认' : draft.item.status === 'needs_fix' ? '需修正' : draft.item.status === 'rejected' ? '已拒绝' : '已入库'} · 版本 {draft.item.version}</p>
         <h1 className='mt-2 text-2xl font-semibold text-slate-900'>审核题目草稿</h1>
       </div>
       {draft.item.status === 'converted' && draft.item.target_id ? (

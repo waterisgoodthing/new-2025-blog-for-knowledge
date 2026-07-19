@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import { listQuestions, type Question, type QuestionStatus } from '@/lib/api/questions'
+import { questionTypeLabel } from '@/lib/manage-display'
 
-import { ManageEmptyState } from '../../../components/manage-empty-state'
+import { FeatureState } from '../../../components/feature-state'
 import { ManageStatusBadge } from '../../../components/manage-status-badge'
 import {
   ManageListRow,
@@ -18,13 +19,18 @@ export function QuestionList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setLoading(true)
+    setError(null)
     listQuestions({ status })
       .then(setQuestions)
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : '加载失败'))
       .finally(() => setLoading(false))
   }, [status])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   return (
     <section>
@@ -49,23 +55,20 @@ export function QuestionList() {
         }
       >
         {loading ? (
-          <ManageEmptyState variant='loading' message='正在加载题库…' />
+          <FeatureState state={{ kind: 'loading', label: '正在加载题库', rows: 4 }} />
         ) : null}
         {!loading && error ? (
-          <ManageEmptyState variant='error' message={error} />
+          <FeatureState state={{ kind: 'error', title: '题库加载失败', description: error, retry: load }} />
         ) : null}
         {!loading && !error && questions.length === 0 ? (
-          <ManageEmptyState
-            variant={status === 'active' ? 'filtered-empty' : 'empty'}
-            message='当前没有正式题目；请先确认一份草稿。'
-          />
+          <FeatureState state={{ kind: 'empty', title: '暂无正式题目', description: '请先确认一份题目草稿，或直接新建题目。' }} />
         ) : null}
         {questions.map((question) => (
           <ManageListRow
             key={question.id}
             href={`/manage/questions/${question.id}`}
             title={question.title || question.question_text}
-            meta={`${question.question_type} · v${question.version}`}
+            meta={`${questionTypeLabel(question.question_type)} · v${question.version}`}
           >
             <ManageStatusBadge tone={question.status === 'active' ? 'success' : 'neutral'}>
               {question.status === 'active' ? '使用中' : '已归档'}

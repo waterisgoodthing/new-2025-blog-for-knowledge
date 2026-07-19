@@ -13,9 +13,9 @@ import {
   type MistakeDraftStatus,
   type MistakeReason,
 } from '@/lib/api/mistakes'
-import type { QuestionType } from '@/lib/api/questions'
+import { formatChineseDate, questionTypeLabel } from '@/lib/manage-display'
 
-import { ManageEmptyState } from '../../../components/manage-empty-state'
+import { FeatureState } from '../../../components/feature-state'
 import { ManageStatusBadge } from '../../../components/manage-status-badge'
 import {
   ManageListRow,
@@ -65,14 +65,6 @@ const statusTones: Record<ReviewStatus, 'neutral' | 'info' | 'success' | 'warnin
   converted: 'success',
 }
 
-const questionTypeLabels: Record<QuestionType, string> = {
-  short_answer: '简答题',
-  single_choice: '单选题',
-  multiple_choice: '多选题',
-  true_false: '判断题',
-  essay: '论述题',
-}
-
 const reasonLabels: Record<MistakeReason, string> = {
   concept: '概念理解',
   calculation: '计算过程',
@@ -81,17 +73,9 @@ const reasonLabels: Record<MistakeReason, string> = {
   unknown: '未分类',
 }
 
-function formatDate(iso: string): string {
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return ''
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
 function fromQuestionDraft(draft: QuestionDraft): UnifiedDraft {
-  const date = formatDate(draft.created_at)
-  const typeLabel = questionTypeLabels[draft.question_type] ?? draft.question_type
+  const date = formatChineseDate(draft.created_at)
+  const typeLabel = questionTypeLabel(draft.question_type)
   return {
     kind: 'question',
     key: `q-${draft.item.id}`,
@@ -104,7 +88,7 @@ function fromQuestionDraft(draft: QuestionDraft): UnifiedDraft {
 }
 
 function fromMistakeDraft(draft: MistakeDraft): UnifiedDraft {
-  const date = formatDate(draft.created_at)
+  const date = formatChineseDate(draft.created_at)
   const reasonLabel = reasonLabels[draft.reason_category] ?? draft.reason_category
   return {
     kind: 'mistake',
@@ -209,27 +193,13 @@ export function DraftWorkspace() {
         }
       >
         {loading ? (
-          <ManageEmptyState variant='loading' message='正在加载草稿…' />
+          <FeatureState state={{ kind: 'loading', label: '正在加载草稿', rows: 4 }} />
         ) : null}
         {showErrorState ? (
-          <div className='space-y-3'>
-            <ManageEmptyState variant='error' message={combinedError ?? '加载失败'} />
-            <div className='flex justify-center'>
-              <button
-                type='button'
-                onClick={load}
-                className='rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-white'
-              >
-                重试
-              </button>
-            </div>
-          </div>
+          <FeatureState state={{ kind: 'error', title: '草稿加载失败', description: combinedError ?? '请稍后重试。', retry: load }} />
         ) : null}
         {showListEmpty ? (
-          <ManageEmptyState
-            variant={kind ? 'filtered-empty' : 'empty'}
-            message='当前没有草稿。'
-          />
+          <FeatureState state={{ kind: 'empty', title: kind ? '没有符合条件的草稿' : '暂无草稿', description: '新建或采集内容后，草稿会在这里等待人工确认。' }} />
         ) : null}
         {filtered.map((draft) => (
           <ManageListRow

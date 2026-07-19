@@ -9,13 +9,16 @@ import {
   Brain,
   ClipboardCheck,
   DatabaseZap,
+  FilePenLine,
   FileQuestion,
   Library,
+  ScanLine,
   Search,
   Settings,
   Sun,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { manageCapabilityStates, type ManageCapabilityState } from '../(workspace)/capability-state'
 
 type LucideIcon = typeof Sun
 
@@ -24,6 +27,7 @@ type NavItem = {
   label: string
   icon: LucideIcon
   match: (pathname: string) => boolean
+  status?: ManageCapabilityState
 }
 
 type NavGroup = {
@@ -33,23 +37,52 @@ type NavGroup = {
 
 export const navGroups: NavGroup[] = [
   {
-    title: 'Workspace',
+    title: '学习空间',
     items: [
       {
         href: '/manage/dashboard',
-        label: 'Dashboard',
+        label: '概览',
         icon: Sun,
         match: (p) => p === '/manage/dashboard',
       },
+    ],
+  },
+  {
+    title: '内容管理',
+    items: [
+      {
+        href: '/manage/drafts',
+        label: '草稿',
+        icon: FilePenLine,
+        match: (p) => p === '/manage/drafts' || p.startsWith('/manage/drafts/'),
+        status: manageCapabilityStates.drafts,
+      },
+      {
+        href: '/manage/questions',
+        label: '题目',
+        icon: FileQuestion,
+        match: (p) => p === '/manage/questions' || p.startsWith('/manage/questions/'),
+      },
+      {
+        href: '/manage/mistakes',
+        label: '错题',
+        icon: ClipboardCheck,
+        match: (p) => p === '/manage/mistakes' || p.startsWith('/manage/mistakes/'),
+      },
+    ],
+  },
+  {
+    title: '知识体系',
+    items: [
       {
         href: '/manage/subjects',
-        label: 'Subjects',
+        label: '科目',
         icon: Library,
         match: (p) => p === '/manage/subjects' || p.startsWith('/manage/subjects/'),
       },
       {
         href: '/manage/knowledge-points',
-        label: 'Knowledge Points',
+        label: '知识点',
         icon: DatabaseZap,
         match: (p) =>
           p === '/manage/knowledge-points' ||
@@ -58,66 +91,80 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Learning',
+    title: '学习计划',
     items: [
       {
-        href: '/manage/questions',
-        label: 'Questions',
-        icon: FileQuestion,
-        match: (p) => p === '/manage/questions' || p.startsWith('/manage/questions/'),
-      },
-      {
-        href: '/manage/mistakes',
-        label: 'Mistakes',
-        icon: ClipboardCheck,
-        match: (p) => p === '/manage/mistakes' || p.startsWith('/manage/mistakes/'),
-      },
-      {
         href: '/manage/review',
-        label: 'Review',
+        label: '复习',
         icon: Brain,
         match: (p) => p === '/manage/review',
       },
+    ],
+  },
+  {
+    title: '资料管理',
+    items: [
       {
         href: '/manage/attachments',
-        label: 'Attachments',
+        label: '附件',
         icon: Archive,
         match: (p) => p === '/manage/attachments' || p.startsWith('/manage/attachments/'),
       },
     ],
   },
   {
-    title: 'System',
+    title: '工具',
     items: [
+      {
+        href: '/manage/capture',
+        label: '采集',
+        icon: ScanLine,
+        match: (p) => p === '/manage/capture' || p.startsWith('/manage/capture/'),
+        status: manageCapabilityStates.capture,
+      },
       {
         href: '/manage/ai',
         label: 'AI',
         icon: Bot,
         match: (p) => p === '/manage/ai' || p.startsWith('/manage/ai/'),
+        status: manageCapabilityStates.ai,
       },
+    ],
+  },
+  {
+    title: '系统',
+    items: [
+      {
+        href: '/manage/settings',
+        label: '设置',
+        icon: Settings,
+        match: (p) => p === '/manage/settings',
+      },
+    ],
+  },
+  {
+    title: '后续能力',
+    items: [
       {
         href: '/manage/jobs',
-        label: 'Jobs',
+        label: '任务',
         icon: Archive,
         match: (p) => p === '/manage/jobs' || p.startsWith('/manage/jobs/'),
+        status: manageCapabilityStates.jobs,
       },
       {
         href: '/manage/search',
-        label: 'Search',
+        label: '搜索',
         icon: Search,
         match: (p) => p === '/manage/search',
+        status: manageCapabilityStates.search,
       },
       {
         href: '/manage/analytics',
-        label: 'Analytics',
+        label: '分析',
         icon: BarChart3,
         match: (p) => p === '/manage/analytics',
-      },
-      {
-        href: '/manage/settings',
-        label: 'Settings',
-        icon: Settings,
-        match: (p) => p === '/manage/settings',
+        status: manageCapabilityStates.analytics,
       },
     ],
   },
@@ -142,7 +189,7 @@ export function ManageSidebar() {
             <p className='px-3 text-xs font-medium tracking-wide text-slate-400'>
               {group.title}
             </p>
-            {group.items.map(({ href, label, icon: Icon, match }) => {
+            {group.items.map(({ href, label, icon: Icon, match, status }) => {
               const active = match(pathname)
               return (
                 <Link
@@ -157,7 +204,10 @@ export function ManageSidebar() {
                   )}
                 >
                   <Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
-                  <span>{label}</span>
+                  <span className='min-w-0 flex-1'>{label}</span>
+                  {status === 'deferred' ? (
+                    <span className='text-[10px] text-slate-400'>后续</span>
+                  ) : null}
                 </Link>
               )
             })}

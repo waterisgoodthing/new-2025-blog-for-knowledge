@@ -3,10 +3,10 @@ import { ManagePlaceholderPage } from '../../components/manage-placeholder-page'
 export default function ManageAiPage() {
   return (
     <ManagePlaceholderPage
-      batch='Batch 6 · AI Placeholder'
-      title='AI'
-      description='AI 能力尚未启用；当前工作区继续使用人工题目、错题与复习流程。'
-      futureScope='本批只保留能力入口和边界说明，不读取 AI runs，不展示 provider、model、cost 或成功率，也不会调用任何 AI API。'
+      batch='工具 · 后续能力'
+      title='AI 助手'
+      description='当前版本未启用 AI 产品功能，人工题目、错题与复习流程不受影响。'
+      futureScope='现有 Gateway 与运行记录基础设施不会在此页面自动启用；本阶段不调用 AI、不生成内容，也不改变正式学习数据。'
     />
   )
 }

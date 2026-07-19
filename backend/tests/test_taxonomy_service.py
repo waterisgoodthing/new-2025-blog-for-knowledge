@@ -1,8 +1,10 @@
 import unittest
 
 from pydantic import ValidationError
+from sqlalchemy import UniqueConstraint
 
 from app.database import async_session, engine
+from app.models.taxonomy import KnowledgePoint
 from app.schemas.taxonomy import (
     KnowledgePointCreate,
     KnowledgePointUpdate,
@@ -42,6 +44,36 @@ class TaxonomySchemaTest(unittest.TestCase):
             SubjectCreate(name="数学", status="disabled")
         with self.assertRaises(ValidationError):
             KnowledgePointCreate(subject_id=1, name="函数", status="disabled")
+
+    def test_knowledge_point_metadata_matches_sa_a_index_contract(self):
+        indexes = {index.name: index for index in KnowledgePoint.__table__.indexes}
+
+        self.assertTrue(
+            {
+                "idx_knowledge_points_parent",
+                "idx_knowledge_points_subject_parent_sort",
+                "idx_knowledge_points_subject_sort",
+                "uq_knowledge_points_root_name",
+                "uq_knowledge_points_child_name",
+            }.issubset(indexes),
+        )
+        self.assertTrue(indexes["uq_knowledge_points_root_name"].unique)
+        self.assertTrue(indexes["uq_knowledge_points_child_name"].unique)
+        self.assertIn(
+            "parent_id IS NULL",
+            str(indexes["uq_knowledge_points_root_name"].dialect_options["postgresql"]["where"]),
+        )
+        self.assertIn(
+            "parent_id IS NOT NULL",
+            str(indexes["uq_knowledge_points_child_name"].dialect_options["postgresql"]["where"]),
+        )
+        self.assertFalse(
+            any(
+                constraint.name == "uq_knowledge_points_sibling_name"
+                for constraint in KnowledgePoint.__table__.constraints
+                if isinstance(constraint, UniqueConstraint)
+            )
+        )
 
 
 class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
@@ -98,6 +130,55 @@ class TaxonomyServiceTest(unittest.IsolatedAsyncioTestCase):
                     parent_id=parent.id,
                     name="Batch2 Invalid Child",
                 ),
+            )
+
+    async def test_knowledge_point_root_name_conflict_is_case_insensitive(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch2 Case-Insensitive Root Subject"),
+        )
+        await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="Batch2 Algebra"),
+        )
+
+        with self.assertRaises(TaxonomyConflict):
+            await create_knowledge_point(
+                self.session,
+                KnowledgePointCreate(subject_id=subject.id, name="batch2 algebra"),
+            )
+
+    async def test_knowledge_point_child_rename_conflict_is_case_insensitive(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="Batch2 Case-Insensitive Child Subject"),
+        )
+        parent = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="Batch2 Parent"),
+        )
+        await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(
+                subject_id=subject.id,
+                parent_id=parent.id,
+                name="Batch2 Geometry",
+            ),
+        )
+        target = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(
+                subject_id=subject.id,
+                parent_id=parent.id,
+                name="Batch2 Algebra",
+            ),
+        )
+
+        with self.assertRaises(TaxonomyConflict):
+            await update_knowledge_point(
+                self.session,
+                target.id,
+                KnowledgePointUpdate(name="batch2 geometry"),
             )
 
     async def test_knowledge_point_cannot_move_under_descendant(self):

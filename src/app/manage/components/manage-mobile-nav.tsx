@@ -198,7 +198,7 @@ export function ManageMobileNav() {
                     <p className='px-3 text-xs font-medium tracking-wide text-slate-400'>
                       {group.title}
                     </p>
-                    {group.items.map(({ href, label, icon: Icon, match }) => {
+                    {group.items.map(({ href, label, icon: Icon, match, status }) => {
                       const active = match(pathname)
                       linkCount++
                       const isFirst = linkCount === 1
@@ -216,7 +216,10 @@ export function ManageMobileNav() {
                           )}
                         >
                           <Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
-                          <span>{label}</span>
+                          <span className='min-w-0 flex-1'>{label}</span>
+                          {status === 'deferred' ? (
+                            <span className='text-[10px] text-slate-400'>后续</span>
+                          ) : null}
                         </Link>
                       )
                     })}

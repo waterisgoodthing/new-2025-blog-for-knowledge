@@ -58,10 +58,10 @@ describe('DraftWorkspace — partial failure handling (R-04 / P1-04)', () => {
     })
 
     // Should NOT show "当前没有草稿" (empty state)
-    expect(screen.queryByText('当前没有草稿。')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '暂无草稿' })).not.toBeInTheDocument()
 
     // Should show retry button
-    expect(screen.getByRole('button', { name: '重试' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '重新尝试' })).toBeInTheDocument()
   })
 
   it('shows error when both sources fail', async () => {
@@ -75,8 +75,8 @@ describe('DraftWorkspace — partial failure handling (R-04 / P1-04)', () => {
       expect(screen.getByText(/错题草稿加载失败/)).toBeInTheDocument()
     })
 
-    expect(screen.queryByText('当前没有草稿。')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '重试' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '暂无草稿' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '重新尝试' })).toBeInTheDocument()
   })
 
   it('shows list when one source succeeds and other fails', async () => {
@@ -115,7 +115,7 @@ describe('DraftWorkspace — partial failure handling (R-04 / P1-04)', () => {
     expect(screen.getByText('题目草稿加载失败')).toBeInTheDocument()
 
     // Should NOT show empty state
-    expect(screen.queryByText('当前没有草稿。')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '暂无草稿' })).not.toBeInTheDocument()
   })
 
   it('shows empty state when both sources succeed with no data', async () => {
@@ -125,10 +125,10 @@ describe('DraftWorkspace — partial failure handling (R-04 / P1-04)', () => {
     render(<DraftWorkspace />)
 
     await waitFor(() => {
-      expect(screen.getByText('当前没有草稿。')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: '暂无草稿' })).toBeInTheDocument()
     })
 
-    expect(screen.queryByText('重试')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '重新尝试' })).not.toBeInTheDocument()
   })
 
   it('retries on retry button click', async () => {
@@ -145,10 +145,10 @@ describe('DraftWorkspace — partial failure handling (R-04 / P1-04)', () => {
     vi.mocked(listDrafts).mockResolvedValueOnce([])
     vi.mocked(listMistakeDrafts).mockResolvedValueOnce([])
 
-    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+    fireEvent.click(screen.getByRole('button', { name: '重新尝试' }))
 
     await waitFor(() => {
-      expect(screen.getByText('当前没有草稿。')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: '暂无草稿' })).toBeInTheDocument()
     })
   })
 })

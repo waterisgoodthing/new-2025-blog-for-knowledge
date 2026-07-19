@@ -27,13 +27,13 @@ vi.mock('@/lib/api/ai', () => ({
 const api = await import('@/lib/api/ai')
 const { default: ManageAiPage } = await import('./page')
 
-describe('ManageAiPage — Batch 6 placeholder', () => {
-  it('renders the static AI shell without calling AI APIs', () => {
+describe('ManageAiPage — deferred product surface', () => {
+  it('states the deferred boundary without calling AI APIs', () => {
     render(<ManageAiPage />)
 
-    expect(screen.getByRole('heading', { name: 'AI' })).toBeInTheDocument()
-    expect(screen.getByText('后续批次启用')).toBeInTheDocument()
-    expect(screen.getByText(/不会调用任何 AI API/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'AI 助手' })).toBeInTheDocument()
+    expect(screen.getByText('后续能力')).toBeInTheDocument()
+    expect(screen.getByText(/不调用 AI/)).toBeInTheDocument()
 
     expect(api.getCallLogs).not.toHaveBeenCalled()
     expect(api.getCallLogStats).not.toHaveBeenCalled()

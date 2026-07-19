@@ -112,6 +112,26 @@ def _normalize(raw: dict, today: date) -> dict:
     }
 
 
+def _public_recommendation(rec: DailyRecommendation) -> dict:
+    return {
+        "date": rec.date,
+        "title": rec.title,
+        "type": rec.type,
+        "reason": rec.reason,
+        "target": rec.target,
+        "action_label": rec.action_label,
+        "source": rec.source,
+    }
+
+
+async def get_today_recommendation(db: AsyncSession) -> dict | None:
+    result = await db.execute(
+        select(DailyRecommendation).where(DailyRecommendation.date == date.today())
+    )
+    existing = result.scalar_one_or_none()
+    return _public_recommendation(existing) if existing else None
+
+
 async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     today = date.today()
 
@@ -120,15 +140,7 @@ async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     )
     existing = result.scalar_one_or_none()
     if existing:
-        return {
-            "date": existing.date,
-            "title": existing.title,
-            "type": existing.type,
-            "reason": existing.reason,
-            "target": existing.target,
-            "action_label": existing.action_label,
-            "source": existing.source,
-        }
+        return _public_recommendation(existing)
 
     context = await collect_context(db)
     raw = await call_llm(context)
@@ -172,12 +184,4 @@ async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     db.add(rec)
     await db.flush()
 
-    return {
-        "date": rec.date,
-        "title": rec.title,
-        "type": rec.type,
-        "reason": rec.reason,
-        "target": rec.target,
-        "action_label": rec.action_label,
-        "source": rec.source,
-    }
+    return _public_recommendation(rec)

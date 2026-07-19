@@ -17,6 +17,7 @@ import {
   type MistakeDraft,
   type MistakeReason,
 } from '@/lib/api/mistakes'
+import { attachmentVisibilityLabel, questionStatusLabel } from '@/lib/manage-display'
 import type { Difficulty } from '@/lib/api/questions'
 import { ManageFormPanel } from '../../../components/manage-form-panel'
 import { KnowledgePointMultiSelect } from '../../../components/knowledge-point-select'
@@ -102,8 +103,10 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
     <div className='max-w-4xl space-y-7'>
       <BackLink />
       <header>
-        <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75 uppercase'>
-          {kind === 'draft' ? `draft · ${draft?.status}` : `mistake · ${mistake?.status}`} · private · v{record.version}
+        <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75'>
+          {kind === 'draft'
+            ? `错题草稿 · ${draft?.status === 'pending' ? '待确认' : draft?.status === 'needs_fix' ? '需修正' : draft?.status === 'rejected' ? '已拒绝' : '已入库'}`
+            : `正式错题 · ${questionStatusLabel(mistake?.status ?? '')}`} · {attachmentVisibilityLabel(kind === 'mistake' ? mistake?.visibility ?? 'private' : 'private')} · 版本 {record.version}
         </p>
         <h1 className='mt-2 text-2xl font-semibold text-slate-900'>
           {record.title || '未命名错题'}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { motion, AnimatePresence } from 'motion/react'
 import ScrollOutlineSVG from '@/svgs/scroll-outline.svg'
 import ScrollFilledSVG from '@/svgs/scroll-filled.svg'
@@ -11,7 +12,7 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import { Home, Menu, PenLine, Compass, MessageSquare } from 'lucide-react'
+import { Home, Menu, PenLine, Compass, MessageSquare, ShieldCheck } from 'lucide-react'
 
 const primaryItems = [
 	{ icon: Home, iconActive: Home, label: '首页', href: '/' },
@@ -31,19 +32,23 @@ const allMoreItems = [...interactionItems]
 export default function MobileNav() {
 	const pathname = usePathname()
 	const [moreOpen, setMoreOpen] = useState(false)
+	const { isAdmin } = useAdminAuth()
+	const visiblePrimaryItems = isAdmin
+		? [...primaryItems, { icon: ShieldCheck, iconActive: ShieldCheck, label: '管理', href: '/manage/dashboard' }]
+		: primaryItems
 
 	const activeHref = useMemo(() => {
 		if (pathname === '/') return '/'
-		const all = [...primaryItems, ...allMoreItems]
+		const all = [...visiblePrimaryItems, ...allMoreItems]
 		const match = all.find(item => item.href !== '/' && pathname.startsWith(item.href))
 		return match?.href ?? null
-	}, [pathname])
+	}, [pathname, visiblePrimaryItems])
 
 	return (
 		<>
-			<nav className='mobile-nav fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden'>
+			<nav aria-label='主要导航' className='mobile-nav fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden'>
 				<div className='flex items-center justify-around py-1.5'>
-					{primaryItems.map(item => {
+					{visiblePrimaryItems.map(item => {
 						const isActive = activeHref === item.href
 						const Icon = isActive ? item.iconActive : item.icon
 						return (

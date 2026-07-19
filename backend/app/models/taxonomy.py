@@ -32,9 +32,24 @@ class KnowledgePoint(Base):
     )
 
     __table_args__ = (
-        UniqueConstraint("subject_id", "parent_id", "name", name="uq_knowledge_points_sibling_name"),
         Index("idx_knowledge_points_subject_parent_sort", "subject_id", "parent_id", "sort_order", "id"),
         Index("idx_knowledge_points_parent", "parent_id"),
+        Index("idx_knowledge_points_subject_sort", "subject_id", "sort_order", "id"),
+        Index(
+            "uq_knowledge_points_root_name",
+            "subject_id",
+            func.lower(name),
+            unique=True,
+            postgresql_where=parent_id.is_(None),
+        ),
+        Index(
+            "uq_knowledge_points_child_name",
+            "subject_id",
+            "parent_id",
+            func.lower(name),
+            unique=True,
+            postgresql_where=parent_id.is_not(None),
+        ),
     )
 
     parent: Mapped["KnowledgePoint | None"] = relationship(

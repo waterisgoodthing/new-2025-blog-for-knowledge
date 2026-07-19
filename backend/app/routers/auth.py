@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import hashlib
 import logging
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, status, Header
@@ -66,6 +67,10 @@ def _is_auth_bypass_active() -> bool:
     return bypass and allow
 
 
+def _set_request_actor(request: Request, user: User) -> None:
+    request.state.actor = hashlib.sha256(str(user.id).encode()).hexdigest()[:12]
+
+
 async def _resolve_session_user(
     session_token: str | None,
     db: AsyncSession,
@@ -105,6 +110,7 @@ async def get_current_user(
     user, _ = await _resolve_session_user(session_token, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    _set_request_actor(request, user)
     return user
 
 
@@ -118,6 +124,7 @@ async def get_current_admin(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+    _set_request_actor(request, user)
     return user
 
 
@@ -136,6 +143,7 @@ async def get_passkey_admin(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Passkey authentication required for this action",
         )
+    _set_request_actor(request, user)
     return user
 
 

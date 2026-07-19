@@ -3,10 +3,10 @@ import { ManagePlaceholderPage } from '../../components/manage-placeholder-page'
 export default function ManageAnalyticsPage() {
   return (
     <ManagePlaceholderPage
-      batch='Batch 1 Shell'
-      title='Analytics'
-      description='Static page container for future learning analytics.'
-      futureScope='Statistics, charts, reports, and private learning metrics are deferred. No analytics API is called in Batch 1.'
+      batch='后续能力'
+      title='学习分析'
+      description='当前版本未启用学习指标与趋势分析。'
+      futureScope='本页面不计算指标、不展示模拟图表，也不创建 Learning Analytics 数据表。'
     />
   )
 }

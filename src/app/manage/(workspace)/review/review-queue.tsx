@@ -11,8 +11,9 @@ import {
   type ReviewRating,
   type ReviewRecord,
 } from '@/lib/api/review-items'
+import { formatChineseDateTime } from '@/lib/manage-display'
 
-import { ManageEmptyState } from '../../components/manage-empty-state'
+import { FeatureState } from '../../components/feature-state'
 import { ManagePanel } from '../../components/manage-panel'
 
 function message(reason: unknown, fallback: string) {
@@ -73,7 +74,7 @@ export function ReviewQueue() {
     try {
       const updated = await submitReview(item.id, rating, item.next_review_at)
       setItems((current) => current.filter((candidate) => candidate.id !== item.id))
-      setSuccess(`已提交复习，下一次复习时间：${new Date(updated.next_review_at).toLocaleString('zh-CN')}`)
+      setSuccess(`已提交复习，下一次复习时间：${formatChineseDateTime(updated.next_review_at)}`)
     } catch (reason) {
       setError(message(reason, '提交复习失败'))
     } finally {
@@ -95,18 +96,18 @@ export function ReviewQueue() {
           </p>
         ) : null}
         {error ? (
-          <ManageEmptyState variant='error' message={error} />
+          <FeatureState state={{ kind: 'error', title: '复习操作失败', description: error, retry: load }} />
         ) : null}
       </ManagePanel>
 
       {loading ? (
         <ManagePanel variant='heavy'>
-          <ManageEmptyState variant='loading' message='正在加载复习队列…' />
+          <FeatureState state={{ kind: 'loading', label: '正在加载复习队列', rows: 3 }} />
         </ManagePanel>
       ) : null}
       {!loading && items.length === 0 ? (
         <ManagePanel variant='heavy'>
-          <ManageEmptyState variant='empty' message='当前没有到期复习项。好消息，今天的小怪兽暂时睡着了。' />
+          <FeatureState state={{ kind: 'empty', title: '今日复习已完成', description: '当前没有到期复习任务。' }} />
         </ManagePanel>
       ) : null}
 
@@ -119,7 +120,7 @@ export function ReviewQueue() {
               </p>
               <h3 className='mt-2 whitespace-pre-wrap text-base font-semibold leading-7 text-slate-900'>{item.question_text}</h3>
               {item.mistake_reason ? <p className='mt-3 rounded-lg bg-amber-50 p-3 text-sm leading-6 text-amber-800'>错因：{item.mistake_reason}</p> : null}
-              <p className='mt-3 text-xs text-slate-400'>到期时间：{new Date(item.next_review_at).toLocaleString('zh-CN')}</p>
+              <p className='mt-3 text-xs text-slate-400'>到期时间：{formatChineseDateTime(item.next_review_at)}</p>
             </div>
             <div className='flex flex-wrap gap-2 lg:max-w-56 lg:justify-end'>
               {ratings.map((rating) => (
@@ -150,7 +151,7 @@ export function ReviewQueue() {
                 <div key={record.id} className='grid gap-2 border-b border-slate-100 py-3 text-sm text-slate-600 last:border-b-0 sm:grid-cols-4'>
                   <span>评分 {record.rating}</span>
                   <span>{record.previous_interval_days} → {record.next_interval_days} 天</span>
-                  <span className='sm:col-span-2'>{new Date(record.reviewed_at).toLocaleString('zh-CN')}</span>
+                  <span className='sm:col-span-2'>{formatChineseDateTime(record.reviewed_at)}</span>
                 </div>
               ))}
             </div>

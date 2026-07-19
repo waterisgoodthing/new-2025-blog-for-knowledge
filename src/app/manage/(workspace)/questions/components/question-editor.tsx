@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 
 import { archiveQuestion, getQuestion, updateLegacyQuestion, type Difficulty, type Question, type QuestionType } from '@/lib/api/questions'
 import { listSubjects, type Subject } from '@/lib/api/taxonomy'
+import { attachmentVisibilityLabel, questionStatusLabel } from '@/lib/manage-display'
 import { KnowledgePointMultiSelect } from '../../../components/knowledge-point-select'
 import { ManageFormPanel } from '../../../components/manage-form-panel'
 
@@ -61,7 +62,7 @@ export function QuestionEditor({ questionId }: { questionId: string }) {
     <div className='max-w-3xl space-y-7'>
       <Link href='/manage/questions' className='inline-flex items-center gap-2 text-sm text-slate-500'><ArrowLeft className='h-4 w-4' />返回题库</Link>
       <div>
-        <p className='text-xs tracking-wider text-[var(--color-brand)] uppercase'>{question.status} · private · v{question.version}</p>
+        <p className='text-xs tracking-wider text-[var(--color-brand)]'>{questionStatusLabel(question.status)} · {attachmentVisibilityLabel(question.visibility)} · 版本 {question.version}</p>
         <h1 className='mt-2 text-2xl font-semibold text-slate-900'>编辑正式题目</h1>
         <p className='mt-2 text-sm text-slate-500'>来源：{question.sources[0]?.source_name || '手工录入'}</p>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   listMistakes,
@@ -8,8 +8,9 @@ import {
   type MistakeReason,
   type MistakeStatus,
 } from '@/lib/api/mistakes'
+import { formatChineseDate } from '@/lib/manage-display'
 
-import { ManageEmptyState } from '../../../components/manage-empty-state'
+import { FeatureState } from '../../../components/feature-state'
 import { ManageStatusBadge } from '../../../components/manage-status-badge'
 import {
   ManageListRow,
@@ -40,14 +41,6 @@ const reasonLabels: Record<MistakeReason, string> = {
   unknown: '未分类',
 }
 
-function formatDate(iso: string): string {
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return ''
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
 function message(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback
 }
@@ -63,13 +56,18 @@ export function MistakeWorkspace() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setLoading(true)
+    setError(null)
     listMistakes(status || undefined)
       .then(setMistakes)
       .catch((reason: unknown) => setError(message(reason, '加载错题失败')))
       .finally(() => setLoading(false))
   }, [status])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   return (
     <section>
@@ -92,19 +90,16 @@ export function MistakeWorkspace() {
         }
       >
         {loading ? (
-          <ManageEmptyState variant='loading' message='正在加载错题…' />
+          <FeatureState state={{ kind: 'loading', label: '正在加载错题', rows: 4 }} />
         ) : null}
         {!loading && error ? (
-          <ManageEmptyState variant='error' message={error} />
+          <FeatureState state={{ kind: 'error', title: '错题加载失败', description: error, retry: load }} />
         ) : null}
         {!loading && !error && mistakes.length === 0 ? (
-          <ManageEmptyState
-            variant={status ? 'filtered-empty' : 'empty'}
-            message='当前没有错题。'
-          />
+          <FeatureState state={{ kind: 'empty', title: status ? '没有符合条件的错题' : '暂无错题', description: '从题库记录错误后，正式错题会显示在这里。' }} />
         ) : null}
         {mistakes.map((mistake) => {
-          const date = formatDate(mistake.created_at)
+          const date = formatChineseDate(mistake.created_at)
           const reasonLabel = reasonLabels[mistake.reason_category] ?? mistake.reason_category
           return (
             <ManageListRow

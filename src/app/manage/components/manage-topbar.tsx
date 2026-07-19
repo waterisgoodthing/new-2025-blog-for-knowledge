@@ -5,8 +5,8 @@ export function ManageTopbar() {
   return (
     <header className='hidden flex-wrap items-center justify-between gap-3 border-b border-white/45 pb-5 md:flex'>
       <div>
-        <p className='text-xs font-medium tracking-[0.18em] text-[var(--color-brand)]/80 uppercase'>
-          Personal learning
+        <p className='text-xs font-medium tracking-[0.18em] text-[var(--color-brand)]/80'>
+          个人学习
         </p>
         <p className='mt-1 text-lg font-semibold text-slate-800'>学习管理空间</p>
       </div>

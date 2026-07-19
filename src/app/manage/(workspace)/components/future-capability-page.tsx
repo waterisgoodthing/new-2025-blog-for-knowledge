@@ -1,6 +1,7 @@
-import { Ban, Clock3 } from 'lucide-react'
+import { Clock3 } from 'lucide-react'
 
 import { ManagePageHeader } from '../../components/manage-page-header'
+import { FeatureState } from '../../components/feature-state'
 
 interface FutureCapabilitySection {
   title: string
@@ -27,19 +28,7 @@ export function FutureCapabilityPage({
     <div className='space-y-8'>
       <ManagePageHeader eyebrow={eyebrow} title={title} description={description} />
 
-      <section className='rounded-3xl border border-amber-200/70 bg-amber-50/70 p-5'>
-        <div className='flex gap-3'>
-          <span className='mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700'>
-            <Ban className='h-4 w-4' aria-hidden='true' />
-          </span>
-          <div>
-            <h2 className='font-semibold text-amber-900'>还没有这个功能</h2>
-            <p className='mt-1 text-sm leading-6 text-amber-800'>
-              这个功能还在准备中，暂时不能使用。
-            </p>
-          </div>
-        </div>
-      </section>
+      <FeatureState state={{ kind: 'deferred', title: '当前版本未启用', description: '此能力将在后续版本重新评估。' }} />
 
       <div className='grid gap-5 lg:grid-cols-3'>
         {sections.map((section) => (

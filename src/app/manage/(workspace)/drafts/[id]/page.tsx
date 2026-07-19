@@ -1,12 +1,16 @@
-import { ManagePlaceholderPage } from '../../../components/manage-placeholder-page'
+import { ManagePageHeader } from '../../../components/manage-page-header'
+import { DraftEditor } from '../components/draft-editor'
 
-export default function DraftDetailPage() {
+export default async function DraftDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   return (
-    <ManagePlaceholderPage
-      batch='Batch 1 Shell'
-      title='Draft Detail'
-      description='Static detail route container only.'
-      futureScope='Draft editing and confirmation belong to later batches. No draft API is called in Batch 1.'
-    />
+    <div className='space-y-8'>
+      <ManagePageHeader
+        eyebrow='内容管理'
+        title='草稿详情'
+        description='人工校对草稿后，可确认进入正式题库。'
+      />
+      <DraftEditor draftId={id} />
+    </div>
   )
 }

@@ -1,12 +1,15 @@
-import { ManagePlaceholderPage } from '../../components/manage-placeholder-page'
+import { ManagePageHeader } from '../../components/manage-page-header'
+import { DraftWorkspace } from './components/draft-workspace'
 
 export default function ManageDraftsPage() {
   return (
-    <ManagePlaceholderPage
-      batch='Batch 1 Shell'
-      title='Drafts'
-      description='Static page container for future review queues.'
-      futureScope='Question drafts, mistake drafts, and human review workflows are deferred to later batches. No draft API is called in Batch 1.'
-    />
+    <div className='space-y-8'>
+      <ManagePageHeader
+        eyebrow='内容管理'
+        title='草稿'
+        description='确认题目与错题草稿后，再将内容纳入正式学习流程。'
+      />
+      <DraftWorkspace />
+    </div>
   )
 }
