@@ -476,3 +476,7 @@ The user chose the conservative personal-system policy: public registration disa
 The release gate is now decomposed into a frontend-only gate, a backend authority gate and their full composition. The frontend gate has no database variables or target-DB commands; it fail-closes on clean-worktree, audit, dependency, test, Cloudflare-build, TypeScript or diff-hygiene failure. The backend gate retains the distinct test/target database requirement before pytest and read-only Alembic authority checks. Production startup now hard-rejects enabled self-registration before database readiness, and the Workers template uses 1% sampling. This is local source/template behavior only; no target configuration or deployment was inspected or changed.
 
 The new source/template changes are intentionally not treated as part of commit `57915a8`. A second scoped artifact must be approved, cached-reviewed, committed, pushed and clean-worktree verified before any frontend deployment task can use it.
+
+## 2026-07-19 DEP-P1-01B Updated Scoped Release Artifact
+
+The user approved the exact 16-path release-gate scope. Commit `929dd08` contains only the production-registration hard block, release-gate split, Workers sampling template, their tests and workflow evidence. Cached scope/whitespace review passed; the two unrelated workflow/document directories remained unstaged. A temporary detached worktree at `929dd08` had clean status and was removed. No predeploy, target access or deployment occurred.

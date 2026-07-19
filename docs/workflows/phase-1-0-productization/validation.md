@@ -833,6 +833,16 @@ Prepared tasks are `DEP-P0-01` through `DEP-P1-05`. This is planning evidence on
 | Higher sampling | Separate, temporary incident approval required |
 | Target access / deployment / production configuration read | NONE |
 
+## 2026-07-19 DEP-P1-01B Updated Scoped Release Artifact Validation
+
+| Check | Result |
+|---|---|
+| Cached scope / whitespace | PASS — exact 16 paths reviewed; `git diff --cached --check` passed |
+| Excluded paths | PASS — `docs/project-assessment/` and `docs/workflows/mvp-goal-gap-analysis/` remained unstaged |
+| Commit | PASS — `929dd08` |
+| Isolated worktree | PASS — detached worktree at the commit had clean status; temporary worktree removed after verification |
+| Predeploy / target access / deployment | NONE |
+
 ## 2026-07-19 DEP-P1-01A Release-Gate Split Validation
 
 | Check | Result |
