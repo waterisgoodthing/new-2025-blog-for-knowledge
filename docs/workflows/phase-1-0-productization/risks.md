@@ -148,6 +148,6 @@ Phase 0.5 ownership: `REQ-P05-001` through `REQ-P05-005` and P05-01 through P05-
 - 风险描述：配置默认允许注册，生产启动未强制要求关闭或受 registration key 保护；Cloudflare template 使用全量 invocation sampling 与 persistent logs，但无明确生产隐私/保留决策。
 - 影响范围：账号创建面、请求元数据保留、生产部署资格。
 - 严重程度：高。
-- 当前状态：OPEN / BLOCKER。仅通过 source/template 审查确认；未读取真实生产配置或日志。
-- 建议措施：用户明确决定生产注册策略及日志采样/保留策略后，制定独立 approved task；在部署前用不泄露配置值的方式证明目标环境满足该策略。
+- 当前状态：**CODE/TEMPLATE RESOLVED / TARGET VERIFICATION PENDING**。用户已决定 production registration disabled 与 Workers Logs 1% head sampling/platform short retention；production lifespan 现在拒绝 `ENABLE_REGISTRATION=true`，template 采样为 `0.01`。未读取真实生产配置或日志，故未声明 deployed target 已符合。
+- 建议措施：frontend 部署前在 clean isolated worktree 运行 frontend gate；backend 发布或 target DB 检查仍需独立授权，并用不泄露配置值的方式证明目标满足该策略。
 - 是否进入下一轮需求：是。

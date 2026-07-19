@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 
-import { runFullGate } from './predeploy-gates.mjs'
+import { runFrontendGate } from './predeploy-gates.mjs'
 
 function run(command, args, options = {}) {
 	return execFileSync(command, args, {
@@ -16,8 +16,8 @@ function fail(message) {
 }
 
 try {
-	runFullGate({ run, cwd: process.cwd(), env: process.env, fail })
-	console.log('predeploy: passed - clean worktree, frontend, backend, Alembic, and Cloudflare build')
+	runFrontendGate({ run, cwd: process.cwd(), env: process.env, fail })
+	console.log('predeploy:frontend passed - clean worktree, audit, frontend tests, TypeScript, and Cloudflare build')
 } catch (error) {
 	console.error(error.message)
 	process.exitCode = 1

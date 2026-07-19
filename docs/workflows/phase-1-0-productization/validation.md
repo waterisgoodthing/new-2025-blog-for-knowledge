@@ -822,3 +822,26 @@ Prepared tasks are `DEP-P0-01` through `DEP-P1-05`. This is planning evidence on
 | Commit | PASS — `57915a8` |
 | Isolated worktree | PASS — detached worktree at the commit had clean status; temporary worktree removed after verification |
 | Predeploy / target access / deployment | NONE |
+
+## 2026-07-19 DEP-P0-02 Production-Policy Validation
+
+| Decision | Approved policy |
+|---|---|
+| Public registration | Disabled in production |
+| Workers invocation logs | Enabled at 1% head sampling |
+| Retention | Platform short retention only; not a durable audit store |
+| Higher sampling | Separate, temporary incident approval required |
+| Target access / deployment / production configuration read | NONE |
+
+## 2026-07-19 DEP-P1-01A Release-Gate Split Validation
+
+| Check | Result |
+|---|---|
+| RED: production registration | PASS — new startup test reached the database-readiness sentinel before the hard block existed |
+| GREEN: production registration | PASS — enabled registration now raises `RuntimeError` before database readiness |
+| Gate unit tests | PASS — `node --test scripts/predeploy-gates.test.mjs`, 3/3; frontend requires no database configuration, backend rejects absent boundaries before commands, full gate composes frontend then backend |
+| Script syntax | PASS — all three gate entry scripts pass `node --check` |
+| Startup-monitoring suite | PASS — 12/12 |
+| Actual frontend gate on current worktree | PASS / BLOCKED AS DESIGNED — exits at dirty-worktree gate before audit, database, target, network or deployment |
+| Workers template | PASS — `head_sampling_rate = 0.01` |
+| Target access / deployment / production configuration read | NONE |

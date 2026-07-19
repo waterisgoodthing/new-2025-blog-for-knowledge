@@ -40,7 +40,7 @@ Gate A 已修改 `home`、`manage` 与 Dashboard read-only backend 边界；没�
 - Gate C：**COMPLETE / PASS for the approved minimal scope**。Dashboard 仅基于既有管理员 summary counts 输出确定性下一步；没有新 API、schema、持久化、AI、Analytics Lite、BKT、推荐或多用户范围。
 - Security Follow-up：用户已于 2026-07-19 明确要求直接启动修复。范围限定为生产启动的 `AUTH_BYPASS` 双开关硬阻断，以及将既有 JWT/CORS 启动拒绝改为标准 `RuntimeError`；不涉及 DDL、部署、生产数据或权限模型扩展。
 - Release Safety Follow-up：`RISK-P10-011` 代码与本地回归已闭环，predeploy gate 已扩展为后端/Alembic fail-closed matrix。**部署资格为 BLOCKED**：工作树仍 dirty，且生产注册与 Cloudflare invocation-log 的安全/隐私政策未决；未执行部署、push、生产数据访问或生产配置读取。
-- Deployment Readiness：`DEP-P0-01` 与 `DEP-P1-01` 已完成。提交 `57915a8` 是经精确路径审核且在临时隔离 worktree 验证过的 release artifact；无关 dirty paths 未纳入。仍需 `DEP-P0-02` 的策略决策与后续逐项批准，才可运行 target gate 或部署。
+- Deployment Readiness：`DEP-P0-01`、`DEP-P0-02` 与 `DEP-P1-01A` 已完成。生产注册关闭硬阻断、Cloudflare Logs 1% 模板策略和 frontend/backend release-gate split 均已通过定向测试。新代码使先前 artifact 过时，`DEP-P1-01B` 等待精确 staged-path 的 commit/push 批准；backend target access/deployment 仍未授权。
 
 ## Hard Boundaries
 

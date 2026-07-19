@@ -44,6 +44,32 @@ def test_production_startup_rejects_active_auth_bypass_before_database_readiness
         asyncio.run(start_lifespan())
 
 
+def test_production_startup_rejects_enabled_public_registration_before_database_readiness(monkeypatch) -> None:
+    async def should_not_reach_database_readiness():
+        raise AssertionError("production registration must fail before database readiness")
+
+    async def start_lifespan() -> None:
+        async with main.lifespan(main.app):
+            pass
+
+    monkeypatch.setattr(
+        main,
+        "get_settings",
+        lambda: SimpleNamespace(
+            ENV="production",
+            JWT_SECRET_KEY="secure-test-key",
+            ALLOWED_ORIGINS="https://example.test",
+            AUTH_BYPASS="false",
+            AUTH_BYPASS_ALLOW="false",
+            ENABLE_REGISTRATION=True,
+        ),
+    )
+    monkeypatch.setattr(main, "validate_database_readiness", should_not_reach_database_readiness)
+
+    with pytest.raises(RuntimeError, match="ENABLE_REGISTRATION"):
+        asyncio.run(start_lifespan())
+
+
 @pytest.mark.parametrize(
     ("settings", "error_pattern"),
     [

@@ -466,3 +466,13 @@ Read-only Git inventory found branch `notes-workspace-ux-upgrade` at committed b
 ## 2026-07-19 DEP-P1-01 Scoped Release Artifact
 
 The user explicitly authorized pushing only this round. The staged set was limited to the v1.0 productization code, tests, release baseline and Phase 1.0 workflow evidence; unrelated `docs/project-assessment/` and `docs/workflows/mvp-goal-gap-analysis/` remained unstaged. Cached path review and whitespace checks passed. Commit `57915a8` was then checked out in a temporary detached worktree, whose status was clean, before that temporary worktree was removed. This establishes a traceable release artifact without modifying or cleaning unrelated worktree paths. No predeploy, target access or deployment occurred.
+
+## 2026-07-19 DEP-P0-02 Approved Production Policy
+
+The user chose the conservative personal-system policy: public registration disabled; Workers invocation logs retained at 1% head sampling with platform short retention. The policy is intentionally narrower than the previous 100% sampling default and preserves limited incident observability without treating edge logs as a durable audit store. It authorizes only the local template/release-gate implementation; no deployed configuration, target database, credential or production system was read or changed.
+
+## 2026-07-19 DEP-P1-01A Frontend/Backend Gate Split
+
+The release gate is now decomposed into a frontend-only gate, a backend authority gate and their full composition. The frontend gate has no database variables or target-DB commands; it fail-closes on clean-worktree, audit, dependency, test, Cloudflare-build, TypeScript or diff-hygiene failure. The backend gate retains the distinct test/target database requirement before pytest and read-only Alembic authority checks. Production startup now hard-rejects enabled self-registration before database readiness, and the Workers template uses 1% sampling. This is local source/template behavior only; no target configuration or deployment was inspected or changed.
+
+The new source/template changes are intentionally not treated as part of commit `57915a8`. A second scoped artifact must be approved, cached-reviewed, committed, pushed and clean-worktree verified before any frontend deployment task can use it.

@@ -148,12 +148,12 @@
 
 ### REQ-P10-016 Deployment Readiness and Authorized Release
 
-- 状态：`PLANNED / AWAITING TASK APPROVAL`。本需求只准备部署任务；不构成 commit、push、部署、生产访问、生产数据读取、凭证读取或生产配置修改授权。
+- 状态：`PARTIALLY AUTHORIZED`。用户已批准 production registration disabled、Cloudflare Workers Logs 1% sampling with platform short retention、以及前后端 release-gate split and frontend-only release path。该批准不授权 backend target access, backend deployment, migration/DDL, restore, credential read or production data access.
 - 发布边界：Cloudflare/OpenNext frontend 与 FastAPI/PostgreSQL/Attachment Storage 是独立运行边界。每一边的 target、变更范围、回滚责任与验证方式必须分别明确；不得将 frontend 发布成功表述为 backend 已发布或反之。
 - 工作树：当前工作树是已知 dirty 状态。发布只能从经用户明确批准、可审计且内容已冻结的干净 worktree/commit 进行；不得清理、暂存、提交或丢弃现有用户改动来满足该条件。
-- 安全与隐私决策：在任何 target 验证或部署前，用户必须明确生产注册策略，以及 Cloudflare invocation logging 的采样与保留策略。决策必须以不泄露配置值的方式可验证；未决即阻断。
+- 安全与隐私决策：已决定 production registration disabled；Cloudflare invocation logs 保持启用但 `head_sampling_rate=0.01`，采用平台短期 retention（不将 Workers Logs 作为长期审计库）。提高采样率必须走独立、短期批准并在结束后恢复 1%。决策必须以不泄露配置值的方式可验证。
 - 数据库与恢复：若 backend target 连接到生产或准生产，需单独授权。执行前只允许按既有恢复边界核对 revision、备份适用性和只读 Alembic authority checks；任何 migration、DDL、restore 或数据写入仍需独立批准。
-- 发布门禁：在批准的 clean scope 内运行 fail-closed predeploy matrix；使用隔离 test database 运行 pytest，并使用与 test database 不同的已授权 target database 运行 Alembic `current`/`heads`/`check`。任何缺失变量、相同 URL、测试失败、metadata drift、审计高/critical 或 dirty worktree 都必须阻断。
+- 发布门禁：拆分为 frontend-only 与 backend gate。frontend gate 在批准的 clean scope 内运行 clean-worktree、dependency audit、peer tree、frontend tests/typecheck/Cloudflare build 与 diff hygiene，不需要 target DB。backend gate 使用隔离 test database 运行 pytest，并使用与 test database 不同的已授权 target database 运行 Alembic `current`/`heads`/`check`。full gate 组合两者；任何缺失变量、相同 URL、测试失败、metadata drift、审计高/critical 或 dirty worktree 都必须阻断。
 - 发布后验收：仅在发布命令获得单独批准后，按公开读取/管理员写入边界验证 frontend document、JS/CSS、hydration、console、Health、公开 API、管理员 API、附件读取和 diagnostics；不得使用 `AUTH_BYPASS`，不得记录凭证、Cookie、私有正文、数据库 URL 或 storage key。
 - 回滚：部署前必须记录可回退的 frontend release identity 与 backend release identity；若任一发布后健康或权限验收失败，停止扩展验证并按获批的对应平台回滚步骤执行。不得用数据库 restore 作为常规 frontend rollback。
 - 验收：任务清单必须把 policy decision、clean release scope、target authorization、predeploy、deployment、post-deploy smoke、rollback decision 与最终 readiness verdict 分开；每项完成即更新 tasks 与 evidence。

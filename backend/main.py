@@ -52,6 +52,10 @@ async def lifespan(app: FastAPI):
         if not settings.ALLOWED_ORIGINS or "*" in settings.ALLOWED_ORIGINS:
             raise RuntimeError("CORS config is insecure for production.")
 
+        # 3. 个人系统的生产环境不开放自助注册
+        if getattr(settings, "ENABLE_REGISTRATION", False):
+            raise RuntimeError("ENABLE_REGISTRATION cannot be enabled in production.")
+
     await validate_database_readiness()
 
     stop_event = None
