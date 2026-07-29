@@ -182,7 +182,17 @@ C1 manifest 继续表示 revision 020 的 121-row 时点快照，其 payload 与
 
 manifest 每行至少包含 `manifest_version`、`source_revision`、`source_table`、`source_id`、`source_row_hash`、`source_owner_evidence`、`target_owner_id`、`target_type`、`target_id`、`disposition`、`rule_id`、`conflict_code`、`approved_at`、`approval_reference`、`rollback_source`。全表需证明 `source_count = 五类终态计数之和`，且 source primary key 无遗漏/重复。
 
-## 4. I11 E-05 影子迁移计划
+## 4. 2026-07-29 简化路径决策（取代原 E-05/E-06）
+
+原 C6-C9 的 shadow target、增量同步、权威切换和 Legacy 归档设计不再执行。系统当前只有 121 条 manifest 记录，source `blog_db` 024 已是唯一 schema/data authority；为该规模新增双库、tombstone、reverse delta 和 cutover contract 会引入超过其收益的双主与恢复复杂度。
+
+简化后的 C6 使用独立只读审计脚本，通过 C1 revision-020 manifest 的 024→020 投影、七类关系 orphan、024 backfill、12 表计数、extension 和 owner/user facts 证明 live source 完整性。所有 SQL 由 `BEGIN READ ONLY` 包裹，报告只包含计数、hash 和标识符，不包含内容正文或凭据。
+
+简化后的 C7 把 C5 custom dump 恢复到时间戳隔离数据库，使用可配置 DB URL 的 verifier/readiness 重新验证 revision、121-row aggregate、关系和 backfill，并执行 `alembic check`。附件压缩包只解压到临时目录验证可读性，随后移动到废纸篓；隔离 DB 无论成功或失败均需删除并复核不存在。
+
+C8/C9 记录为 `SKIPPED`：不存在 target 可切换，也不存在与当前唯一 source 分离的 Legacy authority。该决策不授权删除、部署、生产流量切换或生产配置修改。
+
+## 4.1 历史 E-05 影子迁移计划（已取代，不执行）
 
 目标：源系统保持唯一读写权威，迁移写入完全隔离、不可见的 024 target；证明全量与增量收敛，不切流量、不停旧写、不归档。
 
@@ -202,7 +212,7 @@ manifest 每行至少包含 `manifest_version`、`source_revision`、`source_tab
 
 退出条件：12 类 `unmapped=0`、`duplicate_manifest=0`、未解释 count/hash drift=0、关系 orphan=0、owner conflict=0、重试无重复 target、quarantine/rejected/archived 全部有原因，且 target 从未服务正式流量。否则 E-05 为 BLOCKED/PARTIAL，不能进入 E-06。
 
-## 5. I11 E-06 权威切换计划
+## 5. 历史 E-06 权威切换计划（已取代，不执行）
 
 目标：在 E-05 完整通过后，分开完成读权威切换、写权威切换、观察期、旧系统只读归档与回滚演练。
 
@@ -230,7 +240,7 @@ manifest 每行至少包含 `manifest_version`、`source_revision`、`source_tab
 
 管理员端：使用隔离 024 环境中的真实管理员账号与真实 JWT/session，不使用 AUTH_BYPASS；验证 dashboard、notes、5 条 legacy Note mistakes、3 条独立 Mistakes、questions、drafts、review、attachments、search、AI/governance 的可见性与最小安全流程。匿名、失效 session、非 admin 逐 API/页面验证 401/403/404 与不泄露。
 
-恢复：用切换前新鲜 024 DB+附件备份恢复到全新隔离目标，核对 revision/head/check、12 类 count/hash、owner manifest、附件 checksum、公开读取和管理员登录；再演练目标故障后的回切/reverse delta。2026-07-20 的 020 恢复证据只作前置历史证据。
+恢复：使用 C5 024 DB+附件备份恢复到全新隔离目标，核对 revision/head/check、12 类 count/hash、owner manifest、附件可读性与 candidate runtime readiness。简化架构不存在 target authority，因此不虚构回切/reverse delta 证据。2026-07-20 的 020 恢复证据只作前置历史证据。
 
 完整失败态：至少覆盖 backend/API unavailable、局部区块失败、Passkey 失败/超时、失效 session、静态 chunk 失败、上传格式/大小失败、附件 missing、409 version conflict、AI provider unavailable 并可人工回退、空队列/空搜索、迁移 drift。三尺寸均不得无限 loading、假成功或公开页 401/403 噪音；现有 1280 Passkey loading 资产必须重验。
 

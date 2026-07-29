@@ -1,21 +1,34 @@
-# F-02 部署资格审查（提前 Fail-Closed）
+# F-02 Deployment Eligibility Review
 
-日期：2026-07-28
-环境：本机 source `blog_db:5432`，revision `024`；未执行生产部署
-结论：`NOT ELIGIBLE / DO NOT DEPLOY`
+Review date: 2026-07-29
 
-本审查在 C10 未完成时提前终止，不把它记作完整 F-02 PASS。根据 fail-closed 规则，下列任一项足以得出 `DO NOT DEPLOY`：
+Environment: local source `blog_db:5432`, revision `024`; isolated restore/acceptance databases removed after verification.
 
-| 检查项 | 状态 | 证据 |
+Decision: `ELIGIBLE (NOT DEPLOYED; PRODUCTION RUNTIME ENABLEMENT REQUIRED)`
+
+This is a quality and recoverability eligibility decision for a future separately authorized deployment. It does not authorize push, deployment, production configuration changes, database writes, or starting the production backend.
+
+| Check | Status | Evidence |
 |---|---|---|
-| C1 owner manifest | PASS | 121 rows，dual-query hash/count/relationship gates=0；`assets/c1-independent-verification.json` |
-| 020→024 artifact/source upgrade | PASS | C3 artifact `ARTIFACT.sha256`，C5 current=head=024、check clean |
-| 024 restore | NOT VERIFIED | 024 backup 已创建并可列出，但尚未恢复到全新 target 验证 |
-| E-05 shadow migration | BLOCKED | 无 target schema/ledger/upsert/tombstone/authority contract；`validation.md` C6 |
-| E-06 switch/reverse delta/Legacy archive | BLOCKED | C6 未通过，未执行 |
-| F-01 permissions/failure matrix/browser/quality | NOT EXECUTED | C10 前置不成立 |
-| fixed migration/runtime artifact | PASS | C3 83-file 闭包与 workflow 已进入 local commit `2c7adcc`；021-024 tracked；未 push/release |
-| frontend test suite | FAIL | 2026-07-29 `npm test` 为 57/58；Capture static-placeholder case 缺 App Router fixture |
-| production runtime | FAIL | public API tunnel backend 无 8000 listener，public API health=502；不部署边界仍生效 |
+| C1 owner manifest | PASS | Immutable revision-020 manifest covers 121 rows; current 024→020 projection has missing/extra/duplicate/hash/owner/orphan=0 and aggregate `b40b109a...89adb6`. |
+| 020→024 artifact/source upgrade | PASS | C3 artifact; C5 source current=head=024 and check clean; migrations tracked by local commits `2c7adcc` and `0205272`. |
+| C6 final integrity | PASS | `assets/c6-final-integrity-audit.json`: 121/121, seven relationship gates=0, backfill drift=0, expected extensions/users/owner. |
+| 024 disaster recovery | PASS | `assets/c7-restore-verification.json`: 8/8 backup hashes, DB/attachments restored, aggregate match, readiness/check PASS, isolated DB removed. |
+| E-05 shadow migration | SKIPPED | Approved 2026-07-29 simplification: 121-row system retains one source authority; no second target was created. |
+| E-06 switch/reverse delta | SKIPPED | No shadow target or dual authority exists; C8/C9 are explicit architecture decisions, not unverified operations. |
+| F-01 permissions/failure/browser/quality | PASS | Real password admin with bypass false; anonymous/invalid/non-admin matrix; documented 404/401/403 and 500 skip; three viewports/keyboard; independent manifest process. |
+| Frontend suite | PASS | 21 files, 58/58 tests; TypeScript and production build PASS, 40/40 pages generated. |
+| Backend suite | PASS | 300/300 tests after test-isolation fixes; compileall PASS; Alembic current=head=024/check clean. |
+| Git schema authority | PASS | `2c7adcc` tracks the 83-file candidate including 021-024; `0205272` closes the documentation ledger. Current C6-C12 result is pending the local closure commit required by this workflow. |
+| Current production runtime | NOT ENABLED | Public API tunnel still has no localhost:8000 listener and may return 502. This is an explicit non-deployment boundary; enabling runtime requires a separate deployment/configuration authorization and fresh predeploy checks. |
+| Actual deployment | NOT DEPLOYED | No push, deploy, production config modification, or production listener was performed. |
 
-不执行 deploy、push、生产配置修改。解除 `DO NOT DEPLOY` 至少需要独立批准并实现 C6 target/authority infrastructure，再完成 C6-C10 和完整 024 restore/F-01。
+## Conditions Before Any Future Deployment
+
+1. Obtain separate authorization for push/deployment and production configuration.
+2. Create a fresh backup/restore point and rerun source revision, manifest, permission, test, build, and Alembic gates against the exact deployment commit.
+3. Configure secrets, non-wildcard CORS, registration policy, and production `AUTH_BYPASS=false`; fail startup if bypass flags are both true.
+4. Start and health-check the production backend before routing traffic; preserve rollback ownership and the validated C5/C7 recovery contract.
+5. Reassess unrelated dirty worktree content so deployment scope is reproducible and does not include user work outside this closure.
+
+Conclusion: the scoped I-series artifact is `ELIGIBLE` for a future separately authorized deployment workflow. The system remains `NOT DEPLOYED`, and current production runtime enablement is not complete.

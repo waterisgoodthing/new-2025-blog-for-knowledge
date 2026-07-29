@@ -148,12 +148,21 @@ def test_registry_does_not_import_business_services():
     ]
     for k in business_services:
         mods_to_clear.append(k)
-    for k in mods_to_clear:
-        if k in sys.modules:
-            del sys.modules[k]
+    saved_modules = {
+        name: sys.modules[name]
+        for name in mods_to_clear
+        if name in sys.modules
+    }
+    try:
+        for name in mods_to_clear:
+            sys.modules.pop(name, None)
 
-    # 重新导入并检查 sys.modules 中没有业务 service
-    importlib.import_module("app.services.ai_prompt_registry")
+        # 重新导入并检查 sys.modules 中没有业务 service
+        importlib.import_module("app.services.ai_prompt_registry")
 
-    for svc in business_services:
-        assert svc not in sys.modules, f"ai_prompt_registry imported business service: {svc}"
+        for svc in business_services:
+            assert svc not in sys.modules, f"ai_prompt_registry imported business service: {svc}"
+    finally:
+        for name in mods_to_clear:
+            sys.modules.pop(name, None)
+        sys.modules.update(saved_modules)

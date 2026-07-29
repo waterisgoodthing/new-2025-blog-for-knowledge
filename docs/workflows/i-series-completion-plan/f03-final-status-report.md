@@ -1,40 +1,63 @@
-# F-03 最终状态报告
+# F-03 Final I-Series Status Report
 
-报告日期：2026-07-28
-报告状态：`NOT COMPLETE / BLOCKED AT C6`
-执行环境：`/Users/limengyang/2025-blog-public`；local PostgreSQL `blog_db:5432`
-source revision：`024 (head)`
-实际部署：`NOT DEPLOYED`
+Report date: 2026-07-29
 
-本文件是截至 blocker 的最终状态报告，不是“完成报告”。C0-C5 有证据 PASS；C6 缺少可审计 target authority infrastructure 而 BLOCKED，因此 C7-C10 未执行，C11 仅作提前 fail-closed 审查，C12 不得声明完成。
+Report status: `C0-C12 COMPLETE VIA APPROVED SIMPLIFIED PATH`
 
-| 维度 | 状态 | 日期/环境/artifact/revision/证据 |
+Execution environment: `/Users/limengyang/2025-blog-public`; local PostgreSQL source `blog_db:5432`; source revision `024 (head)`.
+
+Actual deployment: `NOT DEPLOYED`
+
+## Architecture Decision
+
+The original C6-C9 shadow migration/cutover plan was replaced on 2026-07-29 by the user-approved simplified path. With 121 manifest rows and one existing PostgreSQL authority, adding a second target, delta/tombstone tooling, reverse synchronization, and production cutover would introduce dual-authority risk without proportional benefit.
+
+Source `blog_db` revision 024 remains the only data and schema authority. C6 therefore proves its integrity read-only, C7 proves its C5 backup restores into a new isolated database, and C8/C9 are explicit `SKIPPED` architecture decisions. No target or Legacy authority was created, switched, archived, or deleted.
+
+## Ten Status Dimensions
+
+| Dimension | Final status | Evidence and boundary |
 |---|---|---|
-| MVP | PARTIAL | 2026-07-28；I0-I9 有历史 PASS，但本轮未完成 F-01 全量重验；不能由 C5 推断 COMPLETE。 |
-| 产品化 | PARTIAL | migration/runtime 已由 2026-07-29 local commit `2c7adcc` 固定；但仍有本范围外 dirty、frontend 57/58、C6-C10 未完成，且没有 push/release。 |
-| 知识工作区 | PARTIAL | I7/I8 有历史 PASS；C5 source 024 的公开 notes health/read smoke 通过，未执行全 F-01。 |
-| AI-OCR 治理 | PARTIAL | I9 既有治理实现存在；真实 AI/OCR provider 成功路径明确不在本轮范围，F-01 未完成。 |
-| 备份恢复 | BLOCKED | 020 fresh backup 已恢复/升级验证：`20260728-c4-source-020`，BACKUP hash `f34deee9…abca2`；024 backup 已创建/可读：`20260728-c5-source-024`，hash `28c79256…8135`，但尚未恢复到全新 target。 |
-| migration dry-run | `TECHNICAL PASS / DRY_RUN_READY PASS` | C1 aggregate `b40b109a…89adb6`；live 024→020 projection 121/121 PASS；C2 isolated replay PASS；C3 artifact `c88ddad2…9e40`；C5 source 024 PASS；local commit `2c7adcc`。 |
-| 权威切换 | BLOCKED | 没有 target schema/ledger/upsert/tombstone/delta/cutover contract；C6 未执行，C7/C8 不得执行。 |
-| Legacy 归档 | BLOCKED | C9 未执行；source/Legacy 未删且未设置只读归档。 |
-| 生产资格 | `NOT ELIGIBLE / DO NOT DEPLOY` | `f02-deployment-eligibility.md`；C6/C7/C8/C9/C10 与 024 restore 未完成，public API 当前 502。 |
-| 实际部署 | `NOT DEPLOYED` | 本轮无 push、无 deploy、无生产配置变更。 |
+| MVP | COMPLETE | C5 unified source schema at 024; C6 confirms 121-row data integrity; C10 permissions, failure states, browser, tests, type/build and backend suite PASS. |
+| Productization | PARTIAL | Scoped artifact is eligible, but Phase 1.0 work outside this workflow remains dirty/incomplete and production backend runtime is not enabled. |
+| Knowledge workspace | COMPLETE | I7/I8 implementation is present; C10 authenticated dashboard and frontend/backend suites validate current behavior. |
+| AI/OCR governance | COMPLETE FOR GOVERNANCE SCOPE | I9 governance and failure contracts are covered by tests. A real external provider success path was not invoked and remains a runtime integration risk. |
+| Backup and recovery | 024 VERIFIED | C5 backup 8/8 hashes; C7 restored DB/attachments, revision, 121-row aggregate, readiness and Alembic, then removed the target. |
+| Migration dry-run | TECHNICAL PASS / DRY_RUN_READY PASS | C1 aggregate `b40b109a...89adb6`; C2 replay; C3 artifact; C4 020 restore/upgrade; C5 source 024; C6/C10 live projection checks. |
+| Authority switch | SKIPPED | Approved single-source decision; no target exists and no read/write routing was changed. |
+| Legacy archive | SKIPPED | Source is the sole authority; no independent Legacy database exists. No revoke, archive, alias, or delete was performed. |
+| Deployment eligibility | ELIGIBLE | F-02 scoped quality/recovery review PASS. Runtime enablement and actual deployment require separate authorization and fresh exact-commit gates. |
+| Actual deployment | NOT DEPLOYED | No push, deployment, production config change, tunnel change, or production 8000 listener was performed. |
 
-## 已完成增量
+## C6-C12 Results
 
-- C0：D1-D8 生效，canonical owner=`4c503215-b158-4162-b472-79df8289ed0a`。
-- C1：121-row manifest 与独立复核 PASS。
-- C2：isolated clone `020→024→020→024`、rollback/replay/destroy PASS。
-- C3：candidate artifact/hash/runbook PASS。
-- C4：fresh 020 DB+attachment backup、restore/upgrade rehearsal PASS。
-- C5：source `blog_db:5432` 020→024 PASS；public read/API smoke PASS；024 backup created/readable.
-- Git authority 收口：021-024 与 83-file runtime/contracts/tests 闭包已由 local commit `2c7adcc` 跟踪；C1 live 024 投影复核 PASS。
+- C6: PASS. Live source read-only audit: revision 024, 121/121, aggregate match, relationship orphan=0, backfill drift=0.
+- C7: PASS. C5 024 backup restored and verified; attachment hashes PASS; isolated DB removed and temporary attachments moved to Trash.
+- C8: SKIPPED. No target authority exists.
+- C9: SKIPPED. No independent Legacy authority exists.
+- C10: PASS WITH DOCUMENTED SKIPS/WARNINGS. Real password admin with bypass false, permission/failure matrices, C7 recovery evidence, three browser sizes/keyboard, frontend 58/58, backend 300/300, build/type/compile/Alembic and independent manifest verification all PASS. Controlled 500 trigger was reasonably skipped.
+- C11: PASS. F-02=`ELIGIBLE (NOT DEPLOYED; PRODUCTION RUNTIME ENABLEMENT REQUIRED)`.
+- C12: COMPLETE. This report records final evidence, residual risks, decisions, and approvals.
 
-## 未完成与解除条件
+## Residual Risks
 
-1. C6 必须先有独立批准的范围扩展：target schema、owner/disposition/identity/quarantine/tombstone ledger，idempotent full/delta executor，authority switch configuration/route contract。
-2. C6 PASS 后才能进行 C7 cutover/reverse-delta drill、C8 actual authority switch、C9 Legacy read-only archive。
-3. C10 必须完成真实 admin、permissions matrix、024 restore、failure matrix、browser/keyboard、frontend/backend/alembic quality 和独立复核；随后重做完整 F-02。
+1. Production runtime is not enabled: the public API tunnel has no localhost:8000 backend listener and may return 502. This is expected under the no-deployment boundary but blocks actual service enablement.
+2. A real external AI/OCR provider success path was not exercised. Tests cover governed adapters, validation, failure mapping, and deterministic behavior only.
+3. Frontend tests emit existing React `act()` warnings in AI-runs panels; backend tests emit two existing `AsyncMock` coroutine warnings. Suites pass, but warning cleanup should enter the next test-hygiene iteration.
+4. Browser console reports an existing LCP suggestion for `/images/avatar.png`. It is non-blocking but should be assessed as a performance follow-up.
+5. The worktree still contains unrelated Phase 1.0, UI review, project assessment, screenshot, and other workflow changes. They are excluded from the C6-C12 commit and must not be swept into a future deployment.
+6. C5/C7 backups are local, out-of-repository recovery artifacts. Operational retention, off-machine redundancy, and restore ownership remain future production concerns.
 
-该报告不会由 024 source upgrade 或 backup 存在推断 authority switch、Legacy archive、deployment eligibility 或实际 deployment。
+These risks are non-blocking for the scoped `ELIGIBLE` review but must be reconsidered before any actual deployment.
+
+## Approval And Git History
+
+- 2026-07-28: user approved C0-C5 execution and D1-D8 owner decisions.
+- 2026-07-29: local commit `2c7adcc` (`chore: unify I-series migration authority`) tracked the 83-file artifact and revisions 021-024.
+- 2026-07-29: local commit `0205272` (`docs: record I-series Git authority closure`) recorded the authority/risk ledger.
+- 2026-07-29: user approved replacing original C6-C9 with `NEXT-STEPS.md` simplified path and explicitly approved the resulting C6-C12 task list.
+- C6-C12 closure commit: `docs: complete I-series simplified path C6-C12`. Its SHA is reported in the Git handoff/final response because a commit cannot contain its own stable hash.
+
+## Final Boundary
+
+The I-series workflow is closed locally through C12. Deployment eligibility does not imply actual deployment. Push, release, production configuration, runtime enablement, migration execution, and traffic changes remain unauthorized and unperformed.

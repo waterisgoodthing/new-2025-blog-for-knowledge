@@ -1,0 +1,67 @@
+{
+  "audit_date": "2026-07-29T03:59:03.343177+00:00",
+  "database": "blog_db",
+  "read_only_transaction": true,
+  "source_revision": "024",
+  "manifest_verification_reused": "c1-post-upgrade-verification.json",
+  "manifest_verification": {
+    "source_count": 121,
+    "manifest_count": 121,
+    "missing_manifest": 0,
+    "extra_manifest": 0,
+    "duplicate_manifest": 0,
+    "hash_drift": 0,
+    "owner_conflict": 0,
+    "invalid_disposition": 0,
+    "disposition_rule_conflict": 0,
+    "passed": true,
+    "source_aggregate_sha256": "b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6",
+    "source_aggregate_matches": true,
+    "manifest_source_revision": "020",
+    "database_revision_actual": "024",
+    "projection_applied": true
+  },
+  "fk_integrity": {
+    "mistake_question": 0,
+    "mistake_draft": 0,
+    "review_item_target": 0,
+    "review_record_item": 0,
+    "attachment_link_attachment": 0,
+    "attachment_link_target": 0,
+    "capture_attachment": 0
+  },
+  "backfill_verification": {
+    "notes_revision_null": 0,
+    "notes_revision_min": 1,
+    "attachments_display_name_null": 0,
+    "attachments_display_name_mismatch": 0,
+    "attachments_folder_id_null": 1
+  },
+  "source_facts": {
+    "table_counts": {
+      "notes": 13,
+      "questions": 3,
+      "mistakes": 3,
+      "review_items": 3,
+      "review_records": 4,
+      "attachments": 1,
+      "attachment_links": 1,
+      "capture_items": 0,
+      "draft_items": 6,
+      "ai_runs": 32,
+      "ai_call_logs": 47,
+      "users": 8
+    },
+    "extensions": [
+      "pg_trgm",
+      "plpgsql"
+    ],
+    "canonical_owner": "4c503215-b158-4162-b472-79df8289ed0a",
+    "admin_count": 4,
+    "total_users": 8
+  },
+  "fk_orphan_count": 0,
+  "passed": true,
+  "manifest_passed": true,
+  "conclusion": "PASS"
+}

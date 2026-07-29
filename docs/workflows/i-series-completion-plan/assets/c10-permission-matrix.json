@@ -1,0 +1,76 @@
+{
+  "test_date": "2026-07-29",
+  "environment": "isolated restored revision-024 database",
+  "backend_origin": "http://127.0.0.1:18000",
+  "database": "i_series_c10_acceptance_20260729_125558",
+  "auth_bypass": false,
+  "auth_bypass_allow": false,
+  "live_source_write_performed": false,
+  "scenarios": [
+    {
+      "actor": "anonymous",
+      "request": "GET /api/notes",
+      "expected_status": 200,
+      "actual_status": 200,
+      "evidence": "public response total=13",
+      "passed": true
+    },
+    {
+      "actor": "anonymous",
+      "request": "GET /api/admin/dashboard/summary",
+      "expected_status": 401,
+      "actual_status": 401,
+      "detail": "Not authenticated",
+      "passed": true
+    },
+    {
+      "actor": "invalid cookie",
+      "request": "GET /api/admin/dashboard/summary",
+      "expected_status": 401,
+      "actual_status": 401,
+      "detail": "Not authenticated",
+      "passed": true
+    },
+    {
+      "actor": "password admin",
+      "request": "POST /api/auth/login",
+      "expected_status": 200,
+      "actual_status": 200,
+      "session": {"is_admin": true, "auth_level": "password"},
+      "passed": true
+    },
+    {
+      "actor": "password admin",
+      "request": "GET /api/auth/me",
+      "expected_status": 200,
+      "actual_status": 200,
+      "passed": true
+    },
+    {
+      "actor": "password admin",
+      "request": "GET /api/admin/dashboard/summary",
+      "expected_status": 200,
+      "actual_status": 200,
+      "passed": true
+    },
+    {
+      "actor": "password non-admin",
+      "request": "POST /api/auth/login",
+      "expected_status": 200,
+      "actual_status": 200,
+      "session": {"is_admin": false, "auth_level": "password"},
+      "passed": true
+    },
+    {
+      "actor": "password non-admin",
+      "request": "GET /api/admin/dashboard/summary",
+      "expected_status": 403,
+      "actual_status": 403,
+      "detail": "Admin privileges required",
+      "passed": true
+    }
+  ],
+  "note": "The requested /api/notes/{slug}/edit route does not exist in this API. The protected dashboard endpoint was used to prove 401/403 enforcement; note mutations are separately protected by get_current_admin in code and backend tests.",
+  "passed": true,
+  "conclusion": "PASS"
+}

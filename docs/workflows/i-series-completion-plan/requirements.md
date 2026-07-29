@@ -1,15 +1,15 @@
 # I 系列剩余任务需求与验收门槛
 
-状态：`APPROVED FOR C0-C12 CONTINUOUS EXECUTION`
+状态：`APPROVED FOR C6-C12 SIMPLIFIED EXECUTION`
 
 ## 1. 总体要求
 
-1. 用户于 2026-07-28 已一次性批准 C0-C12；一次只执行、验收一个增量，前一增量 PASS 后直接进入下一增量，不再等待人工批准。
+1. 用户于 2026-07-29 批准 C6-C12 简化路径；一次只执行、验收一个增量，完成后立即更新 `tasks.md` 与 `validation.md`。
 2. 当前事实必须由同一执行窗口的代码版本、只读源审计、数据库/附件证据、测试和浏览器证据共同支持；历史 workflow 勾选不能单独证明当前状态。
 3. `src/` 与 `backend/` 分开验收。前端 `AuthGate` 只表达页面边界，后端 `get_current_admin` 才是写入、AI、上传、复习的真实安全边界。
 4. 公开 `/mistakes`、`/notes`、`/notes/[slug]`、`/blog`、`/blog/[slug]` 保持匿名读取；管理创建/编辑、复习、AI、上传必须受保护。
 5. legacy 错题 `Note(type="mistake")` 与独立 `mistakes` 表均作为真实源；不得假设 `/api/mistakes` 取代 `/api/notes`，也不得无证据 merge。
-6. 任一 UNKNOWN、未批准、owner 冲突、hash/count drift、恢复失败或权限失败均 fail closed。
+6. 任一 UNKNOWN、owner 冲突、hash/count drift、恢复失败或权限失败均 fail closed。live source 在 C6/C7/C10 只允许只读查询。
 
 ## 2. I10 owner gate 验收
 
@@ -40,26 +40,23 @@
 - live 024 只读复核必须继续满足 121 行、missing/extra/duplicate/hash drift/owner conflict/orphan 全为 0，aggregate 仍为 `b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6`。
 - 本收口仅允许本地 commit；不 push、不部署、不改生产配置、不写数据库。
 
-## 4. E-05 验收
+## 4. C6 最终数据完整性审计
 
-- 仅写隔离 shadow target；source 读事务为只读，正式流量不读取 target。
-- 全量与每次增量按 source PK/hash、终态、owner、关系、附件 checksum 对账。
-- create/update/delete/retry 幂等在隔离 clone 有证据；删除产生 tombstone。
-- 至少 3 次真实 source 扫描零未知 drift；本轮因数据非关键可缩短观察间隔，但必须记录时长和每次独立 hash。
-- `unmapped=duplicate_manifest=owner_conflict=unexplained_drift=orphan=0`；quarantine/archive/reject 均有审计原因。
-- E-05 PASS 只允许请求 E-06，不授权切换。
+- 在 live source 024 上只执行显式只读事务；不得创建 target、迁移表或写入 source。
+- 重用不可变 C1 revision-020 manifest 和既有 024→020 投影，继续满足 121/121、aggregate 不变。
+- 七类 FK/多态关系 orphan 均为 0；`notes.revision >= 1`；`attachments.display_name` 非空且等于 `filename`；`folder_id` 允许 NULL。
+- 报告 12 表计数、revision、extensions、用户/admin/canonical owner 事实；任何 drift 或 UNKNOWN 均失败。
 
-## 5. E-06 验收
+## 5. C7 恢复与 C8/C9 简化决策验收
 
-- 切换演练、实际读写切换、旧写停用、Legacy 归档均由 2026-07-28 连续执行授权覆盖。
-- 维护窗口 final delta 为 zero drift；读切换后权限/公开读取 PASS，写切换后最小写流程 PASS。
-- 观察期可按用户的数据非关键授权缩短，但仍须覆盖 create/edit/review/attachment 四类最小流程并记录起止时间。
-- 旧系统观察期内只读且可回切；双写或双主为立即停止条件。
-- reverse delta、024 恢复、回切与 route alias 均实际演练；Legacy 归档只读、不删除、可恢复。
+- C7 从 C5 024 backup 恢复到全新时间戳隔离 DB，校验 backup SHA-256、revision/head/check、12 表计数、121-row manifest aggregate、关系、backfill 和 candidate runtime readiness。
+- 临时附件只解压到临时目录；完成后移入 `~/.Trash/`。隔离 DB 必须删除并用 `pg_database` 复核不存在；C5 backup 保持不变。
+- C8 `SKIPPED`：单一 source 架构不存在实际权威切换对象。
+- C9 `SKIPPED`：source 即唯一权威，不存在 Legacy 数据库可归档。跳过不等于删除或部署。
 
 ## 6. F-01/F-02/F-03 验收
 
-F-01：真实隔离管理员会话、匿名/非管理员/失效会话、公开与管理路径、恢复/回切、完整失败矩阵、三尺寸/键盘、测试/type/build/compile/alembic 全部有主验证与独立交叉验证。AUTH_BYPASS 不得用于正常权限证明。
+F-01：真实管理员会话、匿名/非管理员/失效会话、公开与管理路径、C7 恢复证据、完整失败矩阵、三尺寸/键盘、测试/type/build/compile/alembic 全部有主验证与独立交叉验证。AUTH_BYPASS 不得用于正常权限证明；不得通过修改生产配置取得证据。
 
 F-02：只有所有门槛 PASS 才可写 `ELIGIBLE`；任一 UNKNOWN/FAIL/BLOCKED 写 `NOT ELIGIBLE / DO NOT DEPLOY`。G4 只授权审查，不授权部署。
 
@@ -67,6 +64,6 @@ F-03：最终报告分别声明 MVP、产品化、知识工作区、AI-OCR 治�
 
 ## 7. 完成与暂停
 
-完成条件：I10 owner gate、020→024、E-05、E-06、F-01、F-02、F-03 均按各自批准、证据和退出条件完成；生产部署仍保持独立授权。
+完成条件：I10 owner gate、020→024、C6 完整性、C7 恢复、C8/C9 简化决策、F-01、F-02、F-03 均有对应证据与明确结论；生产部署仍保持独立授权。
 
-暂停条件：schema 扩大、部署、删除源数据、双写、不可恢复 downgrade，任一技术 gate 失败，或同一失败重复两次而无新证据来源。暂停时记录 BLOCKED/PARTIAL，不弱化门槛。
+暂停条件：live source 写入、schema 扩大、部署、删除源数据、不可恢复 downgrade，任一技术 gate 失败，或同一失败重复两次而无新证据来源。暂停时记录 BLOCKED/PARTIAL，不弱化门槛。

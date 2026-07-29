@@ -43,6 +43,9 @@ class MistakeDraftSchemaTest(unittest.TestCase):
 
 class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
+        # IsolatedAsyncioTestCase creates a new loop per test; do not reuse a
+        # pooled asyncpg connection left by an earlier test module's loop.
+        await engine.dispose(close=False)
         self.session = async_session()
         self.addAsyncCleanup(engine.dispose)
         self.addAsyncCleanup(self.session.close)
