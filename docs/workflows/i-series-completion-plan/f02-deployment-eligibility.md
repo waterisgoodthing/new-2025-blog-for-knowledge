@@ -14,7 +14,8 @@
 | E-05 shadow migration | BLOCKED | 无 target schema/ledger/upsert/tombstone/authority contract；`validation.md` C6 |
 | E-06 switch/reverse delta/Legacy archive | BLOCKED | C6 未通过，未执行 |
 | F-01 permissions/failure matrix/browser/quality | NOT EXECUTED | C10 前置不成立 |
-| fixed deploy artifact | FAIL | 83-file candidate 是未提交/untracked working-tree bundle，不是可复现 commit/release artifact |
+| fixed migration/runtime artifact | PASS | C3 83-file 闭包与 workflow 已进入 local commit `2c7adcc`；021-024 tracked；未 push/release |
+| frontend test suite | FAIL | 2026-07-29 `npm test` 为 57/58；Capture static-placeholder case 缺 App Router fixture |
 | production runtime | FAIL | public API tunnel backend 无 8000 listener，public API health=502；不部署边界仍生效 |
 
 不执行 deploy、push、生产配置修改。解除 `DO NOT DEPLOY` 至少需要独立批准并实现 C6 target/authority infrastructure，再完成 C6-C10 和完整 024 restore/F-01。

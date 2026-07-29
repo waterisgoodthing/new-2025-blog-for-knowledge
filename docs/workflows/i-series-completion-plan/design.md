@@ -118,7 +118,7 @@
 
 ### 2.6 C0-C5 Git 权威收口与 revision-aware C1 复核（P0）
 
-2026-07-29 复查确认 source `blog_db:5432` 已由 C5 升至 revision 024，但 `021`-`024` 仍为 Git untracked。C3 的仓库外 bundle 能证明执行时 artifact 未漂移，却不能让干净 checkout 重建当前 schema，因此本轮必须把 C3 `candidate-files.txt` 的 83-file 闭包作为一个不可拆分的本地 commit 收口。暂存范围由该清单与本 workflow 目录白名单共同决定；Phase 1.0、temp-admin、project assessment、UI review 和其他 workflow dirty 明确排除。
+2026-07-29 复查确认 source `blog_db:5432` 已由 C5 升至 revision 024，但当时 `021`-`024` 仍为 Git untracked。C3 的仓库外 bundle 能证明执行时 artifact 未漂移，却不能让干净 checkout 重建当前 schema，因此本轮把 C3 `candidate-files.txt` 的 83-file 闭包作为一个不可拆分的本地 commit 收口。暂存范围由该清单与本 workflow 目录白名单共同决定；Phase 1.0、temp-admin、project assessment、UI review 和其他 workflow dirty 明确排除。该收口已由 local commit `2c7adcc` 完成，四个 migration 现为 tracked。
 
 C1 manifest 继续表示 revision 020 的 121-row 时点快照，其 payload 与 source aggregate 不变。升级后不重新生成 manifest；verifier 在读取当前 database revision 后选择显式 revision pair：
 
@@ -272,8 +272,8 @@ G4 只授权资格审查；`ELIGIBLE` 也不授权部署、发布或 migration�
 
 | 优先级 | 风险与证据 | 影响 | 计划处置 |
 |---|---|---|---|
-| P0 | migration mismatch：源 `020`，代码 head/readiness `024`；021–024 untracked | 当前后端无法把源库视为合格 schema；部署 artifact 可能缺 migration | 固定候选版本、新鲜备份、clone rehearsal、单独授权后 upgrade |
-| P0 | C5 后 Git/schema 权威分裂：live source 已是 024，但产生该 schema 的 021-024 仍 untracked | clean checkout 无法重建或审计 live schema | 将 C3 83-file 闭包与 migration 作为单一 local commit；校验 tracked/single-head/current/check；不 push/deploy |
+| P0 | migration mismatch（已解除）：源曾为 `020`，代码 head/readiness 为 `024` | 当时后端无法把源库视为合格 schema | C5 已升级 source 至 024；current=head/check PASS |
+| P0 | C5 后 Git/schema 权威分裂（已解除）：live source 024，而 021-024 曾 untracked | clean checkout 当时无法重建或审计 live schema | local commit `2c7adcc` 已提交 C3 闭包与 migration；tracked/single-head/current/check PASS；未 push/deploy |
 | P0 | C1 独立 verify 是 source=020 时点快照，live source 已为 024 | 原 verifier revision equality 会阻止升级后复核；若直接读 024 全行又会产生预期 hash drift | manifest 保持 020 不变；仅允许显式 024→020 SQL 投影并对 unsupported pair fail closed |
 | P0 | 候选 artifact 与 I3-I10 代码纠缠：021-024 与 modified/untracked models、routers、schemas、services、clients/tests 共同构成运行时合同 | 只冻结 migration 会让 ORM/runtime 与 schema 不一致，C5 后无法复现 | C3 冻结完整引用闭包及 SHA-256；切分 Phase 1.0 无关 dirty；C5 前逐文件 hash 必须相等 |
 | P0 | 已部署前端与 source DB mismatch：前端指向 public API tunnel；当前 tunnel 后端 8000 无监听、public health 502 | 若未来出现活 backend 连接 `blog_db:5432`，C5 停写/升级可能误伤公开读取或产生并发写 | C5 窗口重复只读核查 backend process/version、`EXPECTED_ALEMBIC_REVISION`、tunnel ingress、`pg_stat_activity`；有活连接则先停写，否则 BLOCKED |
@@ -285,7 +285,7 @@ G4 只授权资格审查；`ELIGIBLE` 也不授权部署、发布或 migration�
 | P1 | 32 ai_runs 全 targetless、47 ai_call_logs 无 owner/target FK | 无法继承 owner，可能迁入敏感/无价值日志 | 默认推荐 owner-controlled archive，逐行终态 |
 | P1 | E-05 共存期若依赖 updated_at 会漏 delete/无时间戳表 | target drift 或双写分叉 | 小数据全量 PK/hash 周期、tombstone、zero-drift 门槛 |
 | P1 | I12 管理员、恢复、失败态未验证；1280 asset 仍 loading | F-01/F-02 不能关闭 | 真实隔离管理员、024 restore、三尺寸失败矩阵与独立交叉验证 |
-| P1 | dirty/untracked 工作树及历史测试证据可能与最终 artifact 不一致 | 无可复现部署资格 | F-02 固定 commit/artifact 后重跑全部门槛 |
+| P1 | 本范围外 dirty/untracked 工作树及 frontend 57/58 | 整体仓库尚无部署资格 | migration/runtime 由 `2c7adcc` 固定；完整 F-01/F-02 前清理其余范围并修复 App Router test fixture |
 | P2 | `incremental-plan.md` 状态头仍停在 I7 approval，而正文已到 I12 | 人员可能误读当前阶段 | 仅在后续获批收口同步，不在本轮改旧记录 |
 | P2 | 历史 `:2025` chunk 500 与 1280 Passkey loading | 浏览器证据存在环境/时序不一致 | 新 production process、全新 sessions、network/console 证据 |
 

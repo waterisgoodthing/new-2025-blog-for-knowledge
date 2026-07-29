@@ -11,11 +11,11 @@ source revision：`024 (head)`
 | 维度 | 状态 | 日期/环境/artifact/revision/证据 |
 |---|---|---|
 | MVP | PARTIAL | 2026-07-28；I0-I9 有历史 PASS，但本轮未完成 F-01 全量重验；不能由 C5 推断 COMPLETE。 |
-| 产品化 | PARTIAL | 当前 worktree 包含未提交/未追踪变更；C3 冻结 83-file bundle，但没有 release commit/artifact；见 C3 review。 |
+| 产品化 | PARTIAL | migration/runtime 已由 2026-07-29 local commit `2c7adcc` 固定；但仍有本范围外 dirty、frontend 57/58、C6-C10 未完成，且没有 push/release。 |
 | 知识工作区 | PARTIAL | I7/I8 有历史 PASS；C5 source 024 的公开 notes health/read smoke 通过，未执行全 F-01。 |
 | AI-OCR 治理 | PARTIAL | I9 既有治理实现存在；真实 AI/OCR provider 成功路径明确不在本轮范围，F-01 未完成。 |
 | 备份恢复 | BLOCKED | 020 fresh backup 已恢复/升级验证：`20260728-c4-source-020`，BACKUP hash `f34deee9…abca2`；024 backup 已创建/可读：`20260728-c5-source-024`，hash `28c79256…8135`，但尚未恢复到全新 target。 |
-| migration dry-run | `TECHNICAL PASS / DRY_RUN_READY PASS` | C1 121-row manifest aggregate `b40b109a…89adb6`；C2 isolated `020→024→020→024` PASS/destroyed；C3 artifact `c88ddad2…9e40`；C5 source 024 PASS。 |
+| migration dry-run | `TECHNICAL PASS / DRY_RUN_READY PASS` | C1 aggregate `b40b109a…89adb6`；live 024→020 projection 121/121 PASS；C2 isolated replay PASS；C3 artifact `c88ddad2…9e40`；C5 source 024 PASS；local commit `2c7adcc`。 |
 | 权威切换 | BLOCKED | 没有 target schema/ledger/upsert/tombstone/delta/cutover contract；C6 未执行，C7/C8 不得执行。 |
 | Legacy 归档 | BLOCKED | C9 未执行；source/Legacy 未删且未设置只读归档。 |
 | 生产资格 | `NOT ELIGIBLE / DO NOT DEPLOY` | `f02-deployment-eligibility.md`；C6/C7/C8/C9/C10 与 024 restore 未完成，public API 当前 502。 |
@@ -29,6 +29,7 @@ source revision：`024 (head)`
 - C3：candidate artifact/hash/runbook PASS。
 - C4：fresh 020 DB+attachment backup、restore/upgrade rehearsal PASS。
 - C5：source `blog_db:5432` 020→024 PASS；public read/API smoke PASS；024 backup created/readable.
+- Git authority 收口：021-024 与 83-file runtime/contracts/tests 闭包已由 local commit `2c7adcc` 跟踪；C1 live 024 投影复核 PASS。
 
 ## 未完成与解除条件
 

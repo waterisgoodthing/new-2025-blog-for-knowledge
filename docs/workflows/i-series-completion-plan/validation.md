@@ -123,3 +123,12 @@
 - 执行证据：`git add --pathspec-from-file=.../candidate-files.txt` 加 workflow 白名单；expected/actual sorted file set 的 `comm -3` 无输出；021-024 均为 `A`；`git diff --cached --check` 无输出；敏感/备份文件名筛查无命中。C5 执行前和本轮规范化前，C3 SHA manifest 为 83/83 OK；为满足 cached whitespace gate，最终 staged tree 仅 `backend/tests/test_i7_file_workspace.py` 与 `test_i8_markdown_search.py` 各移除一个 EOF 空行，因此 81/83 与 C3 byte-identical、2/83 为 test-only whitespace 差异；四个 migration 与全部 36 runtime model/router/schema/service/main 文件仍与 C3 hash 相同。
 - 退出：`PASS`。暂存集合完整且无越界；migration 已进入待提交 Git tree。
 - 本轮实际改动摘要：Git index 写入 99 files；working tree 的无关 dirty 保留且未暂存；数据库无写入；尚未 commit/push/deploy。
+
+## C0-C5 Git 权威收口：本地提交
+
+- 目标：消除 live 024 schema 由 Git-untracked migration 产生的首要遗留风险。
+- 范围：精确 staged 99-file artifact；本地 branch `notes-workspace-ux-upgrade`。
+- 不做：不 push、不部署、不改生产配置；不提交白名单外 dirty。
+- 执行证据：`git commit -m "chore: unify I-series migration authority"` 创建 commit `2c7adcc`（99 files，6445 insertions/382 deletions）；`git ls-files backend/alembic/versions/02[1-4]_*.py` 返回四个 migration；commit summary 明确四文件 mode=`100644`。提交后 `git status --short` 仅剩 Phase 1.0、temp-admin、project assessment、UI review、其他 workflow/截图等本范围外变更，C3 83-file 闭包和本 workflow 均无未提交内容。
+- 退出：`PASS`。I-RISK-P0-08=`RESOLVED`；I-RISK-P0-09=`RESOLVED`。F-02 仍因 C6-C10、024 restore、frontend 57/58 与 production runtime blocker 为 `NOT ELIGIBLE / DO NOT DEPLOY`。
+- 本轮实际改动摘要：创建 local artifact commit `2c7adcc`；数据库无写入；未 push/deploy/改生产配置。后续仅以独立 documentation ledger commit 记录该不可自引用 SHA。

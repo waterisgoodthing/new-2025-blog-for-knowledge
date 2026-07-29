@@ -1,6 +1,6 @@
 # I 系列剩余任务完成规划
 
-状态：`EXECUTION AUTHORIZED / C0-C12 IN PROGRESS`
+状态：`C0-C5 COMMITTED / C6 BLOCKED / DO NOT DEPLOY`
 
 ## 目标
 
@@ -14,7 +14,7 @@
 
 ## 当前结论
 
-1. 源库 `localhost:5432/blog_db` 已在 C5 从 `020` 升至 `024`，工作树代码单 head/readiness 同为 `024`；但产生该 schema 的 021、022、023、024 四个 migration 在 2026-07-29 提交前仍为 Git untracked，因此 clean checkout 可复现性是当前 P0 收口项。
+1. 源库 `localhost:5432/blog_db` 已在 C5 从 `020` 升至 `024`，工作树代码单 head/readiness 同为 `024`；产生该 schema 的 021、022、023、024 与 C3 83-file 闭包已进入本地 commit `2c7adcc`，clean checkout 丢失 migration 的 P0 风险已解除。
 2. C0/C1 已 PASS：canonical target owner 为 `4c503215-b158-4162-b472-79df8289ed0a`；121 行 mapping manifest 覆盖 12 类，独立复核 missing/duplicate/hash drift/owner conflict/orphan 均为 0，`DRY_RUN_READY=PASS`。升级后的 live 024 又通过显式 024→020 旧字段投影复核，aggregate 保持 `b40b109a...89adb6`。
 3. 用户已授权 C0-C12 连续执行；I11-02、I11-03、I11-04 仍须按技术 gate 顺序完成，不因授权而提前升级状态。
 4. I12-01 为 PARTIAL；管理员真实会话、024 恢复、权威切换回滚和完整失败态未验证。I12-02、I12-03 未完成，I12-04 仅有局部交叉证据。

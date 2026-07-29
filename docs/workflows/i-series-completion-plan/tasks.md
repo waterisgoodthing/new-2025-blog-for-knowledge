@@ -45,7 +45,7 @@
 - [x] GIT-C3：对 live 024 只读执行 C1 投影复核；121/121、全部 drift/conflict/orphan=0、aggregate 保持 `b40b109a...89adb6`，证据为 `assets/c1-post-upgrade-verification.json`。
 - [x] GIT-C4：manifest 4/4、隔离 024 backend 35/35、compile/tsc/build/Alembic/Git whitespace PASS；frontend Vitest 57/58，唯一失败为既有 Capture App Router fixture，故不升级生产资格。
 - [x] GIT-C5：仅暂存 C3 83-file 闭包和 `i-series-completion-plan` 共 99 files；expected/actual 集合差=0，四个 migration 均为 `A`，cached whitespace check PASS，无无关 dirty/secret/backup 混入。
-- [ ] GIT-C6：创建本地 commit；不 push、不部署、不改生产配置，并在 validation 记录 commit SHA 与剩余无关 dirty。
+- [x] GIT-C6：已创建本地 artifact commit `2c7adcc`；四个 migration 由 `git ls-files` 确认为 tracked。未 push/部署/改生产配置；剩余 dirty 均在本次白名单外。
 
 ## 当前授权记录
 
