@@ -62,7 +62,7 @@
 
 ## 2026-07-29 Release Run
 
-> Status: `completed; awaiting final clean-tree confirmation`
+> Status: `completed`
 >
 > Approval required: the user must explicitly approve `GCP-R2-01` through
 > `GCP-R2-06`. The previous run's approval does not authorize this run.
@@ -120,5 +120,5 @@
 - [x] Verify `https://public-api.limengyang.me/api/health`.
 - [x] Record the deployed commit and Worker/version evidence.
 - [x] Update `validation.md`, `diff-report.md`, and this task status.
-- [ ] Confirm whether `git status --short` is empty; if not, list every retained
+- [x] Confirm whether `git status --short` is empty; if not, list every retained
       item and why it was not published or removed.
