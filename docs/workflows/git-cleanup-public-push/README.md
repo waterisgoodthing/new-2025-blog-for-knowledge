@@ -15,7 +15,7 @@ This is an operational release workflow. It must preserve unrelated user changes
 
 ## Current Status
 
-Status: `2026-07-29 release run passed validation; executing Git publication`.
+Status: `2026-07-29 release run completed: Git push, Cloudflare deployment, and public verification passed`.
 
 The 2026-07-09 run completed its Git push but correctly stopped before deployment
 because the deployment path was absent at that time.

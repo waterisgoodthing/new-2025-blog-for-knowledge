@@ -1,6 +1,6 @@
 # Validation — Git Cleanup And Public Push
 
-Status: `completed with deployment blocked`
+Current status: `2026-07-29 release completed and publicly verified`
 
 Validation date: 2026-07-09.
 
@@ -185,3 +185,51 @@ Release decision:
 - Source database `blog_db`: not modified.
 - Final branch divergence: local 3 ahead, 0 behind.
 - Final `git diff --check`: PASS.
+
+---
+
+## 2026-07-29 Remediation And Public Closure
+
+The dependency-runtime remediation workflow resolved the earlier audit blocker.
+The exact release candidate passed:
+
+- dependency audit: 0 vulnerabilities;
+- frontend: 58/58;
+- backend: 300/300;
+- TypeScript and 40-route Cloudflare/OpenNext build;
+- Alembic `025 (head)` and `No new upgrade operations detected`.
+
+Git publication:
+
+- branch: `notes-workspace-ux-upgrade`;
+- pushed commit: `c12af9a056e1ed58a5364e00392920fde63e785d`;
+- remote: `mine`;
+- force push: not used;
+- post-push equality: local HEAD and remote branch matched.
+
+The public deployment ran from a detached worktree at that exact commit using
+`NEXT_PUBLIC_API_URL=https://public-api.limengyang.me npm run deploy:full`.
+Its fail-closed frontend gate passed before Wrangler uploaded the Worker.
+
+Deployment evidence:
+
+- Worker: `2025-blog-public`;
+- route: `blog.limengyang.me/*`;
+- Worker Version ID: `23e67efe-d042-435b-a6b7-4236839a8477`;
+- Build ID: `RHki-tQ1KONo-bfoHR6ng`;
+- public `/BUILD_ID`: exact match.
+
+Public HTTP verification:
+
+| Boundary | Result |
+| --- | --- |
+| `/` | 200 HTML |
+| `/blog` | 200 HTML |
+| `/notes` | 200 HTML |
+| `/mistakes` | 200 HTML |
+| `/manage` | 200 HTML; page remains the login/management boundary |
+| API `/api/health` | 200 JSON, `{"status":"ok"}` |
+| API `/api/admin/profile` without credentials | 401 JSON, `Not authenticated` |
+
+The 14 authenticated/private UI evidence files remain local and excluded by the
+exact `.gitignore` rule. They were not published or deleted.

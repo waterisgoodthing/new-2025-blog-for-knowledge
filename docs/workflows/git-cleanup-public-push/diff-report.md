@@ -138,3 +138,19 @@ classified `publish`.
 The classified publication set was not staged. The fail-closed production audit
 reported 10 high vulnerabilities before tests/build/deployment could continue.
 No GitHub push or public deployment was attempted.
+
+### Release Closure After Remediation
+
+The earlier blocker was resolved by the approved dependency-runtime remediation
+workflow. The final publication commit is
+`c12af9a056e1ed58a5364e00392920fde63e785d`.
+
+- 350 classified public files were committed and pushed to
+  `mine/notes-workspace-ux-upgrade` without force.
+- 14 authenticated/private evidence files remain local and ignored.
+- Cloudflare deployment succeeded with Worker Version ID
+  `23e67efe-d042-435b-a6b7-4236839a8477`.
+- Public Build ID `RHki-tQ1KONo-bfoHR6ng` matches the isolated deploy artifact.
+- Home, blog, notes, mistakes, and manage returned 200.
+- API health returned 200 `{"status":"ok"}`.
+- Anonymous admin-profile access returned the expected 401.

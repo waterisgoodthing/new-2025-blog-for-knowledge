@@ -62,7 +62,7 @@
 
 ## 2026-07-29 Release Run
 
-> Status: `GCP-R2-03 passed; executing GCP-R2-04`
+> Status: `completed; awaiting final clean-tree confirmation`
 >
 > Approval required: the user must explicitly approve `GCP-R2-01` through
 > `GCP-R2-06`. The previous run's approval does not authorize this run.
@@ -103,22 +103,22 @@
 - [x] Inspect `git diff --cached --name-status` and `--stat`.
 - [x] Re-run the sensitive-file scan against the staged set.
 - [x] Commit the approved documentation/release evidence.
-- [ ] Push `notes-workspace-ux-upgrade` to `mine` without force.
-- [ ] Confirm local HEAD equals the upstream branch after push.
+- [x] Push `notes-workspace-ux-upgrade` to `mine` without force.
+- [x] Confirm local HEAD equals the upstream branch after push.
 
 ### GCP-R2-05 — Isolated Public Deployment
 
-- [ ] Create a detached isolated worktree from the exact pushed commit.
-- [ ] Install dependencies using the repository lockfile.
-- [ ] Prepare only required generated/ignored build inputs.
-- [ ] Run the repository's fail-closed predeploy gate.
-- [ ] Run the existing `deploy:full` command only if every prerequisite passes.
+- [x] Create a detached isolated worktree from the exact pushed commit.
+- [x] Install dependencies using the repository lockfile.
+- [x] Prepare only required generated/ignored build inputs.
+- [x] Run the repository's fail-closed predeploy gate.
+- [x] Run the existing `deploy:full` command only if every prerequisite passes.
 
 ### GCP-R2-06 — Public Verification And Closure
 
-- [ ] Verify the public home, blog, notes, mistakes, and manage boundaries.
-- [ ] Verify `https://public-api.limengyang.me/api/health`.
-- [ ] Record the deployed commit and Worker/version evidence.
-- [ ] Update `validation.md`, `diff-report.md`, and this task status.
+- [x] Verify the public home, blog, notes, mistakes, and manage boundaries.
+- [x] Verify `https://public-api.limengyang.me/api/health`.
+- [x] Record the deployed commit and Worker/version evidence.
+- [x] Update `validation.md`, `diff-report.md`, and this task status.
 - [ ] Confirm whether `git status --short` is empty; if not, list every retained
       item and why it was not published or removed.
