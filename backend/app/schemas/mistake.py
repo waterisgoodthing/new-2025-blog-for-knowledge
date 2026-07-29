@@ -10,6 +10,7 @@ Difficulty = Literal["easy", "medium", "hard"]
 class MistakeDraftCreate(BaseModel):
     question_id: uuid.UUID | None = None
     question_draft_id: uuid.UUID | None = None
+    attempt_id: uuid.UUID | None = None
     my_answer: str | None = None
     reason_category: ReasonCategory = "unknown"
     mistake_reason: str | None = None
@@ -25,6 +26,8 @@ class MistakeDraftCreate(BaseModel):
 
     @model_validator(mode="after")
     def exactly_one_source(self):
+        if self.attempt_id is not None and self.question_id is None:
+            raise ValueError("attempt source requires question_id")
         if (self.question_id is None) == (self.question_draft_id is None):
             raise ValueError("exactly one question source is required")
         return self
@@ -58,6 +61,7 @@ class MistakeDraftOut(BaseModel):
     draft_item_id: uuid.UUID
     question_id: uuid.UUID | None
     question_draft_id: uuid.UUID | None
+    attempt_id: uuid.UUID | None
     subject_id: int
     title: str | None
     question_text: str

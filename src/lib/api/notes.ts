@@ -12,6 +12,7 @@ export interface NoteListItem {
   tags: { id: number; name: string }[];
   folder_id?: string | null;
   sort_order: number;
+  revision: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -34,6 +35,15 @@ export interface NoteDetail extends NoteListItem {
   analysis?: string;
   knowledge_points?: string;
   ai_metadata?: Record<string, unknown> | null;
+}
+
+export interface NoteVersion {
+  id: string
+  note_id: string
+  version: number
+  title: string
+  content: string
+  created_at: string
 }
 
 export interface NoteListResponse {
@@ -68,6 +78,7 @@ export interface NoteCreateInput {
 }
 
 export interface NoteUpdateInput {
+  expected_revision?: number;
   title?: string;
   content?: string;
   type?: "note" | "blog" | "mistake";
@@ -129,6 +140,14 @@ export async function listNotes(params: NoteListParams = {}): Promise<NoteListRe
 
 export async function getNote(slug: string): Promise<NoteDetail> {
   return apiFetch<NoteDetail>(`/api/notes/${slug}`);
+}
+
+export async function getNoteVersions(slug: string): Promise<NoteVersion[]> {
+  return apiFetch<NoteVersion[]>(`/api/notes/${slug}/versions`)
+}
+
+export async function getNoteBacklinks(slug: string): Promise<Array<{ source_note_id: string; source_slug: string | null; source_title: string | null; target_slug: string; raw_link: string }>> {
+  return apiFetch(`/api/notes/${slug}/backlinks`)
 }
 
 export async function createNote(data: NoteCreateInput): Promise<NoteDetail> {

@@ -15,6 +15,9 @@ from app.models.attachment import Attachment, AttachmentLink
 from app.models.ai_call_log import AiCallLog
 from app.models.ai_run import AiRun
 from app.models.capture import CaptureItem
+from app.models.attempt import Attempt
+from app.models.admin_profile import AdminProfile
+from app.models.knowledge_markdown import NoteLink, NoteVersion
 
 __all__ = [
     "Note",
@@ -52,5 +55,9 @@ __all__ = [
     "AiCallLog",
     "AiRun",
     "CaptureItem",
+    "Attempt",
+    "AdminProfile",
+    "NoteLink",
+    "NoteVersion",
     "note_tags",
 ]

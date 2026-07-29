@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 StorageProvider = Literal["local"]
 AttachmentVisibility = Literal["private"]
-AttachmentStatus = Literal["active", "missing", "deleted"]
+AttachmentStatus = Literal["active", "missing", "trashed", "deleted"]
 AttachmentTargetType = Literal["question_draft", "question", "mistake"]
 AttachmentPurpose = Literal["source", "question", "answer", "inline", "ai_input", "ai_output"]
 AttachmentCreatePurpose = Literal["source", "question", "answer", "inline"]
@@ -68,6 +68,7 @@ class AttachmentUploadCreate(BaseModel):
 class AttachmentOut(BaseModel):
     id: uuid.UUID
     original_name: str
+    display_name: str
     storage_provider: StorageProvider
     mime_type: str
     size_bytes: int
@@ -77,6 +78,8 @@ class AttachmentOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None
+    trashed_at: datetime | None
+    folder_id: uuid.UUID | None
 
     model_config = {"from_attributes": True}
 

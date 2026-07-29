@@ -21,6 +21,9 @@ class MistakeDraft(Base):
     question_draft_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("question_drafts.id", ondelete="RESTRICT"), nullable=True
     )
+    attempt_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("attempts.id", ondelete="RESTRICT"), unique=True, nullable=True
+    )
     subject_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("subjects.id", ondelete="RESTRICT"), nullable=False
     )
@@ -39,8 +42,9 @@ class MistakeDraft(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "(question_id IS NOT NULL AND question_draft_id IS NULL) OR "
-            "(question_id IS NULL AND question_draft_id IS NOT NULL)",
+            "((question_id IS NOT NULL AND question_draft_id IS NULL AND attempt_id IS NULL) OR "
+            "(question_id IS NULL AND question_draft_id IS NOT NULL AND attempt_id IS NULL) OR "
+            "(question_id IS NOT NULL AND question_draft_id IS NULL AND attempt_id IS NOT NULL))",
             name="ck_mistake_drafts_question_source",
         ),
         CheckConstraint(

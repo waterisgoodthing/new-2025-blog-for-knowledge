@@ -38,8 +38,14 @@ class DashboardReviewActivity(BaseModel):
 
 class DashboardSystemStatus(BaseModel):
     service: Literal["ok"]
-    database: Literal["ok"]
+    database: Literal["ok", "unavailable"]
     storage: Literal["ok", "unknown"]
+
+
+class DashboardSections(BaseModel):
+    learning: Literal["ready", "unavailable", "empty"]
+    activity: Literal["ready", "unavailable", "empty"]
+    storage: Literal["ready", "unknown", "empty"]
 
 
 class DashboardSummary(BaseModel):
@@ -48,4 +54,5 @@ class DashboardSummary(BaseModel):
     recent_questions: list[DashboardQuestionActivity]
     recent_mistakes: list[DashboardMistakeActivity]
     recent_reviews: list[DashboardReviewActivity]
+    sections: DashboardSections
     system: DashboardSystemStatus

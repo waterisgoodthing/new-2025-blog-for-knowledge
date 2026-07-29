@@ -112,9 +112,9 @@ class MistakeDraftSuggestionV1(BaseModel):
     schema 校验失败视为本次 AI 阶段失败，不写入 mistake_drafts。
     """
 
-    question_text: str
-    analysis_text: str
-    error_summary: str
+    question_text: str = Field(min_length=1)
+    analysis_text: str = Field(min_length=1)
+    error_summary: str = Field(min_length=1)
     subject_suggestion: SubjectSuggestion | None = None
     knowledge_point_suggestions: list[KnowledgePointSuggestion] = []
     warnings: list[str] = []

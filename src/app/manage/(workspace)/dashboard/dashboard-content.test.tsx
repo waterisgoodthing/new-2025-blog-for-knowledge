@@ -12,6 +12,10 @@ vi.mock('@/lib/api/dashboard', () => ({
   getDashboardSummary: vi.fn(),
 }))
 
+vi.mock('@/lib/api/admin-profile', () => ({
+  getAdminProfile: vi.fn(),
+}))
+
 vi.mock('./dashboard-overview', () => ({
   DashboardOverview: () => <div>dashboard ready</div>,
 }))

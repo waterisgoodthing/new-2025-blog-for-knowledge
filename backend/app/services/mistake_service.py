@@ -53,7 +53,7 @@ async def _validate_points(session, subject_id, ids):
     if len(points)!=len(ids): raise MistakeNotFound("Knowledge point not found")
     if any(p.subject_id!=subject_id for p in points): raise MistakeValidationError("Knowledge point subject mismatch")
 
-async def create_mistake_draft(session: AsyncSession, payload: MistakeDraftCreate, created_by=None):
+async def create_mistake_draft(session: AsyncSession, payload: MistakeDraftCreate, created_by=None, attempt_id=None):
     question=None; qdraft=None
     if payload.question_id: question=await session.get(Question,payload.question_id)
     else: qdraft=await session.get(QuestionDraft,payload.question_draft_id)
@@ -63,12 +63,15 @@ async def create_mistake_draft(session: AsyncSession, payload: MistakeDraftCreat
     item=DraftItem(draft_type="mistake",source_type="question" if question else "question_draft",
                    source_id=str(source.id),status="pending",created_by=created_by)
     session.add(item); await session.flush()
+    resolved_difficulty = payload.difficulty if payload.difficulty is not None else source.difficulty
+    if resolved_difficulty == "unspecified":
+        resolved_difficulty = None
     draft=MistakeDraft(draft_item_id=item.id,question_id=question.id if question else None,
         question_draft_id=qdraft.id if qdraft else None,subject_id=source.subject_id,title=source.title,
         question_text=source.question_text,my_answer=payload.my_answer,
         correct_answer_snapshot=source.correct_answer,explanation_snapshot=source.explanation,
         reason_category=payload.reason_category,mistake_reason=payload.mistake_reason,
-        difficulty=payload.difficulty or source.difficulty)
+        difficulty=resolved_difficulty, attempt_id=attempt_id)
     session.add(draft); await session.flush()
     for kp in payload.knowledge_point_ids:
         session.add(KnowledgePointLink(knowledge_point_id=kp,target_type="mistake_draft",target_id=str(draft.id)))

@@ -11,10 +11,10 @@ from sqlalchemy import text
 from app.config import get_settings
 from app.database import engine, async_session
 from app.middleware.request_observability import request_observability
-from app.routers import admin_mistakes, ai, ai_polish, ai_runs, attachments, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, folders, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, subjects, suggestions, tags
+from app.routers import admin_mistakes, admin_profile, ai, ai_polish, ai_runs, attachments, attempts, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, file_workspace, folders, governance, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, search, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
-EXPECTED_ALEMBIC_REVISION = "020"
+EXPECTED_ALEMBIC_REVISION = "024"
 
 
 def _is_enabled(value: str) -> bool:
@@ -94,11 +94,16 @@ app.include_router(subjects.router)
 app.include_router(knowledge_points.router)
 app.include_router(drafts.router)
 app.include_router(questions.router)
+app.include_router(attempts.router)
+app.include_router(admin_profile.router)
 app.include_router(mistake_drafts.router)
 app.include_router(admin_mistakes.router)
 app.include_router(review_items.router)
 app.include_router(attachments.router)
 app.include_router(attachments.links_router)
+app.include_router(file_workspace.router)
+app.include_router(search.router)
+app.include_router(governance.router)
 app.include_router(captures.router)
 app.include_router(categories.router)
 

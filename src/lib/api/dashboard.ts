@@ -29,9 +29,14 @@ export interface DashboardSummary {
     reviewed_at: string
     question_text: string
   }>
+  sections: {
+    learning: 'ready' | 'unavailable' | 'empty'
+    activity: 'ready' | 'unavailable' | 'empty'
+    storage: 'ready' | 'unknown' | 'empty'
+  }
   system: {
     service: 'ok'
-    database: 'ok'
+    database: 'ok' | 'unavailable'
     storage: 'ok' | 'unknown'
   }
 }

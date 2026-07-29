@@ -49,6 +49,7 @@ class NoteCreate(BaseModel):
 
 
 class NoteUpdate(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     title: str | None = None
     content: str | None = None
     type: NoteType | None = None
@@ -93,6 +94,7 @@ class NoteOut(BaseModel):
     tags: list[TagOut] = []
     folder_id: uuid.UUID | None = None
     sort_order: int = 0
+    revision: int = 1
 
     summary: str | None = None
     cover: str | None = None
@@ -128,6 +130,7 @@ class NoteListItem(BaseModel):
     tags: list[TagOut] = []
     folder_id: uuid.UUID | None = None
     sort_order: int = 0
+    revision: int = 1
 
     summary: str | None = None
     cover: str | None = None

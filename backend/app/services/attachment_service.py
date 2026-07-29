@@ -100,6 +100,7 @@ async def _create_attachment_from_temp(
 
     attachment = Attachment(
         original_name=clean_name,
+        display_name=clean_name,
         storage_provider="local",
         storage_key=storage_key,
         mime_type=clean_mime,

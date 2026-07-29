@@ -24,16 +24,22 @@ vi.mock('@/lib/api/ai', () => ({
   getProviderHealthSnapshot: vi.fn(),
 }))
 
+vi.mock('@/lib/api/ai-runs', () => ({
+  getAiRuns: vi.fn().mockResolvedValue({ items: [], total: 0, limit: 20, offset: 0 }),
+  getAiRun: vi.fn(),
+  retryAiRun: vi.fn(),
+  decideAiRun: vi.fn(),
+}))
+
 const api = await import('@/lib/api/ai')
 const { default: ManageAiPage } = await import('./page')
 
-describe('ManageAiPage — deferred product surface', () => {
-  it('states the deferred boundary without calling AI APIs', () => {
+describe('ManageAiPage — governance surface', () => {
+  it('states the governed boundary without calling legacy AI APIs', () => {
     render(<ManageAiPage />)
 
-    expect(screen.getByRole('heading', { name: 'AI 助手' })).toBeInTheDocument()
-    expect(screen.getByText('后续能力')).toBeInTheDocument()
-    expect(screen.getByText(/不调用 AI/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'AI 运行记录' })).toBeInTheDocument()
+    expect(screen.getByText(/人工确认不会直接写入/)).toBeInTheDocument()
 
     expect(api.getCallLogs).not.toHaveBeenCalled()
     expect(api.getCallLogStats).not.toHaveBeenCalled()

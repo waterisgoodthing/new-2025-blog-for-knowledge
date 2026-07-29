@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import { getNote, deleteNote, type NoteDetail } from '@/lib/api/notes'
+import { getNote, getNoteBacklinks, deleteNote, type NoteDetail } from '@/lib/api/notes'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -107,6 +107,11 @@ function NoteDetailContentInner() {
 		`/api/notes/${id}`,
 		() => getNote(id),
 		{ revalidateOnFocus: false }
+	)
+	const { data: backlinks } = useSWR(
+		isAdmin && note ? `/api/notes/${id}/backlinks` : null,
+		() => getNoteBacklinks(id),
+		{ revalidateOnFocus: false },
 	)
 
 	const { content, loading: rendering } = useMarkdownRender(note?.content || '')
@@ -525,6 +530,13 @@ function NoteDetailContentInner() {
 							</span>
 						))}
 					</div>
+				)}
+
+				{isAdmin && (
+					<section className='mb-6 rounded-xl border border-white/40 bg-white/60 p-4'>
+						<h2 className='mb-2 text-sm font-semibold text-gray-800'>反向链接</h2>
+						{backlinks?.length ? <ul className='space-y-1 text-sm'>{backlinks.map(link => <li key={link.source_note_id}><Link className='text-[var(--color-brand)] hover:underline' href={link.source_slug ? `/notes/${link.source_slug}` : '#'}>{link.source_title || link.source_slug || '未命名笔记'}</Link></li>)}</ul> : <p className='text-sm text-gray-500'>暂无引用此笔记的内容。</p>}
+					</section>
 				)}
 
 				{actionBar}

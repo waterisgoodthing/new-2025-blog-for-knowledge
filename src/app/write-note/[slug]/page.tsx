@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import { motion } from 'motion/react'
-import { getNote, updateNote, uploadImage, type NoteDetail } from '@/lib/api/notes'
+import { getNote, getNoteVersions, updateNote, uploadImage, type NoteDetail, type NoteVersion } from '@/lib/api/notes'
 import { listCategories, type Category } from '@/lib/api/meta'
 import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
@@ -47,6 +47,7 @@ function EditNoteContent() {
 	const [subjects, setSubjects] = useState<Subject[]>([])
 	const [uploadedImages, setUploadedImages] = useState<string[]>([])
 	const [uploading, setUploading] = useState(false)
+	const [versions, setVersions] = useState<NoteVersion[]>([])
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files
@@ -110,6 +111,7 @@ function EditNoteContent() {
 	useEffect(() => {
 		listCategories().then(setCategories).catch(() => {})
 		listSubjects().then(setSubjects).catch(() => {})
+		getNoteVersions(slug).then(setVersions).catch(() => setVersions([]))
 	}, [])
 
 	useEffect(() => {
@@ -190,6 +192,7 @@ function EditNoteContent() {
 	}
 
 	const performSave = async (overrideTags?: string[]) => {
+		if (!note) return
 		const tags = overrideTags ?? form.tags
 		setSaving(true)
 		try {
@@ -204,6 +207,7 @@ function EditNoteContent() {
 				: form.content
 
 			const updated = await updateNote(slug, {
+				expected_revision: note.revision,
 				title: form.title,
 				content,
 				tags,
@@ -242,6 +246,11 @@ function EditNoteContent() {
 				<div className='rounded-lg bg-white/40 px-3 py-1.5 text-sm text-gray-500'>
 					类型: {{ note: '笔记', blog: '博客', mistake: '错题' }[note.type]} (不可更改)
 				</div>
+
+				<details className='rounded-xl border border-white/40 bg-white/40 p-3'>
+					<summary className='cursor-pointer text-sm font-medium'>版本历史（{versions.length}）</summary>
+					{versions.length === 0 ? <p className='mt-3 text-sm text-gray-500'>暂无版本记录。</p> : <ol className='mt-3 space-y-2'>{versions.map(version => <li key={version.id} className='text-sm text-gray-600'>v{version.version} · {new Date(version.created_at).toLocaleString()} · {version.title}</li>)}</ol>}
+				</details>
 
 				<input
 					value={form.title}

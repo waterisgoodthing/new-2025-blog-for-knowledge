@@ -3,9 +3,12 @@ import uuid
 from datetime import timedelta
 from tempfile import TemporaryDirectory
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 from fastapi.routing import APIRoute
 from sqlalchemy import func, select
+from sqlalchemy.exc import SQLAlchemyError
 
 import main
 from app.database import async_session, engine
@@ -19,7 +22,7 @@ from app.schemas.mistake import MistakeDraftCreate
 from app.schemas.question import QuestionDraftCreate
 from app.schemas.taxonomy import KnowledgePointCreate, SubjectCreate
 from app.services.attachment_service import create_attachment_from_bytes
-from app.services.dashboard_service import get_dashboard_summary
+from app.services.dashboard_service import get_dashboard_summary, map_database_health, map_storage_health
 from app.services.draft_service import convert_question_draft, create_question_draft
 from app.services.mistake_service import create_mistake_draft, convert_mistake_draft
 from app.services.review_item_service import submit_review
@@ -42,6 +45,13 @@ def test_dashboard_summary_route_is_registered_and_admin_only():
     assert get_current_admin in {
         dependency.call for dependency in route.dependant.dependencies
     }
+
+
+def test_dashboard_empty_sections_map_to_healthy_system_status():
+    assert map_database_health("empty", "empty") == "ok"
+    assert map_storage_health("empty") == "ok"
+    assert map_database_health("unavailable", "ready") == "unavailable"
+    assert map_storage_health("unknown") == "unknown"
 
 
 class DashboardSummaryServiceTest(unittest.IsolatedAsyncioTestCase):
@@ -141,3 +151,75 @@ class DashboardSummaryServiceTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(summary.system.service, "ok")
         self.assertEqual(summary.system.database, "ok")
         self.assertEqual(summary.system.storage, "ok")
+        self.assertEqual(summary.sections.learning, "ready")
+        self.assertEqual(summary.sections.activity, "ready")
+        self.assertEqual(summary.sections.storage, "ready")
+
+
+
+class DashboardFailureMatrixTest(unittest.IsolatedAsyncioTestCase):
+    @staticmethod
+    def _counts_result():
+        return SimpleNamespace(one=lambda: SimpleNamespace(_mapping={
+            "questions": 0,
+            "mistakes": 0,
+            "knowledge_points": 0,
+            "due_reviews": 0,
+        }))
+
+    @staticmethod
+    def _empty_result():
+        return SimpleNamespace(
+            scalars=lambda: SimpleNamespace(all=lambda: []),
+            all=lambda: [],
+        )
+
+    async def test_learning_failure_keeps_activity_and_storage_independent(self):
+        empty_result = self._empty_result()
+        session = SimpleNamespace(
+            execute=AsyncMock(side_effect=[SQLAlchemyError("learning offline"), empty_result, empty_result, empty_result]),
+            scalar=AsyncMock(return_value=0),
+            rollback=AsyncMock(),
+        )
+
+        summary = await get_dashboard_summary(session, upload_root=Path("/tmp"))
+
+        self.assertEqual(summary.sections.learning, "unavailable")
+        self.assertEqual(summary.sections.activity, "empty")
+        self.assertEqual(summary.sections.storage, "empty")
+        self.assertEqual(summary.system.database, "unavailable")
+        self.assertEqual(summary.system.storage, "ok")
+        self.assertEqual(session.rollback.await_count, 1)
+
+    async def test_activity_failure_keeps_learning_and_storage_independent(self):
+        session = SimpleNamespace(
+            execute=AsyncMock(side_effect=[self._counts_result(), SQLAlchemyError("activity offline")]),
+            scalar=AsyncMock(return_value=0),
+            rollback=AsyncMock(),
+        )
+
+        summary = await get_dashboard_summary(session, upload_root=Path("/tmp"))
+
+        self.assertEqual(summary.sections.learning, "empty")
+        self.assertEqual(summary.sections.activity, "unavailable")
+        self.assertEqual(summary.sections.storage, "empty")
+        self.assertEqual(summary.system.database, "unavailable")
+        self.assertEqual(summary.system.storage, "ok")
+        self.assertEqual(session.rollback.await_count, 1)
+
+    async def test_storage_failure_keeps_learning_and_activity_independent(self):
+        empty_result = self._empty_result()
+        session = SimpleNamespace(
+            execute=AsyncMock(side_effect=[self._counts_result(), empty_result, empty_result, empty_result]),
+            scalar=AsyncMock(side_effect=SQLAlchemyError("storage offline")),
+            rollback=AsyncMock(),
+        )
+
+        summary = await get_dashboard_summary(session, upload_root=Path("/tmp"))
+
+        self.assertEqual(summary.sections.learning, "empty")
+        self.assertEqual(summary.sections.activity, "empty")
+        self.assertEqual(summary.sections.storage, "unknown")
+        self.assertEqual(summary.system.database, "ok")
+        self.assertEqual(summary.system.storage, "unknown")
+        self.assertEqual(session.rollback.await_count, 1)

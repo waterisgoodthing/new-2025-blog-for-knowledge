@@ -64,6 +64,7 @@ class Note(Base):
         UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True
     )
     sort_order: Mapped[int | None] = mapped_column(Integer, default=0, nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1", nullable=False)
 
     search_vector = mapped_column(TSVECTOR, nullable=True)
 

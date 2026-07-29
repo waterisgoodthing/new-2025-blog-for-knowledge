@@ -6,6 +6,7 @@ import { Archive, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { archiveQuestion, getQuestion, updateLegacyQuestion, type Difficulty, type Question, type QuestionType } from '@/lib/api/questions'
+import { submitAttempt } from '@/lib/api/attempts'
 import { listSubjects, type Subject } from '@/lib/api/taxonomy'
 import { attachmentVisibilityLabel, questionStatusLabel } from '@/lib/manage-display'
 import { KnowledgePointMultiSelect } from '../../../components/knowledge-point-select'
@@ -18,6 +19,8 @@ export function QuestionEditor({ questionId }: { questionId: string }) {
   const [optionsText, setOptionsText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [attemptAnswer, setAttemptAnswer] = useState('')
+  const [attemptMessage, setAttemptMessage] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([getQuestion(questionId), listSubjects({ status: 'active' })])
@@ -119,6 +122,36 @@ export function QuestionEditor({ questionId }: { questionId: string }) {
         </label>
         <KnowledgePointMultiSelect disabled={!active} subjectId={question.subject_id} values={question.knowledge_point_ids} onChange={(values) => setQuestion({ ...question, knowledge_point_ids: values })} />
       </ManageFormPanel>
+      {active ? (
+        <section className='rounded-lg border border-slate-200/70 bg-white/60 p-5'>
+          <h2 className='text-lg font-semibold text-slate-900'>作答验证</h2>
+          <p className='mt-1 text-sm text-slate-500'>提交后会记录一次私有 Attempt；错误作答只生成待确认错题草稿。</p>
+          <label className='mt-4 block text-sm text-slate-600'>你的答案
+            <textarea value={attemptAnswer} onChange={(event) => setAttemptAnswer(event.target.value)} rows={3} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+          </label>
+          {attemptMessage ? <p role='status' className='mt-3 text-sm text-slate-600'>{attemptMessage}</p> : null}
+          <button
+            type='button'
+            disabled={busy || !attemptAnswer.trim()}
+            onClick={async () => {
+              setBusy(true)
+              setAttemptMessage(null)
+              try {
+                const attempt = await submitAttempt(question.id, attemptAnswer)
+                setAttemptMessage(attempt.is_correct ? '回答正确，已记录本次作答。' : '回答错误，已创建待确认错题草稿。')
+                if (!attempt.is_correct && attempt.mistake_draft_item_id) router.push(`/manage/mistakes/${attempt.mistake_draft_item_id}?kind=draft`)
+              } catch (reason) {
+                setAttemptMessage(reason instanceof Error ? reason.message : '提交作答失败')
+              } finally {
+                setBusy(false)
+              }
+            }}
+            className='mt-4 rounded-lg bg-[var(--color-brand)] px-5 py-2 text-sm text-white disabled:opacity-45'
+          >
+            {busy ? '提交中…' : '提交作答'}
+          </button>
+        </section>
+      ) : null}
     </div>
   )
 }

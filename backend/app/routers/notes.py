@@ -30,6 +30,7 @@ from app.schemas.note import (
     SubjectOut,
     TagOut,
 )
+from app.services.knowledge_markdown_service import create_initial_version, create_next_version, list_backlinks, list_note_versions, sync_wikilinks
 
 router = APIRouter(prefix="/api/notes", tags=["notes"])
 
@@ -285,6 +286,8 @@ async def create_note(
 
     db.add(note)
     await db.flush()
+    await create_initial_version(db, note, created_by=_admin.id)
+    await sync_wikilinks(db, note)
     await db.refresh(note)
 
     from app.services.audit_service import audit_action
@@ -316,11 +319,15 @@ async def update_note(
         raise HTTPException(status_code=404, detail="Note not found")
 
     update_data = req.model_dump(exclude_unset=True)
+    expected_revision = update_data.pop("expected_revision", None)
+    if expected_revision is not None and note.revision != expected_revision:
+        raise HTTPException(status_code=409, detail="Note revision conflict")
     tags_data = update_data.pop("tags", None)
 
     if tags_data is not None:
         note.tags = await _get_or_create_tags(db, tags_data)
 
+    await create_next_version(db, note, created_by=_admin.id)
     for key, value in update_data.items():
         if key == "difficulty" and value is not None:
             value = value.value if hasattr(value, "value") else value
@@ -329,6 +336,7 @@ async def update_note(
         setattr(note, key, value)
 
     note.updated_at = utc_now_naive()
+    await sync_wikilinks(db, note)
     await db.flush()
     await db.refresh(note)
 
@@ -344,6 +352,45 @@ async def update_note(
     )
 
     return note
+
+
+@router.get("/{slug}/versions")
+async def note_versions(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(get_current_admin),
+):
+    note = await db.scalar(select(Note).where(Note.slug == slug))
+    if note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return await list_note_versions(db, note.id)
+
+
+@router.get("/{slug}/backlinks")
+async def note_backlinks(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(get_current_admin),
+):
+    note = await db.scalar(select(Note).where(Note.slug == slug))
+    if note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    links = await list_backlinks(db, note.id)
+    source_ids = [item.source_note_id for item in links]
+    sources = {
+        item.id: item
+        for item in (await db.scalars(select(Note).where(Note.id.in_(source_ids)))).all()
+    }
+    return [
+        {
+            "source_note_id": item.source_note_id,
+            "source_slug": sources[item.source_note_id].slug if item.source_note_id in sources else None,
+            "source_title": sources[item.source_note_id].title if item.source_note_id in sources else None,
+            "target_slug": item.target_slug,
+            "raw_link": item.raw_link,
+        }
+        for item in links
+    ]
 
 
 @router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)

@@ -1,12 +1,6 @@
-import { ManagePlaceholderPage } from '../../components/manage-placeholder-page'
+import { AiRunsPanel } from './components/ai-runs-panel'
+import { ManagePageHeader } from '../../components/manage-page-header'
 
 export default function ManageAiPage() {
-  return (
-    <ManagePlaceholderPage
-      batch='工具 · 后续能力'
-      title='AI 助手'
-      description='当前版本未启用 AI 产品功能，人工题目、错题与复习流程不受影响。'
-      futureScope='现有 Gateway 与运行记录基础设施不会在此页面自动启用；本阶段不调用 AI、不生成内容，也不改变正式学习数据。'
-    />
-  )
+  return <div className='space-y-8'><ManagePageHeader eyebrow='AI 治理' title='AI 运行记录' description='仅审查真实运行记录；人工确认不会直接写入正式学习对象。' /><AiRunsPanel /></div>
 }

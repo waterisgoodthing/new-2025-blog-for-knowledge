@@ -24,6 +24,7 @@ class Attachment(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     original_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     storage_provider: Mapped[str] = mapped_column(
         String(30), default="local", server_default="local", nullable=False
     )
@@ -37,6 +38,9 @@ class Attachment(Base):
     status: Mapped[str] = mapped_column(
         String(20), default="active", server_default="active", nullable=False
     )
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True
+    )
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
@@ -47,15 +51,17 @@ class Attachment(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    trashed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         CheckConstraint("storage_provider = 'local'", name="ck_attachments_storage_provider"),
         CheckConstraint("visibility = 'private'", name="ck_attachments_visibility"),
-        CheckConstraint("status IN ('active','missing','deleted')", name="ck_attachments_status"),
+        CheckConstraint("status IN ('active','missing','trashed','deleted')", name="ck_attachments_status"),
         CheckConstraint("size_bytes >= 0", name="ck_attachments_size"),
         CheckConstraint("char_length(checksum_sha256) = 64", name="ck_attachments_checksum"),
         Index("idx_attachments_status_created", "status", "created_at"),
         Index("idx_attachments_checksum", "checksum_sha256"),
+        Index("idx_attachments_folder_display", "folder_id", "display_name"),
     )
 
 

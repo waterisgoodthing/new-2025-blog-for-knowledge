@@ -9,15 +9,15 @@ import { manageCapabilityStates } from './capability-state'
 import ManageDraftsPage from './drafts/page'
 
 describe('management capability state', () => {
-  it('keeps only proven daily-workflow surfaces active', () => {
+  it('marks every proven daily-workflow surface active', () => {
     expect(manageCapabilityStates).toEqual({
       drafts: 'active',
-      capture: 'deferred',
-      ai: 'deferred',
-      aiRuns: 'deferred',
+      capture: 'active',
+      ai: 'active',
+      aiRuns: 'active',
       search: 'deferred',
-      analytics: 'deferred',
-      jobs: 'deferred',
+      analytics: 'active',
+      jobs: 'active',
     })
   })
 

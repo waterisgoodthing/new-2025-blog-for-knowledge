@@ -8,7 +8,9 @@ from app.database import Base
 
 from .ai_call_log import AiCallLog
 from .ai_run import AiRun
+from .admin_profile import AdminProfile
 from .attachment import Attachment, AttachmentLink
+from .attempt import Attempt
 from .audit import AuditLog
 from .capture import CaptureItem
 from .content import ManagedContentEntry
@@ -23,6 +25,7 @@ from .music_daily import (
     NetEaseApiConfig,
 )
 from .note import Category, Note, Subject, Tag, User
+from .knowledge_markdown import NoteLink, NoteVersion
 from .question import DraftItem, Question, QuestionDraft, QuestionSource
 from .recommendation import DailyRecommendation
 from .review_item import ReviewItem, ReviewRecord
@@ -63,6 +66,10 @@ MODEL_REGISTRY = (
     CaptureItem,
     AiCallLog,
     AiRun,
+    Attempt,
+    AdminProfile,
+    NoteVersion,
+    NoteLink,
 )
 
 EXCLUDED_SCHEMA_MODELS = (
