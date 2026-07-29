@@ -1,0 +1,1395 @@
+{
+  "generated_at": "2026-07-29",
+  "branch": "notes-workspace-ux-upgrade",
+  "upstream": "mine/notes-workspace-ux-upgrade",
+  "ahead": 3,
+  "behind": 0,
+  "modified": [
+    {
+      "path": "docs/workflows/git-cleanup-public-push/README.md",
+      "bytes": 2338
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/design.md",
+      "bytes": 3657
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/requirements.md",
+      "bytes": 3475
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/tasks.md",
+      "bytes": 5543
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/README.md",
+      "bytes": 4846
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/audit.md",
+      "bytes": 52325
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/design.md",
+      "bytes": 22588
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/requirements.md",
+      "bytes": 20329
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/risks.md",
+      "bytes": 13310
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/tasks.md",
+      "bytes": 27508
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/validation.md",
+      "bytes": 55937
+    },
+    {
+      "path": "docs/workflows/temp-admin-bootstrap/validation.md",
+      "bytes": 3188
+    }
+  ],
+  "untracked": [
+    {
+      "path": "docs/project-assessment/mvp-gap-analysis.md",
+      "bytes": 18520
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/auth-mobile-observations.json",
+      "bytes": 14247
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/auth-observations.json",
+      "bytes": 15087
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-1440x900-authenticated.png",
+      "bytes": 466905
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-1440x900-login.png",
+      "bytes": 398109
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-390x844-authenticated.png",
+      "bytes": 170687
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-ai-runs-1440x900-authenticated.png",
+      "bytes": 226820
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-dashboard-1440x900-authenticated.png",
+      "bytes": 317068
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-dashboard-390x844-authenticated.png",
+      "bytes": 145870
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-mistakes-1440x900-authenticated.png",
+      "bytes": 245458
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-mistakes-390x844-authenticated.png",
+      "bytes": 112113
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-questions-1440x900-authenticated.png",
+      "bytes": 219171
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-questions-390x844-authenticated.png",
+      "bytes": 103024
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-review-1440x900-authenticated.png",
+      "bytes": 301034
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-review-390x844-authenticated.png",
+      "bytes": 151997
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-guestbook.json",
+      "bytes": 8591
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-music.json",
+      "bytes": 7829
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-part.json",
+      "bytes": 7863
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-svgs.json",
+      "bytes": 7908
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-laptop.json",
+      "bytes": 7929
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-home.json",
+      "bytes": 7845
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-music.json",
+      "bytes": 7811
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-part.json",
+      "bytes": 8573
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-svgs.json",
+      "bytes": 7893
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile.json",
+      "bytes": 32116
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations.json",
+      "bytes": 72226
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/blog-1440x900-desktop.png",
+      "bytes": 297635
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/blog-390x844-mobile.png",
+      "bytes": 99816
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/guestbook-1440x900-desktop.png",
+      "bytes": 354776
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/guestbook-390x844-mobile.png",
+      "bytes": 122797
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/home-1440x900-desktop.png",
+      "bytes": 359965
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/home-390x844-mobile.png",
+      "bytes": 124438
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/mistakes-1440x900-desktop.png",
+      "bytes": 351367
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/mistakes-390x844-mobile.png",
+      "bytes": 129270
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/notes-1440x900-desktop.png",
+      "bytes": 418569
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/notes-390x844-mobile.png",
+      "bytes": 205528
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/observations.json",
+      "bytes": 7600
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/about-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/about-1440x900-full.png",
+      "bytes": 101337
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/blog-1440x900-first.png",
+      "bytes": 16315
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/blog-1440x900-full.png",
+      "bytes": 116906
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/bloggers-1440x900-first.png",
+      "bytes": 16315
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/bloggers-1440x900-full.png",
+      "bytes": 116906
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/clock-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/clock-1440x900-full.png",
+      "bytes": 120408
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/discover-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/discover-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/guestbook-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/guestbook-1440x900-full.png",
+      "bytes": 126360
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/home-1440x900-first.png",
+      "bytes": 5851
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/home-1440x900-full.png",
+      "bytes": 5851
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/image-toolbox-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/image-toolbox-1440x900-full.png",
+      "bytes": 121912
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/live2d-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/live2d-1440x900-full.png",
+      "bytes": 121377
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/manage-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/manage-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-1440x900-full.png",
+      "bytes": 127424
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-review-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-review-1440x900-full.png",
+      "bytes": 120382
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/music-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/music-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/notes-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/notes-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/pictures-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/pictures-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/projects-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/projects-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/share-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/share-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/snippets-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/snippets-1440x900-full.png",
+      "bytes": 120446
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/svgs-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/svgs-1440x900-full.png",
+      "bytes": 156857
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-1440x900-full.png",
+      "bytes": 120382
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-mistake-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-mistake-1440x900-full.png",
+      "bytes": 120382
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-note-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-note-1440x900-full.png",
+      "bytes": 120382
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/wuthering-waves-1440x900-first.png",
+      "bytes": 18218
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/wuthering-waves-1440x900-full.png",
+      "bytes": 165254
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/blog-1280x800-first.png",
+      "bytes": 14143
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/blog-1280x800-full.png",
+      "bytes": 101823
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/home-1280x800-first.png",
+      "bytes": 4714
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/home-1280x800-full.png",
+      "bytes": 4714
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/manage-1280x800-first.png",
+      "bytes": 15852
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/manage-1280x800-full.png",
+      "bytes": 104862
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/mistakes-1280x800-first.png",
+      "bytes": 15852
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/mistakes-1280x800-full.png",
+      "bytes": 112199
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/music-1280x800-first.png",
+      "bytes": 15852
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/music-1280x800-full.png",
+      "bytes": 104862
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/notes-1280x800-first.png",
+      "bytes": 15852
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/notes-1280x800-full.png",
+      "bytes": 104862
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/about-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/about-390x844-full.png",
+      "bytes": 27364
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/blog-390x844-first.png",
+      "bytes": 15777
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/blog-390x844-full.png",
+      "bytes": 32228
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/bloggers-390x844-first.png",
+      "bytes": 15777
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/bloggers-390x844-full.png",
+      "bytes": 32228
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/clock-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/clock-390x844-full.png",
+      "bytes": 32537
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/discover-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/discover-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/guestbook-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/guestbook-390x844-full.png",
+      "bytes": 37844
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/home-390x844-first.png",
+      "bytes": 2740
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/home-390x844-full.png",
+      "bytes": 2740
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/image-toolbox-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/image-toolbox-390x844-full.png",
+      "bytes": 33493
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/live2d-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/live2d-390x844-full.png",
+      "bytes": 33157
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/manage-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/manage-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-390x844-first.png",
+      "bytes": 14931
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-390x844-full.png",
+      "bytes": 41659
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-review-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-review-390x844-full.png",
+      "bytes": 32984
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/music-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/music-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/notes-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/notes-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/pictures-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/pictures-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/projects-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/projects-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/share-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/share-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/snippets-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/snippets-390x844-full.png",
+      "bytes": 33031
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/svgs-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/svgs-390x844-full.png",
+      "bytes": 72147
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-390x844-full.png",
+      "bytes": 32984
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-mistake-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-mistake-390x844-full.png",
+      "bytes": 32984
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-note-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-note-390x844-full.png",
+      "bytes": 32984
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/wuthering-waves-390x844-first.png",
+      "bytes": 16595
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/wuthering-waves-390x844-full.png",
+      "bytes": 70840
+    },
+    {
+      "path": "docs/ui-review/artifacts/states/home-390x844-first-button-state.png",
+      "bytes": 2740
+    },
+    {
+      "path": "docs/ui-review/issue-inventory.md",
+      "bytes": 3970
+    },
+    {
+      "path": "docs/ui-review/page-inventory.md",
+      "bytes": 2729
+    },
+    {
+      "path": "docs/ui-review/screenshot-index.md",
+      "bytes": 2976
+    },
+    {
+      "path": "docs/ui-review/ui-review-report.md",
+      "bytes": 8387
+    },
+    {
+      "path": "docs/workflows/i-series-completion-plan/docs/workflows/i-series-completion-plan/C6-C12-REVIEW-REPORT.md",
+      "bytes": 12816
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/README.md",
+      "bytes": 555
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/assets/dry-run-report.md",
+      "bytes": 1051
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/assets/source-manifest.json",
+      "bytes": 1541
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/audit.md",
+      "bytes": 1427
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/design.md",
+      "bytes": 260
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/diff-report.md",
+      "bytes": 777
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/next-requirements.md",
+      "bytes": 749
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/owner-coverage.md",
+      "bytes": 3356
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/owner-decision-proposal.md",
+      "bytes": 2297
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/requirements.md",
+      "bytes": 253
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/risk-register.md",
+      "bytes": 1159
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/tasks.md",
+      "bytes": 631
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/validation.md",
+      "bytes": 4301
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/README.md",
+      "bytes": 527
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/audit.md",
+      "bytes": 685
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/design.md",
+      "bytes": 229
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/diff-report.md",
+      "bytes": 337
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/next-requirements.md",
+      "bytes": 712
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/requirements.md",
+      "bytes": 225
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/risk-register.md",
+      "bytes": 688
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/tasks.md",
+      "bytes": 378
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/validation.md",
+      "bytes": 368
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/README.md",
+      "bytes": 363
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-1280-manage.png",
+      "bytes": 11370
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-1440-manage.png",
+      "bytes": 13026
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-390-manage.png",
+      "bytes": 10363
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-1280-manage.png",
+      "bytes": 182345
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-1440-manage.png",
+      "bytes": 206459
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-390-manage.png",
+      "bytes": 76310
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/audit.md",
+      "bytes": 650
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/design.md",
+      "bytes": 228
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/diff-report.md",
+      "bytes": 260
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/next-requirements.md",
+      "bytes": 577
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/requirements.md",
+      "bytes": 260
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/risk-register.md",
+      "bytes": 921
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/tasks.md",
+      "bytes": 461
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/validation.md",
+      "bytes": 4251
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/README.md",
+      "bytes": 1270
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-1280x800.png",
+      "bytes": 168633
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-1440x900.png",
+      "bytes": 189849
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-390x844.png",
+      "bytes": 85424
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-keyboard-390x844.png",
+      "bytes": 82093
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/audit.md",
+      "bytes": 1402
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/design.md",
+      "bytes": 1512
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/requirements.md",
+      "bytes": 1127
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/tasks.md",
+      "bytes": 1724
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/validation.md",
+      "bytes": 2525
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/README.md",
+      "bytes": 1289
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-1280x800.png",
+      "bytes": 178398
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-1440x900.png",
+      "bytes": 188858
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-390x844.png",
+      "bytes": 84143
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-keyboard-390x844.png",
+      "bytes": 84115
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/audit.md",
+      "bytes": 1263
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/design.md",
+      "bytes": 2110
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/requirements.md",
+      "bytes": 1503
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/tasks.md",
+      "bytes": 2031
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/validation.md",
+      "bytes": 3232
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/README.md",
+      "bytes": 1823
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-1280x800.png",
+      "bytes": 223578
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-1440x900.png",
+      "bytes": 234753
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-390x844.png",
+      "bytes": 137274
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-keyboard-390x844.png",
+      "bytes": 135152
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/audit.md",
+      "bytes": 2714
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/design.md",
+      "bytes": 3471
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/next-requirements.md",
+      "bytes": 619
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/requirements.md",
+      "bytes": 3616
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/risk-register.md",
+      "bytes": 1156
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/tasks.md",
+      "bytes": 6811
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/validation.md",
+      "bytes": 3458
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/README.md",
+      "bytes": 531
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-admin.png",
+      "bytes": 413298
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-anonymous.png",
+      "bytes": 321790
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-files-admin.png",
+      "bytes": 194264
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-admin.png",
+      "bytes": 455310
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-anonymous.png",
+      "bytes": 419099
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-files-admin.png",
+      "bytes": 222649
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-admin.png",
+      "bytes": 172431
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-anonymous.png",
+      "bytes": 114006
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-files-admin.png",
+      "bytes": 78944
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-files-invalid.png",
+      "bytes": 117440
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-invalid.png",
+      "bytes": 141208
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/audit.md",
+      "bytes": 432
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/design.md",
+      "bytes": 505
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/diff-report.md",
+      "bytes": 389
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/next-requirements.md",
+      "bytes": 175
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/requirements.md",
+      "bytes": 364
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/risk-register.md",
+      "bytes": 612
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/tasks.md",
+      "bytes": 752
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/validation.md",
+      "bytes": 2054
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/README.md",
+      "bytes": 359
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/1280x800-admin-search.png",
+      "bytes": 180020
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/1440x900-admin-search.png",
+      "bytes": 203160
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-admin-search.png",
+      "bytes": 111604
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-anonymous.png",
+      "bytes": 115846
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-invalid.png",
+      "bytes": 142479
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/audit.md",
+      "bytes": 504
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/design.md",
+      "bytes": 310
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/diff-report.md",
+      "bytes": 479
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/next-requirements.md",
+      "bytes": 175
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/requirements.md",
+      "bytes": 261
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/risk-register.md",
+      "bytes": 574
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/tasks.md",
+      "bytes": 735
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/validation.md",
+      "bytes": 1523
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/README.md",
+      "bytes": 392
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-ai.png",
+      "bytes": 271097
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-analytics.png",
+      "bytes": 299026
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-jobs.png",
+      "bytes": 278001
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin1280.png",
+      "bytes": 247044
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-ai.png",
+      "bytes": 372112
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-anon-analytics.png",
+      "bytes": 277440
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-invalid-analytics.png",
+      "bytes": 348939
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-invalid.png",
+      "bytes": 336313
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-jobs.png",
+      "bytes": 255401
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-admin-analytics.png",
+      "bytes": 329258
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-admin1440.png",
+      "bytes": 257928
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-anon-analytics.png",
+      "bytes": 357521
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-invalid-analytics.png",
+      "bytes": 348476
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-admin-analytics.png",
+      "bytes": 132679
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-admin390.png",
+      "bytes": 119652
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-anon-analytics.png",
+      "bytes": 111777
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-anon.png",
+      "bytes": 127081
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-invalid-analytics.png",
+      "bytes": 112299
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/audit.md",
+      "bytes": 519
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/design.md",
+      "bytes": 275
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/diff-report.md",
+      "bytes": 500
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/next-requirements.md",
+      "bytes": 114
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/requirements.md",
+      "bytes": 289
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/risk-register.md",
+      "bytes": 703
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/tasks.md",
+      "bytes": 226
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/validation.md",
+      "bytes": 2776
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/README.md",
+      "bytes": 715
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/audit.md",
+      "bytes": 2128
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/design.md",
+      "bytes": 996
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/requirements.md",
+      "bytes": 657
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/tasks.md",
+      "bytes": 706
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/validation.md",
+      "bytes": 971
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/README.md",
+      "bytes": 3806
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/1280x800-dashboard.png",
+      "bytes": 142418
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/1440x900-dashboard.png",
+      "bytes": 168348
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-admin-dashboard.png",
+      "bytes": 69449
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-anonymous-login.png",
+      "bytes": 82751
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-mobile-navigation.png",
+      "bytes": 44528
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/keyboard-navigation.png",
+      "bytes": 65072
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1280x800-dashboard-profile.png",
+      "bytes": 148589
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1280x800-settings.png",
+      "bytes": 154051
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-dashboard-profile-final.png",
+      "bytes": 169948
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-dashboard-profile.png",
+      "bytes": 167820
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-settings.png",
+      "bytes": 182801
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-manage-anonymous-login.png",
+      "bytes": 86412
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-public-anonymous.png",
+      "bytes": 96981
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-final.png",
+      "bytes": 68085
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-saved.png",
+      "bytes": 68003
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-top.png",
+      "bytes": 68799
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/keyboard-settings.png",
+      "bytes": 70156
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/design.md",
+      "bytes": 11628
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i0-freeze-audit.md",
+      "bytes": 7183
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i1-boundary-recovery-audit.md",
+      "bytes": 15140
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i2-learning-loop-validation.md",
+      "bytes": 3997
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-findings.md",
+      "bytes": 678
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-plan.md",
+      "bytes": 1181
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-progress.md",
+      "bytes": 1038
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-findings.md",
+      "bytes": 1520
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-plan.md",
+      "bytes": 2446
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-progress.md",
+      "bytes": 686
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-findings.md",
+      "bytes": 956
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-plan.md",
+      "bytes": 1722
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-progress.md",
+      "bytes": 908
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-design.md",
+      "bytes": 3992
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-findings.md",
+      "bytes": 3238
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-plan.md",
+      "bytes": 2176
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-progress.md",
+      "bytes": 3039
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-requirements.md",
+      "bytes": 2727
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-tasks.md",
+      "bytes": 2307
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-profile-settings-adr.md",
+      "bytes": 2221
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/incremental-plan.md",
+      "bytes": 5248
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/master-plan.md",
+      "bytes": 7287
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/requirements.md",
+      "bytes": 8192
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/tasks.md",
+      "bytes": 13598
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/validation.md",
+      "bytes": 19602
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-formal-home.png",
+      "bytes": 176443
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-formal-manage-anon.png",
+      "bytes": 196927
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-worker-home-api-failure.png",
+      "bytes": 187450
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/README.md",
+      "bytes": 602
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/design.md",
+      "bytes": 637
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/requirements.md",
+      "bytes": 845
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/tasks.md",
+      "bytes": 763
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/validation.md",
+      "bytes": 1696
+    }
+  ]
+}

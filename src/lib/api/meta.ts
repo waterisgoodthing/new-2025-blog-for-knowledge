@@ -1,11 +1,14 @@
 import { apiFetch } from "./client";
+import {
+  createSubject as createTaxonomySubject,
+  deleteSubject as deleteTaxonomySubject,
+  listSubjects as listTaxonomySubjects,
+} from "./taxonomy";
+import type { Subject } from "./taxonomy";
+
+export type { Subject } from "./taxonomy";
 
 export interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface Subject {
   id: number;
   name: string;
 }
@@ -14,11 +17,6 @@ export interface Category {
   id: number;
   name: string;
   sort_order: number;
-}
-
-export interface SyncResult {
-  pushed: number;
-  commit: string;
 }
 
 export async function listTags(): Promise<Tag[]> {
@@ -36,19 +34,30 @@ export async function deleteTag(id: number): Promise<void> {
   return apiFetch<void>(`/api/tags/${id}`, { method: "DELETE" });
 }
 
-export async function listSubjects(): Promise<Subject[]> {
-  return apiFetch<Subject[]>("/api/subjects");
-}
-
-export async function createSubject(name: string): Promise<Subject> {
-  return apiFetch<Subject>("/api/subjects", {
-    method: "POST",
+export async function renameTag(id: number, name: string): Promise<Tag> {
+  return apiFetch<Tag>(`/api/tags/${id}`, {
+    method: "PUT",
     body: JSON.stringify({ name }),
   });
 }
 
+export async function mergeTag(sourceId: number, targetId: number): Promise<Tag> {
+  return apiFetch<Tag>(`/api/tags/${sourceId}/merge`, {
+    method: "POST",
+    body: JSON.stringify({ target_tag_id: targetId }),
+  });
+}
+
+export async function listSubjects(): Promise<Subject[]> {
+  return listTaxonomySubjects();
+}
+
+export async function createSubject(name: string): Promise<Subject> {
+  return createTaxonomySubject({ name });
+}
+
 export async function deleteSubject(id: number): Promise<void> {
-  return apiFetch<void>(`/api/subjects/${id}`, { method: "DELETE" });
+  return deleteTaxonomySubject(id);
 }
 
 export async function listCategories(): Promise<Category[]> {
@@ -71,8 +80,4 @@ export async function updateCategory(id: number, data: { name?: string; sort_ord
 
 export async function deleteCategory(id: number): Promise<void> {
   return apiFetch<void>(`/api/categories/${id}`, { method: "DELETE" });
-}
-
-export async function syncPush(): Promise<SyncResult> {
-  return apiFetch<SyncResult>("/api/sync/push", { method: "POST" });
 }

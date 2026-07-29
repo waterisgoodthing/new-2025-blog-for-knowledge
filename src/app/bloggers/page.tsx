@@ -1,26 +1,49 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import GridView, { type Blogger } from './grid-view'
 import CreateDialog from './components/create-dialog'
 import { pushBloggers } from './services/push-bloggers'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
-import initialList from './list.json'
+import { getBloggers } from '@/lib/api/content'
 import type { AvatarItem } from './components/avatar-upload-dialog'
 
 export default function Page() {
-	const [bloggers, setBloggers] = useState<Blogger[]>(initialList as Blogger[])
-	const [originalBloggers, setOriginalBloggers] = useState<Blogger[]>(initialList as Blogger[])
+	const router = useRouter()
+	const { isAdmin, isLoading: authLoading } = useAdminAuth()
+	const [bloggers, setBloggers] = useState<Blogger[]>([])
+	const [originalBloggers, setOriginalBloggers] = useState<Blogger[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [editingBlogger, setEditingBlogger] = useState<Blogger | null>(null)
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [avatarItems, setAvatarItems] = useState<Map<string, AvatarItem>>(new Map())
+	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	useEffect(() => {
+		if (!authLoading && !isAdmin) {
+			router.replace('/discover?tab=bloggers')
+		}
+	}, [authLoading, isAdmin, router])
+
+	useEffect(() => {
+		getBloggers()
+			.then(data => {
+				setBloggers(data as Blogger[])
+				setOriginalBloggers(data as Blogger[])
+			})
+			.catch(err => {
+				console.error('Failed to load bloggers:', err)
+				toast.error('加载博主列表失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const handleUpdate = (updatedBlogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => {
 		setBloggers(prev => prev.map(b => (b.url === oldBlogger.url ? updatedBlogger : b)))
@@ -88,7 +111,7 @@ export default function Page() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 			}
@@ -98,7 +121,23 @@ export default function Page() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
+
+	if (authLoading || (!isAdmin && !isLoading)) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
+
+	if (isLoading) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -129,7 +168,7 @@ export default function Page() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

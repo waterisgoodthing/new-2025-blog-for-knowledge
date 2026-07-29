@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
 import { EmptyState } from '@/components/empty-state'
+import { WeakPointDiagnosis } from './components/weak-point-diagnosis'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
@@ -20,6 +22,7 @@ export default function MistakesPage() {
 	const [activeFilter, setActiveFilter] = useState('all')
 	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
 	const [activeTag, setActiveTag] = useState<string | null>(null)
+	const { isAdmin } = useAdminAuth()
 
 	const { data, isLoading } = useNoteIndex({
 		type: 'mistake',
@@ -34,8 +37,8 @@ export default function MistakesPage() {
 		size: 20,
 	})
 
-	const { data: stats } = useReviewStats()
-	const { data: plan } = useReviewPlan()
+	const { data: stats } = useReviewStats(isAdmin)
+	const { data: plan } = useReviewPlan(isAdmin)
 
 	const items = data?.items || []
 
@@ -71,7 +74,7 @@ export default function MistakesPage() {
 
 				<div className='min-w-0 flex-1'>
 
-			{stats && (
+			{isAdmin && stats && (
 				<div className='mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4'>
 					{[
 						{ label: '总题数', value: stats.total_mistakes, color: 'text-gray-700' },
@@ -87,7 +90,7 @@ export default function MistakesPage() {
 				</div>
 			)}
 
-			{plan && (
+			{isAdmin && plan && (
 				<div className='mb-6 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]'>
 					<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
 						<div className='mb-3 flex items-center justify-between gap-3'>
@@ -99,7 +102,7 @@ export default function MistakesPage() {
 								</p>
 							</div>
 							<Link
-								href='/mistakes/review'
+								href='/manage/review'
 								className='shrink-0 rounded-lg bg-orange-500 px-3 py-1.5 text-xs text-white transition-transform hover:scale-105 active:scale-95'
 							>
 								开始复习
@@ -158,10 +161,16 @@ export default function MistakesPage() {
 				</div>
 			)}
 
+			{isAdmin && (
+				<div className='mb-6'>
+					<WeakPointDiagnosis enabled={isAdmin} />
+				</div>
+			)}
+
 			<div className='mb-6 flex flex-wrap items-center gap-3'>
-				{(stats?.due_today ?? 0) > 0 && (
+				{isAdmin && (stats?.due_today ?? 0) > 0 && (
 					<Link
-						href='/mistakes/review'
+						href='/manage/review'
 						className='rounded-xl bg-orange-500 px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
 					>
 						开始复习 ({stats?.due_today})
@@ -183,18 +192,27 @@ export default function MistakesPage() {
 					<option value='medium'>中等</option>
 					<option value='hard'>困难</option>
 				</select>
-				<Link
-					href='/write-mistake'
-					className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
-				>
-					添加错题
-				</Link>
+				{isAdmin && (
+					<Link
+						href='/manage/capture'
+						className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
+					>
+						添加错题
+					</Link>
+				)}
 			</div>
 
 			{isLoading ? (
 				<div className='py-20 text-center text-gray-400'>加载中...</div>
 			) : items.length === 0 ? (
-				<div className='py-20'><EmptyState variant='no-content' title='还没有错题' description='记录第一道错题，开始系统化复习' action={{ label: '添加错题', href: '/write-mistake' }} /></div>
+				<div className='py-20'>
+					<EmptyState
+						variant='no-content'
+						title='还没有错题'
+						description={isAdmin ? '记录第一道错题，开始系统化复习' : '当前没有公开错题'}
+						action={isAdmin ? { label: '添加错题', href: '/manage/capture' } : undefined}
+					/>
+				</div>
 			) : (
 				<div className='space-y-3'>
 					{items.map((item, i) => (
@@ -224,17 +242,19 @@ export default function MistakesPage() {
 									</span>
 								</div>
 								<h3 className='truncate font-medium'>{item.title}</h3>
-								<div className='mt-2 flex items-center gap-4 text-xs text-gray-500'>
-									<span>复习 {item.repetitions || 0} 次</span>
-									<span>EF {(item.ef || 2.5).toFixed(2)}</span>
-									{item.next_review && (
-										<span className={cn(
-											dayjs(item.next_review).isBefore(dayjs(), 'day') ? 'text-red-500' : 'text-gray-500'
-										)}>
-											下次: {dayjs(item.next_review).format('MM-DD')}
-										</span>
-									)}
-								</div>
+								{isAdmin && (
+									<div className='mt-2 flex items-center gap-4 text-xs text-gray-500'>
+										<span>复习 {item.repetitions || 0} 次</span>
+										<span>EF {(item.ef || 2.5).toFixed(2)}</span>
+										{item.next_review && (
+											<span className={cn(
+												dayjs(item.next_review).isBefore(dayjs(), 'day') ? 'text-red-500' : 'text-gray-500'
+											)}>
+												下次: {dayjs(item.next_review).format('MM-DD')}
+											</span>
+										)}
+									</div>
+								)}
 								{item.tags.length > 0 && (
 									<div className='mt-2 flex flex-wrap gap-1'>
 										{item.tags.map(tag => (

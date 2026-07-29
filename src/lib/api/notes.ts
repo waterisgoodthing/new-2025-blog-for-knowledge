@@ -10,6 +10,9 @@ export interface NoteListItem {
   created_at: string;
   updated_at: string;
   tags: { id: number; name: string }[];
+  folder_id?: string | null;
+  sort_order: number;
+  revision: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -34,6 +37,15 @@ export interface NoteDetail extends NoteListItem {
   ai_metadata?: Record<string, unknown> | null;
 }
 
+export interface NoteVersion {
+  id: string
+  note_id: string
+  version: number
+  title: string
+  content: string
+  created_at: string
+}
+
 export interface NoteListResponse {
   items: NoteListItem[];
   total: number;
@@ -49,6 +61,8 @@ export interface NoteCreateInput {
   status?: "draft" | "published";
   hidden?: boolean;
   tags?: string[];
+  folder_id?: string | null;
+  sort_order?: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -64,12 +78,14 @@ export interface NoteCreateInput {
 }
 
 export interface NoteUpdateInput {
+  expected_revision?: number;
   title?: string;
   content?: string;
   type?: "note" | "blog" | "mistake";
   status?: "draft" | "published";
   hidden?: boolean;
   tags?: string[];
+  sort_order?: number;
   summary?: string;
   cover?: string;
   category?: string;
@@ -82,6 +98,7 @@ export interface NoteUpdateInput {
   knowledge_points?: string;
   images?: string[];
   ai_metadata?: Record<string, unknown> | null;
+  folder_id?: string | null;
 }
 
 export interface NoteListParams {
@@ -95,6 +112,8 @@ export interface NoteListParams {
   hidden?: boolean;
   folder_id?: string;
   inbox?: boolean;
+  featured?: boolean;
+  sort_by?: "sort_order" | "updated_at";
   page?: number;
   size?: number;
 }
@@ -111,6 +130,8 @@ export async function listNotes(params: NoteListParams = {}): Promise<NoteListRe
   if (params.hidden !== undefined) searchParams.set("hidden", String(params.hidden));
   if (params.folder_id) searchParams.set("folder_id", params.folder_id);
   if (params.inbox) searchParams.set("inbox", "true");
+  if (params.featured) searchParams.set("featured", "true");
+  if (params.sort_by) searchParams.set("sort_by", params.sort_by);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.size) searchParams.set("size", String(params.size));
   const qs = searchParams.toString();
@@ -119,6 +140,14 @@ export async function listNotes(params: NoteListParams = {}): Promise<NoteListRe
 
 export async function getNote(slug: string): Promise<NoteDetail> {
   return apiFetch<NoteDetail>(`/api/notes/${slug}`);
+}
+
+export async function getNoteVersions(slug: string): Promise<NoteVersion[]> {
+  return apiFetch<NoteVersion[]>(`/api/notes/${slug}/versions`)
+}
+
+export async function getNoteBacklinks(slug: string): Promise<Array<{ source_note_id: string; source_slug: string | null; source_title: string | null; target_slug: string; raw_link: string }>> {
+  return apiFetch(`/api/notes/${slug}/backlinks`)
 }
 
 export async function createNote(data: NoteCreateInput): Promise<NoteDetail> {

@@ -14,14 +14,14 @@ export function useNoteIndex(params: NoteListParams = {}) {
   });
 }
 
-export function useReviewStats() {
-  return useSWR<ReviewStats>("/api/review/stats", getReviewStats, {
+export function useReviewStats(enabled = true) {
+  return useSWR<ReviewStats>(enabled ? "/api/review/stats" : null, getReviewStats, {
     revalidateOnFocus: false,
   });
 }
 
-export function useReviewPlan() {
-  return useSWR<ReviewPlan>("/api/review/plan", getReviewPlan, {
+export function useReviewPlan(enabled = true) {
+  return useSWR<ReviewPlan>(enabled ? "/api/review/plan" : null, getReviewPlan, {
     revalidateOnFocus: false,
   });
 }

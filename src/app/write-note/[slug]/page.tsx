@@ -1,11 +1,11 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useParams, useRouter } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import { motion } from 'motion/react'
-import { getNote, updateNote, uploadImage, type NoteDetail } from '@/lib/api/notes'
+import { getNote, getNoteVersions, updateNote, uploadImage, type NoteDetail, type NoteVersion } from '@/lib/api/notes'
 import { listCategories, type Category } from '@/lib/api/meta'
 import { listSubjects, type Subject } from '@/lib/api/meta'
 import { toast } from 'sonner'
@@ -16,20 +16,38 @@ import { NoteToolbar } from '../components/note-toolbar'
 import { NoteTemplatesDropdown } from '../components/note-templates'
 import { SlashCommandMenu } from '../components/slash-command-menu'
 import { AIAssistantPanel } from '../components/ai-assistant-panel'
+import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
 import { getContentDetailHref } from '@/lib/content-routes'
+import { AuthGate } from '@/components/auth-gate'
 
 const NotePreviewContent = dynamic(() => import('../components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function EditNotePage() {
+	return (
+		<AuthGate>
+			<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+				<EditNoteContent />
+			</Suspense>
+		</AuthGate>
+	)
+}
+
+function EditNoteContent() {
 	const { slug } = useParams<{ slug: string }>()
 	const router = useRouter()
+	const searchParams = useSearchParams()
+	const folderId = searchParams.get('folder_id')
+	const folderQuery = folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
+	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
+	const [pendingSave, setPendingSave] = useState<((tags?: string[]) => Promise<void>) | null>(null)
 	const { tab, setTab } = useNoteEditorTab()
 	const [categories, setCategories] = useState<Category[]>([])
 	const [subjects, setSubjects] = useState<Subject[]>([])
 	const [uploadedImages, setUploadedImages] = useState<string[]>([])
 	const [uploading, setUploading] = useState(false)
+	const [versions, setVersions] = useState<NoteVersion[]>([])
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files
@@ -86,12 +104,14 @@ export default function EditNotePage() {
 		knowledge_points: '',
 		category: '',
 		cover: '',
+		sort_order: 0,
 	})
 	const [aiMetadata, setAiMetadata] = useState<Record<string, unknown> | null>(null)
 
 	useEffect(() => {
 		listCategories().then(setCategories).catch(() => {})
 		listSubjects().then(setSubjects).catch(() => {})
+		getNoteVersions(slug).then(setVersions).catch(() => setVersions([]))
 	}, [])
 
 	useEffect(() => {
@@ -112,6 +132,7 @@ export default function EditNotePage() {
 				knowledge_points: note.knowledge_points || '',
 				category: note.category || '',
 				cover: note.cover || '',
+				sort_order: note.sort_order ?? 0,
 			})
 			setUploadedImages(note.images || [])
 			setAiMetadata(note.ai_metadata ?? null)
@@ -156,6 +177,23 @@ export default function EditNotePage() {
 	}
 
 	const handleSave = async () => {
+		if (form.tags.length === 0) {
+			const skipReminder = localStorage.getItem('skipEmptyTagReminder')
+			if (skipReminder === 'true') {
+				await performSave()
+				return
+			}
+			setPendingSave(() => performSave)
+			setShowTagSuggestion(true)
+			return
+		}
+
+		await performSave()
+	}
+
+	const performSave = async (overrideTags?: string[]) => {
+		if (!note) return
+		const tags = overrideTags ?? form.tags
 		setSaving(true)
 		try {
 			const content = form.type === 'mistake'
@@ -169,9 +207,10 @@ export default function EditNotePage() {
 				: form.content
 
 			const updated = await updateNote(slug, {
+				expected_revision: note.revision,
 				title: form.title,
 				content,
-				tags: form.tags,
+				tags,
 				summary: form.summary || undefined,
 				subject: form.subject || undefined,
 				difficulty: form.type === 'mistake' ? form.difficulty : undefined,
@@ -184,8 +223,9 @@ export default function EditNotePage() {
 				cover: form.cover || undefined,
 				images: form.type === 'mistake' ? uploadedImages : undefined,
 				ai_metadata: form.type === 'mistake' ? aiMetadata : undefined,
+				sort_order: form.sort_order,
 			})
-			router.push(getContentDetailHref(updated.type, updated.slug))
+			router.push(getContentDetailHref(updated.type, updated.slug) + (folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -206,6 +246,11 @@ export default function EditNotePage() {
 				<div className='rounded-lg bg-white/40 px-3 py-1.5 text-sm text-gray-500'>
 					类型: {{ note: '笔记', blog: '博客', mistake: '错题' }[note.type]} (不可更改)
 				</div>
+
+				<details className='rounded-xl border border-white/40 bg-white/40 p-3'>
+					<summary className='cursor-pointer text-sm font-medium'>版本历史（{versions.length}）</summary>
+					{versions.length === 0 ? <p className='mt-3 text-sm text-gray-500'>暂无版本记录。</p> : <ol className='mt-3 space-y-2'>{versions.map(version => <li key={version.id} className='text-sm text-gray-600'>v{version.version} · {new Date(version.created_at).toLocaleString()} · {version.title}</li>)}</ol>}
+				</details>
 
 				<input
 					value={form.title}
@@ -338,6 +383,7 @@ export default function EditNotePage() {
 									onApplyTitle={(t) => update('title', t)}
 									onApplySummary={(s) => update('summary', s)}
 									onApplyTags={(tags) => update('tags', [...new Set([...form.tags, ...tags])])}
+									onApplyCategory={(c) => update('category', c)}
 								/>
 								</div>
 							</>
@@ -388,13 +434,46 @@ export default function EditNotePage() {
 					/>
 				</div>
 
+				<div>
+					<label className='mb-1 block text-xs text-gray-500'>策展权重（0 = 不精选，1+ = 进入发现页精选区，值越大越靠前）</label>
+					<input
+						type='number'
+						min={0}
+						value={form.sort_order}
+						onChange={e => update('sort_order', Math.max(0, parseInt(e.target.value) || 0))}
+						className='w-32 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]'
+					/>
+				</div>
+
 				<div className='flex gap-3 pt-4'>
 					<button onClick={handleSave} disabled={saving} className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50'>
 						{saving ? '保存中...' : '保存'}
 					</button>
-					<button onClick={() => router.back()} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
+					<button onClick={() => router.push(`/notes${folderQuery}`)} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
 				</div>
 			</div>
+
+			<TagSuggestionDialog
+				open={showTagSuggestion}
+				content={form.content}
+				title={form.title}
+				existingTags={form.tags}
+				onApply={(tags) => {
+					setShowTagSuggestion(false)
+					const merged = [...new Set([...form.tags, ...tags])]
+					update('tags', merged)
+					pendingSave?.(merged)
+				}}
+				onSkip={() => {
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+				onDontRemind={() => {
+					localStorage.setItem('skipEmptyTagReminder', 'true')
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+			/>
 		</div>
 	)
 }

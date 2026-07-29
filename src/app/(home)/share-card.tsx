@@ -97,7 +97,7 @@ export default function ShareCard() {
 						)}
 					</Link>
 				) : displayItem ? (
-					<Link href='/share' className='mt-2 block space-y-2'>
+					<Link href='/discover' className='mt-2 block space-y-2'>
 						<div className='flex items-center'>
 							<div className='relative mr-3 h-12 w-12 shrink-0 overflow-hidden rounded-xl'>
 								<img src={displayItem.logo} alt={displayItem.name} className='h-full w-full object-contain' />

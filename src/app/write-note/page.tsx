@@ -1,9 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useRef, useEffect } from 'react'
+import { Suspense, useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'motion/react'
 import { createNote, uploadImage } from '@/lib/api/notes'
 import { listCategories, type Category } from '@/lib/api/meta'
@@ -15,15 +15,32 @@ import { NoteToolbar } from './components/note-toolbar'
 import { NoteTemplatesDropdown } from './components/note-templates'
 import { SlashCommandMenu } from './components/slash-command-menu'
 import { AIAssistantPanel } from './components/ai-assistant-panel'
+import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { ArrowLeft } from 'lucide-react'
+import { AuthGate } from '@/components/auth-gate'
 
 const NotePreviewContent = dynamic(() => import('./components/note-preview-content').then(m => m.NotePreviewContent), { ssr: false })
 
 export default function WriteNotePage() {
+	return (
+		<AuthGate>
+			<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+				<WriteNoteContent />
+			</Suspense>
+		</AuthGate>
+	)
+}
+
+function WriteNoteContent() {
 	const router = useRouter()
+	const searchParams = useSearchParams()
+	const folderId = searchParams.get('folder_id')
+	const folderQuery = folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [saving, setSaving] = useState(false)
+	const [showTagSuggestion, setShowTagSuggestion] = useState(false)
+	const [pendingSave, setPendingSave] = useState<((tags?: string[]) => Promise<void>) | null>(null)
 	const { tab, setTab } = useNoteEditorTab()
 
 	const [categories, setCategories] = useState<Category[]>([])
@@ -42,9 +59,27 @@ export default function WriteNotePage() {
 		summary: '',
 		category: '',
 		cover: '',
+		sort_order: 0,
 	})
 
 	const update = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+	useEffect(() => {
+		if (searchParams.get('ai_prefill') === '1') {
+			try {
+				const stored = sessionStorage.getItem('ai_prefill_note')
+				if (stored) {
+					const data = JSON.parse(stored)
+					setForm(f => ({
+						...f,
+						title: data.title || f.title,
+						content: data.content || f.content,
+					}))
+					sessionStorage.removeItem('ai_prefill_note')
+				}
+			} catch {}
+		}
+	}, [searchParams])
 
 	const addTag = () => {
 		const tag = form.tagInput.trim()
@@ -72,6 +107,22 @@ export default function WriteNotePage() {
 		if (!form.title.trim()) return toast.warning('请输入标题')
 		if (!form.content.trim()) return toast.warning('请输入内容')
 
+		if (form.tags.length === 0) {
+			const skipReminder = localStorage.getItem('skipEmptyTagReminder')
+			if (skipReminder === 'true') {
+				await performSave()
+				return
+			}
+			setPendingSave(() => performSave)
+			setShowTagSuggestion(true)
+			return
+		}
+
+		await performSave()
+	}
+
+	const performSave = async (overrideTags?: string[]) => {
+		const tags = overrideTags ?? form.tags
 		setSaving(true)
 		try {
 			const autoSlug = form.title.trim().toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || `note-${Date.now()}`
@@ -82,12 +133,14 @@ export default function WriteNotePage() {
 				title: form.title,
 				content: form.content,
 				type: form.type,
-				tags: form.tags,
+				tags,
 				summary: form.summary || undefined,
 				category: form.category || undefined,
 				cover: form.cover || undefined,
+				folder_id: folderId || undefined,
+				sort_order: form.sort_order,
 			})
-			router.push(getContentDetailHref(created.type, created.slug))
+			router.push(getContentDetailHref(created.type, created.slug) + (folderId ? `?folder_id=${encodeURIComponent(folderId)}` : ''))
 		} catch (e: any) {
 			toast.error('保存失败: ' + e.message)
 		} finally {
@@ -99,7 +152,7 @@ export default function WriteNotePage() {
 		<div className='mx-auto max-w-3xl px-4 py-8'>
 			<div className='mb-6 flex items-center gap-4'>
 				<Link
-					href='/notes'
+					href={`/notes${folderQuery}`}
 					aria-label='返回笔记'
 					className='flex h-9 w-9 items-center justify-center rounded-xl border border-white/40 bg-white/60 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-800'
 				>
@@ -215,6 +268,7 @@ export default function WriteNotePage() {
 								onApplyTitle={(t) => update('title', t)}
 								onApplySummary={(s) => update('summary', s)}
 								onApplyTags={(tags) => update('tags', [...new Set([...form.tags, ...tags])])}
+							onApplyCategory={(c) => update('category', c)}
 							/>
 						</div>
 					</>
@@ -265,6 +319,17 @@ export default function WriteNotePage() {
 					/>
 				</div>
 
+				<div>
+					<label className='mb-1 block text-xs text-gray-500'>策展权重（0 = 不精选，1+ = 进入发现页精选区，值越大越靠前）</label>
+					<input
+						type='number'
+						min={0}
+						value={form.sort_order}
+						onChange={e => update('sort_order', Math.max(0, parseInt(e.target.value) || 0))}
+						className='w-32 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]'
+					/>
+				</div>
+
 				<div className='flex gap-3 pt-4'>
 					<button
 						onClick={handleSave}
@@ -274,13 +339,35 @@ export default function WriteNotePage() {
 						{saving ? '保存中...' : '发布'}
 					</button>
 					<Link
-						href='/notes'
+						href={`/notes${folderQuery}`}
 						className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'
 					>
 						取消
 					</Link>
 				</div>
 			</div>
+
+			<TagSuggestionDialog
+				open={showTagSuggestion}
+				content={form.content}
+				title={form.title}
+				existingTags={form.tags}
+				onApply={(tags) => {
+					setShowTagSuggestion(false)
+					const merged = [...new Set([...form.tags, ...tags])]
+					update('tags', merged)
+					pendingSave?.(merged)
+				}}
+				onSkip={() => {
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+				onDontRemind={() => {
+					localStorage.setItem('skipEmptyTagReminder', 'true')
+					setShowTagSuggestion(false)
+					pendingSave?.(form.tags)
+				}}
+			/>
 		</div>
 	)
 }

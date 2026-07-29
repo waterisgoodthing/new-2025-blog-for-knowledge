@@ -11,20 +11,7 @@ import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
 import { Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { getPlaylist, type MusicItem } from '@/lib/api/music'
-
-const FALLBACK_TRACK: MusicItem = {
-	id: 0,
-	title: 'Close To You',
-	artist: null,
-	artwork: null,
-	apple_music_url: '',
-	preview_url: null,
-	track_id: null,
-	sort_order: 0,
-	is_active: true,
-	created_at: '',
-}
+import { getPublicDailySong, type DailySongItem } from '@/lib/api/music-manage'
 
 export default function MusicCard() {
 	const pathname = usePathname()
@@ -35,28 +22,22 @@ export default function MusicCard() {
 	const clockCardStyles = cardStyles.clockCard
 	const calendarCardStyles = cardStyles.calendarCard
 
-	const [playlist, setPlaylist] = useState<MusicItem[]>([])
-	const [currentIndex, setCurrentIndex] = useState(0)
+	const [track, setTrack] = useState<DailySongItem | null>(null)
 	const [isPlaying, setIsPlaying] = useState(false)
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
-	const currentIndexRef = useRef(0)
 
 	const isHomePage = pathname === '/'
 
 	useEffect(() => {
-		getPlaylist()
-			.then((items) => {
-				if (items.length > 0) setPlaylist(items)
-			})
-			.catch(() => {
-				setPlaylist([FALLBACK_TRACK])
-			})
+		getPublicDailySong()
+			.then(setTrack)
+			.catch(() => setTrack(null))
 	}, [])
 
-	const currentTrack = playlist.length > 0 ? playlist[currentIndex % playlist.length] : FALLBACK_TRACK
-	const displayTitle = currentTrack.title || 'Close To You'
-	const displayArtist = currentTrack.artist
+	const displayTitle = track?.title || '暂无本地音乐'
+	const displayArtist = track?.artist
+	const canPlay = Boolean(track?.preview_url)
 
 	const position = useMemo(() => {
 		if (!isHomePage) {
@@ -88,39 +69,43 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			if (playlist.length > 1) {
-				const nextIndex = (currentIndexRef.current + 1) % playlist.length
-				currentIndexRef.current = nextIndex
-				setCurrentIndex(nextIndex)
-			}
+			setIsPlaying(false)
+			setProgress(0)
+		}
+
+		const handleError = () => {
+			setIsPlaying(false)
 			setProgress(0)
 		}
 
 		audio.addEventListener('timeupdate', updateProgress)
 		audio.addEventListener('ended', handleEnded)
 		audio.addEventListener('loadedmetadata', updateProgress)
+		audio.addEventListener('error', handleError)
 
 		return () => {
 			audio.removeEventListener('timeupdate', updateProgress)
 			audio.removeEventListener('ended', handleEnded)
 			audio.removeEventListener('loadedmetadata', updateProgress)
+			audio.removeEventListener('error', handleError)
 		}
-	}, [playlist.length])
+	}, [])
 
 	useEffect(() => {
-		currentIndexRef.current = currentIndex
-		if (audioRef.current && currentTrack.preview_url) {
-			const wasPlaying = !audioRef.current.paused
-			audioRef.current.pause()
-			audioRef.current.src = currentTrack.preview_url
-			audioRef.current.loop = false
-			setProgress(0)
+		if (!audioRef.current) return
 
-			if (wasPlaying) {
-				audioRef.current.play().catch(console.error)
-			}
+		const audio = audioRef.current
+		audio.pause()
+		setIsPlaying(false)
+		setProgress(0)
+
+		if (track?.preview_url) {
+			audio.src = track.preview_url
+			audio.loop = false
+		} else {
+			audio.removeAttribute('src')
 		}
-	}, [currentIndex, currentTrack.preview_url])
+	}, [track?.preview_url])
 
 	useEffect(() => {
 		if (!audioRef.current) return
@@ -142,14 +127,8 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
-		if (currentTrack.preview_url) {
+		if (canPlay) {
 			setIsPlaying(!isPlaying)
-		}
-	}
-
-	const handleCardClick = () => {
-		if (currentTrack.apple_music_url) {
-			window.open(currentTrack.apple_music_url, '_blank')
 		}
 	}
 
@@ -179,11 +158,10 @@ export default function MusicCard() {
 
 				<div
 					className='flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg'
-					onClick={handleCardClick}
 					title={displayArtist ? `${displayTitle} - ${displayArtist}` : displayTitle}
 				>
-					{currentTrack.artwork ? (
-						<img src={currentTrack.artwork} alt={displayTitle} className='h-full w-full object-cover' />
+					{track?.artwork_url ? (
+						<img src={track.artwork_url} alt={displayTitle} className='h-full w-full object-cover' />
 					) : (
 						<MusicSVG className='h-8 w-8' />
 					)}
@@ -192,7 +170,6 @@ export default function MusicCard() {
 				<div className='min-w-0 flex-1'>
 					<div
 						className='text-secondary truncate text-sm'
-						onClick={handleCardClick}
 						title={displayArtist ? `${displayTitle} - ${displayArtist}` : displayTitle}
 					>
 						{displayTitle}
@@ -206,8 +183,9 @@ export default function MusicCard() {
 
 			<button
 				onClick={togglePlayPause}
+				disabled={!canPlay}
 				aria-label={isPlaying ? '暂停' : '播放'}
-				className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'
+				className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50'
 			>
 				{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
 			</button>

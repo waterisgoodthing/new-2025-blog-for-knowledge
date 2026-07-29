@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronDown, ChevronRight, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { EmptyState } from '@/components/empty-state'
 import {
   getTodayRecommendation,
+  generateTodayRecommendation,
   deleteTodayRecommendation,
   getRecommendationHistory,
   type DailyRecommendation,
@@ -36,7 +37,6 @@ export function RecommendationTab() {
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [regenerating, setRegenerating] = useState(false)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -60,8 +60,10 @@ export function RecommendationTab() {
     if (!confirm('确定重新生成今日推荐？当前推荐将被删除。')) return
     setRegenerating(true)
     try {
-      await deleteTodayRecommendation()
-      const newRec = await getTodayRecommendation()
+      if (today) {
+        await deleteTodayRecommendation()
+      }
+      const newRec = await generateTodayRecommendation()
       setToday(newRec)
       const historyData = await getRecommendationHistory()
       setHistory(historyData)
@@ -70,10 +72,6 @@ export function RecommendationTab() {
     } finally {
       setRegenerating(false)
     }
-  }
-
-  const toggleExpand = (id: number) => {
-    setExpandedId((prev) => (prev === id ? null : id))
   }
 
   return (
@@ -123,7 +121,6 @@ export function RecommendationTab() {
               <table className='w-full text-sm'>
                 <thead>
                   <tr className='border-b border-white/20 text-left text-xs text-gray-500'>
-                    <th className='p-3'></th>
                     <th className='p-3'>日期</th>
                     <th className='p-3'>标题</th>
                     <th className='p-3'>类型</th>
@@ -134,11 +131,6 @@ export function RecommendationTab() {
                   {history.map((item) => (
                     <>
                       <tr key={item.id} className='border-b border-white/10 hover:bg-white/40'>
-                        <td className='p-3'>
-                          <button onClick={() => toggleExpand(item.id)} className='text-gray-400 hover:text-gray-600'>
-                            {expandedId === item.id ? <ChevronDown className='h-4 w-4' /> : <ChevronRight className='h-4 w-4' />}
-                          </button>
-                        </td>
                         <td className='whitespace-nowrap p-3 text-xs text-gray-500'>{dayjs(item.date).format('YYYY-MM-DD')}</td>
                         <td className='max-w-[200px] truncate p-3 font-medium'>{item.title}</td>
                         <td className='p-3'>
@@ -148,16 +140,6 @@ export function RecommendationTab() {
                         </td>
                         <td className='max-w-[250px] truncate p-3 text-gray-500'>{item.reason}</td>
                       </tr>
-                      {expandedId === item.id && (
-                        <tr key={`${item.id}-ctx`}>
-                          <td colSpan={5} className='border-b border-white/10 bg-white/30 px-6 py-3'>
-                            <p className='mb-1 text-xs font-medium text-gray-500'>推荐上下文：</p>
-                            <pre className='max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-white/40 p-3 font-mono text-xs text-gray-600'>
-                              {item.raw_context || '无上下文数据'}
-                            </pre>
-                          </td>
-                        </tr>
-                      )}
                     </>
                   ))}
                 </tbody>

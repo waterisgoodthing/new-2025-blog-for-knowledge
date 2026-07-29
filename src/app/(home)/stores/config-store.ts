@@ -53,6 +53,8 @@ export interface SiteContent {
 		text: string
 		link: string
 	}
+	faviconUrl?: string
+	avatarUrl?: string
 }
 
 export type CardStyles = typeof cardStyles

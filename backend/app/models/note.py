@@ -63,7 +63,8 @@ class Note(Base):
     folder_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL"), nullable=True
     )
-    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    sort_order: Mapped[int | None] = mapped_column(Integer, default=0, nullable=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1", nullable=False)
 
     search_vector = mapped_column(TSVECTOR, nullable=True)
 
@@ -73,6 +74,7 @@ class Note(Base):
         Index("idx_notes_status", "status"),
         Index("idx_notes_next_review", "next_review", postgresql_where="type = 'mistake'"),
         Index("idx_notes_search", "search_vector", postgresql_using="gin"),
+        Index("idx_notes_folder_id", "folder_id"),
     )
 
 
@@ -90,6 +92,15 @@ class Subject(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="active", server_default="active", nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
 
 class Category(Base):

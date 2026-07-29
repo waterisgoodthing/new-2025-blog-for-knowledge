@@ -1,488 +1,339 @@
-import json
-import time
-from collections import defaultdict
-
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import or_, select
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.note import Note
 from app.routers.auth import get_current_admin
-from app.schemas.ai import AnalyzeRequest, AnalyzeResponse, TextAnalyzeRequest
+from app.schemas.ai import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    DiagramResponse,
+    DiagramStrategyRequest,
+    ErrorInterpretationRequest,
+    ErrorInterpretationResponse,
+    FinalAnalysisRequest,
+    FinalAnalysisResponse,
+    InterpretationRejectionRequest,
+    QuestionDraftConfirmRequest,
+    QuestionDraftConfirmResponse,
+    QuestionDraftRequest,
+    QuestionDraftResponse,
+    TextAnalyzeRequest,
+)
 from app.schemas.knowledge import (
-    CitationBlock,
-    CitationBlockType,
     InsufficientContextResponse,
     KnowledgeSummaryRequest,
     KnowledgeSummaryResponse,
-    SourceRef,
-    SourceType,
 )
-from app.services.ai_service import call_ocr_model, call_text_model
+from app.services.audit_service import audit_action
+from app.services.ai_gateway import call_text, call_vision
+from app.services.ai_prompt_registry import (
+    build_text_messages,
+    build_vision_messages,
+    get_prompt_template,
+)
+from app.services.ai_task_types import AiTaskType
+from app.services.ai_analyze_service import (
+    PROMPT_TEMPLATES,
+    check_rate_limit,
+    build_personal_context,
+    build_summary_user_content,
+    parse_summary_blocks,
+    build_ai_config,
+    stream_analyze_events,
+    analyze_and_parse,
+    build_prompts_response,
+)
+from app.schemas.ai_call_log import (
+    AiCallLogOut,
+    AiCallLogStatsResponse,
+    AiProviderHealthSnapshotResponse,
+    AiUsageCostStatsResponse,
+)
+from app.services.ai_log_service import (
+    query_call_logs,
+    query_call_log_stats,
+    query_provider_health_snapshot,
+    query_usage_cost_stats,
+)
+from app.services.ai_service import get_provider_status
+from app.services.mistake_staged_service import (
+    generate_error_interpretation,
+    generate_final_analysis,
+    generate_question_draft,
+)
+from app.services.diagram_service import (
+    classify_diagram_strategy,
+    generate_qwen_image_fallback,
+    generate_structured_diagram,
+)
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
-_rate_limit_store: dict[str, list[float]] = defaultdict(list)
-RATE_LIMIT_MAX = 10
-RATE_LIMIT_WINDOW = 60
 
-def _check_rate_limit(key: str = "global") -> None:
-    now = time.time()
-    timestamps = _rate_limit_store[key]
-    _rate_limit_store[key] = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
-    if len(_rate_limit_store[key]) >= RATE_LIMIT_MAX:
-        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {RATE_LIMIT_MAX} requests per {RATE_LIMIT_WINDOW}s.")
-    _rate_limit_store[key].append(now)
-
-OCR_SYSTEM_PROMPT = """你是一个严谨的错题图片识别助手，负责从用户上传的错题图片中提取题目信息，并输出结构化 JSON。
-
-你的核心任务是：
-
-1. 尽可能准确识别图片中的文字、公式、选项、图表信息。
-2. 判断题目所属学科、题型、难度和知识点。
-3. 提取题目原文，保持题干、条件、选项、公式的完整性。
-4. 如果图片中已经包含答案或解析，需要一并提取。
-5. 如果图片中没有答案或解析，不要编造答案，只根据可见内容填写。
-6. 如果识别出题目属于算法、数据结构或编程题，需要在 tags 和 knowledge_points 中体现，但不要强行生成完整代码。完整代码由解题 AI 负责。
-
-请严格遵守以下规则：
-
-* 只根据图片中可见内容进行识别。
-* 不要臆造图片中不存在的信息。
-* 数学公式尽量使用 LaTeX 表示。
-* 选择题需要保留所有选项。
-* 多小问题目需要保留小问编号。
-* 如果图片模糊、遮挡或无法完整识别，需要在 analysis 中说明识别不确定的位置。
-* 输出必须是合法 JSON。
-* 不要输出 Markdown。
-* 不要使用 ```json 代码块。
-* 不要在 JSON 前后添加任何解释性文字。
-
-请按照以下 JSON 格式返回：
-
-{
-  "title": "题目标题，若图片中没有明确标题，则根据题目内容概括一个简短标题",
-  "question": "完整题目内容，包括题干、条件、选项、公式、图表文字信息等",
-  "correct_answer": "图片中可见的答案；如果图片中没有答案，填写空字符串",
-  "analysis": "图片中可见的解析；如果图片中没有解析，填写识别说明或空字符串；如果存在识别不确定内容，需要在这里说明",
-  "knowledge_points": "题目涉及的知识点，多个知识点用中文逗号分隔",
-  "subject": "学科名称，例如：数学、英语、计算机、数据结构、算法、物理、化学、政治、未知",
-  "difficulty": "easy|medium|hard",
-  "tags": ["标签1", "标签2"],
-  "error_reason": "如果图片中能看出错误原因则填写；否则填写空字符串",
-  "key_step": "本题最关键的解题步骤或判断点；无法判断时填写空字符串",
-  "similar_traps": ["相似易错点1", "相似易错点2"],
-  "generalization": "这类题可迁移的一般方法；无法判断时填写空字符串",
-  "review_advice": "复习建议；无法判断时填写空字符串",
-  "variant_questions": ["变式题1", "变式题2"]
-}
-
-字段要求：
-
-1. title
-   * 简短、具体。
-   * 不超过 30 个中文字符。
-   * 不要写成"题目""错题""图片识别结果"这类无信息标题。
-
-2. question
-   * 必须尽量完整。
-   * 选择题需要包含 A、B、C、D 等选项。
-   * 判断题需要保留判断对象。
-   * 填空题需要保留空缺位置。
-   * 编程题需要保留输入格式、输出格式、样例输入、样例输出和数据范围。
-
-3. correct_answer
-   * 只填写图片中已经出现的答案。
-   * 图片中没有答案时，填写空字符串。
-   * 不要主动求解。
-
-4. analysis
-   * 只填写图片中可见的解析。
-   * 图片中没有解析时，可以填写空字符串。
-   * 如果 OCR 不确定，需要写明，例如："部分公式识别不确定：第 2 行分母可能为 x+1。"
-
-5. knowledge_points
-   * 根据题目内容提取知识点。
-   * 数学题示例：函数、导数、极限、线性代数、概率论。
-   * 算法题示例：二分查找、动态规划、贪心、图论、最短路、并查集。
-
-6. subject
-   * 只能填写一个主要学科。
-   * 如果是算法或编程题，优先填写"算法"或"数据结构"。
-   * 如果无法判断，填写"未知"。
-
-7. difficulty
-   * 简单题填写 easy。
-   * 中等题填写 medium。
-   * 较难题填写 hard。
-   * 无法判断时默认填写 medium。
-
-8. tags
-   * 返回字符串数组。
-   * 至少 1 个，最多 6 个。
-   * 算法题需要包含"算法"或"编程"。
-   * 图片识别不完整时，可以包含"识别不完整"。
-
-9. extended mistake fields
-   * error_reason 聚焦"为什么错"，不要重复完整解析。
-   * key_step 聚焦"下一次做题时最先抓住哪一步"。
-   * similar_traps 返回 0 到 4 条相似陷阱。
-   * generalization 总结同类题通法。
-   * review_advice 给出当天、3 天后、7 天后的复习建议。
-   * variant_questions 返回 0 到 3 道短变式题。
-
-再次强调：
-
-你只负责识别与结构化提取，不负责完整解题。
-输出必须是严格合法 JSON。"""
-
-TEXT_SYSTEM_PROMPT = """你是一个严谨的学习解题助手，负责根据用户提供的题目文本进行完整分析，并输出结构化 JSON。
-
-你的核心任务是：
-
-1. 理解题目内容。
-2. 判断题目所属学科、难度和知识点。
-3. 给出正确答案。
-4. 给出清晰、可核查的解析过程。
-5. 如果题目是算法、数据结构或编程题，必须同时给出 Python 和 C 语言参考实现。
-6. 如果题目信息不足，必须明确指出缺失条件，不能编造题目条件。
-
-请严格遵守以下规则：
-
-* 输出必须是合法 JSON。
-* 不要输出 Markdown。
-* 不要使用 ```json 代码块。
-* 不要在 JSON 前后添加任何解释性文字。
-* 数学公式尽量使用 LaTeX 表示。
-* 解析过程需要分步骤说明。
-* 不能跳步给结论。
-* 不确定的地方必须在 analysis 中说明。
-* 不要承诺"必对""一定满分"等绝对化表述。
-* 如果题目无法求解，需要说明原因，并给出需要补充的信息。
-
-请按照以下 JSON 格式返回：
-
-{
-  "title": "题目标题",
-  "question": "整理后的完整题目文本",
-  "correct_answer": "正确答案；算法题必须包含 Python 和 C 两种参考实现",
-  "analysis": "详细解析；算法题必须包含算法思路、正确性说明、时间复杂度、空间复杂度",
-  "knowledge_points": "涉及的知识点，多个知识点用中文逗号分隔",
-  "subject": "学科名称，例如：数学、英语、计算机、数据结构、算法、物理、化学、政治、未知",
-  "difficulty": "easy|medium|hard",
-  "tags": ["标签1", "标签2"],
-  "error_reason": "错误原因，说明容易错在哪里",
-  "key_step": "关键步骤，说明解这道题最重要的一步",
-  "similar_traps": ["相似易错点1", "相似易错点2"],
-  "generalization": "举一反三，说明同类题的一般解法",
-  "review_advice": "复习建议，包含今天、3 天后、7 天后的安排",
-  "variant_questions": ["变式题1", "变式题2"]
-}
-
-字段要求：
-
-1. title
-   * 根据题目内容生成简短标题。
-   * 不超过 30 个中文字符。
-   * 标题应体现核心考点，例如"二分答案求最小最大值""导数判断函数单调性"。
-
-2. question
-   * 保留题目原意。
-   * 可以适度整理换行和格式。
-   * 不要改变题目条件。
-   * 如果原题存在明显缺失，需要在 question 中保留原始缺失状态，并在 analysis 中说明。
-
-3. correct_answer
-   * 普通数学题：给出最终答案。
-   * 选择题：给出选项和必要结果。
-   * 填空题：给出填空结果。
-   * 简答题：给出核心结论。
-   * 算法题：必须包含以下结构：
-
-   【Python 实现】
-   （Python 代码）
-
-   【C 语言实现】
-   （C 语言代码）
-
-   算法题代码要求：
-   * Python 代码优先使用标准输入输出。
-   * C 语言代码使用 scanf/printf 或 fgets 等标准输入输出。
-   * 代码应尽量完整可运行。
-   * 不要依赖第三方库。
-   * 变量命名清晰。
-   * 如果题目没有明确输入输出格式，需要给出核心函数实现，并说明假设。
-
-4. analysis
-   * 普通题需要包含：题意分析、解题步骤、关键公式或关键推理、最终结论。
-   * 数学题需要：写出关键公式、说明变形依据、避免只给答案。
-   * 概率题需要：明确样本空间、事件、条件概率或独立性假设、写出计算过程。
-   * 线性代数题需要：明确矩阵、向量、秩、特征值、线性相关性等核心对象、给出必要的行变换或理论依据。
-   * 算法题必须包含：题意抽象、暴力思路、优化思路、核心算法、正确性说明、时间复杂度、空间复杂度、易错点。
-
-   算法题复杂度格式示例：
-   时间复杂度：O(n log n)
-   空间复杂度：O(n)
-
-5. knowledge_points
-   * 提取核心知识点。
-   * 多个知识点用中文逗号分隔。
-   * 算法题示例：二分答案、贪心、动态规划、前缀和、图论、最短路、并查集、栈、队列、哈希表。
-   * 数学题示例：导数、极限、定积分、矩阵秩、特征值、条件概率、全概率公式、贝叶斯公式。
-
-6. subject
-   * 只能填写一个主要学科。
-   * 算法或编程题优先填写"算法"。
-   * 数据结构题优先填写"数据结构"。
-   * 如果无法判断，填写"未知"。
-
-7. difficulty
-   * easy：直接套公式、基础概念题、简单模拟题。
-   * medium：需要两步以上推理、常规算法题、综合题。
-   * hard：需要复杂证明、多知识点结合、较高算法设计难度。
-   * 无法判断时默认填写 medium。
-
-8. tags
-   * 返回字符串数组。
-   * 至少 1 个，最多 8 个。
-   * 应包含题型、知识点或能力标签。
-   * 算法题必须包含"算法"或"编程"。
-
-9. extended mistake fields
-   * error_reason 必须指出用户最可能犯错的位置。
-   * key_step 必须写出解题过程中最关键的一步。
-   * similar_traps 返回 2 到 4 条相似陷阱。
-   * generalization 总结同类题通法和识别信号。
-   * review_advice 给出清晰复习安排，至少包含当天、3 天后、7 天后。
-   * variant_questions 返回 1 到 3 道短变式题，不要过长。
-
-算法题识别规则：
-
-只要题目满足以下任一条件，就视为算法或编程题：
-
-* 出现"输入""输出""样例输入""样例输出""数据范围"
-* 要求"编写程序""设计算法""输出结果"
-* 涉及数组、字符串、图、树、栈、队列、链表、排序、搜索、动态规划、贪心、二分、最短路、并查集等
-* 题目来自蓝桥杯、ACM、LeetCode、洛谷、牛客、Codeforces 等编程训练场景
-* 要求分析时间复杂度或空间复杂度
-
-如果检测到算法题，correct_answer 中必须包含 Python 和 C 语言代码，analysis 中必须包含复杂度分析。
-
-如果不是算法题，不要强行生成代码。
-
-再次强调：
-
-输出必须是严格合法 JSON。
-不要输出 JSON 以外的任何内容。"""
-
-
-def _list_of_strings(value) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, list):
-        return [str(item) for item in value if str(item).strip()]
-    if isinstance(value, str):
-        normalized = value.replace("，", ",").replace("、", ",").replace("\n", ",")
-        return [item.strip() for item in normalized.split(",") if item.strip()]
-    return [str(value)]
-
-
-def _parse_result(result: dict, related_notes: list[dict] | None = None) -> AnalyzeResponse:
-    return AnalyzeResponse(
-        title=result.get("title", ""),
-        question=result.get("question", ""),
-        correct_answer=result.get("correct_answer", ""),
-        analysis=result.get("analysis", ""),
-        knowledge_points=result.get("knowledge_points", ""),
-        subject=result.get("subject", ""),
-        difficulty=result.get("difficulty", "medium"),
-        tags=_list_of_strings(result.get("tags")),
-        error_reason=result.get("error_reason", ""),
-        key_step=result.get("key_step", ""),
-        similar_traps=_list_of_strings(result.get("similar_traps")),
-        generalization=result.get("generalization", ""),
-        review_advice=result.get("review_advice", ""),
-        variant_questions=_list_of_strings(result.get("variant_questions")),
-        related_notes=related_notes or [],
-    )
-
-
-async def _find_related_notes(db: AsyncSession, subject: str | None, knowledge_points: str | None, limit: int = 3) -> list[dict]:
-    conditions = []
-    if subject:
-        conditions.append(Note.subject == subject)
-    if knowledge_points:
-        keywords = [kw.strip() for kw in knowledge_points.replace("，", ",").replace("、", ",").split(",") if kw.strip()]
-        for kw in keywords[:3]:
-            conditions.append(Note.knowledge_points.ilike(f"%{kw}%"))
-    if not conditions:
-        return []
-    query = (
-        select(Note.slug, Note.title)
-        .where(or_(*conditions))
-        .where(Note.type == "note")
-        .order_by(Note.updated_at.desc())
-        .limit(limit)
-    )
-    result = await db.execute(query)
-    return [{"slug": row.slug, "title": row.title} for row in result.all()]
+@router.get("/config")
+async def get_ai_config(
+    _admin=Depends(get_current_admin),
+):
+    return build_ai_config()
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_mistake(req: AnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
-    _check_rate_limit()
+async def analyze_mistake(
+    req: AnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
     if not req.images:
         raise HTTPException(status_code=400, detail="At least one image is required")
 
-    content = [{"type": "text", "text": OCR_SYSTEM_PROMPT}]
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze", after={"image_count": len(req.images)},
+    )
 
+    content = [{"type": "text", "text": get_prompt_template(AiTaskType.ANALYZE_MISTAKE).user_content_template or ""}]
     for img in req.images:
-        content.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
-            }
-        )
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
+        })
 
-    messages = [
-        {"role": "system", "content": "你是一个严谨的错题图片识别助手。请始终以 JSON 格式回复。"},
-        {"role": "user", "content": content},
-    ]
+    personal_ctx = build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
+        content.append({"type": "text", "text": personal_ctx})
+
+    messages = build_vision_messages(AiTaskType.ANALYZE_MISTAKE, content)
 
     try:
-        result = await call_ocr_model(messages)
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
+        gw = await call_vision(AiTaskType.ANALYZE_MISTAKE, messages)
+        result = gw.data
+    except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-    related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
-    return _parse_result(result, related)
+    return await analyze_and_parse(result, db, call_vision)
 
 
 @router.post("/analyze-text", response_model=AnalyzeResponse)
-async def analyze_text(req: TextAnalyzeRequest, _admin=Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
-    _check_rate_limit()
+async def analyze_text(
+    req: TextAnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text is required")
 
-    messages = [
-        {"role": "system", "content": TEXT_SYSTEM_PROMPT},
-        {"role": "user", "content": req.text},
-    ]
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_text", after={"text_length": len(req.text)},
+    )
+
+    user_content = req.text
+    personal_ctx = build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
+        user_content += personal_ctx
+
+    messages = build_text_messages(AiTaskType.ANALYZE_TEXT, user_content)
 
     try:
-        result = await call_text_model(messages)
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
+        gw = await call_text(AiTaskType.ANALYZE_TEXT, messages)
+        result = gw.data
+    except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
-    related = await _find_related_notes(db, result.get("subject"), result.get("knowledge_points"))
-    return _parse_result(result, related)
+    return await analyze_and_parse(result, db, call_text)
 
 
-KNOWLEDGE_SUMMARY_SYSTEM_PROMPT = """你是一个严谨的考研复习总结助手。你的任务是根据提供的 source references（来源引用）生成复习总结。
+@router.post("/analyze-stream", deprecated=True)
+async def analyze_mistake_stream(
+    req: AnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    if not req.images:
+        raise HTTPException(status_code=400, detail="至少需要一张图片")
 
-核心规则：
-1. 每个事实性结论必须绑定 source_refs，标明出处。
-2. 如果内容是你基于已有信息的推理，必须标注为 ai_inference。
-3. 如果来源不足，不得编造事实，应返回 insufficient_context。
-4. 不得编造不存在的 source_id、slug、URL 或 excerpt。
-5. 输出必须是严格合法 JSON，不要输出其他内容。
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_stream", after={"image_count": len(req.images)},
+    )
 
-输出格式：
-{
-  "title": "总结标题",
-  "blocks": [
-    {
-      "type": "source_backed_claim",
-      "text": "事实性结论文本",
-      "source_refs": [{"source_type": "mistake", "source_id": "xxx", "field": "analysis"}]
-    },
-    {
-      "type": "ai_inference",
-      "text": "推理或建议文本",
-      "source_refs": []
+    content = [{"type": "text", "text": get_prompt_template(AiTaskType.ANALYZE_MISTAKE).user_content_template or ""}]
+    for img in req.images:
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{img.mime_type};base64,{img.base64}"},
+        })
+
+    personal_ctx = build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
+        content.append({"type": "text", "text": personal_ctx})
+
+    messages = [
+        {"role": "system", "content": get_prompt_template(AiTaskType.ANALYZE_MISTAKE).system_prompt},
+        {"role": "user", "content": content},
+    ]
+
+    return StreamingResponse(
+        stream_analyze_events(messages, call_vision, AiTaskType.ANALYZE_MISTAKE, db),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/analyze-text-stream", deprecated=True)
+async def analyze_text_stream(
+    req: TextAnalyzeRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    if not req.text.strip():
+        raise HTTPException(status_code=400, detail="请输入题目文本")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_analyze_text_stream", after={"text_length": len(req.text)},
+    )
+
+    user_content = req.text
+    personal_ctx = build_personal_context(req.my_answer, req.correct_answer, req.user_error_analysis)
+    if personal_ctx:
+        user_content += personal_ctx
+
+    messages = [
+        {"role": "system", "content": get_prompt_template(AiTaskType.ANALYZE_TEXT).system_prompt},
+        {"role": "user", "content": user_content},
+    ]
+
+    return StreamingResponse(
+        stream_analyze_events(messages, call_text, AiTaskType.ANALYZE_TEXT, db),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/generate-variant")
+async def generate_variant(
+    req: dict,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    knowledge_point = req.get("knowledge_point", "").strip()
+    subject = req.get("subject", "").strip()
+    if not knowledge_point:
+        raise HTTPException(status_code=400, detail="knowledge_point is required")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_generate_variant", after={"knowledge_point": knowledge_point},
+    )
+
+    user_content = f"知识点: {knowledge_point}"
+    if subject:
+        user_content += f"\n学科: {subject}"
+
+    messages = build_text_messages(AiTaskType.GENERATE_VARIANT, user_content)
+
+    try:
+        gw = await call_text(AiTaskType.GENERATE_VARIANT, messages)
+        result = gw.data
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return {
+        "question": result.get("question", ""),
+        "correct_answer": result.get("correct_answer", ""),
+        "analysis": result.get("analysis", ""),
+        "difficulty": result.get("difficulty", "medium"),
+        "knowledge_points": result.get("knowledge_points", knowledge_point),
+        "subject": subject,
     }
-  ]
-}
 
-如果 sources 不足，返回：
-{
-  "status": "insufficient_context",
-  "message": "No usable source references are available for factual generation.",
-  "outline": []
-}"""
+
+@router.post("/generate-knowledge-card")
+async def generate_knowledge_card(
+    req: dict,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    knowledge_point = req.get("knowledge_point", "").strip()
+    subject = req.get("subject", "").strip()
+    if not knowledge_point:
+        raise HTTPException(status_code=400, detail="knowledge_point is required")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_generate_knowledge_card", after={"knowledge_point": knowledge_point},
+    )
+
+    user_content = f"知识点: {knowledge_point}"
+    if subject:
+        user_content += f"\n学科: {subject}"
+
+    messages = build_text_messages(AiTaskType.GENERATE_KNOWLEDGE_CARD, user_content)
+
+    try:
+        gw = await call_text(AiTaskType.GENERATE_KNOWLEDGE_CARD, messages)
+        result = gw.data
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return {
+        "title": result.get("title", knowledge_point),
+        "content": result.get("content", ""),
+        "knowledge_points": result.get("knowledge_points", knowledge_point),
+        "subject": result.get("subject", subject),
+    }
 
 
 @router.post("/knowledge-summary", response_model=KnowledgeSummaryResponse | InsufficientContextResponse)
 async def knowledge_summary(
-    request: KnowledgeSummaryRequest,
+    request_body: KnowledgeSummaryRequest,
+    request: Request,
     _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
 ):
-    _check_rate_limit()
+    check_rate_limit()
 
-    sources = request.context_pack.sources
-    if not sources or len(sources) == 0:
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_knowledge_summary", after={"source_count": len(request_body.context_pack.sources)},
+    )
+
+    sources = request_body.context_pack.sources
+    if not sources:
         return InsufficientContextResponse(
             status="insufficient_context",
             message="No usable source references are available for factual generation.",
             outline=[],
         )
 
-    source_context = []
-    for s in sources[:10]:
-        source_context.append(
-            f"[{s.source_type.value}:{s.source_id}] {s.title} (field: {s.field})\n"
-            f"Excerpt: {s.excerpt[:200]}" if s.excerpt else f"[{s.source_type.value}:{s.source_id}] {s.title}"
-        )
-
-    related_notes_ctx = ""
-    if request.context_pack.related_notes:
-        related_notes_ctx = "\n相关笔记:\n" + "\n".join(
-            f"- {n.title} (subject: {n.subject}, slug: {n.slug})"
-            for n in request.context_pack.related_notes[:5]
-        )
-
-    related_mistakes_ctx = ""
-    if request.context_pack.related_mistakes:
-        related_mistakes_ctx = "\n相关错题:\n" + "\n".join(
-            f"- {m.title} (subject: {m.subject}, difficulty: {m.difficulty})"
-            for m in request.context_pack.related_mistakes[:5]
-        )
-
-    stats_ctx = ""
-    if request.context_pack.stats:
-        stats = request.context_pack.stats
-        stats_ctx = f"\n统计: 错题数={stats.mistake_count}, 笔记数={stats.note_count}"
-        if stats.top_error_reasons:
-            stats_ctx += f", 高频错误原因: {'、'.join(stats.top_error_reasons)}"
-
-    user_content = (
-        f"Mode: {request.mode}\n"
-        f"Language: {request.requirements.get('language', 'zh-CN')}\n"
-        f"Style: {request.requirements.get('style', 'exam_review')}\n"
-        f"Max length: {request.requirements.get('max_length', 1200)}\n"
-        f"\n--- Source References ---\n"
-        + "\n\n".join(source_context)
-        + related_notes_ctx
-        + related_mistakes_ctx
-        + stats_ctx
-        + "\n\n请根据以上来源引用生成复习总结。每个事实性结论必须绑定 source_refs。"
-    )
-
-    messages = [
-        {"role": "system", "content": KNOWLEDGE_SUMMARY_SYSTEM_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
+    user_content = build_summary_user_content(request_body)
+    messages = build_text_messages(AiTaskType.KNOWLEDGE_SUMMARY, user_content)
 
     try:
-        result = await call_text_model(messages)
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
+        gw = await call_text(AiTaskType.KNOWLEDGE_SUMMARY, messages)
+        result = gw.data
+    except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
     if result.get("status") == "insufficient_context":
@@ -492,60 +343,287 @@ async def knowledge_summary(
             outline=result.get("outline", []),
         )
 
-    source_map = {s.source_id: s for s in sources}
-
-    _MISTAKE_FIELDS = {
-        "analysis", "question", "correct_answer", "error_reason",
-        "key_step", "generalization", "review_advice",
-        "knowledge_points", "content",
-    }
-    _NOTE_FIELDS = {"content", "summary", "title", "knowledge_points"}
-
-    blocks: list[CitationBlock] = []
-    for block in result.get("blocks", []):
-        block_type = block.get("type", "ai_inference")
-        try:
-            validated_type = CitationBlockType(block_type)
-        except ValueError:
-            validated_type = CitationBlockType.ai_inference
-
-        raw_refs = block.get("source_refs", [])
-        validated_refs: list[SourceRef] = []
-        for ref in raw_refs:
-            ref_source_id = ref.get("source_id", "")
-            matched = source_map.get(ref_source_id)
-            if not matched:
-                continue
-
-            ai_field = ref.get("field", "")
-            allowed = _MISTAKE_FIELDS if matched.source_type == SourceType.mistake else _NOTE_FIELDS
-            if ai_field and ai_field in allowed:
-                locked_field = ai_field
-            else:
-                locked_field = matched.field
-
-            validated_refs.append(SourceRef(
-                source_type=matched.source_type,
-                source_id=matched.source_id,
-                title=matched.title,
-                slug=matched.slug,
-                field=locked_field,
-                excerpt=matched.excerpt,
-                url=matched.url,
-                confidence=matched.confidence,
-                match_reasons=matched.match_reasons,
-            ))
-
-        if validated_type == CitationBlockType.source_backed_claim and not validated_refs:
-            validated_type = CitationBlockType.ai_inference
-
-        blocks.append(CitationBlock(
-            type=validated_type,
-            text=block.get("text", ""),
-            source_refs=validated_refs,
-        ))
-
+    blocks = parse_summary_blocks(result, sources)
     return KnowledgeSummaryResponse(
         title=result.get("title", ""),
         blocks=blocks,
+    )
+
+
+@router.get("/prompts")
+async def get_prompts(
+    _admin=Depends(get_current_admin),
+):
+    return build_prompts_response()
+
+
+@router.post("/prompt-test")
+async def prompt_test(
+    req: dict,
+    _admin=Depends(get_current_admin),
+):
+    prompt_key = req.get("prompt_key", "")
+    sample_input = req.get("sample_input", "")
+    custom_prompt = req.get("custom_prompt", "")
+    route = req.get("route", "text JSON")
+
+    if not sample_input:
+        raise HTTPException(status_code=400, detail="sample_input is required")
+
+    system_prompt = custom_prompt
+    if not system_prompt and prompt_key:
+        group, _, key = prompt_key.partition(".")
+        tmpl = PROMPT_TEMPLATES.get(group, {}).get(key, {})
+        system_prompt = tmpl.get("full_prompt") or tmpl.get("prompt", "")
+    if not system_prompt:
+        raise HTTPException(status_code=400, detail="No prompt found")
+
+    messages = build_text_messages(AiTaskType.PROMPT_TEST, sample_input, system_prompt_override=system_prompt)
+
+    is_json = "json" in route.lower()
+    try:
+        if "text" in route.lower():
+            gw = await call_text(AiTaskType.PROMPT_TEST, messages, max_tokens=2000, json_mode=is_json, preferred="deepseek")
+        else:
+            gw = await call_vision(AiTaskType.PROMPT_TEST, messages, max_tokens=2000)
+        return {"success": gw.success, "provider_used": gw.provider_used, "fallback_used": gw.fallback_used, "latency_ms": gw.latency_ms, "output": gw.data, "attempts": gw.attempts, "error": gw.error}
+    except Exception as e:
+        return {"success": False, "provider_used": "", "fallback_used": False, "latency_ms": 0, "output": None, "error": str(e)[:300], "attempts": []}
+
+
+@router.get("/provider-status")
+async def provider_status(
+    _admin=Depends(get_current_admin),
+):
+    return await get_provider_status()
+
+
+@router.get("/provider-health-snapshot", response_model=AiProviderHealthSnapshotResponse)
+async def provider_health_snapshot(
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    items = await query_provider_health_snapshot(db)
+    return AiProviderHealthSnapshotResponse(items=items)
+
+
+@router.get("/call-logs", response_model=list[AiCallLogOut])
+async def list_call_logs(
+    task_type: str | None = None,
+    success: bool | None = None,
+    provider: str | None = None,
+    limit: int = 20,
+    offset: int = 0,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    limit = min(max(limit, 1), 100)
+    logs = await query_call_logs(db, task_type=task_type, success=success, provider=provider, limit=limit, offset=offset)
+    return logs
+
+
+@router.get("/call-logs/stats", response_model=AiCallLogStatsResponse)
+async def call_log_stats(
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    items = await query_call_log_stats(db)
+    return AiCallLogStatsResponse(items=items)
+
+
+@router.get("/call-logs/usage-cost", response_model=AiUsageCostStatsResponse)
+async def call_log_usage_cost_stats(
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    items = await query_usage_cost_stats(db)
+    return AiUsageCostStatsResponse(items=items)
+
+
+# --- Staged mistake workflow endpoints ---
+
+
+@router.post("/mistake/question-draft", response_model=QuestionDraftResponse)
+async def mistake_question_draft(
+    req: QuestionDraftRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    if not req.images and not req.text.strip():
+        raise HTTPException(status_code=400, detail="At least one image or text is required")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_question_draft", after={"image_count": len(req.images), "has_text": bool(req.text.strip())},
+    )
+
+    try:
+        result = await generate_question_draft(
+            images=[img.model_dump() for img in req.images],
+            text=req.text,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return QuestionDraftResponse(**result)
+
+
+@router.post("/mistake/question-draft/confirm", response_model=QuestionDraftConfirmResponse)
+async def mistake_question_draft_confirm(
+    req: QuestionDraftConfirmRequest,
+    _admin=Depends(get_current_admin),
+):
+    now = __import__("datetime").datetime.utcnow().isoformat() + "Z"
+    return QuestionDraftConfirmResponse(
+        status="confirmed",
+        draft=req.draft,
+        confirmed_at=now,
+    )
+
+
+@router.post("/mistake/error-interpretation", response_model=ErrorInterpretationResponse)
+async def mistake_error_interpretation(
+    req: ErrorInterpretationRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    if not req.user_error_reason.strip():
+        raise HTTPException(status_code=400, detail="user_error_reason is required")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_error_interpretation", after={"reason_length": len(req.user_error_reason)},
+    )
+
+    try:
+        result = await generate_error_interpretation(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            rejection_history=req.rejection_history,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return ErrorInterpretationResponse(**result)
+
+
+@router.post("/mistake/error-interpretation/reject", response_model=ErrorInterpretationResponse)
+async def mistake_error_interpretation_reject(
+    req: InterpretationRejectionRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+    if not req.rejection_reason.strip():
+        raise HTTPException(status_code=400, detail="rejection_reason is required")
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_interpretation_reject", after={"rejection_reason": req.rejection_reason[:100]},
+    )
+
+    updated_history = list(req.rejection_history) + [req.rejection_reason]
+
+    try:
+        result = await generate_error_interpretation(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            rejection_history=updated_history,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return ErrorInterpretationResponse(**result)
+
+
+@router.post("/mistake/final-analysis", response_model=FinalAnalysisResponse)
+async def mistake_final_analysis(
+    req: FinalAnalysisRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_final_analysis",
+        after={"interpretation_id": req.accepted_interpretation.interpretation_id},
+    )
+
+    try:
+        result = await generate_final_analysis(
+            question_draft=req.question_draft.model_dump(),
+            user_error_reason=req.user_error_reason,
+            accepted_interpretation=req.accepted_interpretation.model_dump(),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return FinalAnalysisResponse(**result)
+
+
+@router.post("/mistake/diagram", response_model=DiagramResponse)
+async def mistake_diagram(
+    req: DiagramStrategyRequest,
+    request: Request,
+    _admin=Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+    session_token: str | None = Cookie(None, alias="admin_session"),
+):
+    check_rate_limit()
+
+    await audit_action(
+        db, action="ai_call", session_token=session_token, request=request,
+        entity_type="ai_mistake_diagram",
+        after={"interpretation_id": req.accepted_interpretation.interpretation_id},
+    )
+
+    strategy, reason = classify_diagram_strategy(req.question_draft.model_dump())
+
+    if strategy == "structured":
+        structured_data = await generate_structured_diagram(
+            question_draft=req.question_draft.model_dump(),
+            accepted_interpretation=req.accepted_interpretation.model_dump(),
+            final_analysis=req.final_analysis.model_dump(),
+        )
+        return DiagramResponse(
+            strategy="structured",
+            strategy_reason=reason,
+            structured_data=structured_data,
+            accepted_interpretation_id=req.accepted_interpretation.interpretation_id,
+            accepted_interpretation_version=req.accepted_interpretation.version,
+            uses_error_interpretation=True,
+        )
+
+    image_url, image_prompt = await generate_qwen_image_fallback(
+        question_draft=req.question_draft.model_dump(),
+        accepted_interpretation=req.accepted_interpretation.model_dump(),
+        final_analysis=req.final_analysis.model_dump(),
+    )
+    return DiagramResponse(
+        strategy="qwen_image_fallback",
+        strategy_reason=reason,
+        image_url=image_url,
+        image_prompt=image_prompt,
+        accepted_interpretation_id=req.accepted_interpretation.interpretation_id,
+        accepted_interpretation_version=req.accepted_interpretation.version,
+        uses_error_interpretation=True,
     )

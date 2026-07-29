@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
-import initialList from './list.json'
+import { getPictures } from '@/lib/api/content'
 import { RandomLayout } from './components/random-layout'
 import UploadDialog from './components/upload-dialog'
 import { pushPictures } from './services/push-pictures'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import type { ImageItem } from '../projects/components/image-upload-dialog'
 import { useRouter } from 'next/navigation'
@@ -21,16 +21,31 @@ export interface Picture {
 }
 
 export default function Page() {
-	const [pictures, setPictures] = useState<Picture[]>(initialList as Picture[])
-	const [originalPictures, setOriginalPictures] = useState<Picture[]>(initialList as Picture[])
+	const [pictures, setPictures] = useState<Picture[]>([])
+	const [originalPictures, setOriginalPictures] = useState<Picture[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
+	const [isLoading, setIsLoading] = useState(true)
 	const router = useRouter()
 
 	const { siteContent } = useConfigStore()
+	const { isAdmin } = useAdminAuth()
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	useEffect(() => {
+		getPictures()
+			.then(data => {
+				setPictures(data as Picture[])
+				setOriginalPictures(data as Picture[])
+			})
+			.catch(err => {
+				console.error('Failed to load pictures:', err)
+				toast.error('加载图床列表失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const handleUploadSubmit = ({ images, description }: { images: ImageItem[]; description: string }) => {
 		const now = new Date().toISOString()
@@ -71,15 +86,12 @@ export default function Page() {
 				.map(picture => {
 					if (picture.id !== pictureId) return picture
 
-					// 如果是 single image，删除整个 Picture
 					if (imageIndex === 'single') {
 						return null
 					}
 
-					// 如果是 images 数组中的图片
 					if (picture.images && picture.images.length > 0) {
 						const newImages = picture.images.filter((_, idx) => idx !== imageIndex)
-						// 如果删除后数组为空，删除整个 Picture
 						if (newImages.length === 0) {
 							return null
 						}
@@ -94,22 +106,17 @@ export default function Page() {
 				.filter((p): p is Picture => p !== null)
 		})
 
-		// 更新 imageItems Map
 		setImageItems(prev => {
 			const next = new Map(prev)
 			if (imageIndex === 'single') {
-				// 删除所有相关的文件项
 				for (const key of next.keys()) {
 					if (key.startsWith(`${pictureId}::`)) {
 						next.delete(key)
 					}
 				}
 			} else {
-				// 删除特定索引的文件项
 				next.delete(`${pictureId}::${imageIndex}`)
 				
-				// 重新索引：删除索引 imageIndex 后，后面的索引需要前移
-				// 例如：删除索引 1，原来的索引 2 变成 1，索引 3 变成 2
 				const keysToUpdate: Array<{ oldKey: string; newKey: string }> = []
 				for (const key of next.keys()) {
 					if (key.startsWith(`${pictureId}::`)) {
@@ -125,7 +132,6 @@ export default function Page() {
 					}
 				}
 				
-				// 执行重新索引
 				for (const { oldKey, newKey } of keysToUpdate) {
 					const value = next.get(oldKey)
 					if (value) {
@@ -189,7 +195,7 @@ export default function Page() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 			}
@@ -199,7 +205,15 @@ export default function Page() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
+
+	if (isLoading) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -243,7 +257,7 @@ export default function Page() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

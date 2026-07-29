@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
 	reactStrictMode: false,
 	reactCompiler: true,
 	pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-	serverExternalPackages: ['mermaid', 'katex', 'shiki', 'marked', 'html-react-parser'],
 	experimental: {
 		scrollRestoration: false
 	},
@@ -43,7 +42,15 @@ const nextConfig: NextConfig = {
 				source: '/en',
 				destination: '/',
 				permanent: true
-			}
+			},
+			// Route Cutover: legacy write-* 与旧入口下线，统一重定向到 /manage/* 主线
+			{ source: '/write-mistake', destination: '/manage/capture', permanent: false },
+			{ source: '/write-mistake/:slug', destination: '/manage/mistakes', permanent: false },
+			{ source: '/write-note', destination: '/manage/dashboard', permanent: false },
+			{ source: '/write-note/:slug', destination: '/manage/dashboard', permanent: false },
+			{ source: '/write', destination: '/manage/dashboard', permanent: false },
+			{ source: '/write/:slug', destination: '/manage/dashboard', permanent: false },
+			{ source: '/mistakes/review', destination: '/manage/review', permanent: false }
 		]
 	}
 }

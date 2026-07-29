@@ -1,0 +1,201 @@
+# I 系列完成执行验证
+
+事实日期：2026-07-28
+执行环境：`/Users/limengyang/2025-blog-public`，本机 PostgreSQL `blog_db:5432`
+
+## 执行前规划缺陷补正
+
+- 目标：补齐候选 artifact 纠缠切分与已部署前端/source DB mismatch 两个 P0 缺陷。
+- 范围：仅 `docs/workflows/i-series-completion-plan/` 文档；读取 Git、代码引用、进程、端口、Cloudflare ingress、生产 HTTP 和 DB revision。
+- 不做：未改源码，未写数据库，未启动/停止服务，未改生产配置。
+- 前置：`git status --short` 已保存；dirty/untracked 用户改动保持原样。
+- 执行证据：`design.md` 2.4 列出 migration/runtime/contracts/tests 完整冻结集合；2.5 记录 OpenNext 前端、public API→localhost:8000 tunnel、无 8000 listener/Uvicorn、public health 502、candidate expected=024、source=020；`risk-register.md` I-RISK-P0-02/03。
+- 退出：`PASS`。
+- 本轮实际改动摘要：文件仅为本 workflow 的 `README.md`、`design.md`、`requirements.md`、`tasks.md`、`risk-register.md`、`validation.md`；数据库无改动；源库无写入；Git 未 stage/commit/push。
+
+## C0 Owner/Backfill 决策
+
+- 目标：确定 D1-D8，解除 owner 决策 UNKNOWN。
+- 范围：只读 users 查询与 workflow 决策记录。
+- 不做：不生成 C1 manifest，不写 source/target DB，不迁移 password hash。
+- 前置：2026-07-28 用户明确授权 D1-D8 默认决策与 C0-C12 连续执行。
+- 执行证据：只读事务返回 8 users/4 admins；`WHERE is_admin IS TRUE ORDER BY id LIMIT 1` 得到 `4c503215-b158-4162-b472-79df8289ed0a|i5-profile-fe846c85`。D1 为 source→target 同 UUID；D2 row-level manifest；D3 其余 7 identities ARCHIVED/password hash excluded；D4 QUARANTINED；D5 strict-equivalence-only MERGED；D6 AI logs owner-controlled read-only ARCHIVED；D7 quarantine+inverse map+snapshot；D8 两组错题分别 MIGRATED。
+- 退出：`PASS`；D1-D8 无 UNKNOWN。`DRY_RUN_READY` 仍待 C1 双重复核，不在 C0 提前升级。
+- 本轮实际改动摘要：仅 workflow 文档；数据库无改动；源库只读；Git 未 stage/commit/push。
+
+## C1 Row-Level Manifest 与独立复核
+
+- 目标：只读生成覆盖 12 类当前 source records 的逐行 manifest，并由不同进程/查询独立复核后重判 `DRY_RUN_READY`。
+- 范围：source `blog_db:5432` revision 020 只读；workflow `assets/` 下生成器、测试、manifest 与验证报告。
+- 不做：不写 source DB，不创建 target DB，不迁移 password hash，不保存原始行/用户名/内容到 manifest。
+- 前置：C0 PASS；canonical owner=`4c503215-b158-4162-b472-79df8289ed0a`；D1-D8 已生效。
+- 执行证据：`python3 -m unittest -v test_manifest_tool.py` 为 2/2 PASS；`py_compile` PASS。进程一 `manifest_tool.py generate` 逐表只读查询得到 source_count=121，ARCHIVED=86，MIGRATED=35，12 类 counts=`13/3/3/3/4/1/1/0/6/32/47/8`，source aggregate SHA-256=`b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6`，manifest payload SHA-256=`c98bdfa3a560ea47ab1768215a3600aa19b3d190f42ac13d4ebfcb51a80be3b5`。进程二 `verify` 使用单 UNION 查询与独立关系 SQL，结果 missing=0、extra=0、duplicate=0、hash_drift=0、owner_conflict=0、disposition_rule_conflict=0、orphan=0、source aggregate match=true；见 `assets/c1-independent-verification.json`。
+- 退出：`PASS`；`DRY_RUN_READY=PASS`。
+- 本轮实际改动摘要：新增 `assets/manifest_tool.py`、`test_manifest_tool.py`、`owner-mapping-manifest-v1.json`、`c1-independent-verification.json` 并更新 workflow 文档；源库只读；无 target DB；Git 未 stage/commit/push。
+
+## C2 带 Manifest 的隔离 Dry-Run
+
+- 目标：在可销毁隔离 target 重跑 source clone 的 `020→024`，证明 manifest、数据、schema、rollback/replay 与销毁门槛持续 PASS。
+- 范围：source `blog_db:5432` 仅由 `pg_dump` 读取；临时 DB `i_series_c2_20260728` 写入；仓库外临时目录 `/tmp/i-series-c2.a6nliO`。
+- 不做：不写 source DB，不服务任何正式流量，不改生产配置，不部署。
+- 前置：C1 `DRY_RUN_READY=PASS`；Alembic heads=`024 (head)`，source current=`020`；目标 DB 预检查不存在，source 除检查会话外连接数=0。
+- 执行证据：source custom dump SHA-256=`23da88c184597fc49f0b2358be578e1e05f3e752f1f1fbd81147c6a68d134eab`；restore current=020。第一次 `createdb` 以 `blog_user` 因缺少 CREATEDB 权限失败且未创建目标，随后由本机管理角色创建、owner=`blog_user`，根因已闭合。clone 执行 `020→021→022→023→024` 后 current=head=024，`alembic check`=`No new upgrade operations detected`；manifest 020 字段投影 121/121、missing/extra/duplicate/hash drift/owner conflict=0；notes revision 与 attachment workspace 回填 bad=0；新表初始 rows=0；pg_trgm=1；关系 orphan=0。随后 `024→020`，原始 121 行 manifest 再验 PASS；再次 `020→024`，head/check/manifest/backfill 全 PASS。
+- 回滚/销毁证据：rollback replay 已实跑；临时 DB drop 后 `pg_database` count=0。工具层拒绝 `rm -rf`，未执行该命令；临时 dump 目录改为可恢复地移动到 `/Users/limengyang/.Trash/i-series-c2.a6nliO-20260728`，原 `/tmp` 路径不存在。
+- 退出：`PASS`；`DRY_RUN_READY` 持续 PASS。
+- 本轮实际改动摘要：隔离 DB 创建、迁移、降级、重放后已删除；源库只读；临时 dump 在废纸篓可恢复；仓库仅更新 workflow 文档；Git 未 stage/commit/push。
+
+## C3 候选 Artifact 冻结与 Runbook 审查
+
+- 目标：把 021-024 与 I3-I10 纠缠 runtime/contracts/tests 冻结为同一个可审计候选，并审查 SQL、锁、extension、数据影响与回滚。
+- 范围：当前 Git base、全部 dirty/untracked `backend/`/`src/` 纠缠文件、owner manifest、离线 upgrade SQL、恢复 runbook；仓库外路径 `/Users/limengyang/Backups/2025-blog-public/i-series-artifacts/20260728-c3-candidate/`。
+- 不做：不 commit/stage/push，不部署，不改 source DB，不混入 Phase 1.0 文档/截图 dirty。
+- 前置：C2 PASS；Alembic `020→021→022→023→024` 单 head；C2 同代码 024 `alembic check` clean。
+- 执行证据：Git base=`cc05ef5b4b3fa0504d3ebbc07105ed260397cb71`；候选文件 83，复制后 `shasum -c` 83/83 OK。file hash manifest SHA-256=`2a70223b11d7d456ad3cceaccba01304e5219261ab65e7286b7b6e1a38abcfb8`；bundle=`de60d2ec8f56ef742b2f06633fe17be5bf96bb84b004ba614b56a1e072defa70`；tracked patch=`4aad86dfa9f25897867185dd643e1a089e5958132d001a0f39d455aece0ff782`；upgrade SQL=`e12f0e09afeaeb2d12c222aef295c35196e5ad65466d71cb6983d978184299b1`；顶层 `ARTIFACT.sha256` 11/11 OK，自身 hash=`c88ddad22d2d39f1f92a5a6145a06532ff10c50370215c8e9e65e399fcfa9e40`。
+- 审查结论：021/023/024 ALTER 对 `mistake_drafts`/attachments/notes 需要强锁，C5 必须无应用连接；source 仅 1 attachment/13 notes，C2 实跑回填 bad=0。source 020 无 pg_trgm，clone 由 `blog_user` 创建成功。离线 upgrade SQL 完整；离线 downgrade 因 022 的在线数据保护查询无 bind 只能生成 partial，故主回滚固定为并行 020 restore/switch，不能依赖静态 downgrade。详见 `assets/c3-artifact-review.md`。
+- 退出：`PASS`；C5 前必须逐文件 83/83 与 file-list hash 相等，否则硬停止。
+- 本轮实际改动摘要：仓库新增 C3 审查文档并更新 workflow；仓库外新增可审计候选 bundle；数据库无改动；Git 未 stage/commit/push。
+
+## C4 新鲜 020 备份、恢复与升级演练
+
+- 目标：生成 C5 可恢复输入，验证最新 020 DB+附件备份可以恢复并升级至 024。
+- 范围：source `blog_db:5432` 只读 dump/文件读取；长期仓库外备份 `/Users/limengyang/Backups/2025-blog-public/20260728-c4-source-020/`；隔离 restore DB `i_series_c4_restore_20260728`。
+- 不做：不写 source，不改生产配置，不部署；不删除长期 020 备份。
+- 前置：C3 artifact 83/83 SHA-256 仍 OK；C1 manifest fresh verify PASS、source revision=020、source 无其他连接。
+- 执行证据：`database.dump` custom-format 206,185 bytes、`pg_restore --list` 289 entries；DB/两份附件 tar/owner manifest/source facts 的 `BACKUP.sha256` 8/8 OK，根 hash=`f34deee9b54e75a54efffb892b1f26cc25ba91b8779b5fd9a34c853ec71abca2`。附件恢复到临时路径后 backend uploads 2/2、兼容 pictures 10/10 SHA-256 OK。restore 020 的 121-row manifest 精确复核 PASS；升级后 current=head=024、`alembic check` clean、024 投影 hash PASS、backfill bad=0、pg_trgm=1；候选 runtime `validate_database_readiness()` 在 `AUTH_BYPASS=false` 下输出 `readiness=PASS expected=024`。
+- 回滚/清理证据：C4 long-lived source 020 backup 保留。restore target 前无连接，drop 后 `pg_database` count=0；临时附件解压目录移至 `/Users/limengyang/.Trash/i-series-c4-attachments.fp1AFr-20260728`，没有删除备份。
+- 退出：`PASS`；C5 使用此备份作为失败时并行恢复的输入。
+- 本轮实际改动摘要：新增仓库外 C4 backup 与 SHA-256 evidence；隔离 DB 写入/迁移后已删除；source 仅只读；仓库更新 workflow 文档和 `c4-prebackup-source-verification.json`；Git 未 stage/commit/push。
+
+## C5 Source 020→024 Upgrade 与 024 Restore Point
+
+- 目标：在 fail-closed maintenance window 内将 source `blog_db:5432` 从 020 升至 024，并生成可验证的 024 恢复点。
+- 范围：C5 前只读 production/tunnel/source/artifact/backup/manifest preflight；唯一 source 写入为 Alembic 020→024；后续只读验证和 024 dump。
+- 不做：不部署、不 push、不改生产配置、不使用 AUTH_BYPASS、不执行 authority switch 或 Legacy 删除。
+- 前置：C1/C2/C3/C4 PASS；C3 candidate 83/83 OK、C4 backup 8/8 OK；source fresh manifest PASS、revision=020、无非自身 DB session；无 Uvicorn/Gunicorn/8000 listener；Cloudflare tunnel 将 public API 指向 localhost:8000，`blog` health=404、public API health=502，确认不存在活 backend 连 source。
+- 执行证据：`alembic upgrade head` 依次运行 020→021→022→023→024。后验：current=head=024，`alembic check`=`No new upgrade operations detected`；121-row old-field projection manifest missing/extra/duplicate/hash drift/owner conflict=0；backfill bad=0、new tables=`0,0,0,0`、pg_trgm=1、orphan=0；`validate_database_readiness()` 在 `AUTH_BYPASS=false` 下 PASS。FastAPI TestClient 公开 smoke：`/api/health`=200、`/api/notes`=200/total=13、`/api/notes/{slug}`=200。首个 smoke 对 list 形状作了错误假设而失败，实际 200 response 是分页 `{items,total,page,size}`；改为现有契约后重跑 PASS，未写数据。
+- 恢复点：`/Users/limengyang/Backups/2025-blog-public/20260728-c5-source-024/`；custom dump 322 entries，DB/attachments/manifest/facts `BACKUP.sha256` 8/8 OK，root hash=`28c79256820523965aca3d223dae866044c43748ae8d292cf8224cd49b258135`。
+- 退出：`PASS`；source schema authority=024。C4 020 backup 保留为 upgrade-failure parallel restore 输入，C5 024 backup 保留为 post-upgrade restore 输入。
+- 本轮实际改动摘要：**source DB schema 写入** 020→024；新 024 backup 写入仓库外；仓库仅更新 workflow、`c5-preflight-source-verification.json`；未 stage/commit/push/部署。
+
+## C6 E-05 Shadow Target 与增量对账
+
+- 目标：创建仅隔离写入的 shadow target，按 C1 manifest 执行全量/增量、tombstone 和 zero-drift 对账。
+- 范围：C5 后的只读代码/config/schema/DB inventory 审计。
+- 不做：不创建伪 target clone，不写 source/target/Legacy，不执行 C7-C12。
+- 前置：C5 PASS；owner manifest PASS。
+- 执行证据：全仓 `rg` 仅发现一个 `Settings.DATABASE_URL` 和 `create_async_engine(settings.DATABASE_URL)`；`backend/app/cli.py` 只有 passkey/password/temp-admin CLI，无 export/import/shadow/delta/cutover 命令。`information_schema` 未发现 shadow/quarantine/archive/tombstone/identity-map/migration ledger 表或 `owner_id/source_table/source_id/disposition/archived_at/quarantined_at/tombstoned_at` 列；唯一相关字段为既有 `draft_items.source_id`。PostgreSQL 仅有 `blog_db`、`postgres` 和无关 acceptance DB；I11 docs 也只有设计性描述，没有实现 artifact。
+- 退出：`BLOCKED`。没有可审计 target 及 upsert/tombstone/authority contract，无法证明 `unmapped=duplicate_manifest=owner_conflict=unexplained_drift=orphan=0`，更不能进入 C7 演练或 C8 实际切换。创建这些能力会扩大 C3 冻结后的候选 artifact 与数据模型，需要独立范围批准。
+- 本轮实际改动摘要：仅 workflow/risk 文档；source/target/Legacy DB 无写入；Git 未 stage/commit/push/部署。
+
+## C6 简化路径：最终数据完整性审计
+
+- 决策：2026-07-29 用户批准以单一 source 的只读完整性审计取代上述已阻塞的 E-05 shadow target 方案；历史 blocker 保留作为决策来源，不再是当前执行前置。
+- 范围：live `localhost:5432/blog_db`；全部 SQL 由 `assets/integrity_audit.py` 包装在 `BEGIN READ ONLY`；未创建 target、未写 source、未修改 C1 manifest 或仓库外 C3-C5 artifacts。
+- TDD：新增 `test_integrity_audit.py`。RED 为缺少 `evaluate_audit` 接口；首个 GREEN 尝试因测试夹具只列 `notes=13`、未满足 12 表合计 121 而正确 fail closed，补齐真实 12 表计数后，C6 新测试与 C1 原测试共 5/5 PASS。`py_compile` PASS。
+- Manifest：当前 live 024 重新执行 024→020 投影验证，source/manifest=`121/121`，missing/extra/duplicate/hash drift/owner conflict/invalid/rule conflict 全为 0；aggregate match=true，SHA-256=`b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6`。旧 `c1-post-upgrade-verification.json` 也保持 PASS。
+- 关系/backfill：复用 C1 `_relationship_orphans()` 的七类关系合同，全部为 0。`notes.revision null=0/min=1`；`attachments.display_name null=0`，并按实际 schema 的回填来源 `original_name` 做逐行比较，mismatch=0；`folder_id null=1` 为允许状态。
+- Source facts：revision=`024`；12 表计数合计 121（notes 13、questions 3、mistakes 3、review_items 3、review_records 4、attachments 1、attachment_links 1、capture_items 0、draft_items 6、ai_runs 32、ai_call_logs 47、users 8）；extensions=`pg_trgm,plpgsql`；admin=4；canonical owner=`4c503215-b158-4162-b472-79df8289ed0a`。
+- 证据：`assets/integrity_audit.py`、`assets/test_integrity_audit.py`、`assets/c6-final-integrity-audit.json`。
+- 退出：`PASS`；`fk_orphan_count=0`、backfill null/mismatch=0、`passed=true`。允许进入 C7 隔离恢复验证。
+
+## C7 简化路径：024 完整恢复验证
+
+- 范围：C5 restore point `/Users/limengyang/Backups/2025-blog-public/20260728-c5-source-024`；一次性 DB `i_series_c7_restore_verify_20260729_120056`（owner=`blog_user`）；一次性附件目录 `/tmp/i-series-c7-attachments.qKVnN5`。live source 未写、未连接为恢复目标，C5 backup 未修改。
+- Backup：`BACKUP.sha256` 的 database dump、两份 tar、两份逐文件 manifest、owner manifest、C5 preflight 和 source facts 共 8/8 OK；database dump SHA-256=`5e1f967d0555d9e767955004b1703f25b1f4bfa9245b7a62e032df93c157138f`，`pg_restore --list` 为 322 entries。
+- 附件：两份 tar 解压到临时目录后，backend uploads 2/2、public pictures 10/10 逐文件 SHA-256 均 OK。
+- 数据：restored revision=`024`；12 表计数与 C6/live 一致，合计 121。C1 024→020 投影重验 source/manifest=121/121，missing/extra/duplicate/hash/owner conflict=0，aggregate=`b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6` 且 match=true；七类 orphan=0；backfill null/mismatch=0。
+- Runtime/schema：`alembic current=024 (head)`、heads=`024 (head)`、`alembic check=No new upgrade operations detected`；candidate runtime 在 `AUTH_BYPASS=false`、`AUTH_BYPASS_ALLOW=false` 下 `validate_database_readiness()` PASS。
+- 清理：退出钩子的预终止连接辅助 SQL 因 `psql` 变量引用语法产生一次非阻塞错误；目标当时无连接，后续 `dropdb` 成功。独立复核 `pg_database` count=0，原 `/tmp` 路径不存在；附件目录已移动至 `/Users/limengyang/.Trash/i-series-c7-attachments.qKVnN5-20260729_120056`，可恢复。C5 backup 的 8 项 SHA 在清理后再次全 PASS。
+- 证据：`assets/c7-restore-verification.json`；废纸篓内保留本次 restored integrity 中间报告。
+- 退出：`PASS`；024 backup 可用于灾难恢复，隔离 DB 已删除。
+
+## C8 简化路径处置
+
+- 原任务：实际读/写权威切换与观察期。
+- 2026-07-29 决策：`SKIPPED`。当前 source `blog_db` 024 是唯一数据与 schema 权威；简化路径不创建 shadow target，因此不存在可执行且有意义的 authority switch。
+- 实际行为：未切读、未切写、未改路由、未改生产配置、未部署、未形成双主。
+- 退出：`SKIPPED BY APPROVED ARCHITECTURE DECISION`；不作为 C10 阻塞项。
+
+## C9 简化路径处置
+
+- 原任务：停用旧写并将 Legacy 设为可恢复只读归档。
+- 2026-07-29 决策：`SKIPPED`。简化架构中 source 本身就是唯一权威，不存在与 source 分离的 Legacy authority；把 source revoke/归档会破坏当前有效架构。
+- 实际行为：未 revoke source 写权限、未创建 archive、未删除数据库或内容、未改 route alias、未改生产配置。
+- 退出：`SKIPPED BY APPROVED ARCHITECTURE DECISION`；C5 backup 与 C7 灾难恢复证据承担当前恢复合同。
+
+## C10 F-01 最终验证
+
+- 环境与安全边界：从 C5 024 dump 创建 `i_series_c10_acceptance_20260729_125558`，backend 仅绑定 `127.0.0.1:18000`，避免现有 tunnel 指向的 8000；frontend 使用进程级 `NEXT_PUBLIC_API_URL=http://localhost:18000` 在 3000 启动。未修改 `.env`/生产配置；live source 仅由独立 manifest 进程只读查询。结束时 backend/frontend/browser 均关闭，acceptance DB drop 前连接数=0、drop 后 `pg_database` count=0。
+- 真实管理员：隔离库中创建测试管理员，使用管理页面用户名/密码表单经 `POST /api/auth/login` 建立 HttpOnly cookie session；`AUTH_BYPASS=false`、`AUTH_BYPASS_ALLOW=false`。页面显示 `c10-admin`，`/api/auth/me`=200、admin dashboard API/page=200。证据见 `c10-permission-matrix.json` 与 `c10-browser-testing.md`。
+- 权限矩阵：anonymous notes=200/total=13；anonymous admin=401；invalid cookie=401；password admin login/me/dashboard=200；password non-admin login/me=200、admin dashboard=403。实际 API 没有 `/api/notes/{slug}/edit`，因此使用真实受保护 dashboard API 证明 401/403；note mutations 的 `get_current_admin` 由 backend suite 覆盖。
+- 失败态：missing note=404；anonymous/invalid=401；non-admin 与 disabled registration=403。没有稳定、可控的 500 product contract，按 `NEXT-STEPS.md` 允许项记录为 `SKIPPED`，未通过破坏数据库或中断服务伪造 500。证据 `c10-failure-states.json`。
+- 024 恢复：复用 C7 `c7-restore-verification.json`，backup hash、restore 024、121-row aggregate、FK/backfill、readiness、check 和清理全 PASS。
+- 浏览器：真实管理员 session 下 375x812、768x1024、1280x800 精确截图；三尺寸均 `scrollWidth=clientWidth`，视觉复核无重叠/裁切。连续 6 次 Tab 均到达可见、带 accessible name 的链接；browser error buffer 为空。console 只有 dev/HMR 与 avatar LCP 建议。证据 `c10-browser-testing.md` 及三张 PNG。
+- Frontend：已诊断 57/58 根因是 Capture 从 placeholder 升级为调用 `useRouter` 的真实 workspace，而旧测试仍无 Router 且断言无上传。仅更新 test Router/API fixture 与当前 UI 合同；targeted 4/4，full 21 files/58 tests PASS。`npx tsc --noEmit` PASS，`npm run build` PASS（40/40 pages）。
+- Backend：首次额外 full pytest 为 296/300，四个 case 在新进程均 PASS；根因为测试永久删除 `sys.modules` 造成 stale/re-imported module 分裂，以及 asyncpg pool 跨 IsolatedAsyncioTestCase loop。两处 test-only 修复后 full suite 300/300 PASS；`compileall` PASS。仍有两个既有 AsyncMock warning，不影响退出门槛。
+- Schema/交叉验证：Alembic current=head=`024`、check clean。将 verifier/manifest 复制到新 `/tmp` 目录，以 `env -i` 新进程对 live source 只读复核，121/121、orphan=0、aggregate=`b40b109a...89adb6`、`DRY_RUN_READY=PASS`；证据 `c10-cross-verification.json`。临时目录已移入废纸篓。
+- 诊断透明度：一次 cookie 矩阵命令被安全策略在进程创建前拒绝；第二次因 zsh `status` 只读变量仅发出一个匿名 GET 后停止；均无写请求。Agent-browser npm wrapper/snapshot 的退出问题通过同版本原生 CLI 的 DOM/key/screenshot/error commands规避。一次 Alembic env 传播错误在新鲜 export 环境下重跑 PASS。
+- 证据：`assets/c10-permission-matrix.json`、`c10-failure-states.json`、`c10-browser-testing.md`、`c10-quality-testing.md`、`c10-cross-verification.json`、三张尺寸截图。
+- 退出：`PASS WITH DOCUMENTED SKIPS/WARNINGS`；无 FAIL/UNKNOWN，允许进入 C11 资格审查。该结论不等于部署或生产 runtime 已启用。
+
+## C11 F-02 部署资格审查
+
+- 输入：C1/C5 Git/schema authority PASS；C6 integrity PASS；C7 024 restore/cleanup PASS；C8/C9 approved SKIPPED；C10 F-01 PASS，frontend 58/58、backend 300/300、type/build/compile/Alembic/browser/cross verification 均有证据。
+- 结论：`ELIGIBLE (NOT DEPLOYED; PRODUCTION RUNTIME ENABLEMENT REQUIRED)`。该结论按 `NEXT-STEPS.md` 规则表示 scoped artifact 可进入未来、另行授权的部署流程，不表示当前 production runtime 已就绪。
+- Runtime 边界：public API tunnel 仍无 localhost:8000 listener，当前 runtime 为 `NOT ENABLED`；本轮没有启动 8000、没有改 tunnel/production config、没有 push/deploy。未来实际启用前必须重新执行 exact-commit predeploy、backup、auth/security、health 和 rollback gates。
+- 证据：`f02-deployment-eligibility.md` 的逐项表格与未来部署条件。
+- 退出：`PASS`（审查完成）；实际部署继续保持 `NOT DEPLOYED`。
+
+## C12 F-03 最终报告
+
+- 架构终态：source `blog_db` 024 是唯一权威；C6/C7 以完整性与恢复证据替代 shadow/cutover，C8/C9 明确 SKIPPED。没有 target/Legacy、双主、归档或删除。
+- 十维状态：MVP COMPLETE；产品化 PARTIAL；知识工作区 COMPLETE；AI/OCR governance scope COMPLETE（真实 provider success 未运行）；备份恢复 024 VERIFIED；migration dry-run TECHNICAL/DRY_RUN_READY PASS；权威切换 SKIPPED；Legacy 归档 SKIPPED；部署资格 ELIGIBLE；实际部署 NOT DEPLOYED。
+- 残余风险：production listener 未启用、真实 provider 未验证、frontend/backend test warnings、avatar LCP 建议、范围外 dirty、local-only backup 运维。全部写入 `f03-final-status-report.md` 与 risk register，没有只留在对话中。
+- 审批/Git：记录 2026-07-28 C0-C5、`2c7adcc`、`0205272`、2026-07-29 C6-C12 简化批准，以及本地 closure commit message。由于 commit 不能包含自身稳定 SHA，最终 SHA 由 Git handoff 报告。
+- 退出：`COMPLETE`。C0-C12 本地 workflow 已闭合；不 push、不发布、不部署、不改生产配置。
+
+## C11/C12 提前 Fail-Closed 状态输出
+
+- 目标：在 C6 blocker 已证实后，不部署地给出资格和十维状态结论。
+- 范围：workflow evidence 汇总；不运行部署、push、生产配置或数据库写入。
+- 执行证据：`f02-deployment-eligibility.md`=NOT ELIGIBLE/DO NOT DEPLOY；`f03-final-status-report.md` 逐项列 MVP、产品化、知识工作区、AI-OCR、备份恢复、dry-run、权威切换、Legacy、资格、部署，并明确 C6-C10 未完成。
+- 退出：C11=`BLOCKED / early DO NOT DEPLOY`；C12=`BLOCKED / status report published, no completion claim`。
+- 本轮实际改动摘要：仅 workflow 文档；没有 source/target/Legacy/prod 写入，没有 Git stage/commit/push/deploy。
+
+## C0-C5 Git 权威收口：C1 升级后复核
+
+- 目标：在 live source 已为 revision 024 后，继续用不可变 revision-020 manifest 证明 020 旧字段未漂移，并为 021-024 进入 Git 做 fail-closed 前置验证。
+- 范围：`assets/manifest_tool.py`、`test_manifest_tool.py` 与 live `blog_db:5432` 的只读 SQL；新证据 `assets/c1-post-upgrade-verification.json`。
+- 不做：不重新生成/改写 `owner-mapping-manifest-v1.json`，不写数据库，不 push、不部署、不改生产配置。
+- 前置：C5 source current=024；C1 manifest source revision=020、aggregate=`b40b109a0a1a7eca9b633a11503f8327c8c051fa0b4f05fb0efa04a79089adb6`。
+- 执行证据：TDD RED 为 `ImportError: cannot import name 'project_row_to_manifest_revision'`；实现后 `python3 -m unittest -v test_manifest_tool.py` 为 4/4 PASS，`python3 -m py_compile manifest_tool.py test_manifest_tool.py` PASS。verifier 只支持 020→020 与 database 024→manifest 020；其他 revision pair 抛出 `RuntimeError`。live 只读 UNION 查询在 024→020 投影下返回 source/manifest=121、missing=0、extra=0、duplicate=0、hash_drift=0、owner_conflict=0、invalid/rule conflict=0、orphan=0；canonical owner 不变；aggregate match=true 且仍为 `b40b109a...89adb6`。报告明确为 `manifest_source_revision=020`、`database_revision_actual=024`、`projection_revision=020`、`projection_applied=true`、`DRY_RUN_READY=PASS`。
+- 退出：`PASS`。该结果只证明 020 旧字段在 024 中未漂移，不把 C1 manifest 升级为 024 新字段/新表快照。
+- 本轮实际改动摘要：workflow/verifier/tests/JSON evidence；source DB 只读，数据库无写入；Git 尚未 stage/commit/push；无部署。
+
+## C0-C5 Git 权威收口：提交前验证
+
+- 目标：证明待提交的 C3 83-file 闭包未漂移、migration schema 权威一致，并记录前后端质量门槛。
+- 范围：C3 SHA manifest、一次性 C5-024 restore、live Alembic 只读检查、frontend test/type/build 与 Git whitespace；后端测试只写隔离 DB。
+- 不做：不写 live source，不使用 AUTH_BYPASS，不改生产配置，不 push/部署；不为通过测试而改动 C3 runtime artifact。
+- 前置：C1 升级后只读复核 PASS；C5 024 backup 可恢复；candidate list 固定为 83 files。
+- 执行证据：从仓库根目录执行 C3 `candidate-files.sha256` 为 83/83 OK，证明 migration/runtime/contracts/tests 与 C5 执行 artifact 未漂移。manifest unit 4/4 PASS、`py_compile` PASS、backend `compileall` PASS。后端测试从 C5 024 dump 恢复到一次性隔离库，显式 `AUTH_BYPASS=false/AUTH_BYPASS_ALLOW=false`；首次 collection 因命令遗漏 `PYTHONPATH=.` 未运行测试，修正后发现两个 HTTP case 共用的固定 admin UUID 不在 C5 快照，profile=404/upload FK=500；在新的隔离 restore 显式 seed 该测试身份后 35/35 PASS，临时库由 trap 删除，live source 未写。Alembic `heads=024`、`current=024`、`check=No new upgrade operations detected`。`npx tsc --noEmit` PASS；`npm run build` PASS（40 static pages）。frontend `npm test` 为 57/58：唯一失败 `static-placeholders.test.tsx` 的 Capture case 未挂载 Next App Router，抛出 `invariant expected app router to be mounted`；其余 20 files/57 tests PASS。该既有测试夹具失败不影响 migration/C1 hash correctness，但继续阻止 F-02 ELIGIBLE。
+- 退出：Git/schema authority 收口验证 `PASS`；全量 frontend test 门槛 `PARTIAL (57/58)`；生产资格保持 `NOT ELIGIBLE / DO NOT DEPLOY`。
+- 本轮实际改动摘要：source DB 只读；三个一次性验证 DB 均已删除；构建仅产生 ignored cache/output；Git 尚未 commit/push；无部署。
+
+## C0-C5 Git 权威收口：精确暂存
+
+- 目标：把产生 live 024 schema 的 migration 与其 runtime/contracts/tests 闭包纳入可审计 Git authority，同时隔离无关 dirty。
+- 范围：C3 `candidate-files.txt` 的 83 files，加 `docs/workflows/i-series-completion-plan/` 的 16 files，共 99 files。
+- 不做：不暂存 Phase 1.0、temp-admin、project assessment、UI review、其他 workflow/截图；不暂存 `.env`、dump、private key；不 push/deploy。
+- 执行证据：`git add --pathspec-from-file=.../candidate-files.txt` 加 workflow 白名单；expected/actual sorted file set 的 `comm -3` 无输出；021-024 均为 `A`；`git diff --cached --check` 无输出；敏感/备份文件名筛查无命中。C5 执行前和本轮规范化前，C3 SHA manifest 为 83/83 OK；为满足 cached whitespace gate，最终 staged tree 仅 `backend/tests/test_i7_file_workspace.py` 与 `test_i8_markdown_search.py` 各移除一个 EOF 空行，因此 81/83 与 C3 byte-identical、2/83 为 test-only whitespace 差异；四个 migration 与全部 36 runtime model/router/schema/service/main 文件仍与 C3 hash 相同。
+- 退出：`PASS`。暂存集合完整且无越界；migration 已进入待提交 Git tree。
+- 本轮实际改动摘要：Git index 写入 99 files；working tree 的无关 dirty 保留且未暂存；数据库无写入；尚未 commit/push/deploy。
+
+## C0-C5 Git 权威收口：本地提交
+
+- 目标：消除 live 024 schema 由 Git-untracked migration 产生的首要遗留风险。
+- 范围：精确 staged 99-file artifact；本地 branch `notes-workspace-ux-upgrade`。
+- 不做：不 push、不部署、不改生产配置；不提交白名单外 dirty。
+- 执行证据：`git commit -m "chore: unify I-series migration authority"` 创建 commit `2c7adcc`（99 files，6445 insertions/382 deletions）；`git ls-files backend/alembic/versions/02[1-4]_*.py` 返回四个 migration；commit summary 明确四文件 mode=`100644`。提交后 `git status --short` 仅剩 Phase 1.0、temp-admin、project assessment、UI review、其他 workflow/截图等本范围外变更，C3 83-file 闭包和本 workflow 均无未提交内容。
+- 退出：`PASS`。I-RISK-P0-08=`RESOLVED`；I-RISK-P0-09=`RESOLVED`。F-02 仍因 C6-C10、024 restore、frontend 57/58 与 production runtime blocker 为 `NOT ELIGIBLE / DO NOT DEPLOY`。
+- 本轮实际改动摘要：创建 local artifact commit `2c7adcc`；数据库无写入；未 push/deploy/改生产配置。后续仅以独立 documentation ledger commit 记录该不可自引用 SHA。
