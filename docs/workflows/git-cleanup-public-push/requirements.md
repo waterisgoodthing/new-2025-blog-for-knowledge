@@ -78,3 +78,20 @@ Post-deploy verification if deployment runs:
 - Git push rejected and requires merge/rebase decision.
 - Cloudflare authentication unavailable.
 - Any step requires destructive cleanup.
+
+## 2026-07-29 Additional Requirements
+
+- Treat all 334 untracked files as unapproved publication candidates until their
+  public-safety review is recorded.
+- Do not publish authenticated screenshots, observation JSON, database/recovery
+  evidence, owner identifiers, local paths, or possible personal content without
+  an explicit safe finding.
+- Do not use `git add -A` before the candidate review is complete.
+- Preserve the historical 2026-07-09 validation record and append new evidence
+  rather than rewriting it as if it described the current run.
+- A clean Git tree is an outcome only if every retained file is intentionally
+  committed or explicitly removed/relocated with user authority.
+- Push the current branch without force only after fetching and confirming that
+  no remote commits require an integration decision.
+- Deploy only the exact pushed commit from an isolated worktree, through the
+  repository's existing fail-closed release checks.

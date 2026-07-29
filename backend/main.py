@@ -14,7 +14,7 @@ from app.middleware.request_observability import request_observability
 from app.routers import admin_mistakes, admin_profile, ai, ai_polish, ai_runs, attachments, attempts, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, file_workspace, folders, governance, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, search, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
-EXPECTED_ALEMBIC_REVISION = "024"
+EXPECTED_ALEMBIC_REVISION = "025"
 
 
 def _is_enabled(value: str) -> bool:

@@ -833,6 +833,62 @@ Prepared tasks are `DEP-P0-01` through `DEP-P1-05`. This is planning evidence on
 | Higher sampling | Separate, temporary incident approval required |
 | Target access / deployment / production configuration read | NONE |
 
+## 2026-07-19 DEP-P1-02 Frontend Gate Attempt
+
+| Check | Result |
+|---|---|
+| Isolated artifact worktree | PASS — detached clean worktree at `cc05ef5` |
+| Dependency install | PASS WITH WARNINGS — Node engine is 26 while project declares 24; 3 moderate audit findings, no high/critical gate failure |
+| Frontend tests | PASS — 43/43 |
+| Cloudflare production build | BLOCKED — missing non-local `NEXT_PUBLIC_API_URL`; guard failed during page-data collection before deployment |
+| Backend target DB / Alembic | NOT RUN — frontend-only path; no authorization requested |
+| Deploy command / public endpoint / production configuration read | NONE |
+
+The required input is a public FastAPI API base suitable for browser requests, supplied explicitly or made available through an authorized safe build environment. It must not be replaced with localhost, a build-only invalid host, or a guessed domain.
+
+## 2026-07-19 DEP-P1-02 / DEP-P1-03 Frontend Release Validation
+
+| Check | Result |
+|---|---|
+| Authorized build input check | PASS — only existence/non-local validity of `NEXT_PUBLIC_API_URL` was read; its value was neither recorded nor written to the artifact |
+| Frontend gate | PASS — clean detached `cc05ef5` worktree; 43/43 tests, TypeScript, Cloudflare build and diff hygiene |
+| Cloudflare release | PASS — `2025-blog-public`, version `d79488b8-705b-48a1-b562-ab2fcf872589`, 100% deployment |
+| Backend target DB / Alembic / backend deployment | NOT RUN |
+| Migration / DDL / restore / attachment storage | NONE |
+
+Known warnings: Node 26 does not match the declared Node 24 engine; three moderate dependency audit findings; Node `DEP0205`; OpenNext warns that the compatibility date is older. None was a high/critical gate failure.
+
+## 2026-07-19 DEP-P1-04 Temporary-Origin Failure and Formal-Domain Pass
+
+| Check | Result |
+|---|---|
+| Initial Worker browser session | FAIL / retained as boundary evidence — site-settings network failure at unsupported `workers.dev` origin |
+| Public API health (safe direct probe) | PASS — HTTP 200; no response body recorded |
+| `workers.dev` API preflight | EXPECTED FAIL — HTTP 400, proving this temporary origin is not in the CORS allowlist |
+| Formal-domain API preflight/read | PASS — `Origin: https://blog.limengyang.me` returned HTTP 200 with access-control allow-origin; public reads returned 200 |
+| Formal-domain document / first-party JS/CSS | PASS — homepage and all observed first-party document, JS and CSS requests returned 200 |
+| Formal-domain hydration/navigation | PASS — rendered client shell navigated from `/` to `/blog` without a document reload failure |
+| Formal-domain browser console | PASS — 0 errors; expected anonymous `GET /api/auth/me` 401 did not cause UI or console failure |
+| Saved artifact | `assets/2026-07-19-public-worker-home-api-failure.png`; SHA-256 `339b802794009389c200a5c3bd0c510d5a11650bff7d850750897acf9ef63704` |
+| Formal-domain artifact | `assets/2026-07-19-public-formal-home.png`; SHA-256 `b6998a6e4da61533f0edafc29d351fa0c6e5f94c2b312aa969bab909d63f1af9` |
+| Formal-domain `/manage` anonymous smoke | PASS — login controls rendered; document/first-party JS/CSS 200; passkey status and auth requests used `public-api`; expected `auth/me` 401 only; console 0 errors |
+| `/manage` artifact | `assets/2026-07-19-public-formal-manage-anon.png`; screenshot contains no credentials or private data |
+| Real administrator session | PASS — user-held production Passkey session reached protected Dashboard, attachment workspace and settings; no Cookie, token, username, private attachment content or diagnostic body was recorded |
+| Dashboard / attachment workspace / settings | PASS — rendered protected UI, 0 visible error alerts and 0 console errors; attachment list was visible but attachment content was not opened |
+| Password rotation | PENDING EXPLICIT CONFIRMATION — high-privilege Passkey session exposes the secure form; new password will be entered only by the user and never captured in evidence |
+| Diagnostics detail / admin write | PENDING — not invoked during read-only pass; any mutation needs explicit action-time approval and exact-ID cleanup plan |
+
+## 2026-07-19 DEP-P1-04A Password-Rotation Failure Investigation
+
+| Check | Result |
+|---|---|
+| Real security page | PASS — user-held Passkey session rendered high-privilege password-rotation UI |
+| Safe retained UI/console error | NONE — no reusable visible alert or console error remained after the user-reported failure |
+| Source request path | FAIL / ROOT CAUSE — security tab posts directly to relative frontend `/api/auth/set-password` |
+| Working reference contract | PASS — shared API client derives the configured non-local base and uses included credentials |
+| Backend password endpoint | NOT RETRIED — no password body, Cookie, token or direct target request was captured |
+| Fix / deploy / password update | NOT RUN — awaits explicit approval of `DEP-P1-04A` and separate action-time confirmation for the final password submission |
+
 ## 2026-07-19 DEP-P1-01B Updated Scoped Release Artifact Validation
 
 | Check | Result |

@@ -67,3 +67,48 @@
 ## 数据边界
 
 本设计不触碰 `backend/alembic/`、数据库 schema、业务数据、附件存储或后端权限实现。
+# 2026-07-29 R2 设计增量
+
+## 目标
+
+恢复 `npm run predeploy:check` 的 fail-closed 通过状态，并继续既定 Git 推送
+与公网部署流程。
+
+## 依赖策略
+
+1. 将 Next 从 `16.2.10` 升级到当前稳定补丁 `16.2.12`，处理 Next、
+   内置 PostCSS 与 Sharp 公告。
+2. 将 OpenNext Cloudflare 从解析版本 `1.20.1` 升级到当前稳定补丁
+   `1.20.2`，采用其新版 Glob 路径。
+3. 让 Markdown-it 解析到 `14.3.0` / `linkify-it>=5.0.2`。
+4. 若 OpenNext AWS 仍解析受影响的 `@node-minify/core@8.0.6`，只允许
+   精确 override 到当前安全主线，并以 `npm ls`、前端测试、TypeScript、
+   Cloudflare build 和隔离完整门禁共同证明兼容。
+5. 不以移动生产依赖到 devDependencies、忽略 audit、降低 audit 等级或
+   `npm audit fix --force` 绕过门禁。
+
+## 回退与停止条件
+
+- 依赖树 invalid、测试/类型/build 失败：撤销本轮候选依赖变更并重新诊断。
+- audit 仍有 high/critical：不推送、不部署。
+- OpenNext override 导致构建行为漂移：不保留 override，等待上游修复或采用
+  经验证的替代部署工具版本。
+- 不修改 backend 业务代码、schema、migration、源数据库或生产数据。
+
+## 隔离门禁发现的测试依赖
+
+完整门禁在空白且已迁移的测试库中发现两个 HTTP 测试依赖固定生产管理员
+UUID。修复范围仅限测试：每个用例创建随机临时管理员、完成 API 行为后按
+外键顺序清理。不得通过向测试库复制生产管理员或改松外键来让测试通过。
+
+## 024 Fresh-Install Metadata Drift
+
+只读对比证明 live source 024 与 SQLAlchemy metadata 一致，但从 001→024
+新建的数据库缺少同一组索引与 NOT NULL 约束。新增 025 只用于把 migration
+authority 补齐到已存在的模型/source 事实：
+
+- 对 source 已存在的索引、约束和 NOT NULL 状态必须幂等 no-op。
+- 对 fresh 024 创建模型要求的索引，替换旧 unique constraint 命名，并补齐
+  NOT NULL。
+- nullable 收紧前以既有 server-default 语义回填 null，不能静默删除行。
+- upgrade/downgrade 均在隔离数据库验证；本轮不迁移 live source。

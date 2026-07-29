@@ -53,6 +53,9 @@ __pycache__/
 # local agent/tooling state
 .kilo/
 
+# private local validation evidence
+/docs/ui-review/artifacts/authenticated/
+
 # runtime uploads served by the backend
 /public/images/pictures/
 backend/uploads/*

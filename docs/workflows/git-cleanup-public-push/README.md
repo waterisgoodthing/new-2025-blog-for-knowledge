@@ -15,17 +15,31 @@ This is an operational release workflow. It must preserve unrelated user changes
 
 ## Current Status
 
-Status: `completed with deployment blocked`.
+Status: `2026-07-29 release run passed validation; executing Git publication`.
 
-The working tree is very large and dirty. Initial inspection found:
+The 2026-07-09 run completed its Git push but correctly stopped before deployment
+because the deployment path was absent at that time.
+
+The new preflight snapshot found:
 
 - current branch: `notes-workspace-ux-upgrade`
-- remote: `mine`
-- no `deploy` / `build:cf` script in current `package.json`
-- `wrangler.toml` is currently deleted
-- `open-next.config.ts` is currently deleted
+- upstream: `mine/notes-workspace-ux-upgrade`
+- branch position before fetch: 3 commits ahead, 0 behind
+- tracked dirty files: 8 modified documentation files
+- untracked files: 334, all under `docs/`
+- public deployment files and scripts now exist:
+  `wrangler.toml`, `open-next.config.ts`, `scripts/predeploy-audit.mjs`,
+  `build:cf`, `predeploy:check`, `deploy`, and `deploy:full`
+- the untracked set contains authenticated UI screenshots and data/migration
+  evidence that require a public-safety review before staging
+- one review report is under a suspicious duplicated path:
+  `docs/workflows/i-series-completion-plan/docs/workflows/i-series-completion-plan/`
 
-Git commit and push completed. Public deployment is blocked because deployment config is absent from the pushed commit; the intended deployment path must be confirmed or restored in a separately approved scope.
+The user approved GCP-R2-01 through GCP-R2-06. Inventory, public-safety
+classification, non-destructive cleanup, whitespace checks, and documentation
+checks completed. The isolated `predeploy:check` then stopped the release because
+the live production audit reported 10 high vulnerabilities. No files were
+staged, committed, pushed, deleted, or deployed in the 2026-07-29 run.
 
 ## Workflow Files
 

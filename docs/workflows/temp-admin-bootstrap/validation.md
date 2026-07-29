@@ -58,6 +58,16 @@ This password is shown once. Rotate or disable this account after recovery.
 
 The generated password was intentionally not recorded in this file.
 
+## Account Creation — 2026-07-19
+
+Command:
+
+```bash
+cd backend && .venv/bin/python -m app.cli create-temp-admin --username temp-admin-20260719
+```
+
+Result: passed. A new, independently named temporary admin was created in the configured local backend database. The generated password was intentionally not recorded in this file.
+
 ## Production Boundary Check
 
 The temporary admin account above was created against the local backend database configured by `backend/.env`.

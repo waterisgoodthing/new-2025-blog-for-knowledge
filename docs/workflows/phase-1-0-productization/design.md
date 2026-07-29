@@ -217,6 +217,21 @@ The frontend Cloudflare/OpenNext release and FastAPI/PostgreSQL/Attachment Stora
 
 The approved production policy is: disable public registration; retain Workers invocation logs at 1% head sampling with platform short retention; treat any higher sampling as separately approved, temporary incident work. The frontend-only gate does not touch a target database. The backend gate is separately authorized only when a target database boundary is approved. Evidence records only pass/fail assertions and release identities; it never copies credentials, configuration values, cookies, private content, database URLs or storage paths. A failed predeploy, health, authorization, asset, hydration or console check stops the sequence. Rollback is platform-specific and must use the pre-recorded release identity; no migration, restore or destructive cleanup is implied.
 
+### 8.4 Production password-rotation API boundary
+
+The legacy management security tab is a client-side protected surface. Its password mutation must use the same API-base contract as every other backend call:
+
+```text
+security-tab password form
+  -> typed auth API wrapper
+  -> configured NEXT_PUBLIC_API_URL + /api/auth/set-password
+  -> credentials include
+  -> FastAPI get_passkey_admin
+  -> existing password/session audit semantics
+```
+
+The browser frontend origin must not be used as an implicit backend proxy. The wrapper returns the existing success message or throws the existing safe HTTP detail; UI validation and toast behavior remain owned by the security tab. Password values remain confined to the browser form/request body and never enter test fixtures, screenshots, workflow evidence or tool output. This fixes only the production API-routing defect; it does not change password policy, authorization, CORS allowlists, data model or operator provisioning.
+
 ## 3. UI/Product Polish Design
 
 ### 3.1 Dashboard

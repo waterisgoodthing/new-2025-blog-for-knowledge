@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 import uuid
 
@@ -14,9 +15,6 @@ from app.models.note import User
 from app.routers.auth import get_current_admin
 from app.schemas.admin_profile import AdminProfileUpdate, HomePreferences
 from app.services.admin_profile_service import get_or_create_profile, update_profile
-
-TEST_ADMIN_ID = uuid.UUID("23247a68-7a00-4464-9d96-948c018fdffe")
-
 
 def test_home_preferences_keep_a_learning_action_visible():
     with pytest.raises(ValueError, match="learning action"):
@@ -132,9 +130,35 @@ def test_public_site_settings_does_not_include_private_profile_fields():
 
 
 def test_profile_http_validates_timezone_and_round_trips_for_admin():
-    async def admin_override():
-        return User(id=TEST_ADMIN_ID, username="i4_closure", is_admin=True)
+    admin_id = uuid.uuid4()
 
+    async def create_admin():
+        async with async_session() as session:
+            session.add(
+                User(
+                    id=admin_id,
+                    username=f"i5-http-{uuid.uuid4().hex[:8]}",
+                    password_hash="test-only",
+                    is_admin=True,
+                )
+            )
+            await session.commit()
+        await engine.dispose()
+
+    async def cleanup_admin():
+        await engine.dispose()
+        async with async_session() as session:
+            await session.execute(
+                delete(AdminProfile).where(AdminProfile.user_id == admin_id)
+            )
+            await session.execute(delete(User).where(User.id == admin_id))
+            await session.commit()
+        await engine.dispose()
+
+    async def admin_override():
+        return User(id=admin_id, username="i4_closure", is_admin=True)
+
+    asyncio.run(create_admin())
     main.app.dependency_overrides[get_current_admin] = admin_override
     try:
         with TestClient(main.app) as client:
@@ -195,3 +219,4 @@ def test_profile_http_validates_timezone_and_round_trips_for_admin():
             assert loaded.json()["home_preferences"]["hidden_sections"] == ["storage"]
     finally:
         main.app.dependency_overrides.pop(get_current_admin, None)
+        asyncio.run(cleanup_admin())

@@ -12,7 +12,18 @@
 
 ## 当前状态
 
-依赖清理、本地回归和公网发布已完成；下一轮方案演进已登记，尚未开始实现。当前未执行数据库修改。
+2026-07-29 第二轮依赖修复已默认批准并开始。此前阶段已完成；
+本轮由 Git 公网发布门禁新发现的 10 个 high 风险触发，目标是在不降级
+OpenNext、不使用 `npm audit fix --force` 的前提下恢复 fail-closed 发布资格。
+当前未执行数据库修改。
+
+本轮基线：
+
+- `next@16.2.10`
+- `@opennextjs/cloudflare@1.20.1`
+- `npm audit --omit=dev`: 10 high、0 critical
+- 最新稳定候选：Next `16.2.12`、OpenNext Cloudflare `1.20.2`
+- 明确拒绝 npm 建议的 OpenNext `0.2.1` 大版本降级
 
 ## 当前基线
 

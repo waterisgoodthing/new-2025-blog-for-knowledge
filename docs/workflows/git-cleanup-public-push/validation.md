@@ -106,3 +106,82 @@ Decision:
 - Stop at the approved safety boundary.
 - Do not recreate deployment config or invent a new deployment architecture in this workflow.
 - A new deployment-repair task is required before pushing the current frontend to `blog.limengyang.me`.
+
+---
+
+## 2026-07-29 Release Run
+
+Status: `VALIDATION PASSED — proceeding to scoped Git publication`
+
+### Preflight
+
+- Upstream fetch: PASS.
+- Branch divergence after fetch: local 3 ahead, 0 behind.
+- Dirty-surface snapshot: 12 tracked modifications and 334 untracked files
+  before adding this release-run's workflow records.
+- Public-safety classification: 331 publish, 14 exclude, 1 publish after
+  relocation, 0 awaiting user decision.
+- Private authenticated UI evidence is preserved locally and ignored by the exact
+  rule `/docs/ui-review/artifacts/authenticated/`.
+- Duplicated C6-C12 review report was moved to
+  `docs/workflows/i-series-completion-plan/C6-C12-REVIEW-REPORT.md`.
+- No file was deleted, reset, checked out, or discarded.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| `git diff --check` | PASS |
+| Untracked Markdown relative links | PASS after correcting 4 stale `dashboard-*` asset links to the existing `dashboard-preferences-*` files |
+| Untracked JSON parse | PASS, 15/15 files |
+| Initial isolated `npm run predeploy:check` | BLOCKED: production audit had 10 high and 0 critical vulnerabilities |
+| Remediated isolated `npm run predeploy:check` | PASS: audit 0 vulnerabilities; frontend 58/58; backend 300/300; TypeScript, Cloudflare build, Alembic 025 and schema check passed |
+
+The link/JSON checker covered 120 Markdown files and 15 JSON files. Its first run
+found four missing image targets in
+`docs/workflows/i4-i5-closure-fix-2/validation.md`; the links were corrected and
+the full check then passed.
+
+### Fail-Closed Release Blocker
+
+The exact candidate application commit was checked from a detached worktree at
+`beb7897`. Two fresh local validation databases were created; the target was
+upgraded through Alembic `024 (head)`. The first predeploy invocation rejected
+the local `.venv` dependency symlink as dirty; a command-scoped Git exclude was
+then used so the repository itself remained unchanged. The second invocation
+reached the live production audit and stopped.
+
+Audit summary:
+
+- high: 10
+- critical: 0
+- direct high packages: `next@16.2.10`,
+  `@opennextjs/cloudflare@1.20.1`
+- additional affected transitive packages:
+  `@node-minify/core`, `@opennextjs/aws`, `brace-expansion`, `glob`,
+  `linkify-it`, `minimatch`, `postcss`, and `sharp`
+- npm reports `next@16.2.12` as an available non-major fix path for the
+  Next/PostCSS/Sharp group
+- npm's suggested OpenNext fix is `@opennextjs/cloudflare@0.2.1`, a major
+  downgrade from the installed `1.20.1`; it must not be applied automatically
+
+Release decision:
+
+- do not stage
+- do not commit
+- do not push
+- do not deploy
+- require a separately approved dependency-runtime remediation task, followed
+  by a fresh exact-commit predeploy gate
+
+### Validation Cleanup
+
+- Temporary test database `gcp_r2_test_20260729185159`: removed.
+- Temporary target database `gcp_r2_target_20260729185159`: removed.
+- Detached validation worktree: removed.
+- Remaining temporary release directory, containing only the audit JSON and
+  command-scoped exclude file: moved to
+  `/Users/limengyang/.Trash/git-release-gate.V93yoY` and remains recoverable.
+- Source database `blog_db`: not modified.
+- Final branch divergence: local 3 ahead, 0 behind.
+- Final `git diff --check`: PASS.

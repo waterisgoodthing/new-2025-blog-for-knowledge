@@ -45,7 +45,23 @@ async def _cleanup_capture_and_attachment(attachment_id: uuid.UUID) -> None:
 
 
 async def _exercise_admin_upload_and_capture() -> None:
-    main.app.dependency_overrides[get_current_admin] = _admin_override
+    admin_id = uuid.uuid4()
+
+    async def admin_override():
+        return User(id=admin_id, username="i6-http-admin", is_admin=True)
+
+    async with async_session() as session:
+        session.add(
+            User(
+                id=admin_id,
+                username=f"i6-http-{uuid.uuid4().hex[:8]}",
+                password_hash="test-only",
+                is_admin=True,
+            )
+        )
+        await session.commit()
+
+    main.app.dependency_overrides[get_current_admin] = admin_override
     attachment_id = None
     try:
         await main.validate_database_readiness()
@@ -70,6 +86,9 @@ async def _exercise_admin_upload_and_capture() -> None:
     finally:
         if attachment_id is not None:
             await _cleanup_capture_and_attachment(attachment_id)
+        async with async_session() as session:
+            await session.execute(delete(User).where(User.id == admin_id))
+            await session.commit()
         main.app.dependency_overrides.pop(get_current_admin, None)
         await engine.dispose()
 

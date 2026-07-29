@@ -151,3 +151,23 @@ Phase 0.5 ownership: `REQ-P05-001` through `REQ-P05-005` and P05-01 through P05-
 - 当前状态：**CODE/TEMPLATE RESOLVED / TARGET VERIFICATION PENDING**。用户已决定 production registration disabled 与 Workers Logs 1% head sampling/platform short retention；production lifespan 现在拒绝 `ENABLE_REGISTRATION=true`，template 采样为 `0.01`。未读取真实生产配置或日志，故未声明 deployed target 已符合。
 - 建议措施：frontend 部署前在 clean isolated worktree 运行 frontend gate；backend 发布或 target DB 检查仍需独立授权，并用不泄露配置值的方式证明目标满足该策略。
 - 是否进入下一轮需求：是。
+
+## RISK-P10-016 Worker temporary-origin CORS boundary
+
+- 风险类型：生产 runtime / integration。
+- 风险描述：Cloudflare `workers.dev` 临时 Worker origin 不在后端 CORS allowlist，因而不能作为浏览器端的正式产品入口；若将其误作验收 URL，会产生 site-settings network failure。
+- 影响范围：部署验收口径、临时 Worker URL 的可用性判断；不影响已验证的正式 frontend domain。
+- 严重程度：低（已控制）。
+- 当前状态：**CONTROLLED / FORMAL DOMAIN PASS**。只读 probes 证明 public API health 为 200；`Origin: https://blog.limengyang.me` 的 preflight/读取为 200 且允许跨域。fresh anonymous browser 在正式域名上取得 document/JS/CSS 200、hydration/navigation、0 console errors 和公开 API 读取成功。先前 failure artifact 保留为临时 origin 边界证据，不再表述为 API outage。
+- 建议措施：发布和验收固定使用正式 frontend domain；不要扩大 CORS 以兼容临时 `workers.dev` URL，除非另有安全评审和明确批准。管理员、附件与 diagnostics 公网 smoke 仍需 secret-safe real-admin session。
+- 是否进入下一轮需求：是。
+
+## RISK-P10-017 Production password rotation targets the frontend origin
+
+- 风险类型：auth / production integration。
+- 风险描述：legacy security settings uses a direct relative `fetch('/api/auth/set-password')`, while the formal frontend origin does not proxy backend APIs. A real high-privilege Passkey session therefore cannot rotate its password through the UI.
+- 影响范围：管理员凭证轮换、Personal Use Ready 与生产管理可用性。
+- 严重程度：高。
+- 当前状态：**ROOT CAUSE CONFIRMED / REPAIR AWAITING APPROVAL**。真实浏览器安全设置可见且 Passkey session 有效；source shows the relative fetch, and no console/UI error was retained after the failed submission. The configured API client is the working reference for public and protected routes. No password value is recorded.
+- 建议措施：只修复该调用到 typed configured-base API wrapper，测试先行；在 approved frontend-only clean artifact 中重跑 gate/release，并由用户在正式浏览器自行输入密码后明确确认最终提交。
+- 是否进入下一轮需求：是。

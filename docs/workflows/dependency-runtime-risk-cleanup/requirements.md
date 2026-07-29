@@ -68,3 +68,20 @@
 3. 匿名公开路由仍返回成功，私有管理入口仍受保护。
 4. 预览和公网验证不出现新增 4xx/5xx、RSC 错误或 API 配置错误。
 5. 数据库 revision 和基线数量/关键 ID 不变。
+# 2026-07-29 R2 新增需求
+
+- R2-REQ-01：`npm audit --omit=dev` 必须为 0 high、0 critical。
+- R2-REQ-02：Next 与 OpenNext 必须保持支持的稳定版本组合，`npm ls`
+  不得出现 invalid peer。
+- R2-REQ-03：不得采用 OpenNext `0.2.1` 降级建议，不得使用
+  `npm audit fix --force`。
+- R2-REQ-04：所有 override 必须精确、可解释，并通过 Cloudflare 构建和
+  完整 predeploy 门禁。
+- R2-REQ-05：通过门禁后，发布候选必须从精确暂存清单提交、非 force 推送，
+  再从推送提交的隔离 worktree 部署。
+- R2-REQ-06：公网 `/`、`/blog`、`/notes`、`/mistakes`、`/manage`
+  与 API health 必须验证；管理边界不得退化为公开数据。
+- R2-REQ-07：完整后端套件必须在不含生产用户的隔离测试库通过；测试不得
+  依赖源库固定管理员 UUID。
+- R2-REQ-08：fresh 001→head 数据库必须通过 `alembic check`；025 对当前
+  source 024 结构必须可安全 no-op，但本轮不得写 live source。

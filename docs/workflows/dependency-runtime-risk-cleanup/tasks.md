@@ -60,6 +60,63 @@
 ## 明确禁止
 
 - 不执行 `npm audit fix --force`。
-- 不创建 migration，不执行 Alembic、DDL、DML。
+- 原阶段不创建 migration；R2 仅默认批准一个修复 fresh-install metadata
+  drift 的条件式 025 artifact，不执行 live source migration/DDL/DML。
 - 不修改后端权限模型，不启用 `AUTH_BYPASS`。
 - 不自动进入下一 Batch。
+
+---
+
+## 2026-07-29 R2：新 high 风险修复
+
+审批状态：`DEFAULT APPROVED BY ACTIVE GOAL / IN PROGRESS`
+
+- [x] **DRC-R2-01 基线与上游版本确认**
+  - 已确认生产 audit 为 10 high / 0 critical。
+  - 已确认 Next `16.2.12`、OpenNext Cloudflare `1.20.2`、
+    Markdown-it `14.3.0`、linkify-it `6.1.0` 为当前稳定上游版本。
+  - 已确认 OpenNext AWS 仍声明 `@node-minify/core@^8.0.6`。
+
+- [x] **DRC-R2-02 最小依赖升级**
+  - 升级 Next、OpenNext Cloudflare 和 Markdown-it/linkify-it 解析。
+  - 仅在仍被 audit 阻断时加入精确 node-minify override。
+  - 每次改变后立即记录 audit 与依赖树。
+  - 结果：Next `16.2.12`、OpenNext `1.20.2`、Markdown-it `14.3.0`、
+    linkify-it `5.0.2`；精确 overrides 将 node-minify core/terser 升至
+    `10.5.0`，并将 minimatch、brace-expansion、PostCSS、Sharp 解析至
+    已修复版本。生产 audit 已为 0 high / 0 critical，`npm ls` 有效。
+
+- [x] **DRC-R2-03 本地回归**
+  - `npm ci`
+  - `npm ls next @opennextjs/cloudflare markdown-it linkify-it @node-minify/core`
+  - `npm audit --omit=dev --audit-level=high`
+  - `npm test`
+  - `npx tsc --noEmit --pretty false`
+  - `NEXT_PUBLIC_API_URL=https://public-api.limengyang.me npm run build:cf`
+  - 结果：clean `npm ci`、补丁测试 1/1、依赖树、全量/生产 audit、
+    frontend 58/58、TypeScript、40-route Cloudflare build 全部 PASS。
+
+- [x] **DRC-R2-03A 后端 HTTP 测试隔离修复**
+  - 根因：profile 与 attachment HTTP 测试只 override 鉴权对象，却依赖
+    源库已有固定管理员 UUID 满足 profile lookup / attachment FK。
+  - 修复：每个测试创建随机临时管理员并清理，不复制生产身份。
+  - targeted 验证：2/2 PASS。
+
+- [x] **DRC-R2-03B 补齐 fresh 024 migration authority**
+  - 新增条件式 025：索引/unique contract 与 12 个 NOT NULL 字段对齐模型。
+  - live source 024 只读 `alembic check` 已 PASS；不得执行 source upgrade。
+  - 在 fresh DB 验证 024→025、check、025→024→025 与后端 300 tests。
+  - 结果：fresh 与 source-shape clone 的 024→025/check 均 PASS；
+    fresh 025→024→025/check PASS；live source 未写入。
+
+- [x] **DRC-R2-04 隔离完整发布门禁**
+  - 使用两个新建临时数据库和 detached worktree。
+  - 测试库与目标库升级至 Alembic head。
+  - 运行 `npm run predeploy:check`，high/critical、测试、构建、类型、
+    backend 与 Alembic 任一失败即停止。
+  - 结果：frontend 58/58、backend 300/300、TypeScript、40-route
+    Cloudflare build、Alembic 025 与 `alembic check` 全部 PASS。
+
+- [x] **DRC-R2-05 回写 Git 发布 workflow**
+  - 在 `git-cleanup-public-push` 中记录依赖阻断解除证据。
+  - 继续精确暂存、提交、推送与隔离公网部署。

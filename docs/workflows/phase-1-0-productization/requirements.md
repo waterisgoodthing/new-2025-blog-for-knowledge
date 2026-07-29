@@ -158,6 +158,15 @@
 - 回滚：部署前必须记录可回退的 frontend release identity 与 backend release identity；若任一发布后健康或权限验收失败，停止扩展验证并按获批的对应平台回滚步骤执行。不得用数据库 restore 作为常规 frontend rollback。
 - 验收：任务清单必须把 policy decision、clean release scope、target authorization、predeploy、deployment、post-deploy smoke、rollback decision 与最终 readiness verdict 分开；每项完成即更新 tasks 与 evidence。
 
+### REQ-P10-017 Production Security-Settings API Contract
+
+- 状态：`PLANNED / AWAITING TASK APPROVAL`。正式管理端的密码轮换必须通过与其他前端 API 调用相同的 configured non-local API base，而不是假定 frontend origin 代理 `/api`。
+- 输入：已认证的 Passkey 管理员会话、现有 `POST /api/auth/set-password` 后端合同和 `src/lib/api/config.ts` 的 API-base 规则。
+- 处理：将安全设置中的密码更新请求收口到 typed API client；保留 `credentials: include`、JSON body、非 2xx 错误文本与前端 toast 语义。不得读取、打印、测试或记录用户密码。
+- 输出：正式 `blog.limengyang.me/manage?tab=security` 能在真实 Passkey 会话下调用 `public-api` 的受保护 password endpoint；相对 frontend `/api/auth/set-password` 不再出现在该行为路径。
+- 范围：仅 `auth` 与 shared frontend API infrastructure contract；不改后端 schema、router、CORS policy、Passkey behavior、注册策略、数据库或附件。
+- 验收：先有会失败的前端测试，证明安全设置不使用 relative fetch；修复后定向测试、TypeScript、生产 build 与真实 browser password-rotation submit（用户自行输入密码）通过。仅记录状态/endpoint origin/结果，不记录密码、Cookie、token 或 private body。
+
 ### REQ-P05-001 Frontend runtime audit
 
 - 输入：当前 frontend process、port、working directory、Node/npm/Next 版本、generated build/cache 和一次可复现 chunk 500。

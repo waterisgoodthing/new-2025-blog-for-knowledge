@@ -60,3 +60,34 @@ If deployment succeeds, verify:
 - No force push unless explicitly approved later.
 - No `AUTH_BYPASS`.
 - No backend schema or migration changes in this workflow.
+
+## 2026-07-29 Release Run
+
+This run reuses the workflow but does not reuse the previous completion status.
+The current dirty surface is documentation-only and spans multiple workflow
+owners, so the release is split into two gates:
+
+1. **Git publication gate**
+   - fetch the configured upstream and confirm divergence
+   - inventory every modified and untracked path
+   - review authenticated screenshots, JSON observations, migration manifests,
+     owner identifiers, database counts, local paths, and recovery evidence for
+     public-repository safety
+   - resolve the duplicated nested review-report path without destructive cleanup
+   - stage only the reviewed set and verify the exact cached list
+   - commit and push without force
+2. **Public deployment gate**
+   - use the pushed commit, not the dirty checkout
+   - create a detached isolated worktree
+   - run the repository's fail-closed `predeploy:check`
+   - run the existing `deploy:full` path only after the gate passes
+   - verify public routes and the API health boundary
+
+The default safety decision for material that has not passed public review is to
+leave it unstaged and report that the Git tree is not yet fully clean. The
+workflow must not delete, redact, relocate, or publish ambiguous evidence merely
+to make `git status` empty.
+
+Because this run currently changes documentation only, frontend deployment may
+produce no user-visible application change. It is still permitted after approval
+as an operational consistency check, but its source must be the pushed commit.
