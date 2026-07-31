@@ -72,6 +72,19 @@ describe('DashboardOverview', () => {
     expect(screen.queryByText(/Coming Soon|No API connected|Static shell/i)).not.toBeInTheDocument()
   })
 
+  it('offers real daily actions without creating a parallel workspace route', () => {
+    render(<DashboardOverview summary={summary} />)
+
+    expect(screen.getByRole('heading', { name: '快速开始' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '写笔记' })).toHaveAttribute('href', '/write-note')
+    expect(screen.getByRole('link', { name: '写博客' })).toHaveAttribute('href', '/write')
+    expect(screen.getByRole('link', { name: '图片采集' })).toHaveAttribute('href', '/manage/capture')
+    expect(screen.getByRole('link', { name: '开始复习' })).toHaveAttribute('href', '/manage/review')
+
+    const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
+    expect(hrefs.some(href => href?.startsWith('/workspace'))).toBe(false)
+  })
+
   it('renders dashboard sections in preference order and omits hidden sections', () => {
     render(
       <DashboardOverview

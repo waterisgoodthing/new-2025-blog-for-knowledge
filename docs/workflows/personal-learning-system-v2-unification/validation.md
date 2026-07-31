@@ -3,6 +3,29 @@
 日期：2026-07-20
 范围：`personal-learning-system-v2-unification` 工作区中的规划文档。
 
+## 2026-07-30 `docs/refactor-plan` 重新审查
+
+- 已重新读取 `docs/refactor-plan/` 当前文件清单和新增的 `00-CORRECTED-PHASED-PLAN.md`。
+- 已以当前源码核对 canonical workspace、AuthGate、博客读写链、静态博客基线、AUTH_BYPASS 生产保护、Alembic readiness 与前后端测试入口。
+- 已确认原方案关于“当前没有毛玻璃”“博客尚未进入数据库”“生产 AUTH_BYPASS 尚未阻断”“应用启动仍由 create_all 管理 schema”等前提与当前源码不符或已过期。
+- 已将有效目标提取为 R1 管理工作区入口与视觉收敛，并放入现有统一大方案工作区，避免创建平行 master plan。
+- 本轮仅新增/更新 workflow 文档；未修改 `docs/refactor-plan/`、`src/app/workspace/` 或任何业务代码、数据库、schema、migration、配置和部署。
+- 规划当时 R1 状态为 `APPROVAL REQUIRED`；该历史门禁随后已由用户明确批准并完成执行。
+
+## 2026-07-30 R1 管理工作区入口与视觉收敛
+
+状态：`CLOSED / PASS BY P0-AUTH + CLEANUP`
+
+- 用户已明确批准 R1-01 至 R1-10；十项任务均已按序执行。
+- Dashboard 新增四个真实快捷行动：`/write-note`、`/write`、`/manage/capture`、`/manage/review`；未创建 `/workspace/*` 平行路由。
+- 完整前端测试 21 个文件、59 项通过；R1 隔离源状态的 TypeScript 与生产构建通过，构建生成 40/40 页面。
+- 主工作区 TypeScript 与生产构建被保留的未跟踪 `src/app/workspace/page.tsx` 两个类型错误阻断；R1-02 禁止本轮覆盖该原型。
+- 真实浏览器在 390×844、1280×800、1440×900 验证快捷行动、无横向溢出和键盘焦点；管理员 Dashboard 控制台无 error/warning。
+- 失效/降权管理员会话访问 `/manage/dashboard` 会回退到仍展示管理界面的旧 `/manage`，已记录为独立权限风险；未扩大为后端越权结论。
+- 一次性临时管理员已禁用，浏览器会话已退出，一次性凭据文件、临时前端和隔离 worktree 已清理。
+- 详细证据见 [R1 验收记录](./r1-acceptance.md)、[最终审查](./r1-audit.md)、[风险](./r1-risks.md) 与 [后续需求](./r1-next-requirements.md)。
+- 后续 P0-AUTH 已关闭失效/降权会话回退缺口；CLEANUP 已删除原型并在主工作区通过 64 项前端测试、TypeScript、40 页生产构建与三尺寸浏览器。原 R1 `PARTIAL` 已解除。
+
 ## I4 规划校验
 
 - 已基于 I3 完成证据重新编号递进计划：I4 对应 C-04/C-05，I5 才进入资料/偏好与响应式验收。

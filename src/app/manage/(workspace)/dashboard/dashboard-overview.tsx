@@ -1,9 +1,13 @@
 import Link from 'next/link'
 import {
   ArrowUpRight,
+  Brain,
   CheckCircle2,
   CircleHelp,
   Clock3,
+  FileText,
+  Newspaper,
+  ScanLine,
 } from 'lucide-react'
 
 import type { DashboardSummary } from '@/lib/api/dashboard'
@@ -93,7 +97,65 @@ const countItems = [
   { key: 'attachments', label: '附件', href: '/manage/attachments' },
 ] as const
 
+const quickActions = [
+  {
+    label: '写笔记',
+    description: '记录知识与想法',
+    href: '/write-note',
+    icon: FileText,
+    tone: 'border-blue-200/70 bg-blue-50/65 text-blue-700',
+  },
+  {
+    label: '写博客',
+    description: '整理并发布长文',
+    href: '/write',
+    icon: Newspaper,
+    tone: 'border-emerald-200/70 bg-emerald-50/65 text-emerald-700',
+  },
+  {
+    label: '图片采集',
+    description: '识别并整理错题',
+    href: '/manage/capture',
+    icon: ScanLine,
+    tone: 'border-amber-200/70 bg-amber-50/65 text-amber-700',
+  },
+  {
+    label: '开始复习',
+    description: '处理今天到期内容',
+    href: '/manage/review',
+    icon: Brain,
+    tone: 'border-violet-200/70 bg-violet-50/65 text-violet-700',
+  },
+] as const
+
 type DashboardSectionProps = { summary: DashboardSummary }
+
+function QuickActionsSection() {
+  return (
+    <section aria-labelledby='quick-actions-title'>
+      <div className='border-b border-slate-200/70 pb-3'>
+        <h2 id='quick-actions-title' className='font-semibold text-slate-900'>快速开始</h2>
+        <p className='mt-1 text-sm text-slate-500'>从现有、安全的流程继续今天的记录与学习。</p>
+      </div>
+      <div className='mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+        {quickActions.map(({ label, description, href, icon: Icon, tone }) => (
+          <Link
+            key={href}
+            href={href}
+            aria-label={label}
+            className={`group rounded-2xl border p-4 transition-[border-color,background-color,box-shadow] hover:shadow-sm motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 ${tone}`}
+          >
+            <span className='flex items-center justify-between gap-3'>
+              <span className='font-medium'>{label}</span>
+              <Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
+            </span>
+            <span className='mt-2 block text-xs leading-5 text-slate-500'>{description}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 function TodaySection({ summary }: DashboardSectionProps) {
   const latestMistake = summary.recent_mistakes[0]
@@ -150,6 +212,7 @@ export function DashboardOverview({ summary, profile, profileUnavailable = false
   return <div className='space-y-10'>
     {profile ? (profile.home_preferences.show_welcome ? <section aria-labelledby='private-welcome-title' className='rounded-2xl border border-[var(--color-brand)]/15 bg-[var(--color-brand)]/5 px-5 py-4'><p className='text-xs font-medium tracking-[0.12em] text-[var(--color-brand)] uppercase'>个人学习</p><h2 id='private-welcome-title' className='mt-2 text-xl font-semibold text-slate-900'>{getWelcomeGreeting(profile)}</h2><p className='mt-1 text-sm text-slate-600'>{profile.welcome_message || profile.signature || '按自己的节奏继续积累。'}</p><p className='mt-2 text-xs text-slate-400'>当前时间：{formatProfileTime(profile)}</p></section> : null) : profileUnavailable ? <section aria-labelledby='private-welcome-unavailable-title' className='rounded-2xl border border-amber-200 bg-amber-50/70 px-5 py-4'><h2 id='private-welcome-unavailable-title' className='font-semibold text-amber-900'>个人资料暂不可用</h2><p className='mt-1 text-sm text-amber-800'>学习摘要仍可使用；稍后可重试加载私有欢迎区域。</p>{onProfileRetry ? <button type='button' onClick={onProfileRetry} className='mt-3 text-sm font-medium text-amber-900 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/40'>重新加载个人资料</button> : null}</section> : null}
     <ManagePageHeader eyebrow='学习空间' title='学习管理首页' description={`数据更新于 ${formatChineseDateTime(summary.generated_at)}`} />
+    <QuickActionsSection />
     <section aria-labelledby='learning-feedback-title' className='border-y border-slate-200/70 py-5'><p className='text-sm font-medium text-[var(--color-brand)]'>学习反馈</p><div className='mt-2 flex flex-wrap items-end justify-between gap-4'><div><h2 id='learning-feedback-title' className='font-semibold text-slate-900'>{feedback.title}</h2><p className='mt-1 text-sm text-slate-500'>{feedback.description}</p></div><Link href={feedback.href} className='inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>{feedback.actionLabel}<ArrowUpRight className='h-4 w-4' aria-hidden='true' /></Link></div></section>
     <div className='space-y-10'>{visibleSections.map(section => renderDashboardSection(section, summary))}</div>
   </div>

@@ -615,10 +615,16 @@ function ManagePageInner() {
   useEffect(() => {
     getMe()
       .then(u => {
-        setUser(u)
-        setAuthenticated(true)
+        if (u.is_admin === true) {
+          setUser(u)
+          setAuthenticated(true)
+          return
+        }
+        setUser(null)
+        setAuthenticated(false)
       })
       .catch(() => {
+        setUser(null)
         setAuthenticated(false)
       })
       .finally(() => setChecking(false))
@@ -632,9 +638,15 @@ function ManagePageInner() {
   const handleLogin = async () => {
     try {
       const u = await getMe()
-      setUser(u)
-      setAuthenticated(true)
+      if (u.is_admin === true) {
+        setUser(u)
+        setAuthenticated(true)
+        return
+      }
+      setUser(null)
+      setAuthenticated(false)
     } catch {
+      setUser(null)
       setAuthenticated(false)
     }
   }

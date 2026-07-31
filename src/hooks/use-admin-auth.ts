@@ -3,9 +3,9 @@
 import useSWR from 'swr'
 import { getMe } from '@/lib/api/auth'
 
-export function useAdminAuth() {
+export function useAdminAuth({ strict = false }: { strict?: boolean } = {}) {
 	const { data, error, isLoading } = useSWR(
-		'admin-session-check',
+		strict ? 'admin-session-check:strict' : 'admin-session-check',
 		async () => {
 			try {
 				const user = await getMe()
@@ -15,9 +15,9 @@ export function useAdminAuth() {
 			}
 		},
 		{
-			revalidateOnFocus: false,
-			revalidateOnReconnect: false,
-			dedupingInterval: 60000,
+			revalidateOnFocus: strict,
+			revalidateOnReconnect: strict,
+			dedupingInterval: strict ? 32 : 60000,
 		}
 	)
 
