@@ -68,6 +68,9 @@ describe('/manage admin boundary', () => {
     render(<ManagePage />)
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument())
+    const avatar = screen.getByRole('img', { name: 'avatar' })
+    expect(avatar).toHaveAttribute('loading', 'eager')
+    expect(avatar).toHaveAttribute('fetchpriority', 'high')
     expect(screen.queryByRole('heading', { name: '管理面板' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '删除' })).not.toBeInTheDocument()
   })

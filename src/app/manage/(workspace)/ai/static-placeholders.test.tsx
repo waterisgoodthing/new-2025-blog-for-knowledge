@@ -43,18 +43,20 @@ describe('AI governance and image-capture surfaces', () => {
     expect(layoutSource).toContain('<AuthGate>')
   })
 
-  it('renders AI run governance without invoking a provider', () => {
+  it('renders AI run governance without invoking a provider', async () => {
     render(<ManageAiPage />)
 
     expect(screen.getByRole('heading', { name: 'AI 运行记录' })).toBeInTheDocument()
     expect(screen.getByText(/真实运行记录/)).toBeInTheDocument()
+    expect(await screen.findByText('暂无符合条件的记录。')).toBeInTheDocument()
   })
 
-  it('renders the run-history governance surface', () => {
+  it('renders the run-history governance surface', async () => {
     render(<ManageAiRunsPage />)
 
     expect(screen.getByRole('heading', { name: 'AI 运行记录' })).toBeInTheDocument()
     expect(screen.getByText(/真实来源、失败态/)).toBeInTheDocument()
+    expect(await screen.findByText('暂无符合条件的记录。')).toBeInTheDocument()
   })
 
   it('renders the current Capture entry modes with an App Router fixture', async () => {

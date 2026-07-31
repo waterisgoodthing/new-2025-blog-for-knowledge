@@ -365,6 +365,8 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
           alt='avatar'
           width={56}
           height={56}
+          loading='eager'
+          fetchPriority='high'
           className='rounded-full'
           style={{ boxShadow: '0 8px 24px -4px #E2D9CE' }}
         />
