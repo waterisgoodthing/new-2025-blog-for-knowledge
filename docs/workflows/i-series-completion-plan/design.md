@@ -46,12 +46,12 @@
 | 任务 | 当前状态 | 已有证据 | 仍缺证据/阻塞 |
 |---|---|---|---|
 | I10-02 / E-02 | `PARTIAL` | 技术字段映射、duplicate slug=0、关系探针与 8 表 hash 见 `i10-migration-dry-run/validation.md:9-14` | canonical owner、12 类逐行 manifest、legacy/独立错题终态、冲突批准 |
-| I10-03 / E-03 | `BLOCKED` | `owner-coverage.md:24-73` 的 12 类计数/字段已由本轮只读查询复核 | 全部 gate 必须 PASS；当前 owner 仍 UNKNOWN |
-| I10-04 / E-04 | `TECHNICAL PASS / GATE BLOCKED` | clone `020→024→020→024`、count/hash/关系与销毁见 `assets/dry-run-report.md:5-14` | 未携带获批 owner manifest；不授权 source/shadow 写入 |
+| I10-03 / E-03 | `PASS` | 2026-07-31 121-row owner sidecar、双重复核、FK/关系、销毁与基线恢复 PASS | 不授权 source/shadow 写入 |
+| I10-04 / E-04 | `TECHNICAL PASS / OWNER PASS` | clone replay 与最新 024→025 隔离 backfill/check 均有证据 | 不授权 source/shadow 写入 |
 | I10-05 | `PARTIAL` | 历史主验证/独立进程技术复核存在 | owner 决策后的新鲜 source snapshot 与独立 manifest 复核 |
 | I11-01 | `PASS for historical approval check` | `i11-shadow-migration/tasks.md:3`、`validation.md:3` 记录 2026-07-26 单一 owner 模式与“批准并继续” | 该批准早于本报告确认的 mismatch/新执行拆分，不自动授权 C5–C9 |
-| I11-02 / E-05 | `BLOCKED / NOT EXECUTED` | 只有设计与前置审计 | owner gate、source 024、G3 新批准、shadow count/hash、增量/tombstone/零 drift |
-| I11-03 / E-06 | `BLOCKED / NOT EXECUTED` | 只有设计边界 | E-05 PASS、切换/停旧写/归档分别批准、观察期、reverse delta、回切/恢复 |
+| I11-02 / E-05 | `READY / NOT AUTHORIZED` | Owner gate PASS；没有 shadow target 或本轮执行授权 | 新授权、shadow count/hash、增量/tombstone/零 drift |
+| I11-03 / E-06 | `READY / NOT AUTHORIZED` | Owner gate PASS；未执行 E-05 | E-05 PASS、切换/停旧写/归档分别批准、观察期、reverse delta、回切/恢复 |
 | I11-04 | `BLOCKED / NOT EXECUTED` | 无 E-05/E-06 主验证可复核 | 与主验证不同进程/fixture 的独立交叉验证 |
 | I12-01 / F-01 | `PARTIAL` | 2026-07-26 匿名三尺寸、键盘、失效 session、隔离测试/build 记录；本轮确认资产存在 | 真实管理员、024 恢复/回切、全失败态；1280 Passkey 资产仍 loading |
 | I12-02 / F-02 | `NOT STARTED / BLOCKED` | fail-closed 设计只有一句原则 | I10/I11/F-01 全部关闭、固定 artifact、完整 predeploy checklist 与 G4 |

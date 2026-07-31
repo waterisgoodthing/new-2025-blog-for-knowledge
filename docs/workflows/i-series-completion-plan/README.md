@@ -2,6 +2,10 @@
 
 状态：`C0-C12 COMPLETE VIA SIMPLIFIED PATH / ELIGIBLE / NOT DEPLOYED`
 
+2026-07-31 状态补充：新的 I10 owner backfill dry-run 再次通过 121/121、owner
+FK/关系完整性和隔离销毁。原简化路径中的 E-05/E-06 `SKIPPED` 是 2026-07-29
+历史决策；当前将其恢复为 `READY / NOT AUTHORIZED`，未实际执行。
+
 ## 目标
 
 为 Personal Learning System V2 Unification 的 I10 收尾、I11 与 I12 提供可回滚、可验收的连续执行与最终收口。C0-C5 已完成；用户于 2026-07-29 批准以最终只读完整性审计和 024 灾难恢复演练替代原 C6-C9 影子迁移/切换路径。范围明确不包含 push、生产部署或生产配置修改。

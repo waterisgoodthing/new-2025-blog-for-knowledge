@@ -1,6 +1,8 @@
 # 统一大方案任务清单
 
-> 当前状态：I0–I9 已完成并通过；I10 技术 dry-run PASS 但 `DRY_RUN_READY` 因 owner/backfill 责任未收敛而 BLOCKED；I11 单独批准已收到，但 E-05/E-06 仍受 owner gate 阻断。不得扩大为源库/生产迁移、部署、权威切换、旧系统停写或真实 AI 成功调用。
+> 当前状态：I0–I10 已完成并通过，`DRY_RUN_READY=PASS`；E-05/E-06 为
+> `READY / NOT AUTHORIZED` 且未执行。不得扩大为源库/生产迁移、部署、
+> 权威切换、旧系统停写或真实 AI 成功调用。
 
 ## I3：Attempt、错题转换与采集手工回退（已完成）
 
@@ -109,11 +111,14 @@
 ## E. Phase 7–8：迁移与归档
 
 - [x] E-01 完成旧系统只读盘点、哈希清单和来源基线（PASS；`blog_db:5432` revision 020、静态索引与 manifest）
-- [x] E-02 冻结字段映射、重复判定、冲突处理和 legacy route alias（PARTIAL；技术映射通过，owner/backfill 责任 UNKNOWN）
-- [x] E-03 判定 `DRY_RUN_READY` 门槛（BLOCKED；旧实体缺统一 owner，未通过则停止）
+- [x] E-02 冻结字段映射、重复判定、冲突处理和 legacy route alias（PASS；
+  单管理员 owner manifest 121/121）
+- [x] E-03 判定 `DRY_RUN_READY` 门槛（PASS；2026-07-31 owner backfill 与
+  完整性审计通过）
 - [x] E-04 在隔离目标执行 dry-run，核对计数、哈希、关系和回滚销毁结果（TECHNICAL PASS；020→024→020→024，独立对账后销毁）
-- [ ] E-05 经单独批准后执行影子迁移和增量对账（批准已收到；owner/backfill gate BLOCKED）
-- [ ] E-06 经单独批准后执行权威切换、观察期和旧系统只读归档（批准已收到；依赖 E-05 与 owner gate）
+- [ ] E-05 影子迁移和增量对账（`READY / NOT AUTHORIZED`；未执行）
+- [ ] E-06 权威切换、观察期和旧系统只读归档（`READY / NOT AUTHORIZED`；
+  仍依赖 E-05 实际对账通过，未执行）
 
 ## F. 最终收口
 

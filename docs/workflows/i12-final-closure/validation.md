@@ -1,7 +1,9 @@
 # I12 验证
 
 尚未完成；最终状态必须区分代码、隔离验证、发布资格、部署和迁移切换。
-当前不执行最终收口验证：I10 真实源数据 dry-run 的 owner gate 未通过；I11 的单独继续批准虽已记录，但 E-05/E-06 仍未获 owner/backfill 前置决策。不得发布部署资格、生产切换或最终完成结论。
+2026-07-31 更新：I10 owner gate 已通过。I11 E-05/E-06 当前为
+`READY / NOT AUTHORIZED` 且未执行，因此仍不得从本状态推导生产切换或新的
+最终完成结论。
 
 ## I12 independent cross-check continuation (2026-07-26)
 
@@ -37,4 +39,5 @@
 - 首次后端组合测试因遗漏隔离 `DATABASE_URL` 命中了源库 revision 020，出现缺少 `attachments.display_name`、`notes.revision` 和 `attempts` 表的失败；未据此宣称通过，随后已停止源库重试并以隔离目标重跑通过。该失败保留为验证流程缺陷证据。
 - 管理员真实会话、受保护管理页面内部内容、恢复/回滚演练和失败态的完整浏览器路径：`NOT VERIFIED`；不能在源库创建临时管理员，也不能使用认证绕过替代真实会话。
 - 现有 `:2025` 进程另有独立失败：网络记录显示多个 `_next/static` chunk 返回 500，页面停在“加载中”；该进程不作为 production build 通过证据，已通过新构建 `:3025` 复核替代。
-- I10 owner/backfill 决策、I11 E-05/E-06、权威切换和生产发布资格：`BLOCKED`，因此 F-01～F-03 仍未完成。
+- I10 owner/backfill：`PASS`。I11 E-05/E-06：`READY / NOT AUTHORIZED`；
+  权威切换未执行，因此本历史路径的 F-01～F-03 不据此更新。

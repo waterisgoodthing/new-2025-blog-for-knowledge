@@ -150,6 +150,10 @@
 
 - 架构终态：source `blog_db` 024 是唯一权威；C6/C7 以完整性与恢复证据替代 shadow/cutover，C8/C9 明确 SKIPPED。没有 target/Legacy、双主、归档或删除。
 - 十维状态：MVP COMPLETE；产品化 PARTIAL；知识工作区 COMPLETE；AI/OCR governance scope COMPLETE（真实 provider success 未运行）；备份恢复 024 VERIFIED；migration dry-run TECHNICAL/DRY_RUN_READY PASS；权威切换 SKIPPED；Legacy 归档 SKIPPED；部署资格 ELIGIBLE；实际部署 NOT DEPLOYED。
+
+2026-07-31 补充：I10 owner backfill 重新以隔离 025 target 验证通过并恢复日常库
+基线。E-05/E-06 从历史 `SKIPPED` 更新为 `READY / NOT AUTHORIZED`；本轮没有
+创建 shadow target、切换权威或部署。
 - 残余风险：production listener 未启用、真实 provider 未验证、frontend/backend test warnings、avatar LCP 建议、范围外 dirty、local-only backup 运维。全部写入 `f03-final-status-report.md` 与 risk register，没有只留在对话中。
 - 审批/Git：记录 2026-07-28 C0-C5、`2c7adcc`、`0205272`、2026-07-29 C6-C12 简化批准，以及本地 closure commit message。由于 commit 不能包含自身稳定 SHA，最终 SHA 由 Git handoff 报告。
 - 退出：`COMPLETE`。C0-C12 本地 workflow 已闭合；不 push、不发布、不部署、不改生产配置。

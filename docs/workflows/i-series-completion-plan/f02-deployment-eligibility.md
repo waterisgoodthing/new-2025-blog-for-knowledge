@@ -14,8 +14,8 @@ This is a quality and recoverability eligibility decision for a future separatel
 | 020→024 artifact/source upgrade | PASS | C3 artifact; C5 source current=head=024 and check clean; migrations tracked by local commits `2c7adcc` and `0205272`. |
 | C6 final integrity | PASS | `assets/c6-final-integrity-audit.json`: 121/121, seven relationship gates=0, backfill drift=0, expected extensions/users/owner. |
 | 024 disaster recovery | PASS | `assets/c7-restore-verification.json`: 8/8 backup hashes, DB/attachments restored, aggregate match, readiness/check PASS, isolated DB removed. |
-| E-05 shadow migration | SKIPPED | Approved 2026-07-29 simplification: 121-row system retains one source authority; no second target was created. |
-| E-06 switch/reverse delta | SKIPPED | No shadow target or dual authority exists; C8/C9 are explicit architecture decisions, not unverified operations. |
+| E-05 shadow migration | READY / NOT AUTHORIZED | 2026-07-29 simplification remains historical; 2026-07-31 owner gate passed, but no new execution authorization or shadow target exists. |
+| E-06 switch/reverse delta | READY / NOT AUTHORIZED | Owner gate passed; still depends on an actually executed E-05 reconciliation and separate switch authority. |
 | F-01 permissions/failure/browser/quality | PASS | Real password admin with bypass false; anonymous/invalid/non-admin matrix; documented 404/401/403 and 500 skip; three viewports/keyboard; independent manifest process. |
 | Frontend suite | PASS | 21 files, 58/58 tests; TypeScript and production build PASS, 40/40 pages generated. |
 | Backend suite | PASS | 300/300 tests after test-isolation fixes; compileall PASS; Alembic current=head=024/check clean. |

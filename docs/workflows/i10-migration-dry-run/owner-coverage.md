@@ -1,8 +1,11 @@
 # I10 Owner Coverage and Conflict Queue
 
-Status: `BLOCKED`
+Status: `PASS FOR APPROVED 121-ROW SNAPSHOT`
 
-Fresh read-only recheck: 2026-07-26; source counts, revision, user-role split, and empty static indexes are unchanged. The project owner accepted single-owner mode; no canonical target identifier or mapping manifest was supplied.
+2026-07-31 update: canonical owner
+`4c503215-b158-4162-b472-79df8289ed0a` and the 121-row manifest were approved.
+The isolated sidecar backfill and independent audit found no missing, duplicate,
+owner conflict, hash drift, owner FK orphan, or relationship orphan.
 
 This is an evidence artifact from the read-only source database at
 `localhost:5432/blog_db`, Alembic revision `020`. It does not assign owners or
@@ -43,8 +46,7 @@ be silently converted into `owner_id`.
 
 ## Conflict queue
 
-The following source populations require an explicit owner/backfill decision
-before I11 E-05 can execute:
+The following source populations were covered by the approved manifest:
 
 - 13 notes
 - 3 questions
@@ -58,16 +60,11 @@ before I11 E-05 can execute:
 - 32 AI runs
 - 47 AI call logs
 
-These are queue counts, not new database rows. No source or target database was
-written. Until each population has a documented owner rule and a single-owner
-approved mapping manifest, the migration gate is `BLOCKED` and the rows remain
-outside any shadow migration or authority switch.
+These are immutable snapshot counts. The sidecar target was isolated and
+destroyed after verification; no owner columns were written to the daily
+database. The migration gate is now PASS for this snapshot.
 
 ## Required decision to unblock
 
-The single project owner must provide a deterministic rule covering the listed
-entities, including ambiguous and orphaned rows, and approve the resulting
-backfill mapping. The rule must be independently checkable against source
-identifiers and must define conflict handling, audit evidence, and rollback
-behavior. An administrator default, `created_by` default, or folder default is
-not sufficient.
+Decision complete. E-05 must still reconcile post-snapshot deltas before any
+actual execution and remains independently authorized.

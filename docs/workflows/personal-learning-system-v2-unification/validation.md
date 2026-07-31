@@ -209,6 +209,18 @@
 - 8 个核心表共同字段 count/hash 全等；duplicate slug=0；Mistake→Question 与 ReviewItem→Mistake 关系完整；临时 clone 完成 024→020→024 回滚重放并销毁。
 - owner/backfill 责任未收敛，`DRY_RUN_READY` 总门槛保持 `BLOCKED`；未执行源库写入、权威切换、旧系统停写或 I11。
 
+## I10 Owner Gate 最终验证（2026-07-31）
+
+- 用户批准 canonical single-owner backfill；immutable manifest 121/121。
+- 024 backup 恢复到隔离目标并升级 025；sidecar owner FK backfill、
+  missing/extra/hash/owner conflict、七类关系 orphan 均为 0。
+- 独立 SQL 与主工具结果一致；sidecar 移除后 Alembic check clean，隔离库销毁。
+- 前端 64/64、后端 025 隔离库 307/307、workflow 8/8、TypeScript 和 build PASS。
+- 首次测试残留按用户精确授权恢复后，日常库最终 123-row aggregate 与执行前
+  完全一致，两个残留 ID 均不存在。
+- 当前结论：E-03=`DRY_RUN_READY PASS`；E-05/E-06=
+  `READY / NOT AUTHORIZED`，未执行。
+
 ## I9/I10 current independent recheck (2026-07-26)
 
 - 隔离目标 `024 (head)`、`alembic check` clean；源库只读 identity/revision 为 `blog_db/blog_user:5432`、`020`，计数与 owner 覆盖证据一致。

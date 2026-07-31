@@ -1,6 +1,6 @@
 # I10 Owner / Backfill Decision Proposal
 
-Status: `SINGLE-OWNER MODE ACCEPTED / IDENTIFIER PENDING`
+Status: `APPROVED / VERIFIED`
 
 This proposal is a decision aid, not an owner assignment. It does not write a
 database, authorize E-05, or convert provenance into ownership.
@@ -34,9 +34,9 @@ and `ai_call_logs`.
 - Every approved mapping records source identifier, target identifier, rule
   used, the single owner decision, timestamp, and rollback target.
 
-## Approval fields still required
+## Approval fields completed
 
-The single project owner must provide:
+The approved execution records:
 
 1. canonical target owner identifier;
 2. confirmation that the rule applies to each listed population;
@@ -44,7 +44,6 @@ The single project owner must provide:
 4. confirmation that the owner is also the conflict/audit authority;
 5. rollback and quarantine decision.
 
-The single-owner governance decision is accepted. Until the canonical target
-identifier, mapping manifest, and remaining row dispositions are supplied and
-independently checked against the source, the I10 gate remains `BLOCKED`, even
-though I11 has separately been approved.
+Canonical owner=`4c503215-b158-4162-b472-79df8289ed0a`; all five decision areas
+were applied to the immutable 121-row manifest and independently verified.
+I10 E-03 is PASS. This approval does not itself execute E-05/E-06.

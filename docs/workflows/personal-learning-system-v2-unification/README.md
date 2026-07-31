@@ -14,7 +14,13 @@ I0–I2 仅完成规划、审计和隔离验证；已批准的 I3 则修改了�
 
 ## 当前状态
 
-`I0–I10 TECHNICAL PASS / I10 GATE BLOCKED; I11 APPROVED / OWNER GATE BLOCKED; R1 CLOSED / PASS`。I7 文件工作区、I8 Markdown/版本/WikiLink/反链/权限搜索、I9 治理页面和 I10 源库只读 clone dry-run 均有主验证与独立交叉验证；I10 的 owner/backfill 责任仍未收敛。R1 已按批准执行 R1-01 至 R1-10；后续 P0-AUTH 修复了管理回退，CLEANUP 方案 A 删除了未完成 `/workspace` 原型并通过主工作区 test/tsc/build、三尺寸浏览器与隔离 revision 回放，因此 R1 的两个阻断均已解除。I11 单独批准已于 2026-07-26 收到，但 E-05/E-06 尚未执行；生产部署、源库迁移和权威切换未授权。
+`I0–I10 COMPLETE / DRY_RUN_READY PASS; I11 E-05/E-06 READY / NOT AUTHORIZED;
+R1 CLOSED / PASS`。I10 的 121-row 单 owner manifest、隔离 backfill、owner
+FK/关系完整性、025 check、销毁与日常库基线恢复已于 2026-07-31 通过。
+R1 已按批准执行 R1-01 至 R1-10；后续 P0-AUTH 修复了管理回退，CLEANUP
+方案 A 删除了未完成 `/workspace` 原型并通过主工作区 test/tsc/build、
+三尺寸浏览器与隔离 revision 回放。E-05/E-06 尚未执行；生产部署、源库迁移
+和权威切换未授权。
 
 本工作区的规划已根据 2026-07-20 审查细化；细化本身不代表 A–F 任何实施项获批或完成。
 
