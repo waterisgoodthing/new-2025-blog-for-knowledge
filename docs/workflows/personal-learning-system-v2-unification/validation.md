@@ -218,8 +218,9 @@
 - 前端 64/64、后端 025 隔离库 307/307、workflow 8/8、TypeScript 和 build PASS。
 - 首次测试残留按用户精确授权恢复后，日常库最终 123-row aggregate 与执行前
   完全一致，两个残留 ID 均不存在。
-- 当前结论：E-03=`DRY_RUN_READY PASS`；E-05/E-06=
-  `READY / NOT AUTHORIZED`，未执行。
+- 当前结论：E-03=`DRY_RUN_READY PASS`；E-05=`PASS`，已完成 123/123
+  隔离 shadow/delta、单 owner、零 orphan、幂等 replay、独立 SQL、销毁和
+  source 不变验证；E-06=`READY / NOT AUTHORIZED`，未执行。
 
 ## I9/I10 current independent recheck (2026-07-26)
 
@@ -227,3 +228,19 @@
 - 后端 I7/I8/I9 组合 10 passed；前端治理/AI/设置/仪表盘/API 组合 20 tests passed。复核发现并同步了 I9 中陈旧的 AI capability 断言；该同步不改变运行时代码。
 - `npx tsc --noEmit`、`npm run build`（40/40）、Python `compileall` 和 `git diff --check` 通过。
 - 本次未重新取得浏览器截图：`agent-browser`/Playwright/Puppeteer 不在当前环境；既有 I9 三尺寸浏览器证据继续保留为既有证据，当前复核不扩大浏览器覆盖声明。
+
+## I11/I12 最终收口（2026-08-01）
+
+- E-06/I11：新鲜 DB+附件备份、5/5 hash、dump 可读、隔离 024 restore→025、
+  source/target count/PK/hash/owner/关系/附件一致；首次 authority 切换与观察、
+  forward delta/幂等、reverse delta、实际回切、最终重切和 Legacy 只读归档均
+  PASS。清理临时身份后两库 123/123、零 delta；I11-04 独立 SQL/hash 复核 PASS。
+- F-01：真实管理员/非管理员与匿名/失效矩阵在 `AUTH_BYPASS=false` 下为
+  200/403/401；公开读取保持 200。390×844、1280×800、1440×900 无溢出，
+  键盘可达，浏览器错误为空。Frontend 23 files/64 tests、backend 307 tests、
+  tsc、Next build 40/40、compileall、Alembic current/heads/check 和 diff check PASS。
+- F-02：npm production audit=0 vulnerabilities、依赖树和 OpenNext build PASS；
+  `predeploy:check` 因当前 worktree 非 clean 按设计阻断。技术候选具备未来单独授权
+  部署资格，但 current dirty worktree=`DO NOT DEPLOY`。
+- F-03：十维最终报告已同步。代码完成与隔离验证 PASS；本机 authority 已切换；
+  Legacy 只读保留；实际应用部署=`NOT DEPLOYED`，Git push=`NOT PERFORMED`。

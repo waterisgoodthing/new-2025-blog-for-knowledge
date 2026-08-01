@@ -1,63 +1,88 @@
-# F-03 Final I-Series Status Report
+# F-03 Personal Learning System V2 最终状态报告
 
-Report date: 2026-07-29
+报告日期：2026-08-01
 
-Report status: `C0-C12 COMPLETE VIA APPROVED SIMPLIFIED PATH`
+报告状态：`E-06 / I11 / I12 COMPLETE WITH EVIDENCE`
 
-Execution environment: `/Users/limengyang/2025-blog-public`; local PostgreSQL source `blog_db:5432`; source revision `024 (head)`.
+执行环境：`/Users/limengyang/2025-blog-public`；本机 PostgreSQL runtime
+authority=`blog_v2:5432` revision 025；Legacy=`blog_db:5432` revision 025、
+默认只读。
 
-Actual deployment: `NOT DEPLOYED`
+应用部署：`NOT DEPLOYED`
 
-## Architecture Decision
+Git push：`NOT PERFORMED`
 
-The original C6-C9 shadow migration/cutover plan was replaced on 2026-07-29 by the user-approved simplified path. With 121 manifest rows and one existing PostgreSQL authority, adding a second target, delta/tombstone tooling, reverse synchronization, and production cutover would introduce dual-authority risk without proportional benefit.
+## 架构终态
 
-Source `blog_db` revision 024 remains the only data and schema authority. C6 therefore proves its integrity read-only, C7 proves its C5 backup restores into a new isolated database, and C8/C9 are explicit `SKIPPED` architecture decisions. No target or Legacy authority was created, switched, archived, or deleted.
+2026-07-29 的简化路径曾把 `blog_db` revision 024 作为唯一权威，并把原 C8/C9
+标为 `SKIPPED`。该结论保留为 dated baseline。2026-08-01 用户随后明确授权
+E-06 的最小 live authority 切换、观察、reverse delta、回切和 Legacy 只读归档，
+因此最终架构已被有边界地更新：
 
-## Ten Status Dimensions
+- 当前应用数据库权威为 `blog_v2`，附件权威为仓库外 target upload root。
+- Legacy `blog_db` 与旧 `backend/uploads` 保留且只读，没有删除。
+- source/target 在清理临时验收身份后均为 123 rows、revision 025、零 delta，
+  PK、全行哈希、owner、关系和附件树一致。
+- 该本机数据权威切换不是应用构建发布、Cloudflare 部署或 Git push。
 
-| Dimension | Final status | Evidence and boundary |
+## 十维状态
+
+| 维度 | 最终状态 | 证据与边界 |
 |---|---|---|
-| MVP | COMPLETE | C5 unified source schema at 024; C6 confirms 121-row data integrity; C10 permissions, failure states, browser, tests, type/build and backend suite PASS. |
-| Productization | PARTIAL | Scoped artifact is eligible, but Phase 1.0 work outside this workflow remains dirty/incomplete and production backend runtime is not enabled. |
-| Knowledge workspace | COMPLETE | I7/I8 implementation is present; C10 authenticated dashboard and frontend/backend suites validate current behavior. |
-| AI/OCR governance | COMPLETE FOR GOVERNANCE SCOPE | I9 governance and failure contracts are covered by tests. A real external provider success path was not invoked and remains a runtime integration risk. |
-| Backup and recovery | 024 VERIFIED | C5 backup 8/8 hashes; C7 restored DB/attachments, revision, 121-row aggregate, readiness and Alembic, then removed the target. |
-| Migration dry-run | TECHNICAL PASS / DRY_RUN_READY PASS | C1 aggregate `b40b109a...89adb6`; C2 replay; C3 artifact; C4 020 restore/upgrade; C5 source 024; C6/C10 live projection checks. |
-| Authority switch | SKIPPED | Approved single-source decision; no target exists and no read/write routing was changed. |
-| Legacy archive | SKIPPED | Source is the sole authority; no independent Legacy database exists. No revoke, archive, alias, or delete was performed. |
-| Deployment eligibility | ELIGIBLE | F-02 scoped quality/recovery review PASS. Runtime enablement and actual deployment require separate authorization and fresh exact-commit gates. |
-| Actual deployment | NOT DEPLOYED | No push, deployment, production config change, tunnel change, or production 8000 listener was performed. |
+| 代码完成 | `COMPLETE FOR APPROVED SCOPE` | E-06、I11-04、I12-01～I12-04、F-01～F-03 的获批范围已执行；未扩展到无关产品重构。 |
+| 隔离验证 | `PASS` | acceptance DB revision 025 上 backend 307/307；frontend 64/64；type/build/compile/Alembic 全 PASS，隔离 DB 已销毁。 |
+| 备份与恢复 | `PASS` | 新鲜 revision-024 DB/附件备份 5/5 hash、dump 可读、隔离恢复 024→025、PK/hash/owner/关系/附件验证通过。 |
+| 权限与浏览器 | `PASS` | `AUTH_BYPASS=false`；匿名/失效 401、非管理员 403、管理员 200；公开读取保持 200；390×844、1280×800、1440×900 和键盘路径通过。 |
+| Authority 切换 | `SWITCHED TO blog_v2` | 首次切换、观察、forward delta/幂等、reverse delta、真实回切、最终重切和连接身份均有机器证据。 |
+| Legacy 归档 | `READ-ONLY / RETAINED` | `blog_db` revision 025 默认只读，旧附件文件系统只读；未删除，回切路径可用。 |
+| 数据完整性 | `PASS` | 清理后 123/123、零 insert/update/delete、独立 psql 全行 hash match、121+2 immutable owner manifest、七类 orphan=0、附件 2/2 match。 |
+| 部署技术资格 | `TECHNICALLY ELIGIBLE` | npm production audit 0 vulnerabilities、依赖树有效、Next/OpenNext build PASS；未来部署仍需单独授权。 |
+| 当前工作树可部署性 | `DO NOT DEPLOY CURRENT DIRTY WORKTREE` | 仓库 `predeploy:check` 在 clean-worktree gate 按设计阻断；不能用 commit/stash/回退用户改动伪造通过。 |
+| 实际部署与发布 | `NOT DEPLOYED / NOT PUSHED` | 未执行应用 deploy、Git push、Cloudflare route/config 或发布；仅恢复既有本机 LaunchAgent 并完成已授权的数据 authority 切换。 |
 
-## C6-C12 Results
+## 验证结果
 
-- C6: PASS. Live source read-only audit: revision 024, 121/121, aggregate match, relationship orphan=0, backfill drift=0.
-- C7: PASS. C5 024 backup restored and verified; attachment hashes PASS; isolated DB removed and temporary attachments moved to Trash.
-- C8: SKIPPED. No target authority exists.
-- C9: SKIPPED. No independent Legacy authority exists.
-- C10: PASS WITH DOCUMENTED SKIPS/WARNINGS. Real password admin with bypass false, permission/failure matrices, C7 recovery evidence, three browser sizes/keyboard, frontend 58/58, backend 300/300, build/type/compile/Alembic and independent manifest verification all PASS. Controlled 500 trigger was reasonably skipped.
-- C11: PASS. F-02=`ELIGIBLE (NOT DEPLOYED; PRODUCTION RUNTIME ENABLEMENT REQUIRED)`.
-- C12: COMPLETE. This report records final evidence, residual risks, decisions, and approvals.
+- I11-03B～I11-03H：PASS。包含新鲜备份、隔离恢复、source 025、停写、target
+  构建、首次切换、观察、forward/reverse delta、回切、最终重切、只读归档和
+  临时身份清理。
+- I11-04：PASS。不同进程通过独立 psql 行哈希、关系、owner、附件、runtime
+  配置和连接身份交叉验证。
+- I12-01/F-01：PASS。backend 307/307（2 个既有 warnings）、frontend 64/64、
+  `npx tsc --noEmit`、Next build 40/40、compileall、Alembic current/heads/check、
+  `git diff --check`、真实权限矩阵和三尺寸/键盘均通过。
+- I12-02/F-02：COMPLETE。技术/recovery candidate 具备未来单独授权部署资格；
+  当前 dirty worktree fail closed，因此不得把本工作树直接部署。
+- I12-03/F-03：COMPLETE。本报告同步唯一终态和残余风险。
+- I12-04：最终主验证与独立交叉验证结论以 I11 独立报告、I12 browser matrix、
+  最终 stale-state/diff/JSON 检查为准。
 
-## Residual Risks
+## 残余风险
 
-1. Production runtime is not enabled: the public API tunnel has no localhost:8000 backend listener and may return 502. This is expected under the no-deployment boundary but blocks actual service enablement.
-2. A real external AI/OCR provider success path was not exercised. Tests cover governed adapters, validation, failure mapping, and deterministic behavior only.
-3. Frontend tests emit existing React `act()` warnings in AI-runs panels; backend tests emit two existing `AsyncMock` coroutine warnings. Suites pass, but warning cleanup should enter the next test-hygiene iteration.
-4. Browser console reports an existing LCP suggestion for `/images/avatar.png`. It is non-blocking but should be assessed as a performance follow-up.
-5. The worktree still contains unrelated Phase 1.0, UI review, project assessment, screenshot, and other workflow changes. They are excluded from the C6-C12 commit and must not be swept into a future deployment.
-6. C5/C7 backups are local, out-of-repository recovery artifacts. Operational retention, off-machine redundancy, and restore ownership remain future production concerns.
+1. 当前工作树不是 clean、可复现 deployment artifact；实际部署前必须有意图明确
+   的 clean commit，并在该 exact commit 重跑 `predeploy:check`。
+2. 未调用真实外部 AI/OCR provider success path；本轮证明 adapter、治理、失败
+   映射和权限，不证明第三方可用性或配额。
+3. Backend 全量测试保留两条既有 `AsyncMock` coroutine warnings；frontend 保留
+   Node deprecation/TimeoutNaN warnings。断言全部通过，但应进入后续 test hygiene。
+4. 新鲜备份位于仓库外本机路径；off-machine redundancy、retention 和恢复责任仍
+   属于未来生产运维。
+5. OpenNext 提示 Cloudflare `compatibility_date` 可更新；当前构建成功，该提示
+   不阻断本次技术资格，但未来部署应在 exact commit 复核。
 
-These risks are non-blocking for the scoped `ELIGIBLE` review but must be reconsidered before any actual deployment.
+## 批准与 Git 边界
 
-## Approval And Git History
+- 2026-07-28：用户批准 C0-C5 和 D1-D8 owner 决策。
+- 2026-07-29：本地 commit `2c7adcc` 跟踪 021-024 与候选闭包；`0205272`
+  记录 I-series Git authority closure。
+- 2026-07-31：用户批准 I11 E-05 隔离 shadow/delta，结果 PASS。
+- 2026-08-01：用户明确批准 I11-03/I11-04、I12-01～I12-04、E-06 和 F-01～F-03
+  的本轮执行边界，包括最小 live authority 操作，但不包括部署或 push。
+- 本轮没有创建项目 commit、没有 stage、没有 push；用户既有 dirty changes 被保留。
 
-- 2026-07-28: user approved C0-C5 execution and D1-D8 owner decisions.
-- 2026-07-29: local commit `2c7adcc` (`chore: unify I-series migration authority`) tracked the 83-file artifact and revisions 021-024.
-- 2026-07-29: local commit `0205272` (`docs: record I-series Git authority closure`) recorded the authority/risk ledger.
-- 2026-07-29: user approved replacing original C6-C9 with `NEXT-STEPS.md` simplified path and explicitly approved the resulting C6-C12 task list.
-- C6-C12 closure commit: `docs: complete I-series simplified path C6-C12`. Its SHA is reported in the Git handoff/final response because a commit cannot contain its own stable hash.
+## 最终边界
 
-## Final Boundary
-
-The I-series workflow is closed locally through C12. Deployment eligibility does not imply actual deployment. Push, release, production configuration, runtime enablement, migration execution, and traffic changes remain unauthorized and unperformed.
+Personal Learning System V2 Unification 在获批代码、迁移、恢复、权限和本机
+authority 范围内完成。`blog_v2` 已是实际本机 runtime authority，Legacy 已只读
+保留；代码与隔离验证通过。部署技术资格不等于当前 dirty worktree 可部署，更不
+等于实际应用部署。任何未来部署都需要单独授权、clean exact commit、fresh gate
+和必要的最新恢复点。

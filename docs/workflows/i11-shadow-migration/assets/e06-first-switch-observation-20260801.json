@@ -1,0 +1,28 @@
+{
+  "date": "2026-08-01",
+  "runtime_database_authority": "blog_v2",
+  "runtime_upload_authority": "/Users/limengyang/.local/share/personal-learning-system-v2/uploads",
+  "source_database": "blog_db",
+  "source_revision": "025",
+  "source_default_transaction_read_only": true,
+  "target_revision": "025",
+  "target_default_transaction_read_only": false,
+  "auth_bypass": false,
+  "auth_bypass_allow": false,
+  "observation_rounds": 3,
+  "round_contract": {
+    "health": 200,
+    "public_notes": 200,
+    "anonymous_admin": 401,
+    "invalid_admin": 401,
+    "admin_me": 200,
+    "admin_dashboard": 200,
+    "non_admin_dashboard": 403,
+    "missing_note": 404,
+    "admin_attachments": 200,
+    "admin_attachment_content": 200
+  },
+  "all_rounds_match": true,
+  "backend_stopped_after_observation": true,
+  "passed": true
+}

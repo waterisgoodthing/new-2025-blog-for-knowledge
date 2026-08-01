@@ -1,0 +1,12 @@
+{
+  "source_revision": "025",
+  "target_revision": "025",
+  "source_count": 123,
+  "target_count": 123,
+  "inserted_count": 0,
+  "updated_count": 0,
+  "deleted_count": 0,
+  "delta_count": 0,
+  "aggregate_match": true,
+  "passed": true
+}

@@ -1,6 +1,7 @@
 # Personal Learning System V2 递进执行计划
 
-状态：`I0–I6 COMPLETE / PASS / I7 APPROVAL REQUIRED`
+状态：`I0–I12 COMPLETE / E-06 PASS / F-01 PASS / F-02 COMPLETE /
+F-03 COMPLETE / NOT DEPLOYED`
 
 ## 1. 执行方法
 
@@ -33,8 +34,8 @@
 | I8 | 交付 Markdown 知识与权限搜索 | D-06～D-08 | 编辑/预览/版本、WikiLink/反链稳定性、全文/trigram 搜索权限测试 | 移动破坏链接，或搜索泄露私有内容 |
 | I9 | 依据真实使用补齐治理与统计 | D-09 | AI、任务、统计、报告、设置各自有真实数据来源、空态和权限验收 | 为凑页面而引入模拟主数据或不可信指标 |
 | I10 | 准备并执行隔离 dry-run | E-01～E-04 | 2026-07-31 `DRY_RUN_READY PASS`、121/121、隔离对账与销毁记录 | 已通过；不得推导生产写入授权 |
-| I11 | 影子迁移与权威切换 | E-05～E-06 | 当前 `READY / NOT AUTHORIZED`；实际执行仍需增量对账、回滚演练和观察期 | 未获得新的执行授权，或回滚不可验证 |
-| I12 | 最终质量与发布资格审查 | F-01～F-03 | 端到端、恢复、权限、浏览器、代码质量与部署资格证据 | 任一 fail-closed 门槛失败即不发布 |
+| I11 | 影子迁移与权威切换 | E-05～E-06 | E-05/E-06、回切、只读归档与独立交叉验证 `PASS`；final authority=`blog_v2` | 目标身份、备份或回滚不可验证 |
+| I12 | 最终质量与发布资格审查 | F-01～F-03 | F-01 PASS；F-02 技术资格完成但当前 dirty worktree DO NOT DEPLOY；F-03 完成 | 任一 fail-closed 门槛失败即不发布 |
 
 ## 3. 每个增量的交付模板
 
@@ -61,4 +62,5 @@
 
 ## 5. 建议的首次批准范围
 
-I0–I6 已完成并通过。下一项只能单独审批 **I7：文件工作区第一个切片**；I6 的通过不自动授权 I7、生产部署、源库迁移或权威切换。
+I0–I12 已完成。后续只能以新的独立任务审批 clean deployment artifact、实际部署、
+provider integration 或 test hygiene；本轮完成不自动授权部署、push 或删除 Legacy。

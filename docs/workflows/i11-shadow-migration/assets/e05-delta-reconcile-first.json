@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-07-31T08:56:53.176647+00:00",
+  "target_database": "i11_shadow_e05_20260731",
+  "scan_a_count": 123,
+  "scan_b_count": 123,
+  "classification_counts": {
+    "unchanged": 123,
+    "inserted": 0,
+    "updated": 0,
+    "deleted": 0
+  },
+  "first_replay_applied_count": 0,
+  "second_replay_applied_count": 0,
+  "ledger_count": 123,
+  "tombstone_count": 0,
+  "source_scans_match": true,
+  "business_hash_match": true,
+  "ledger_hash_match": true,
+  "passed": true
+}

@@ -1,5 +1,9 @@
 # C6-C12 简化路径完成审查报告
 
+> 历史基线：本文记录 2026-07-29 revision-024 简化路径，不能覆盖
+> 2026-08-01 E-06/I11/I12 终态。当前唯一结论见
+> `f02-deployment-eligibility.md` 与 `f03-final-status-report.md`。
+
 **审查日期**: 2026-07-29
 **审查对象**: Commit `beb7897` - "docs: complete I-series simplified path C6-C12"
 **审查员**: Human (requesting codex work review)

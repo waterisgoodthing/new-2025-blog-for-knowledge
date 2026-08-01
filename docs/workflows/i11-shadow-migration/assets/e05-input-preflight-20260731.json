@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-07-31",
+  "source_database": "blog_db",
+  "source_role": "blog_user",
+  "source_transaction_read_only": true,
+  "source_revision": "024",
+  "source_count": 123,
+  "source_aggregate_sha256": "8a7773453f560d626583495d67730ce2cb6d6a4b22b00fad4d7a3abd90802d9d",
+  "v1_manifest_count": 121,
+  "v1_manifest_sha256": "a2d91fd48c96f4dfde15346c33b66e6ee58e581fb25dfa3258725dcd49dbbe4e",
+  "backup_dump_sha256": "5e1f967d0555d9e767955004b1703f25b1f4bfa9245b7a62e032df93c157138f",
+  "backup_manifest_checks": "8/8 PASS",
+  "post_v1_delta": [
+    {
+      "source_table": "users",
+      "source_id": "3f37d7e5-3bcc-49af-8d08-987d089bc9b8",
+      "disposition": "ARCHIVED"
+    },
+    {
+      "source_table": "users",
+      "source_id": "ecbbc83f-df65-43bf-b9a1-18e5e15db8f3",
+      "disposition": "ARCHIVED"
+    }
+  ],
+  "missing_from_v1": 2,
+  "extra_vs_source": 0,
+  "v1_hash_drift": 0,
+  "owner_conflict": 0,
+  "relationship_orphan_count": 0,
+  "existing_shadow_database_count": 0,
+  "passed": true
+}

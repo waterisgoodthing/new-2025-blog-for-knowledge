@@ -1,6 +1,6 @@
 # I 系列完成风险登记
 
-事实日期：2026-07-29
+事实日期：2026-08-01
 状态：`CLOSED FOR I-SERIES / RESIDUAL RISKS RETAINED`
 
 | 风险编号 | 优先级 | 风险 | 当前证据 | 处置与退出门槛 |
@@ -15,11 +15,12 @@
 | I-RISK-P0-08 | P0 | live source 已是 024，但产生该 schema 的 021-024 migration 曾为 Git-untracked | 2026-07-29 `git ls-files` 确认 021-024 已由 local commit `2c7adcc` 跟踪；single head/current/check PASS | `RESOLVED`：C3 83-file 闭包与 workflow 已精确提交；未 push/deploy |
 | I-RISK-P0-09 | P0 | C1 verify 固定要求 source=020，无法在升级后的 live 024 原样复核 | 2026-07-29 已用显式 024→020 投影完成 live 只读复核：121/121、drift/conflict/orphan=0、aggregate 不变 | `RESOLVED`：manifest 保持 020 不变；unsupported revision pair fail closed；证据 `assets/c1-post-upgrade-verification.json` |
 | I-RISK-P1-01 | P1 | shadow 增量扫描需要额外 tombstone/时间戳合同 | 多表无可靠统一 `updated_at` | `RESOLVED BY SCOPE DECISION`：不实现 shadow delta；C6 对唯一 source 做全量只读 PK/hash 审计 |
-| I-RISK-P1-02 | P1 | 权威切换可能形成双主 | 当前 source 是唯一实际 DB | `RESOLVED BY SCOPE DECISION`：C8/C9 SKIPPED，不创建或切换第二权威 |
-| I-RISK-P1-03 | P1 | 权限或失败态未完整验证 | 既有 F-01 为 PARTIAL | 真实隔离 admin，匿名/失效/非 admin，全失败矩阵，三尺寸/键盘与独立交叉验证 |
+| I-RISK-P1-02 | P1 | 权威切换可能形成双主 | E-06 建立 target 并实际回切/重切 | `RESOLVED BY EXECUTION`：停写、两向零 delta、回切观察、final target 可写与 Legacy 只读均有证据 |
+| I-RISK-P1-03 | P1 | 权限或失败态未完整验证 | F-01 真实会话矩阵与浏览器已完成 | `RESOLVED`：匿名/失效 401、非 admin 403、admin 200，三尺寸/键盘与独立交叉验证 PASS |
 | I-RISK-P2-01 | P2 | 工作树仍有本范围外 dirty/untracked | migration/runtime authority 已由 `2c7adcc` 固定；Phase 1.0、其他 workflow/评审资产仍未提交 | 本次不混入无关用户改动；F-02 继续把全工作树与测试状态作为生产资格限制 |
 | I-RISK-P2-02 | P2 | 测试与浏览器存在非阻塞 warnings | frontend AI-runs `act()`、backend AI gateway AsyncMock、avatar LCP 建议；最终 suites/build 均 PASS | 下一轮 test/performance hygiene；实际部署前重新评估 warning baseline |
-| I-RISK-P1-04 | P1 | production backend runtime 未启用 | public tunnel 无 localhost:8000 listener；本轮禁止部署 | 实际部署前单独授权并完成 exact-commit config/secret/health/rollback gates |
+| I-RISK-P1-04 | P1 | 应用 deployment artifact 未发布 | 本机既有 LaunchAgent 已恢复且连接 `blog_v2`；没有应用 deploy/push | 实际部署前单独授权、clean exact commit、predeploy/secret/health/rollback gates |
+| I-RISK-P1-06 | P1 | 当前 dirty worktree 不是可部署制品 | `predeploy:check` 在 clean-worktree gate 按设计阻断 | `OPEN / FAIL-CLOSED`：不得部署当前工作树；形成 clean reviewed commit 后重跑 exact gate |
 | I-RISK-P1-05 | P1 | 真实 AI/OCR provider 成功路径未验证 | C10 使用空 provider keys；governed adapters/failure tests PASS | provider integration 作为未来独立验收，不影响本次治理范围完成状态 |
 
 任何 P0/P1 门槛出现 UNKNOWN/FAIL 都不得由“数据不重要”豁免。失败必须进入 `validation.md`，同一失败无新证据重复两次则停止该增量并诊断。

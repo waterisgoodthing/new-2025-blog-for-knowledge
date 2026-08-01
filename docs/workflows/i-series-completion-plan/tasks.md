@@ -1,6 +1,8 @@
 # I 系列剩余任务执行清单
 
-状态：`C0-C5 COMPLETE / C6-C12 SIMPLIFIED PATH AUTHORIZED / IN PROGRESS`
+状态：`C0-C12 REVISION-024 HISTORICAL BASELINE / E-06 PASS / F-01 PASS /
+F-02 TECHNICALLY ELIGIBLE BUT CURRENT DIRTY WORKTREE DO NOT DEPLOY /
+F-03 COMPLETE / I12-04 PASS`
 规则：用户于 2026-07-29 明确批准 C6-C12 简化任务清单。完成一项后立即勾选并记录验证，再进入下一项；live source 只读、隔离清理和不部署边界保持不变。
 
 ## 分阶段序列与技术关口
@@ -21,7 +23,7 @@
 | C11 | F-02 部署资格审查（不部署） | C10 有明确结论 | 2026-07-29 已批准审查 | ELIGIBLE 或 DO NOT DEPLOY，逐项有证据 | 不得部署；不得掩盖 runtime blocker |
 | C12 | F-03 最终报告与状态同步 | C11 有明确结论 | 2026-07-29 已批准报告 | 10 个状态维度、残余风险、审批与 commit 历史 | 任何维度被无证据升级；不得发布 |
 
-## 待执行任务
+## 执行状态
 
 - [x] C0：D1-D8 已按 2026-07-28 授权生效；canonical source/target owner=`4c503215-b158-4162-b472-79df8289ed0a`，其余决策与证据见 `design.md` 3.2、`validation.md` C0。
 - [x] C1：已生成 121 行 `owner-mapping-manifest-v1.json`；独立 UNION 查询复核 missing/duplicate/hash/owner/orphan 全为 0，`DRY_RUN_READY=PASS`，见 `validation.md` C1。
@@ -36,6 +38,13 @@
 - [x] C10：I12-01/F-01 已完成；真实密码管理员会话、匿名/失效/非管理员矩阵、404/401/403 与 500 合理跳过、C7 恢复复用、三尺寸/键盘、frontend 58/58、backend 300/300、type/build/compile/Alembic 与独立交叉验证均有证据。
 - [x] C11：已根据 C6-C10 实证更新 F-02，结论为 `ELIGIBLE (NOT DEPLOYED; PRODUCTION RUNTIME ENABLEMENT REQUIRED)`；仅完成资格审查，未 push/部署/改生产配置。
 - [x] C12：F-03 已更新十维最终状态、简化架构决策、残余风险、审批与 Git 历史；实际部署保持 `NOT DEPLOYED`，未 push/发布。
+
+## 2026-08-01 E-06 扩展与最终刷新
+
+- [x] U1：同步 I11 E-06 最终 authority/回切/归档证据；C10 的 024 结果只作历史基线。
+- [x] U2：同步 I12-01/F-01 的 E-06 后全量主验证与独立交叉验证。
+- [x] U3：重新判定 F-02；只输出部署资格，不执行部署或 push。
+- [x] U4：同步 F-03、风险、审计与四个 workflow 的唯一终态；2026-08-01 已完成仓库根目录 `NEXT-STEPS-RECOMMENDATIONS.md` 的发布准备建议收口，明确当前 dirty worktree 不可部署、引用现有门禁并排除未授权部署动作。
 
 ## C0-C5 Git 权威收口（2026-07-29 已授权）
 

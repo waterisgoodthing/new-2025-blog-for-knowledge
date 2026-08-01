@@ -152,9 +152,16 @@
 - 十维状态：MVP COMPLETE；产品化 PARTIAL；知识工作区 COMPLETE；AI/OCR governance scope COMPLETE（真实 provider success 未运行）；备份恢复 024 VERIFIED；migration dry-run TECHNICAL/DRY_RUN_READY PASS；权威切换 SKIPPED；Legacy 归档 SKIPPED；部署资格 ELIGIBLE；实际部署 NOT DEPLOYED。
 
 2026-07-31 补充：I10 owner backfill 重新以隔离 025 target 验证通过并恢复日常库
-基线。E-05/E-06 从历史 `SKIPPED` 更新为 `READY / NOT AUTHORIZED`；本轮没有
-创建 shadow target、切换权威或部署。
+基线。之后 E-05 获得单独授权并完成一次性 shadow 123/123 对账、单 owner、
+零 orphan、幂等 replay、独立 SQL、销毁与全量测试，状态更新为 `PASS`。
+E-06 保持 `READY / NOT AUTHORIZED`；未切换权威或部署。
 - 残余风险：production listener 未启用、真实 provider 未验证、frontend/backend test warnings、avatar LCP 建议、范围外 dirty、local-only backup 运维。全部写入 `f03-final-status-report.md` 与 risk register，没有只留在对话中。
+
+## 文档收口：NEXT-STEPS-RECOMMENDATIONS（2026-08-01）
+
+- 范围：仅完成根目录 `NEXT-STEPS-RECOMMENDATIONS.md`；没有修改 `src/`、`backend/`、部署配置、数据库或 Git 历史。
+- 核对：建议内容以现有 `scripts/predeploy-gates.mjs`、`.github/workflows/ci.yml`、`backend/main.py`、`backend/app/config.py` 和本工作区的 F-02/F-03/验证记录为准。移除了草稿中未被仓库证实的 CI 新建、`/api/health/detailed`、固定备份路径、生产推送/标签和 provider 配置假设。
+- 结论：文档明确标记当前 dirty worktree 为 `DO NOT DEPLOY`，并把发布、备份、外部 provider 调用和生产配置更改限制为后续单独授权任务。
 - 审批/Git：记录 2026-07-28 C0-C5、`2c7adcc`、`0205272`、2026-07-29 C6-C12 简化批准，以及本地 closure commit message。由于 commit 不能包含自身稳定 SHA，最终 SHA 由 Git handoff 报告。
 - 退出：`COMPLETE`。C0-C12 本地 workflow 已闭合；不 push、不发布、不部署、不改生产配置。
 
@@ -203,3 +210,21 @@
 - 执行证据：`git commit -m "chore: unify I-series migration authority"` 创建 commit `2c7adcc`（99 files，6445 insertions/382 deletions）；`git ls-files backend/alembic/versions/02[1-4]_*.py` 返回四个 migration；commit summary 明确四文件 mode=`100644`。提交后 `git status --short` 仅剩 Phase 1.0、temp-admin、project assessment、UI review、其他 workflow/截图等本范围外变更，C3 83-file 闭包和本 workflow 均无未提交内容。
 - 退出：`PASS`。I-RISK-P0-08=`RESOLVED`；I-RISK-P0-09=`RESOLVED`。F-02 仍因 C6-C10、024 restore、frontend 57/58 与 production runtime blocker 为 `NOT ELIGIBLE / DO NOT DEPLOY`。
 - 本轮实际改动摘要：创建 local artifact commit `2c7adcc`；数据库无写入；未 push/deploy/改生产配置。后续仅以独立 documentation ledger commit 记录该不可自引用 SHA。
+
+## 2026-08-01 E-06 与 C10-C12 最终刷新
+
+- U1/E-06：I11-03B～I11-03H 全部 PASS。新鲜备份/恢复、source/target 025、
+  首次切换、观察、forward/reverse delta、幂等 replay、实际回切、最终重切、
+  Legacy 只读归档和临时身份清理均有机器证据。清理后 123/123、零 delta。
+- U2/F-01：I11-04 独立 psql 全行 hash/owner/关系/附件/连接复核 PASS；I12
+  真实权限矩阵、390/1280/1440 浏览器与键盘 PASS；frontend 64/64、backend
+  307/307、type/build/compile/Alembic/diff PASS。
+- U3/F-02：npm production audit 0 vulnerabilities、Next/OpenNext dependency
+  tree 与 Cloudflare build PASS。当前 dirty worktree 使 `predeploy:check` 在
+  clean-artifact gate 按设计阻断；技术候选具备未来单独授权部署资格，但当前
+  工作树 `DO NOT DEPLOY`。
+- U4/F-03：最终十维报告已改写为 revision-025 终态。`blog_v2` 是本机 runtime
+  authority，Legacy `blog_db` 只读保留；应用部署=`NOT DEPLOYED`，Git push=
+  `NOT PERFORMED`。2026-07-29 C8/C9 SKIPPED 仅保留为 dated historical baseline。
+
+退出：`PASS / COMPLETE WITH FAIL-CLOSED DEPLOYMENT BOUNDARY`。

@@ -1,0 +1,38 @@
+{
+  "date": "2026-08-01",
+  "source_database": "blog_db",
+  "target_database": "blog_v2",
+  "source_revision": "025",
+  "target_revision": "025",
+  "source_stability": {
+    "count": 125,
+    "delta_count": 0,
+    "aggregate_match": true
+  },
+  "first_replay": {
+    "source_count": 125,
+    "target_count": 125,
+    "inserted": 0,
+    "updated": 0,
+    "deleted": 0,
+    "delta_count": 0,
+    "aggregate_match": true
+  },
+  "second_replay": {
+    "source_count": 125,
+    "target_count": 125,
+    "inserted": 0,
+    "updated": 0,
+    "deleted": 0,
+    "delta_count": 0,
+    "aggregate_match": true,
+    "no_op": true
+  },
+  "temporary_users_each": 2,
+  "temporary_sessions_each": 2,
+  "temporary_login_audits_each": 2,
+  "other_database_sessions_each": 0,
+  "relationship_orphans": 0,
+  "attachment_files_verified": 2,
+  "passed": true
+}

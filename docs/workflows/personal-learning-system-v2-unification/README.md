@@ -14,13 +14,16 @@ I0–I2 仅完成规划、审计和隔离验证；已批准的 I3 则修改了�
 
 ## 当前状态
 
-`I0–I10 COMPLETE / DRY_RUN_READY PASS; I11 E-05/E-06 READY / NOT AUTHORIZED;
-R1 CLOSED / PASS`。I10 的 121-row 单 owner manifest、隔离 backfill、owner
+`I0–I12 COMPLETE / DRY_RUN_READY PASS / E-05 PASS / E-06 PASS /
+F-01 PASS / F-02 COMPLETE / F-03 COMPLETE / R1 CLOSED PASS`。I10 的 121-row 单 owner manifest、隔离 backfill、owner
 FK/关系完整性、025 check、销毁与日常库基线恢复已于 2026-07-31 通过。
 R1 已按批准执行 R1-01 至 R1-10；后续 P0-AUTH 修复了管理回退，CLEANUP
 方案 A 删除了未完成 `/workspace` 原型并通过主工作区 test/tsc/build、
-三尺寸浏览器与隔离 revision 回放。E-05/E-06 尚未执行；生产部署、源库迁移
-和权威切换未授权。
+三尺寸浏览器与隔离 revision 回放。E-05 已完成 123/123 隔离 shadow 对账并
+销毁；2026-08-01 E-06 已在最小 live 写入、切换/回切与只读归档授权内完成，
+最终 runtime authority=`blog_v2`、Legacy 只读。代码与隔离验证 PASS；技术候选
+可进入未来单独授权部署，但当前 dirty worktree DO NOT DEPLOY。应用部署、Git
+push 和公网流量修改均未执行。
 
 本工作区的规划已根据 2026-07-20 审查细化；细化本身不代表 A–F 任何实施项获批或完成。
 

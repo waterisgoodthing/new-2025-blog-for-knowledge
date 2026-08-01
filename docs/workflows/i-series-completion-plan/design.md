@@ -1,8 +1,15 @@
 # I 系列剩余任务设计与只读现状报告
 
-事实截止：2026-07-28
+原始只读基线截止：2026-07-28（下文 020 数据均为该时点历史证据）
 执行属性：`READ-ONLY PLANNING BASELINE + AUTHORIZED EXECUTION`
-实施状态：`C0-C12 AUTHORIZED / IN PROGRESS`
+当前实施状态（2026-08-01）：`C0-C12 REVISION-024 为历史基线 /
+E-06 PASS / F-01 PASS / F-02 TECHNICALLY ELIGIBLE 但当前 dirty worktree
+DO NOT DEPLOY / F-03 COMPLETE / I12-04 PASS`
+
+2026-08-01 新鲜只读核验：source identity=`blog_db/blog_user@localhost:5432`，
+transaction read-only probe=`on`，database revision=`024`，其他 source session=0；
+代码 head/readiness=`025`。本节后续标为 2026-07-28 的 revision 020 记录是升级前
+历史，不再代表当前 source。
 
 ## 1. 证据方法与边界
 
@@ -50,9 +57,9 @@
 | I10-04 / E-04 | `TECHNICAL PASS / OWNER PASS` | clone replay 与最新 024→025 隔离 backfill/check 均有证据 | 不授权 source/shadow 写入 |
 | I10-05 | `PARTIAL` | 历史主验证/独立进程技术复核存在 | owner 决策后的新鲜 source snapshot 与独立 manifest 复核 |
 | I11-01 | `PASS for historical approval check` | `i11-shadow-migration/tasks.md:3`、`validation.md:3` 记录 2026-07-26 单一 owner 模式与“批准并继续” | 该批准早于本报告确认的 mismatch/新执行拆分，不自动授权 C5–C9 |
-| I11-02 / E-05 | `READY / NOT AUTHORIZED` | Owner gate PASS；没有 shadow target 或本轮执行授权 | 新授权、shadow count/hash、增量/tombstone/零 drift |
-| I11-03 / E-06 | `READY / NOT AUTHORIZED` | Owner gate PASS；未执行 E-05 | E-05 PASS、切换/停旧写/归档分别批准、观察期、reverse delta、回切/恢复 |
-| I11-04 | `BLOCKED / NOT EXECUTED` | 无 E-05/E-06 主验证可复核 | 与主验证不同进程/fixture 的独立交叉验证 |
+| I11-02 / E-05 | `PASS` | 123/123 shadow ledger、v1+delta、单 owner、零 orphan、幂等 replay、独立 SQL、销毁与全量测试 | 无 E-05 blocker |
+| I11-03 / E-06 | `PASS` | E-05 PASS；2026-08-01 已获限界授权并完成 | 新鲜备份/恢复、停写、切换/观察、delta/reverse delta、回切、只读归档、清理与独立复核 |
+| I11-04 | `PARTIAL / NOT AUTHORIZED` | E-05 已有独立 SQL/进程复核；E-06 无执行结果 | E-06 获批后再执行其独立交叉验证 |
 | I12-01 / F-01 | `PARTIAL` | 2026-07-26 匿名三尺寸、键盘、失效 session、隔离测试/build 记录；本轮确认资产存在 | 真实管理员、024 恢复/回切、全失败态；1280 Passkey 资产仍 loading |
 | I12-02 / F-02 | `NOT STARTED / BLOCKED` | fail-closed 设计只有一句原则 | I10/I11/F-01 全部关闭、固定 artifact、完整 predeploy checklist 与 G4 |
 | I12-03 / F-03 | `NOT STARTED / BLOCKED` | 最终状态维度尚未形成正式报告 | 各维度带日期/环境/artifact/revision 的证据与 I10/I11 终态 |
@@ -62,7 +69,9 @@
 
 ### 2.1 确切事实
 
-源库 revision 为 `020`；代码 head 为 `024`。源物理 schema 未出现 attempts、admin_profiles、note_versions、note_links，也未出现 023/024 的目标列。当前代码的 readiness 明确要求 024，因此 020 源库不能作为当前后端的合格启动目标。
+以下是 2026-07-28 的升级前事实：源库 revision 为 `020`；当时代码 head 为
+`024`。该 mismatch 已由 C5 关闭；2026-08-01 source 为 024，代码 head/readiness
+为 025。本段保留用于解释 020→024 历史迁移，不能作为当前 revision 记录。
 
 缺失的四个 migration 是：
 
