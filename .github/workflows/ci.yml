@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -34,6 +34,10 @@ jobs:
   backend:
     name: Backend checks
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/blog_db
+      JWT_SECRET_KEY: ci-test-secret-key
+      AUTH_BYPASS: "false"
 
     services:
       postgres:
@@ -66,10 +70,10 @@ jobs:
         run: python -c "from main import app"
         working-directory: backend
 
+      - name: Initialize database schema
+        run: python -m alembic upgrade head
+        working-directory: backend
+
       - name: Run tests
         run: python -m pytest tests/ -v --tb=short
         working-directory: backend
-        env:
-          DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/blog_db
-          JWT_SECRET_KEY: ci-test-secret-key
-          AUTH_BYPASS: "false"
