@@ -30,4 +30,7 @@
 
 ## Remaining External Verification
 
-- The CI workflow must be committed and pushed before GitHub Actions can validate the disposable-PostgreSQL path on a clean runner.
+- GitHub Actions run [`30727905195`](https://github.com/waterisgoodthing/new-2025-blog-for-knowledge/actions/runs/30727905195) passed on the PR merge commit after `236dcc3` was pushed.
+- Frontend checks passed: clean-checkout TypeScript and production build.
+- Backend checks passed: the new `Initialize database schema` step ran before pytest, then the complete test step passed against the disposable PostgreSQL service.
+- GitHub reported only the platform-level Node 20 deprecation annotation for the action runtimes; project commands used the configured Node 24 runtime.
