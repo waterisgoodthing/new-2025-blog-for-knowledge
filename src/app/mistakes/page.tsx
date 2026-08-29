@@ -22,7 +22,7 @@ export default function MistakesPage() {
 	const [activeFilter, setActiveFilter] = useState('all')
 	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
 	const [activeTag, setActiveTag] = useState<string | null>(null)
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 
 	const { data, isLoading } = useNoteIndex({
 		type: 'mistake',

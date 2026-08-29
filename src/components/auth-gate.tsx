@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isAdmin, isLoading } = useAdminAuth({ strict: true })
+  const { isAdmin, isLoading } = useAdminAuth({ mode: 'strict' })
   const router = useRouter()
 
   useEffect(() => {

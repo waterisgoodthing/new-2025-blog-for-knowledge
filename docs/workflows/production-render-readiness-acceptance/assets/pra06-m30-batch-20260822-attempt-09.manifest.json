@@ -1,0 +1,76 @@
+{
+  "run_id": "pra06-m30-batch-20260822-attempt-09",
+  "status": "pass",
+  "purpose": "single normal browser login cookie propagation diagnosis",
+  "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "snapshot_worktree": "/private/tmp/pra06-m30-batch-20260822-J8m3vf/worktree",
+  "frontend_base": "http://api.localhost:3110",
+  "api_base": "http://api.localhost:8110",
+  "api_bind": "http://127.0.0.1:8110",
+  "login_url": "http://api.localhost:8110/api/auth/login",
+  "origin": "http://api.localhost:3110",
+  "runtime": {
+    "next_public_api_url": "http://api.localhost:8110",
+    "allowed_origins": "http://api.localhost:3110",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "fixture": {
+    "total": 30,
+    "public_visible": 20,
+    "published_hidden": 5,
+    "drafts": 5,
+    "d1_public": true,
+    "types": {
+      "note": 10,
+      "blog": 10,
+      "mistake": 10
+    },
+    "temporary_admin_username": "pra06-single-shell-admin",
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 1,
+    "ten_sample_run": true,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "started_at": "2026-08-22T14:27:27.350Z",
+  "browser_version": "151.0.7922.34",
+  "ended_at": "2026-08-22T14:27:33.341Z",
+  "result": {
+    "sample_id": "M30-09",
+    "valid": true,
+    "failure_reason": null,
+    "login_post_statuses": [
+      200
+    ],
+    "me_statuses": [
+      200,
+      401,
+      200
+    ],
+    "strict_management_statuses": [
+      200
+    ],
+    "admin_session_cookie_jar_present": true,
+    "login_set_cookie_attribute_evidence_present": true,
+    "blocked_set_cookie_reason_count": 0,
+    "request_cookie_header_presence": {
+      "me": [
+        false,
+        false,
+        true
+      ],
+      "strict_management": [
+        true
+      ]
+    },
+    "readiness_dom_state": "ready",
+    "readiness_marks": {
+      "auth_submit": 1,
+      "content_ready": 1
+    }
+  }
+}

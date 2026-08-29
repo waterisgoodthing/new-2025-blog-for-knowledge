@@ -1,43 +1,52 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { getMe, login } = vi.hoisted(() => ({ getMe: vi.fn(), login: vi.fn() }))
+const { getMe, login, logout, invalidateAdminAuthState } = vi.hoisted(() => ({
+	getMe: vi.fn(),
+	login: vi.fn(),
+	logout: vi.fn(),
+	invalidateAdminAuthState: vi.fn()
+}))
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+	useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+	useSearchParams: () => new URLSearchParams()
 }))
 
 vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a href={String(href)} {...props}>{children}</a>
-  ),
+	default: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+		<a href={String(href)} {...props}>
+			{children}
+		</a>
+	)
 }))
 
 vi.mock('next/image', () => ({
-  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
+	default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
 }))
 
 vi.mock('@/hooks/use-note-index', () => ({
-  useNoteIndex: () => ({ data: undefined, isLoading: false, mutate: vi.fn() }),
+	useNoteIndex: () => ({ data: undefined, isLoading: false, mutate: vi.fn() })
 }))
 
 vi.mock('@/lib/api/auth', () => ({
-  getMe,
-  login,
-  logout: vi.fn(),
-  loginWithPasskey: vi.fn(),
-  isPasskeyAvailable: () => false,
-  checkPasskeyRegistered: vi.fn(),
+	getMe,
+	login,
+	logout,
+	loginWithPasskey: vi.fn(),
+	isPasskeyAvailable: () => false,
+	checkPasskeyRegistered: vi.fn()
 }))
 
+vi.mock('@/hooks/use-admin-auth', () => ({ invalidateAdminAuthState }))
+
 vi.mock('@/app/(home)/stores/config-store', () => ({
-  useConfigStore: () => ({
-    siteContent: {
-      avatarUrl: '/images/avatar.png',
-      meta: { title: 'My Blog' },
-    },
-  }),
+	useConfigStore: () => ({
+		siteContent: {
+			avatarUrl: '/images/avatar.png',
+			meta: { title: 'My Blog' }
+		}
+	})
 }))
 
 vi.mock('./music-tab', () => ({ MusicTab: () => null }))
@@ -52,63 +61,83 @@ vi.mock('@/app/(home)/config-dialog/site-settings-panel', () => ({ SiteSettingsP
 import ManagePage from './page'
 
 describe('/manage admin boundary', () => {
-  beforeEach(() => {
-    getMe.mockReset()
-    login.mockReset()
-  })
+	beforeEach(() => {
+		getMe.mockReset()
+		login.mockReset()
+		logout.mockReset()
+		invalidateAdminAuthState.mockReset()
+	})
 
-  it('shows the login state when the current session belongs to a non-admin user', async () => {
-    getMe.mockResolvedValue({
-      id: 'reader-1',
-      username: 'reader',
-      is_admin: false,
-      auth_level: 'password',
-    })
+	it('shows the login state when the current session belongs to a non-admin user', async () => {
+		getMe.mockResolvedValue({
+			id: 'reader-1',
+			username: 'reader',
+			is_admin: false,
+			auth_level: 'password'
+		})
 
-    render(<ManagePage />)
+		render(<ManagePage />)
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument())
-    const avatar = screen.getByRole('img', { name: 'avatar' })
-    expect(avatar).toHaveAttribute('loading', 'eager')
-    expect(avatar).toHaveAttribute('fetchpriority', 'high')
-    expect(screen.queryByRole('heading', { name: '管理面板' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '删除' })).not.toBeInTheDocument()
-  })
+		await waitFor(() => expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument())
+		const avatar = screen.getByRole('img', { name: 'avatar' })
+		expect(avatar).toHaveAttribute('loading', 'eager')
+		expect(avatar).toHaveAttribute('fetchpriority', 'high')
+		expect(screen.queryByRole('heading', { name: '管理面板' })).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: '删除' })).not.toBeInTheDocument()
+	})
 
-  it('keeps a non-admin user on the login state after password authentication', async () => {
-    getMe
-      .mockRejectedValueOnce(new Error('Not authenticated'))
-      .mockResolvedValueOnce({
-        id: 'reader-2',
-        username: 'reader',
-        is_admin: false,
-        auth_level: 'password',
-      })
-    login.mockResolvedValue({ message: 'Login successful' })
+	it('keeps a non-admin user on the login state after password authentication', async () => {
+		getMe.mockRejectedValueOnce(new Error('Not authenticated')).mockResolvedValueOnce({
+			id: 'reader-2',
+			username: 'reader',
+			is_admin: false,
+			auth_level: 'password'
+		})
+		login.mockResolvedValue({ message: 'Login successful' })
 
-    render(<ManagePage />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument())
+		render(<ManagePage />)
+		await waitFor(() => expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument())
 
-    fireEvent.change(screen.getByRole('textbox', { name: '用户名' }), { target: { value: 'reader' } })
-    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'password' } })
-    fireEvent.click(screen.getByRole('button', { name: '密码登录' }))
+		fireEvent.change(screen.getByRole('textbox', { name: '用户名' }), { target: { value: 'reader' } })
+		fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'password' } })
+		fireEvent.click(screen.getByRole('button', { name: '密码登录' }))
 
-    await waitFor(() => expect(getMe).toHaveBeenCalledTimes(2))
-    expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: '管理面板' })).not.toBeInTheDocument()
-  })
+		await waitFor(() => expect(getMe).toHaveBeenCalledTimes(2))
+		expect(invalidateAdminAuthState).toHaveBeenCalledTimes(1)
+		expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument()
+		expect(screen.queryByRole('heading', { name: '管理面板' })).not.toBeInTheDocument()
+	})
 
-  it('shows the management panel only for a current admin user', async () => {
-    getMe.mockResolvedValue({
-      id: 'admin-1',
-      username: 'owner',
-      is_admin: true,
-      auth_level: 'password',
-    })
+	it('shows the management panel only for a current admin user', async () => {
+		getMe.mockResolvedValue({
+			id: 'admin-1',
+			username: 'owner',
+			is_admin: true,
+			auth_level: 'password'
+		})
 
-    render(<ManagePage />)
+		render(<ManagePage />)
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: '管理面板' })).toBeInTheDocument())
-    expect(screen.getByText('owner')).toBeInTheDocument()
-  })
+		await waitFor(() => expect(screen.getByRole('heading', { name: '管理面板' })).toBeInTheDocument())
+		expect(screen.getByText('owner')).toBeInTheDocument()
+	})
+
+	it('invalidates both session-state caches after logout', async () => {
+		getMe.mockResolvedValue({
+			id: 'admin-logout',
+			username: 'owner',
+			is_admin: true,
+			auth_level: 'password'
+		})
+		logout.mockResolvedValue(undefined)
+
+		render(<ManagePage />)
+		await waitFor(() => expect(screen.getByRole('heading', { name: '管理面板' })).toBeInTheDocument())
+
+		fireEvent.click(screen.getByRole('button', { name: '退出登录' }))
+
+		await waitFor(() => expect(logout).toHaveBeenCalledTimes(1))
+		expect(invalidateAdminAuthState).toHaveBeenCalledTimes(1)
+		expect(screen.getByRole('heading', { name: 'My Blog' })).toBeInTheDocument()
+	})
 })

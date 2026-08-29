@@ -21,7 +21,7 @@ export default function Page() {
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
 	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	useEffect(() => {

@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { useNoteIndex } from '@/hooks/use-note-index'
+import { invalidateAdminAuthState } from '@/hooks/use-admin-auth'
+import { markRenderReady } from '@/lib/render-readiness'
 import { deleteNote, batchDeleteNotes } from '@/lib/api/notes'
 import { login, logout, getMe, loginWithPasskey, isPasskeyAvailable, checkPasskeyRegistered, type PasskeyStatusResult, type User } from '@/lib/api/auth'
 import { toast } from 'sonner'
@@ -72,6 +74,10 @@ function ContentTab() {
     size: 30,
   })
 
+  useEffect(() => {
+    if (!isLoading && data) markRenderReady('manage:content-ready')
+  }, [data, isLoading])
+
   const clearSelected = () => setSelected(new Set())
 
   const toggleSelect = (slug: string) => {
@@ -131,7 +137,7 @@ function ContentTab() {
   }
 
   return (
-    <div className='flex gap-6'>
+    <main className='flex gap-6' data-render-state={isLoading ? 'loading' : data ? 'ready' : 'error'}>
       <KnowledgeSidebar
         activeFilter={activeFilter}
         activeFolderId={activeFolderId}
@@ -261,7 +267,7 @@ function ContentTab() {
         </div>
       )}
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -639,6 +645,8 @@ function ManagePageInner() {
 
   const handleLogin = async () => {
     try {
+			markRenderReady('manage:auth-submit')
+      await invalidateAdminAuthState()
       const u = await getMe()
       if (u.is_admin === true) {
         setUser(u)
@@ -655,6 +663,7 @@ function ManagePageInner() {
 
   const handleLogout = async () => {
     await logout()
+    await invalidateAdminAuthState()
     setAuthenticated(false)
     setUser(null)
   }

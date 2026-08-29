@@ -24,7 +24,7 @@ export default function Page() {
 	const [newSnippet, setNewSnippet] = useState('')
 	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	useEffect(() => {

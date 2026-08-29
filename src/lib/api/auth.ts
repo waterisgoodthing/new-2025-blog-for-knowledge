@@ -22,6 +22,11 @@ export interface User {
   auth_level: "passkey" | "password";
 }
 
+export interface SessionState {
+  authenticated: boolean;
+  is_admin: boolean;
+}
+
 export async function login(username: string, password: string): Promise<LoginResponse> {
   const res = await apiFetch<LoginResponse>("/api/auth/login", {
     method: "POST",
@@ -114,6 +119,10 @@ export async function loginWithPasskey(): Promise<LoginResponse> {
 
 export async function getMe(): Promise<User> {
   return apiFetch<User>("/api/auth/me");
+}
+
+export async function getSessionState(): Promise<SessionState> {
+  return apiFetch<SessionState>("/api/auth/session-state");
 }
 
 export async function logout(): Promise<void> {

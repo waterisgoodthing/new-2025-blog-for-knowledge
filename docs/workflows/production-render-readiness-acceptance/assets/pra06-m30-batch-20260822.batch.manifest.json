@@ -1,0 +1,127 @@
+{
+  "run_id": "pra06-m30-batch-20260822",
+  "purpose": "M30 browser-cold/server-warm raw sampling only; no performance aggregation",
+  "environment_mode": "production-build-local-isolated",
+  "browser_temperature": "cold",
+  "server_temperature": "warm",
+  "requested_valid_count": 10,
+  "max_attempts": 12,
+  "attempts": 10,
+  "valid_count": 10,
+  "failed_count": 0,
+  "failure_rate": 0,
+  "samples": [
+    {
+      "attempt": 1,
+      "run_id": "pra06-m30-batch-20260822-attempt-01",
+      "sample_id": "M30-01",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-01.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-01.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 2,
+      "run_id": "pra06-m30-batch-20260822-attempt-02",
+      "sample_id": "M30-02",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-02.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-02.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 3,
+      "run_id": "pra06-m30-batch-20260822-attempt-03",
+      "sample_id": "M30-03",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-03.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-03.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 4,
+      "run_id": "pra06-m30-batch-20260822-attempt-04",
+      "sample_id": "M30-04",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-04.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-04.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 5,
+      "run_id": "pra06-m30-batch-20260822-attempt-05",
+      "sample_id": "M30-05",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-05.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-05.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 6,
+      "run_id": "pra06-m30-batch-20260822-attempt-06",
+      "sample_id": "M30-06",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-06.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-06.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 7,
+      "run_id": "pra06-m30-batch-20260822-attempt-07",
+      "sample_id": "M30-07",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-07.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-07.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 8,
+      "run_id": "pra06-m30-batch-20260822-attempt-08",
+      "sample_id": "M30-08",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-08.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-08.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 9,
+      "run_id": "pra06-m30-batch-20260822-attempt-09",
+      "sample_id": "M30-09",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-09.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-09.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    },
+    {
+      "attempt": 10,
+      "run_id": "pra06-m30-batch-20260822-attempt-10",
+      "sample_id": "M30-10",
+      "raw_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-10.raw.ndjson",
+      "manifest_path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-10.manifest.json",
+      "exit_code": 0,
+      "valid": true,
+      "failure_reason": null
+    }
+  ],
+  "negative_boundary": {
+    "run_id": "pra06-m30-batch-20260822-negative",
+    "path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-negative.json",
+    "exit_code": 1,
+    "valid": false
+  },
+  "p50": null,
+  "p90": null,
+  "performance_baseline": false,
+  "production_readiness_claim": false,
+  "status": "blocked",
+  "recorded_at": "2026-08-22T14:27:43.790Z"
+}

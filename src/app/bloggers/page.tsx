@@ -14,7 +14,7 @@ import type { AvatarItem } from './components/avatar-upload-dialog'
 
 export default function Page() {
 	const router = useRouter()
-	const { isAdmin, isLoading: authLoading } = useAdminAuth()
+	const { isAdmin, isLoading: authLoading } = useAdminAuth({ mode: 'optional' })
 	const [bloggers, setBloggers] = useState<Blogger[]>([])
 	const [originalBloggers, setOriginalBloggers] = useState<Blogger[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)

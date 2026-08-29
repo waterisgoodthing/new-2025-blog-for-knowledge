@@ -1,28 +1,39 @@
 'use client'
 
-import useSWR from 'swr'
-import { getMe } from '@/lib/api/auth'
+import useSWR, { mutate } from 'swr'
+import { getMe, getSessionState } from '@/lib/api/auth'
 
-export function useAdminAuth({ strict = false }: { strict?: boolean } = {}) {
+export const OPTIONAL_ADMIN_SESSION_KEY = 'admin-session-check:optional'
+export const STRICT_ADMIN_SESSION_KEY = 'admin-session-check:strict'
+
+export type AdminAuthMode = 'optional' | 'strict'
+
+export function useAdminAuth({ mode = 'strict' }: { mode?: AdminAuthMode } = {}) {
+	const strict = mode === 'strict'
 	const { data, error, isLoading } = useSWR(
-		strict ? 'admin-session-check:strict' : 'admin-session-check',
+		strict ? STRICT_ADMIN_SESSION_KEY : OPTIONAL_ADMIN_SESSION_KEY,
 		async () => {
-			try {
+			if (strict) {
 				const user = await getMe()
 				return user.is_admin === true
-			} catch {
-				return false
 			}
+			const session = await getSessionState()
+			return session.is_admin === true
 		},
 		{
 			revalidateOnFocus: strict,
 			revalidateOnReconnect: strict,
-			dedupingInterval: strict ? 32 : 60000,
+			dedupingInterval: strict ? 32 : 60000
 		}
 	)
 
 	return {
 		isAdmin: data ?? false,
 		isLoading,
+		error
 	}
+}
+
+export async function invalidateAdminAuthState(): Promise<void> {
+	await Promise.all([mutate(OPTIONAL_ADMIN_SESSION_KEY).catch(() => undefined), mutate(STRICT_ADMIN_SESSION_KEY).catch(() => undefined)])
 }

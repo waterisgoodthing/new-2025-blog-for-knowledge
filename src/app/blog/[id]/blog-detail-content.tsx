@@ -36,7 +36,7 @@ export default function BlogDetailContent() {
 	const slug = Array.isArray(params?.id) ? params.id[0] : params?.id || ''
 	const router = useRouter()
 	const { markAsRead } = useReadArticles()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 
 	const [blog, setBlog] = useState<BlogData | null>(null)
 	const [error, setError] = useState<string | null>(null)

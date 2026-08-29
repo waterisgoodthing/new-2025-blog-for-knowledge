@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getContentEditHref, getContentDetailHref, type ContentType } from '@/lib/content-routes'
 import { toast } from 'sonner'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
+import { markRenderReady } from '@/lib/render-readiness'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
 const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
@@ -35,7 +36,7 @@ export default function NotesPage() {
 function NotesPageContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const [type, setType] = useState<string>('')
 	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
@@ -55,8 +56,12 @@ function NotesPageContent() {
 	}, [activeFolderId, folderTree])
 
 	useEffect(() => {
+		if (!isAdmin) {
+			setFolderTree([])
+			return
+		}
 		listFolders().then(setFolderTree).catch(() => {})
-	}, [folderRefreshKey])
+	}, [isAdmin, folderRefreshKey])
 
 	useEffect(() => {
 		const urlFolderId = searchParams.get('folder_id')
@@ -104,7 +109,7 @@ function NotesPageContent() {
 
 	const showDashboard = activeFilter === 'all' && !activeFolderId && !activeTag && !q
 
-	const { data, isLoading, mutate } = useNoteIndex({
+	const { data, error, isLoading, mutate } = useNoteIndex({
 		type: (type as any) || undefined,
 		status: 'published',
 		q: q || undefined,
@@ -172,9 +177,14 @@ function NotesPageContent() {
 	}
 
 	const emptyDescription = isAdmin ? '可以从工作区创建和整理内容' : '暂时没有公开笔记'
+	const renderState = isLoading ? 'loading' : error ? 'error' : data?.items.length === 0 ? 'empty' : data ? 'ready' : 'error'
+
+	useEffect(() => {
+		if (renderState === 'ready' || renderState === 'empty') markRenderReady('notes:list-ready')
+	}, [renderState])
 
 	return (
-		<div className='mx-auto max-w-6xl px-4 py-8'>
+		<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
 			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
 				笔记
 			</motion.h1>
@@ -384,6 +394,6 @@ function NotesPageContent() {
 					}}
 				/>
 			)}
-		</div>
+		</main>
 	)
 }

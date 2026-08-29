@@ -31,7 +31,7 @@ export default function Page() {
 	const router = useRouter()
 
 	const { siteContent } = useConfigStore()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	useEffect(() => {

@@ -31,7 +31,7 @@ export default function BlogPage() {
 	const { categories: categoriesFromServer } = useCategories()
 	const { isRead } = useReadArticles()
 	const { siteContent } = useConfigStore()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const hideEditButton = siteContent.hideEditButton ?? false
 	const enableCategories = siteContent.enableCategories ?? false
 	const [editMode, setEditMode] = useState(false)

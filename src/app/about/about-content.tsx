@@ -22,7 +22,7 @@ export default function AboutContent() {
 	const [isPreviewMode, setIsPreviewMode] = useState(false)
 	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const { content, loading } = useMarkdownRender(data.content)
 	const hideEditButton = siteContent.hideEditButton ?? false
 

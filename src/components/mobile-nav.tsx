@@ -32,7 +32,7 @@ const allMoreItems = [...interactionItems]
 export default function MobileNav() {
 	const pathname = usePathname()
 	const [moreOpen, setMoreOpen] = useState(false)
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const visiblePrimaryItems = isAdmin
 		? [...primaryItems, { icon: ShieldCheck, iconActive: ShieldCheck, label: '管理', href: '/manage/dashboard' }]
 		: primaryItems

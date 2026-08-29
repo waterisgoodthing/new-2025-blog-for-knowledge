@@ -11,13 +11,14 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
 import dayjs from 'dayjs'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getContentEditHref, getContentListHref } from '@/lib/content-routes'
 import { resolveImageUrl } from '@/lib/api/images'
 import { RichText } from '@/components/rich-text'
 import { RelatedKnowledgePanel } from './components/related-knowledge-panel'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
+import { markRenderReady } from '@/lib/render-readiness'
 
 const MermaidBlock = dynamic(() => import('@/components/mermaid-block').then(mod => mod.MermaidBlock), { ssr: false })
 
@@ -101,9 +102,9 @@ function NoteDetailContentInner() {
 	const folderId = searchParams.get('folder_id')
 	const router = useRouter()
 	const [deleting, setDeleting] = useState(false)
-	const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 
-	const { data: note, isLoading } = useSWR<NoteDetail>(
+	const { data: note, error, isLoading } = useSWR<NoteDetail>(
 		`/api/notes/${id}`,
 		() => getNote(id),
 		{ revalidateOnFocus: false }
@@ -115,6 +116,11 @@ function NoteDetailContentInner() {
 	)
 
 	const { content, loading: rendering } = useMarkdownRender(note?.content || '')
+	const renderState = isLoading || (note && rendering) ? 'loading' : error || !note ? 'error' : 'ready'
+
+	useEffect(() => {
+		if (renderState === 'ready') markRenderReady('notes:detail-ready')
+	}, [renderState])
 
 	const handleDelete = async () => {
 		const label = note ? (typeLabels[note.type as keyof typeof typeLabels] || '内容') : '内容'
@@ -129,8 +135,8 @@ function NoteDetailContentInner() {
 		}
 	}
 
-	if (isLoading) return <div className='py-20 text-center text-gray-400'>加载中...</div>
-	if (!note) return <div className='py-20'><EmptyState variant='load-error' title='未找到内容' description='该笔记可能已被删除或链接无效' action={{ label: '返回笔记列表', href: '/notes' }} /></div>
+	if (isLoading) return <main data-render-state='loading' className='py-20 text-center text-gray-400'>加载中...</main>
+	if (!note) return <main data-render-state='error' className='py-20'><EmptyState variant='load-error' title='未找到内容' description='该笔记可能已被删除或链接无效' action={{ label: '返回笔记列表', href: '/notes' }} /></main>
 
 	const actionBar = isAdmin ? (
 		<div className='flex gap-3'>
@@ -154,7 +160,7 @@ function NoteDetailContentInner() {
 		const isDue = note.next_review ? dayjs(note.next_review).isSame(dayjs(), 'day') || dayjs(note.next_review).isBefore(dayjs(), 'day') : false
 
 		return (
-			<div className='mx-auto max-w-6xl px-4 py-8'>
+			<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
 				<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 				<Link href={getContentListHref(note.type, folderId)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
 					← 返回错题集
@@ -484,12 +490,12 @@ function NoteDetailContentInner() {
 					</div>
 				)}
 				</motion.div>
-			</div>
+			</main>
 		)
 	}
 
 	return (
-		<div className='mx-auto max-w-6xl px-4 py-8'>
+		<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 				<Link href={getContentListHref(note.type, folderId)} className='mb-4 inline-block text-sm text-gray-500 hover:text-gray-700'>
 					← 返回列表
@@ -551,7 +557,7 @@ function NoteDetailContentInner() {
 					</div>
 				)}
 			</motion.div>
-		</div>
+		</main>
 	)
 }
 

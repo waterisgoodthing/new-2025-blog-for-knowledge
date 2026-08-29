@@ -65,6 +65,10 @@ export function KnowledgeSidebar({
 	const tags = externalTags ?? internalTags
 
 	useEffect(() => {
+		if (!canManage) {
+			setFolders([])
+			return
+		}
 		listFolders()
 			.then(setFolders)
 			.catch(() => {})
@@ -73,7 +77,7 @@ export function KnowledgeSidebar({
 				.then(setInternalTags)
 				.catch(() => {})
 		}
-	}, [externalTags, refreshKey])
+	}, [canManage, externalTags, refreshKey])
 
 	const toggleFolder = (id: string) => {
 		setExpandedFolders(prev => {

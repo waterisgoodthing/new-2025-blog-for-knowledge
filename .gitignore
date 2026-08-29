@@ -52,6 +52,13 @@ __pycache__/
 
 # local agent/tooling state
 .kilo/
+.cluster/
+.workbuddy/
+.claude/
+.agents/
+.playwright-mcp/
+.pytest_cache/
+test-results/
 
 # private local validation evidence
 /docs/ui-review/artifacts/authenticated/

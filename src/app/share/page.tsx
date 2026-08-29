@@ -15,7 +15,7 @@ import type { LogoItem } from './components/logo-upload-dialog'
 
 export default function Page() {
 	const router = useRouter()
-	const { isAdmin, isLoading: authLoading } = useAdminAuth()
+	const { isAdmin, isLoading: authLoading } = useAdminAuth({ mode: 'optional' })
 	const [shares, setShares] = useState<Share[]>([])
 	const [originalShares, setOriginalShares] = useState<Share[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)

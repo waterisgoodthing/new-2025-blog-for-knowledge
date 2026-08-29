@@ -33,7 +33,7 @@ const learningLinks = [
 ] as const
 
 export default function LearningSpaceCard() {
-  const { isAdmin } = useAdminAuth()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
   const center = useCenterStore()
   const { maxSM } = useSize()
 
