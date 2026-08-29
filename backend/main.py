@@ -14,7 +14,7 @@ from app.middleware.request_observability import request_observability
 from app.routers import admin_mistakes, admin_profile, ai, ai_polish, ai_runs, attachments, attempts, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, file_workspace, folders, governance, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, search, subjects, suggestions, tags
 from app.services.keep_alive import start_keep_alive, stop_keep_alive
 
-EXPECTED_ALEMBIC_REVISION = "025"
+EXPECTED_ALEMBIC_REVISION = "026"
 
 
 def _is_enabled(value: str) -> bool:
@@ -35,26 +35,37 @@ async def validate_database_readiness() -> None:
         )
 
 
+_DEV_ENVIRONMENTS = {"development", "dev", "local", "test"}
+
+
+def validate_security_settings(settings) -> None:
+    """Fail closed on insecure configuration outside development environments."""
+    env = str(getattr(settings, "ENV", "development")).strip().lower()
+    if env in _DEV_ENVIRONMENTS:
+        return
+
+    if settings.JWT_SECRET_KEY == "your-secret-key-change-this":
+        raise RuntimeError("JWT_SECRET_KEY is insecure for non-development environments.")
+
+    if _is_enabled(getattr(settings, "AUTH_BYPASS", "false")) and _is_enabled(
+        getattr(settings, "AUTH_BYPASS_ALLOW", "false")
+    ):
+        raise RuntimeError(
+            "AUTH_BYPASS and AUTH_BYPASS_ALLOW cannot both be enabled outside development."
+        )
+
+    if not settings.ALLOWED_ORIGINS.strip() or "*" in settings.ALLOWED_ORIGINS:
+        raise RuntimeError("CORS config is insecure for non-development environments.")
+
+    if env == "production" and getattr(settings, "ENABLE_REGISTRATION", False):
+        raise RuntimeError("ENABLE_REGISTRATION cannot be enabled in production.")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
     
-    # 生产安全检查
-    if settings.ENV == "production":
-        if _is_enabled(settings.AUTH_BYPASS) and _is_enabled(settings.AUTH_BYPASS_ALLOW):
-            raise RuntimeError("AUTH_BYPASS and AUTH_BYPASS_ALLOW cannot both be enabled in production.")
-
-        # 1. 默认 JWT 密钥检测并阻断
-        if settings.JWT_SECRET_KEY == "your-secret-key-change-this":
-            raise RuntimeError("JWT_SECRET_KEY is insecure for production.")
-        
-        # 2. 生产环境 CORS 通配符 * 检测并阻断
-        if not settings.ALLOWED_ORIGINS or "*" in settings.ALLOWED_ORIGINS:
-            raise RuntimeError("CORS config is insecure for production.")
-
-        # 3. 个人系统的生产环境不开放自助注册
-        if getattr(settings, "ENABLE_REGISTRATION", False):
-            raise RuntimeError("ENABLE_REGISTRATION cannot be enabled in production.")
+    validate_security_settings(settings)
 
     await validate_database_readiness()
 

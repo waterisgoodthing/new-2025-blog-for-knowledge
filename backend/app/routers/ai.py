@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,6 +72,8 @@ from app.services.diagram_service import (
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
+logger = logging.getLogger(__name__)
+
 
 @router.get("/config")
 async def get_ai_config(
@@ -111,8 +115,9 @@ async def analyze_mistake(
     try:
         gw = await call_vision(AiTaskType.ANALYZE_MISTAKE, messages)
         result = gw.data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except Exception:
+        logger.exception("AI gateway call failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return await analyze_and_parse(result, db, call_vision)
 
@@ -144,8 +149,9 @@ async def analyze_text(
     try:
         gw = await call_text(AiTaskType.ANALYZE_TEXT, messages)
         result = gw.data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except Exception:
+        logger.exception("AI gateway call failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return await analyze_and_parse(result, db, call_text)
 
@@ -252,8 +258,9 @@ async def generate_variant(
     try:
         gw = await call_text(AiTaskType.GENERATE_VARIANT, messages)
         result = gw.data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except Exception:
+        logger.exception("AI gateway call failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return {
         "question": result.get("question", ""),
@@ -293,8 +300,9 @@ async def generate_knowledge_card(
     try:
         gw = await call_text(AiTaskType.GENERATE_KNOWLEDGE_CARD, messages)
         result = gw.data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except Exception:
+        logger.exception("AI gateway call failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return {
         "title": result.get("title", knowledge_point),
@@ -333,8 +341,9 @@ async def knowledge_summary(
     try:
         gw = await call_text(AiTaskType.KNOWLEDGE_SUMMARY, messages)
         result = gw.data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except Exception:
+        logger.exception("AI gateway call failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     if result.get("status") == "insufficient_context":
         return InsufficientContextResponse(
@@ -465,10 +474,12 @@ async def mistake_question_draft(
             images=[img.model_dump() for img in req.images],
             text=req.text,
         )
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except ValueError:
+        logger.exception("AI response parsing failed")
+        raise HTTPException(status_code=500, detail="AI 结果解析失败，请稍后重试")
+    except RuntimeError:
+        logger.exception("AI staged workflow failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return QuestionDraftResponse(**result)
 
@@ -509,10 +520,12 @@ async def mistake_error_interpretation(
             user_error_reason=req.user_error_reason,
             rejection_history=req.rejection_history,
         )
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except ValueError:
+        logger.exception("AI response parsing failed")
+        raise HTTPException(status_code=500, detail="AI 结果解析失败，请稍后重试")
+    except RuntimeError:
+        logger.exception("AI staged workflow failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return ErrorInterpretationResponse(**result)
 
@@ -542,10 +555,12 @@ async def mistake_error_interpretation_reject(
             user_error_reason=req.user_error_reason,
             rejection_history=updated_history,
         )
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except ValueError:
+        logger.exception("AI response parsing failed")
+        raise HTTPException(status_code=500, detail="AI 结果解析失败，请稍后重试")
+    except RuntimeError:
+        logger.exception("AI staged workflow failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return ErrorInterpretationResponse(**result)
 
@@ -572,10 +587,12 @@ async def mistake_final_analysis(
             user_error_reason=req.user_error_reason,
             accepted_interpretation=req.accepted_interpretation.model_dump(),
         )
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except RuntimeError as e:
-        raise HTTPException(status_code=502, detail=str(e))
+    except ValueError:
+        logger.exception("AI response parsing failed")
+        raise HTTPException(status_code=500, detail="AI 结果解析失败，请稍后重试")
+    except RuntimeError:
+        logger.exception("AI staged workflow failed")
+        raise HTTPException(status_code=502, detail="AI 服务暂时不可用，请稍后重试")
 
     return FinalAnalysisResponse(**result)
 

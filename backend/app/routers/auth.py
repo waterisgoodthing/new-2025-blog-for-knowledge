@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import hashlib
 import logging
+import secrets
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, status, Header
 from fastapi.responses import JSONResponse
@@ -17,6 +18,7 @@ from app.schemas.auth import (
     OperatorRegisterRequest,
     OperatorRegisterResponse,
     RegisterRequest,
+    SessionStateOut,
     SessionUserOut,
     SetPasswordRequest,
     UserOut,
@@ -298,12 +300,6 @@ async def passkey_auth_options():
     return generate_authentication_options()
 
 
-@router.get("/passkey/reg-options")
-async def passkey_reg_options():
-    from app.services.passkey_service import generate_registration_options
-    return generate_registration_options()
-
-
 def _require_operator_key(x_operator_registration_key: str | None) -> None:
     settings = get_settings()
     configured_key = settings.OPERATOR_REGISTRATION_KEY
@@ -312,7 +308,9 @@ def _require_operator_key(x_operator_registration_key: str | None) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Operator registration is not configured",
         )
-    if not x_operator_registration_key or x_operator_registration_key != configured_key:
+    if not x_operator_registration_key or not secrets.compare_digest(
+        x_operator_registration_key.encode("utf-8"), configured_key.encode("utf-8")
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid operator registration key",
@@ -391,12 +389,12 @@ async def operator_passkey_register(
             device_name=req.device_name,
             message="Passkey registered and replaced successfully",
         )
-    except Exception as e:
+    except Exception:
         await db.rollback()
-        logger.error(f"Operator passkey registration failed: {e}")
+        logger.exception("Operator passkey registration failed")
         return OperatorRegisterResponse(
             success=False,
-            message=f"Registration failed: {str(e)}",
+            message="Registration failed due to an internal error",
         )
 
 
@@ -461,7 +459,9 @@ async def register(
 
     if settings.REGISTRATION_KEY:
         provided_key = req.registration_key or x_registration_key
-        if provided_key != settings.REGISTRATION_KEY:
+        if not provided_key or not secrets.compare_digest(
+            provided_key.encode("utf-8"), settings.REGISTRATION_KEY.encode("utf-8")
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invalid registration key"
@@ -487,6 +487,15 @@ async def me(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return {"id": str(user.id), "username": user.username, "is_admin": user.is_admin, "auth_level": auth_level}
+
+
+@router.get("/session-state", response_model=SessionStateOut)
+async def session_state(
+    session_token: str | None = Cookie(None, alias=SESSION_COOKIE_NAME),
+    db: AsyncSession = Depends(get_db),
+):
+    user, _ = await _resolve_session_user(session_token, db)
+    return SessionStateOut(authenticated=user is not None, is_admin=bool(user and user.is_admin))
 
 
 @router.get("/sessions")
