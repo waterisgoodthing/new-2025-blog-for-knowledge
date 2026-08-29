@@ -14,6 +14,11 @@ class ReviewItem(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     target_type: Mapped[str] = mapped_column(String(30), nullable=False)
     target_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    mistake_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("mistakes.id", name="fk_review_items_mistake", ondelete="RESTRICT"),
+        nullable=False,
+    )
     state: Mapped[str] = mapped_column(String(20), default="active", server_default="active", nullable=False)
     algorithm: Mapped[str] = mapped_column(String(30), default="fixed_interval_v1", server_default="fixed_interval_v1", nullable=False)
     interval_days: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
@@ -29,6 +34,7 @@ class ReviewItem(Base):
         CheckConstraint("algorithm = 'fixed_interval_v1'", name="ck_review_items_algorithm"),
         CheckConstraint("interval_days >= 0 AND repetitions >= 0", name="ck_review_items_counts"),
         UniqueConstraint("target_type", "target_id", name="uq_review_items_target"),
+        Index("uq_review_items_mistake_id", "mistake_id", unique=True),
         Index("idx_review_items_due", "state", "next_review_at"),
     )
 

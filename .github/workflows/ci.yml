@@ -62,18 +62,24 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      # The LSR03 harness requires the interpreter to live in backend/.venv
+      # (project runtime contract enforced by tests/lsr03_guarded_runner.py).
+      - name: Create project virtualenv
+        run: python -m venv .venv
+        working-directory: backend
+
       - name: Install dependencies
-        run: pip install -r requirements.txt && pip install pytest
+        run: .venv/bin/pip install -r requirements.txt pytest
         working-directory: backend
 
       - name: Import check
-        run: python -c "from main import app"
+        run: .venv/bin/python -c "from main import app"
         working-directory: backend
 
       - name: Initialize database schema
-        run: python -m alembic upgrade head
+        run: .venv/bin/python -m alembic upgrade head
         working-directory: backend
 
       - name: Run tests
-        run: python -m pytest tests/ -v --tb=short
+        run: .venv/bin/python -m pytest tests/ -v --tb=short
         working-directory: backend

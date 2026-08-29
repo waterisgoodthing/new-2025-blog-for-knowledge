@@ -47,3 +47,11 @@ Backend pinned to revision `026` refuses to boot against a database still at `02
 - Local migration replay evidence: see `tasks.md` T10. Summary: 025→026 executed on local `blog_v2`; version and roles verified; readiness PASS as runtime user; full suite green (412/6s/0f).
 - Local drift repair evidence: stray column drop preceded by full-row backup (`/tmp/review_items_backup_20260829.json`) and redundancy proof (`mistake_id == target_id` on all rows); root cause predates this workflow (legacy SM2-era column added out-of-band; no migration produces it).
 - Push: `202ea14..2dc495b refactor/baseline -> refactor/baseline` on remote `mine`.
+
+## Addendum 2 — CI-exposed migration 026 defect and fix (2026-08-29)
+
+- CI (PR #2, runs `33247219448` on `202ea14` and `33247588284` on `0b05bb5`) failed identically: 5×`test_mistake_review_service` + 1×`test_dashboard_routes` on `NotNullViolationError: null value in column "mistake_id" of relation "review_items"`, plus 2×LSR03 runtime-guard failures.
+- Root cause: migration 026 (lines 1058–1072) adds `review_items.mistake_id UUID NOT NULL` with FK `fk_review_items_mistake` (`mistakes.id ON DELETE RESTRICT`) and unique index `uq_review_items_mistake_id`, backfilled from `target_id`; the ORM model had no such column, so **any database at revision ≥ 026 rejects every ORM review-items insert** — a production-breaking defect in the migration contract that only manifests post-026 (masked locally by pre-existing column state, invisible to fresh-025 CI runs before the migration landed).
+- Fix (honors the migration; no new revision needed): `ReviewItem.mistake_id` added to the model mirroring the exact 026 DDL (FK name, `ON DELETE RESTRICT`, unique index name), `mistake_service.convert_mistake_draft` sets `mistake_id=m.id` after the mistake flush. Local DB restored to the 026 state per the same DDL (superseding the Addendum 1 column drop; row backup retained).
+- CI venv alignment: backend job now creates `backend/.venv` and runs import/alembic/pytest through it, per the LSR03 runtime contract.
+- Verification: local full suite against a true post-026 database — **412 passed / 6 skipped / 0 failed**; `validate_database_readiness()` PASS as runtime user. CI re-run pending on push.

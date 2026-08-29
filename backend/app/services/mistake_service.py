@@ -165,7 +165,7 @@ async def convert_mistake_draft(session,item_id,version):
         difficulty=r.difficulty,status="active",visibility="private",version=1)
     session.add(m); await session.flush()
     for kp in r.knowledge_point_ids: session.add(KnowledgePointLink(knowledge_point_id=kp,target_type="mistake",target_id=str(m.id)))
-    ri=ReviewItem(target_type="mistake",target_id=str(m.id),state="active")
+    ri=ReviewItem(target_type="mistake",target_id=str(m.id),mistake_id=m.id,state="active")
     session.add(ri); r.item.status="converted"; r.item.target_type="mistake"; r.item.target_id=str(m.id); r.item.version+=1
     await session.flush(); await session.refresh(m); await session.refresh(ri)
     return MistakeRecord(m,sorted(r.knowledge_point_ids),ri.id)
