@@ -31,10 +31,19 @@ Environment: project-convention venv `backend/.venv` (Python 3.12, uv-created, `
 | S4 constant-time key comparison | PASS |
 | S5 orphaned endpoint removal | PASS |
 | S6 error-text sanitization (14 sites) | PASS |
-| Backend suite (full, local) | PARTIAL — 338 passed; 74 BLOCKED on missing local Postgres (pre-existing); CI green required before release |
-| Migration execution / deploy | NOT_AUTHORIZED (separate approval required) |
-| Commit / push | NOT_AUTHORIZED (working tree left uncommitted) |
+| Migration 026 local replay (025→026) | PASS — as superuser; `blog_user` lacks CREATEROLE and failed cleanly (rolled back); role provisioning is a DBA step |
+| Runtime user post-migration | PASS — `validate_database_readiness()` PASS as `blog_user`; full suite 412 passed / 6 skipped / 0 failed |
+| Local schema drift repair | PASS — stray `review_items.mistake_id NOT NULL` (produced by no migration; broke all runtime inserts) dropped; rows backed up to `/tmp/review_items_backup_20260829.json`; values were exact duplicates of `target_id` |
+| Commits + push | PASS — `549cb2f` (security), `2dc495b` (in-flight work preservation) pushed to `mine/refactor/baseline` |
+| Production migration execution / deploy | NOT_AUTHORIZED — migration 026 needs CREATEROLE/superuser on the target and shared-cluster role/REVOKE review; release is a separate G2/G5 decision |
+| Frontend | untouched; `tsc --noEmit` green earlier same day on identical tree |
 
 ## Release pairing reminder
 
 Backend pinned to revision `026` refuses to boot against a database still at `025` (intended fail-closed). Deploying requires running `alembic upgrade head` first — execution is a G2/G5 gated action requiring separate approval.
+
+## Addendum — authorized execution (2026-08-29, 「我给你所有权限」)
+
+- Local migration replay evidence: see `tasks.md` T10. Summary: 025→026 executed on local `blog_v2`; version and roles verified; readiness PASS as runtime user; full suite green (412/6s/0f).
+- Local drift repair evidence: stray column drop preceded by full-row backup (`/tmp/review_items_backup_20260829.json`) and redundancy proof (`mistake_id == target_id` on all rows); root cause predates this workflow (legacy SM2-era column added out-of-band; no migration produces it).
+- Push: `202ea14..2dc495b refactor/baseline -> refactor/baseline` on remote `mine`.
