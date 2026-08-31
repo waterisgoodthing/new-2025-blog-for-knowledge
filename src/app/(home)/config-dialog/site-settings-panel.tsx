@@ -5,6 +5,7 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { useConfigStore } from '../stores/config-store'
 import { pushSiteContent } from '../services/push-site-content'
+import { getSiteSettings } from '@/lib/api/content'
 import type { SiteContent, CardStyles } from '../stores/config-store'
 import { SiteSettings, type FileItem, type ArtImageUploads, type BackgroundImageUploads, type SocialButtonImageUploads } from './site-settings'
 import { ColorConfig } from './color-config'
@@ -23,12 +24,32 @@ export function SiteSettingsPanel({ onSaved }: SiteSettingsPanelProps) {
 	const [originalData, setOriginalData] = useState<SiteContent>(siteContent)
 	const [originalCardStyles, setOriginalCardStyles] = useState<CardStyles>(cardStyles)
 	const [isSaving, setIsSaving] = useState(false)
+	const [isLoading, setIsLoading] = useState(true)
 	const [activeTab, setActiveTab] = useState<TabType>('site')
 	const [faviconItem, setFaviconItem] = useState<FileItem | null>(null)
 	const [avatarItem, setAvatarItem] = useState<FileItem | null>(null)
 	const [artImageUploads, setArtImageUploads] = useState<ArtImageUploads>({})
 	const [backgroundImageUploads, setBackgroundImageUploads] = useState<BackgroundImageUploads>({})
 	const [socialButtonImageUploads, setSocialButtonImageUploads] = useState<SocialButtonImageUploads>({})
+
+	useEffect(() => {
+		getSiteSettings()
+			.then(data => {
+				const sc = data.siteContent as unknown as SiteContent
+				const cs = data.cardStyles as CardStyles
+				setSiteContent(sc)
+				setCardStyles(cs)
+				setFormData(sc)
+				setCardStylesData(cs)
+				setOriginalData(sc)
+				setOriginalCardStyles(cs)
+			})
+			.catch(err => {
+				console.error('Failed to load site settings:', err)
+				toast.error('加载站点设置失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const resetState = () => {
 		const current = { ...siteContent }
@@ -44,10 +65,6 @@ export function SiteSettingsPanel({ onSaved }: SiteSettingsPanelProps) {
 		setSocialButtonImageUploads({})
 		setActiveTab('site')
 	}
-
-	useEffect(() => {
-		resetState()
-	}, [])
 
 	useEffect(() => {
 		return () => {
@@ -87,24 +104,22 @@ export function SiteSettingsPanel({ onSaved }: SiteSettingsPanelProps) {
 			setSiteContent(formData)
 			setCardStyles(cardStylesData)
 			updateThemeVariables(formData.theme)
+
+			await pushSiteContent(
+				formData, cardStylesData, faviconItem, avatarItem,
+				artImageUploads, removedArtImages,
+				backgroundImageUploads, removedBackgroundImages,
+				socialButtonImageUploads
+			)
+
+			setOriginalData(formData)
+			setOriginalCardStyles(cardStylesData)
 			setFaviconItem(null)
 			setAvatarItem(null)
 			setArtImageUploads({})
 			setBackgroundImageUploads({})
 			setSocialButtonImageUploads({})
-
-			try {
-				await pushSiteContent(
-					formData, cardStylesData, faviconItem, avatarItem,
-					artImageUploads, removedArtImages,
-					backgroundImageUploads, removedBackgroundImages,
-					socialButtonImageUploads
-				)
-				toast.success('设置已保存并同步到 GitHub')
-			} catch (syncError: any) {
-				console.error('GitHub sync failed:', syncError)
-				toast.warning(`本地设置已保存，GitHub 同步失败: ${syncError?.message || '未知错误'}`)
-			}
+			toast.success('设置已保存')
 			onSaved?.()
 		} catch (error: any) {
 			console.error('Failed to save:', error)
@@ -144,6 +159,10 @@ export function SiteSettingsPanel({ onSaved }: SiteSettingsPanelProps) {
 		{ id: 'color', label: '色彩配置' },
 		{ id: 'layout', label: '首页布局' },
 	]
+
+	if (isLoading) {
+		return <div className='flex items-center justify-center py-12 text-sm text-gray-500'>加载中...</div>
+	}
 
 	return (
 		<div>

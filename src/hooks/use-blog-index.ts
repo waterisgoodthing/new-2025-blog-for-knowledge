@@ -1,6 +1,6 @@
 import useSWR from 'swr'
-import { useAuthStore } from '@/hooks/use-auth'
 import { listNotes } from '@/lib/api/notes'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import type { BlogIndexItem } from '@/app/blog/types'
 
 export type { BlogIndexItem } from '@/app/blog/types'
@@ -20,14 +20,15 @@ async function fetchBlogIndex(): Promise<BlogIndexItem[]> {
 }
 
 export function useBlogIndex() {
-	const { isAuth } = useAuthStore()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
+
 	const { data, error, isLoading } = useSWR<BlogIndexItem[]>('blog-index', fetchBlogIndex, {
 		revalidateOnFocus: false,
 		revalidateOnReconnect: true
 	})
 
 	let result = data || []
-	if (!isAuth) {
+	if (!isAdmin) {
 		result = result.filter(item => !item.hidden)
 	}
 

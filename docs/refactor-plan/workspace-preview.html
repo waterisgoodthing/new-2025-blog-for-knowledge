@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习工作区 - 重构预览</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #E3F2FD 0%, #E1F5FE 50%, #B3E5FC 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* 毛玻璃卡片样式 */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 头部 */
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* 统计卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.orange {
+      background: rgba(255, 152, 0, 0.1);
+      border-color: rgba(255, 152, 0, 0.3);
+    }
+
+    .stat-card.blue {
+      background: rgba(33, 150, 243, 0.1);
+      border-color: rgba(33, 150, 243, 0.3);
+    }
+
+    .stat-card.red {
+      background: rgba(244, 67, 54, 0.1);
+      border-color: rgba(244, 67, 54, 0.3);
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card.orange .stat-value { color: #FF9800; }
+    .stat-card.blue .stat-value { color: #2196F3; }
+    .stat-card.red .stat-value { color: #F44336; }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      opacity: 0.8;
+    }
+
+    /* 快速开始 */
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .action-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .action-card:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .action-card.highlight {
+      background: rgba(255, 152, 0, 0.15);
+      border-color: rgba(255, 152, 0, 0.4);
+    }
+
+    .action-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .action-icon {
+      font-size: 1.5rem;
+    }
+
+    .action-label {
+      font-weight: 600;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .action-description {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    /* 最近内容 */
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .recent-item {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .recent-item:hover {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(100, 100, 100, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .recent-content {
+      flex: 1;
+    }
+
+    .recent-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .recent-summary {
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .recent-meta {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .tag.note {
+      background: rgba(33, 150, 243, 0.15);
+      color: #2196F3;
+    }
+
+    .tag.blog {
+      background: rgba(76, 175, 80, 0.15);
+      color: #4CAF50;
+    }
+
+    .tag.mistake {
+      background: rgba(244, 67, 54, 0.15);
+      color: #F44336;
+    }
+
+    .recent-time {
+      font-size: 0.75rem;
+      color: #999;
+      white-space: nowrap;
+      margin-left: 1rem;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 12px;
+      padding: 3rem;
+      text-align: center;
+    }
+
+    .empty-state p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>2026年7月30日，下午好</h1>
+      <p>你的个人学习空间</p>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+      <div class="stat-card orange">
+        <div class="stat-value">5</div>
+        <div class="stat-label">待复习</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-value">28</div>
+        <div class="stat-label">笔记总数</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-value">12</div>
+        <div class="stat-label">错题总数</div>
+      </div>
+    </div>
+
+    <!-- 快速开始 -->
+    <div class="section">
+      <h2 class="section-title">快速开始</h2>
+      <div class="actions-grid">
+        <a href="#" class="action-card">
+          <div class="action-header">
+            <span class="action-icon">📝</span>
+            <span class="action-label">新建笔记</span>
+          </div>
+          <p class="action-description">记录知识与想法</p>
+        </a>
+
+        <a href="#" class="action-card">
+          <div class="action-header">
+            <span class="action-icon">📷</span>
+            <span class="action-label">拍照采集</span>
+          </div>
+          <p class="action-description">识别错题与内容</p>
+        </a>
+
+        <a href="#" class="action-card highlight">
+          <div class="action-header">
+            <span class="action-icon">🔄</span>
+            <span class="action-label">开始复习</span>
+          </div>
+          <p class="action-description">5 道到期</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- 最近更新 -->
+    <div class="section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="section-title" style="margin: 0;">最近更新</h2>
+        <a href="#" style="font-size: 0.85rem; color: #666; text-decoration: none;">查看全部 →</a>
+      </div>
+
+      <div class="recent-list">
+        <a href="#" class="recent-item">
+          <div class="recent-content">
+            <div class="recent-title">TCP流量控制与发送窗口计算</div>
+            <div class="recent-summary">深入分析TCP协议的流量控制机制，包括滑动窗口、拥塞控制等核心概念</div>
+            <div class="recent-meta">
+              <span class="tag mistake">错题</span>
+              <span class="tag note">计算机网络</span>
+            </div>
+          </div>
+          <span class="recent-time">2026-06-23</span>
+        </a>
+
+        <a href="#" class="recent-item">
+          <div class="recent-content">
+            <div class="recent-title">计算机网络体系结构</div>
+            <div class="recent-summary">OSI七层模型与TCP/IP四层模型对比分析</div>
+            <div class="recent-meta">
+              <span class="tag note">笔记</span>
+            </div>
+          </div>
+          <span class="recent-time">2026-06-16</span>
+        </a>
+
+        <a href="#" class="recent-item">
+          <div class="recent-content">
+            <div class="recent-title">1.3 计算机网络性能指标</div>
+            <div class="recent-summary">带宽、时延、往返时间RTT等关键性能指标</div>
+            <div class="recent-meta">
+              <span class="tag note">笔记</span>
+            </div>
+          </div>
+          <span class="recent-time">2026-06-15</span>
+        </a>
+
+        <a href="#" class="recent-item">
+          <div class="recent-content">
+            <div class="recent-title">1.2 三种交换方式</div>
+            <div class="recent-summary">电路交换、报文交换、分组交换的原理与对比</div>
+            <div class="recent-meta">
+              <span class="tag note">笔记</span>
+            </div>
+          </div>
+          <span class="recent-time">2026-06-15</span>
+        </a>
+
+        <a href="#" class="recent-item">
+          <div class="recent-content">
+            <div class="recent-title">数据结构与算法复习笔记</div>
+            <div class="recent-summary">二叉树遍历、动态规划、贪心算法等核心知识点总结</div>
+            <div class="recent-meta">
+              <span class="tag blog">博客</span>
+            </div>
+          </div>
+          <span class="recent-time">2026-06-10</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

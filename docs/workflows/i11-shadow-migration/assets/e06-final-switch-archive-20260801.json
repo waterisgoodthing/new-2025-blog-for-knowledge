@@ -1,0 +1,39 @@
+{
+  "date": "2026-08-01",
+  "final_runtime_database_authority": "blog_v2",
+  "final_runtime_upload_authority": "/Users/limengyang/.local/share/personal-learning-system-v2/uploads",
+  "final_target_revision": "025",
+  "final_target_default_transaction_read_only": false,
+  "final_source_archive": "blog_db",
+  "final_source_revision": "025",
+  "final_source_default_transaction_read_only": true,
+  "legacy_upload_root": "/Users/limengyang/2025-blog-public/backend/uploads",
+  "legacy_upload_permissions": "read-only",
+  "pre_switch_source_count": 125,
+  "pre_switch_target_count": 125,
+  "pre_switch_delta_count": 0,
+  "pre_switch_aggregate_match": true,
+  "auth_bypass": false,
+  "manual_final_smoke": {
+    "health": 200,
+    "public_notes": 200,
+    "anonymous_admin": 401,
+    "invalid_admin": 401,
+    "admin_me": 200,
+    "admin_dashboard": 200,
+    "non_admin_dashboard": 403
+  },
+  "launch_agent": "com.blog.backend",
+  "launch_agent_restored_after_maintenance": true,
+  "live_listener": "127.0.0.1:8000",
+  "live_health": 200,
+  "live_public_notes": 200,
+  "live_database_sessions": {
+    "blog_v2": 1,
+    "blog_db": 0
+  },
+  "application_deployed": false,
+  "git_pushed": false,
+  "temporary_validation_identities_pending_f01_cleanup": 2,
+  "passed": true
+}

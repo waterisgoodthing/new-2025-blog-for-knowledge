@@ -385,3 +385,137 @@ After the first round of knowledge accumulation:
 - Evaluate embeddings or vector retrieval.
 - Consider NotebookLM-assisted external knowledge workflows.
 - Add AI provider and skill-pipeline settings in manage UI.
+
+## Frontend Display Design
+
+### Overview
+
+The frontend display round makes the existing Phase 1 backend visible in current user workflows. It does not create new pages or add persistence.
+
+Target routes:
+
+```text
+src/app/notes/[id]/note-detail-content.tsx
+src/app/mistakes/page.tsx
+src/app/mistakes/review/page.tsx
+```
+
+Supporting code may be added under:
+
+```text
+src/app/notes/[id]/components/
+src/app/mistakes/components/
+src/hooks/
+```
+
+Use existing `src/lib/api/knowledge.ts` API wrappers.
+
+### Mistake Detail Related Panel
+
+Placement:
+
+- Render only in the existing mistake detail branch.
+- Place after AI analysis / study blocks and before the action bar.
+- Keep the panel unframed enough to fit the operational page style, using existing card surfaces.
+
+Data flow:
+
+```text
+note detail page
+  -> local SWR hook or component fetch
+  -> getContextPack()
+  -> /api/knowledge/context-pack
+```
+
+Request mapping:
+
+```text
+subject: note.subject
+knowledge_points: split note.knowledge_points by comma-like separators
+tags: note.tags.map(t => t.name)
+type: undefined
+difficulty: note.difficulty
+limit: 8
+```
+
+Display sections:
+
+- Related notes: `related_notes` where `type === "note"`.
+- Similar mistakes: `related_mistakes` excluding the current note slug/id.
+- Relation suggestions: group or list high-score suggestions, deduplicated for display.
+- Source evidence: show small excerpts from `sources` when useful.
+
+Display dedupe:
+
+- Do not show the current mistake as a related mistake.
+- Collapse bidirectional duplicate relation suggestions for display.
+- Keep max visible items small, with no pagination in this round.
+
+States:
+
+- Loading: compact skeleton or "加载关联资料..." text.
+- Empty: "暂无结构化关联资料".
+- Error: small muted message, no page-level failure.
+
+### Weak-Point Summary Panel
+
+Primary placement:
+
+- `/mistakes` overview, near the current review planning area.
+
+Secondary optional placement:
+
+- `/mistakes/review` completion screen, as a post-review next-step panel.
+
+Data flow:
+
+```text
+mistakes overview/review page
+  -> local SWR hook or component fetch
+  -> getWeakPoints(30)
+  -> /api/knowledge/weak-points?days=30
+```
+
+Display fields:
+
+- `knowledge_point`
+- `subject`
+- `mistake_count`
+- `due_review_count`
+- `recent_error_count`
+- `top_error_reasons`
+- `evidence_sources`
+
+Display behavior:
+
+- Show top 5 weak points by backend order.
+- Use compact chips/counters, not decorative hero cards.
+- Evidence source links should route to `/notes/{slug}` when `slug` exists.
+
+### Hook Design
+
+Optional shared hook:
+
+```text
+src/hooks/use-knowledge.ts
+```
+
+Suggested exports:
+
+```text
+useContextPack(request | null)
+useWeakPoints(days)
+```
+
+Use SWR and existing API wrappers. Disable requests when required inputs are missing.
+
+### Validation
+
+Frontend validation must include:
+
+- `npx tsc --noEmit`
+- `npm run build` if page-level route code changes
+- Manual browser inspection for `/notes/{mistake-slug}` when sample data exists
+- Manual browser inspection for `/mistakes`
+
+If local database is empty, record that UI empty states were verified and real recall quality remains pending data.

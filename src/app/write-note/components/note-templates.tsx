@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, type ReactNode, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { BookOpen, ClipboardCheck, BookMarked, FolderKanban } from 'lucide-react'
+import { BookOpen, Lightbulb, FileSearch, RotateCcw, ListTodo, Layers, PencilLine, FolderKanban } from 'lucide-react'
+import { DelayedTooltip } from '@/components/delayed-tooltip'
 import dayjs from 'dayjs'
 
 type NoteTemplate = {
@@ -18,128 +19,114 @@ const today = () => dayjs().format('YYYY-MM-DD')
 
 export const noteTemplates: NoteTemplate[] = [
 	{
-		id: 'class-note',
-		label: '课堂笔记',
-		description: '整理课堂概念、例题、疑问和课后复盘。',
+		id: 'capture',
+		label: '记录型',
+		description: '记录事实、来源、上下文和原始观察。',
 		icon: <BookOpen size={14} />,
-		getContent: () => `# [课程/主题]
+		getContent: () => `# 记录: [主题]
 
 - **日期**: ${today()}
-- **科目**:
+- **来源**:
 
-## 课堂目标
+## 事实
 
 -
 
-## 核心概念
-
-- 概念:
-- 作用:
-- 易混点:
-
-## 例题
-
-- 题目:
-- 解法:
-- 关键步骤:
-
-## 我的疑问
+## 上下文
 
 -
 
-## 课后复盘
-
-- 今天真正掌握的是:
-- 需要回看的是:
-`,
-	},
-	{
-		id: 'mistake-analysis',
-		label: '错题解析',
-		description: '拆解题目、错误原因、正确思路和复习建议。',
-		icon: <ClipboardCheck size={14} />,
-		getContent: () => `# 错题: [题目关键词]
-
-- **日期**: ${today()}
-- **科目**:
-- **难度**: 中等
-
-## 题目
-
-
-## 我的答案
-
-
-## 正确答案
-
-
-## 错因分析
-
-- 我卡住的位置:
-- 错误原因:
-- 易混陷阱:
-
-## 知识点
+## 原始观察
 
 -
 
-## 复习安排
+## 疑问
 
-- 今天:
-- 3 天后:
-- 7 天后:
+-
 `,
 	},
 	{
-		id: 'reading',
-		label: '读书笔记',
-		description: '记录书籍观点、摘录、自己的理解和可迁移结论。',
-		icon: <BookMarked size={14} />,
-		getContent: () => `# 《书名》
-
-- **作者**: 
-- **阅读日期**: ${today()}
-
-## 核心观点
-
-1. 
-
-## 关键摘录
-
-> 
-
-## 我的理解
-
-
-## 可迁移结论
-
-`,
-	},
-	{
-		id: 'project-review',
-		label: '项目复盘',
-		description: '复盘目标、决策、结果、风险和下一步动作。',
-		icon: <FolderKanban size={14} />,
-		getContent: () => `# 项目复盘: [名称]
+		id: 'understand',
+		label: '理解型',
+		description: '解释概念、关系、举例和开放问题。',
+		icon: <Lightbulb size={14} />,
+		getContent: () => `# 理解: [概念/主题]
 
 - **日期**: ${today()}
 
-## 背景
+## 概念定义
 
+-
+
+## 关键关系
+
+-
+
+## 举例说明
+
+-
+
+## 容易混淆的点
+
+-
+
+## 开放问题
+
+-
+`,
+	},
+	{
+		id: 'analyze',
+		label: '分析型',
+		description: '拆解问题、原因、证据、备选和结论。',
+		icon: <FileSearch size={14} />,
+		getContent: () => `# 分析: [问题/主题]
+
+- **日期**: ${today()}
+
+## 问题
+
+-
+
+## 原因分析
+
+-
+
+## 证据
+
+-
+
+## 备选方案
+
+-
+
+## 结论
+
+-
+`,
+	},
+	{
+		id: 'review',
+		label: '复盘型',
+		description: '对比目标/过程/结果，提炼经验和下一步动作。',
+		icon: <RotateCcw size={14} />,
+		getContent: () => `# 复盘: [事项]
+
+- **日期**: ${today()}
 
 ## 目标
 
+-
 
 ## 过程记录
 
-- 做了什么:
-- 关键决策:
-- 遇到的问题:
+-
 
 ## 结果
 
+-
 
-## 经验
+## 经验教训
 
 - 继续保留:
 - 下次改进:
@@ -147,6 +134,99 @@ export const noteTemplates: NoteTemplate[] = [
 ## 下一步
 
 - [ ]
+`,
+	},
+	{
+		id: 'plan',
+		label: '计划型',
+		description: '定义目标、约束、任务、优先级和检查节点。',
+		icon: <ListTodo size={14} />,
+		getContent: () => `# 计划: [目标]
+
+- **日期**: ${today()}
+
+## 目标
+
+-
+
+## 约束条件
+
+-
+
+## 任务拆解
+
+- [ ] 任务1
+- [ ] 任务2
+- [ ] 任务3
+
+## 优先级
+
+1.
+2.
+3.
+
+## 检查节点
+
+-
+`,
+	},
+	{
+		id: 'organize',
+		label: '整理型',
+		description: '将杂乱笔记整理为大纲、表格、清单或知识图谱。',
+		icon: <Layers size={14} />,
+		getContent: () => `# 整理: [主题]
+
+- **日期**: ${today()}
+
+## 原始信息
+
+### A
+
+### B
+
+## 共性提炼
+
+-
+
+## 分类
+
+1.
+2.
+
+## 结构化结论
+
+-
+`,
+	},
+	{
+		id: 'express',
+		label: '表达型',
+		description: '将内容整理为文章、说明、总结或演示提纲。',
+		icon: <PencilLine size={14} />,
+		getContent: () => `# 表达: [主题]
+
+- **日期**: ${today()}
+
+## 核心观点
+
+-
+
+## 论证支撑
+
+-
+
+## 案例/举例
+
+-
+
+## 总结
+
+-
+
+## 待补充
+
+-
 `,
 	},
 ]
@@ -215,18 +295,19 @@ export function NoteTemplatesDropdown({ onInsert, textareaRef }: NoteTemplatesDr
 
 	return (
 		<>
-			<button
-				ref={btnRef}
-				type='button'
-				onClick={() => setOpen(!open)}
-				aria-label='打开笔记模板面板'
-				aria-haspopup='menu'
-				aria-expanded={open}
-				title='插入模板'
-				className='flex h-7 items-center gap-1 rounded-md px-2 text-xs text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
-				<FolderKanban size={14} />
-				<span>模板</span>
-			</button>
+			<DelayedTooltip content='插入模板到光标位置'>
+				<button
+					ref={btnRef}
+					type='button'
+					onClick={() => setOpen(!open)}
+					aria-label='打开笔记模板面板'
+					aria-haspopup='menu'
+					aria-expanded={open}
+					className='flex h-7 items-center gap-1 rounded-md px-2 text-xs text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
+					<FolderKanban size={14} />
+					<span>模板</span>
+				</button>
+			</DelayedTooltip>
 
 			{mounted &&
 				createPortal(

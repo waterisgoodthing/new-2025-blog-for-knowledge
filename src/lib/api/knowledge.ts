@@ -81,6 +81,8 @@ export interface ContextPackResponse {
 export interface WeakPointItem {
   subject: string;
   knowledge_point: string;
+  canonical_name?: string;
+  aliases?: string[];
   mistake_count: number;
   due_review_count: number;
   recent_error_count: number;

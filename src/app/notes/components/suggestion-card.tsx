@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Lightbulb, Tag, FolderOpen, RefreshCw, AlertTriangle, X, Check } from 'lucide-react'
+import { Lightbulb, Tag, FolderOpen, RefreshCw, AlertTriangle, X, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getSuggestions, executeSuggestion, type Suggestion } from '@/lib/api/knowledge-assistant'
@@ -10,13 +10,18 @@ import { getSuggestions, executeSuggestion, type Suggestion } from '@/lib/api/kn
 type SuggestionCardProps = {
 	onRefresh?: () => void
 	onExecuted?: () => void
+	defaultExpanded?: boolean
 }
 
-export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
+export function SuggestionCard({ onRefresh, onExecuted, defaultExpanded = false }: SuggestionCardProps) {
 	const [suggestions, setSuggestions] = useState<Suggestion[]>([])
 	const [loading, setLoading] = useState(true)
 	const [executing, setExecuting] = useState<string | null>(null)
 	const [tagInput, setTagInput] = useState<Record<number, string>>({})
+	const [expanded, setExpanded] = useState(defaultExpanded)
+
+	useEffect(() => { setExpanded(defaultExpanded) }, [defaultExpanded])
+	useEffect(() => { if (suggestions.length === 0) setExpanded(false) }, [suggestions.length])
 
 	useEffect(() => {
 		loadSuggestions()
@@ -66,15 +71,29 @@ export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
 
 	if (loading) return null
 
+	const drawerTrigger = (
+		<button
+			onClick={() => setExpanded(!expanded)}
+			className={cn(
+				'mb-6 flex w-full items-center gap-2 rounded-xl border border-white/40 bg-white/60 px-4 py-3 backdrop-blur-sm text-sm transition-colors hover:bg-white/80',
+				suggestions.length === 0 ? 'text-gray-400' : 'text-[var(--color-brand)]'
+			)}
+			aria-label={expanded ? '收起 AI 建议' : '展开 AI 建议'}
+		>
+			<Lightbulb size={16} />
+			<span className='flex-1 text-left'>
+				{suggestions.length === 0
+					? '知识库状态良好，暂无整理建议'
+					: `AI 整理建议 (${suggestions.length} 条)`}
+			</span>
+			{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+		</button>
+	)
+
+	if (!expanded) return drawerTrigger
+
 	if (suggestions.length === 0) {
-		return (
-			<div className='mb-6 rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-				<div className='flex items-center gap-2 text-sm text-gray-500'>
-					<Lightbulb size={16} className='text-green-500' />
-					<span>知识库状态良好，暂无整理建议</span>
-				</div>
-			</div>
-		)
+		return drawerTrigger
 	}
 
 	const typeIcons: Record<string, React.ReactNode> = {
@@ -82,6 +101,7 @@ export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
 		folder: <FolderOpen size={14} />,
 		review: <AlertTriangle size={14} />,
 		summary: <Lightbulb size={14} />,
+		activity: <Lightbulb size={14} />,
 	}
 
 	const typeColors: Record<string, string> = {
@@ -89,6 +109,7 @@ export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
 		folder: 'border-amber-200/70 bg-amber-50/50',
 		review: 'border-red-200/70 bg-red-50/50',
 		summary: 'border-green-200/70 bg-green-50/50',
+		activity: 'border-green-200/70 bg-green-50/50',
 	}
 
 	const isActionable = (action: string) => ['add_tag', 'move_to_folder'].includes(action)
@@ -100,13 +121,22 @@ export function SuggestionCard({ onRefresh, onExecuted }: SuggestionCardProps) {
 					<Lightbulb size={16} className='text-[var(--color-brand)]' />
 					<h3 className='text-sm font-semibold text-gray-800'>AI 整理建议</h3>
 				</div>
-				<button
-					onClick={() => { loadSuggestions(); onRefresh?.() }}
-					className='text-gray-400 hover:text-gray-600'
-					aria-label='刷新建议'
-				>
-					<RefreshCw size={14} />
-				</button>
+				<div className='flex items-center gap-1'>
+					<button
+						onClick={() => { loadSuggestions(); onRefresh?.() }}
+						className='text-gray-400 hover:text-gray-600'
+						aria-label='刷新建议'
+					>
+						<RefreshCw size={14} />
+					</button>
+					<button
+						onClick={() => setExpanded(false)}
+						className='text-gray-400 hover:text-gray-600'
+						aria-label='收起 AI 建议'
+					>
+						<ChevronDown size={14} />
+					</button>
+				</div>
 			</div>
 
 			<div className='space-y-2'>

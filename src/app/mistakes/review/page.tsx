@@ -7,7 +7,9 @@ import { getReviewQueue, submitReview, getReviewStats, getReviewPlan, type Revie
 import type { NoteDetail } from '@/lib/api/notes'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { RichText } from '@/components/rich-text'
 import dayjs from 'dayjs'
+import { AuthGate } from '@/components/auth-gate'
 
 const qualityLabels = [
 	{ q: 0, label: '完全忘记', color: 'bg-red-500' },
@@ -21,6 +23,14 @@ const qualityLabels = [
 type ReviewResult = { slug: string; title: string; quality: number; nextReview: string | null }
 
 export default function ReviewPage() {
+	return (
+		<AuthGate>
+			<ReviewPageContent />
+		</AuthGate>
+	)
+}
+
+function ReviewPageContent() {
 	const [queue, setQueue] = useState<NoteDetail[]>([])
 	const [current, setCurrent] = useState(0)
 	const [showAnswer, setShowAnswer] = useState(false)
@@ -28,17 +38,23 @@ export default function ReviewPage() {
 	const [done, setDone] = useState(false)
 	const [reviewed, setReviewed] = useState(0)
 	const [loading, setLoading] = useState(true)
+	const [loadError, setLoadError] = useState<string | null>(null)
 	const [stats, setStats] = useState<ReviewStats | null>(null)
 	const [plan, setPlan] = useState<ReviewPlan | null>(null)
 	const [reviewResults, setReviewResults] = useState<ReviewResult[]>([])
 
 	useEffect(() => {
-		Promise.all([getReviewQueue(), getReviewStats(), getReviewPlan()]).then(([q, s, p]) => {
-			setQueue(q)
-			setStats(s)
-			setPlan(p)
-			setLoading(false)
-		})
+		Promise.all([getReviewQueue(), getReviewStats(), getReviewPlan()])
+			.then(([q, s, p]) => {
+				setQueue(q)
+				setStats(s)
+				setPlan(p)
+				setLoading(false)
+			})
+			.catch(() => {
+				setLoadError('复习数据加载失败，请返回错题管理页后重试。')
+				setLoading(false)
+			})
 	}, [])
 
 	const item = queue[current]
@@ -64,6 +80,18 @@ export default function ReviewPage() {
 	}, [item, submitting, current, queue.length])
 
 	if (loading) return <div className='py-20 text-center text-gray-400'>加载复习队列...</div>
+	if (loadError) {
+		return (
+			<div className='mx-auto max-w-xl px-4 py-20 text-center'>
+				<div role='alert' className='mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+					{loadError}
+				</div>
+				<Link href='/manage/mistakes' className='rounded-xl bg-[var(--color-brand)] px-5 py-2.5 text-sm text-white'>
+					返回错题管理
+				</Link>
+			</div>
+		)
+	}
 
 	if (queue.length === 0) {
 		return (
@@ -72,7 +100,7 @@ export default function ReviewPage() {
 					<div className='mb-4 text-6xl'>🎉</div>
 					<h2 className='mb-2 text-xl font-bold'>今日无待复习题目</h2>
 					<p className='mb-6 text-gray-500'>所有错题都已复习完毕或暂无错题</p>
-					<Link href='/mistakes' className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white'>
+					<Link href='/manage/mistakes' className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white'>
 						返回错题集
 					</Link>
 				</motion.div>
@@ -141,10 +169,10 @@ export default function ReviewPage() {
 					)}
 
 					<div className='mb-8 flex flex-col gap-3 sm:flex-row'>
-						<Link href='/mistakes' className='flex-1 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-center text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98]'>
+						<Link href='/manage/mistakes' className='flex-1 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-center text-sm text-white transition-transform hover:scale-[1.02] active:scale-[0.98]'>
 							回到错题集
 						</Link>
-						<Link href='/write-mistake' className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-center text-sm transition-colors hover:bg-white/80'>
+						<Link href='/manage/capture' className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-center text-sm transition-colors hover:bg-white/80'>
 							继续整理
 						</Link>
 						<button onClick={() => window.location.reload()} className='flex-1 rounded-xl bg-white/60 px-4 py-2.5 text-sm transition-colors hover:bg-white/80'>
@@ -159,7 +187,7 @@ export default function ReviewPage() {
 	return (
 		<div className='mx-auto max-w-2xl px-4 py-8'>
 			<div className='mb-6 flex items-center justify-between'>
-				<Link href='/mistakes' className='text-sm text-gray-500 hover:text-gray-700'>← 返回</Link>
+				<Link href='/manage/mistakes' className='text-sm text-gray-500 hover:text-gray-700'>← 返回</Link>
 				<span className='text-sm text-gray-500'>{current + 1} / {queue.length}</span>
 			</div>
 
@@ -199,8 +227,8 @@ export default function ReviewPage() {
 					<h2 className='mb-4 truncate text-lg font-bold'>{item.title}</h2>
 
 					{item.question && (
-						<div className='mb-4 break-words whitespace-pre-wrap rounded-lg bg-gray-100/50 p-4 text-sm'>
-							{item.question}
+						<div className='mb-4 rounded-lg bg-gray-100/50 p-4'>
+							<RichText content={item.question} className='text-sm' />
 						</div>
 					)}
 
@@ -216,19 +244,19 @@ export default function ReviewPage() {
 							{item.correct_answer && (
 								<div className='mb-3'>
 									<div className='mb-1 text-xs font-medium text-green-500'>正确答案</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-green-50/50 p-3 text-sm'>{item.correct_answer}</div>
+									<div className='rounded-lg bg-green-50/50 p-3'><RichText content={item.correct_answer} className='text-sm' /></div>
 								</div>
 							)}
 							{item.analysis && (
 								<div className='mb-3'>
 									<div className='mb-1 text-xs font-medium text-blue-500'>分析</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-blue-50/50 p-3 text-sm'>{item.analysis}</div>
+									<div className='rounded-lg bg-blue-50/50 p-3'><RichText content={item.analysis} className='text-sm' /></div>
 								</div>
 							)}
 							{item.knowledge_points && (
 								<div className='mb-4'>
 									<div className='mb-1 text-xs font-medium text-purple-500'>知识点</div>
-									<div className='break-words whitespace-pre-wrap rounded-lg bg-purple-50/50 p-3 text-sm'>{item.knowledge_points}</div>
+									<div className='rounded-lg bg-purple-50/50 p-3'><RichText content={item.knowledge_points} className='text-sm' /></div>
 								</div>
 							)}
 

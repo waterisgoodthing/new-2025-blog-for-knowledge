@@ -1,5 +1,6 @@
 main = ".open-next/worker.js"
 name = "2025-blog-public"
+workers_dev = true
 compatibility_date = "2025-03-25"
 compatibility_flags = ["nodejs_compat"]
 
@@ -11,7 +12,7 @@ binding = "ASSETS"
 [observability.logs]
 enabled = true
 # 头部采样率，1 表示 100% 采样（所有请求都会被采样）
-head_sampling_rate = 1
+head_sampling_rate = 0.01
 # 启用调用日志（记录每次函数调用）
 invocation_logs = true
 # 持久化日志到磁盘（本地开发时有用）

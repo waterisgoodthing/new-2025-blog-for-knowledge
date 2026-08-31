@@ -5,10 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
-from app.database import Base
-from app.models.note import Category, Note, Subject, Tag, User
-from app.models.music import MusicItem
-from app.models.recommendation import DailyRecommendation
+from app.models.registry import EXCLUDED_SCHEMA_TABLES, SCHEMA_LIFECYCLE_METADATA
 
 config = context.config
 if config.config_file_name is not None:
@@ -17,7 +14,19 @@ if config.config_file_name is not None:
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-target_metadata = Base.metadata
+target_metadata = SCHEMA_LIFECYCLE_METADATA
+
+
+def include_object(object_, name, type_, reflected, compare_to):
+    if type_ == "table" and name in EXCLUDED_SCHEMA_TABLES:
+        return False
+
+    if type_ == "index":
+        table = getattr(object_, "table", None)
+        if table is not None and table.name in EXCLUDED_SCHEMA_TABLES:
+            return False
+
+    return True
 
 
 def run_migrations_offline() -> None:
@@ -25,6 +34,7 @@ def run_migrations_offline() -> None:
     context.configure(
         url=url,
         target_metadata=target_metadata,
+        include_object=include_object,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
@@ -33,7 +43,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

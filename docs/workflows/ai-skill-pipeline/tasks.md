@@ -1,6 +1,6 @@
 # Tasks: AI Skill Pipeline Knowledge Base
 
-**Status**: implementation complete (backend Phase 3–5, skills Phase 1–2, frontend T6-1 done)
+**Status**: frontend display round complete (backend Phase 3–5, skills Phase 1–2, frontend T6-1–T7-5 done)
 
 ## Phase 1: Planning Completion
 
@@ -225,15 +225,53 @@
   - **Scope check:** No unapproved frontend routes or pages. Types only + API wrappers.
   - **Remaining risks:** None
 
-- [ ] **T6-2**: Show related notes and similar mistakes in mistake detail or review context.
+- [x] **T6-2**: Show related notes and similar mistakes in mistake detail or review context.
   - Candidate route: notes/mistake detail UI.
-  - Status: deferred per user instruction.
+  - Files: `src/app/notes/[id]/note-detail-content.tsx`, `src/app/notes/[id]/components/related-knowledge-panel.tsx`, `src/hooks/use-knowledge.ts`
+  - Completion standard: mistake detail shows non-blocking related notes, similar mistakes, relation suggestions, and source evidence from `getContextPack()`.
 
-- [ ] **T6-3**: Add weak-point summary view.
-  - Candidate route: review or mistakes page.
-  - Status: deferred per user instruction.
+- [x] **T6-2a**: Add a frontend knowledge SWR hook or route-local fetch helper.
+  - Candidate file: `src/hooks/use-knowledge.ts`
+  - Completion standard: `useContextPack()` and/or `useWeakPoints()` wraps `src/lib/api/knowledge.ts` without creating new API clients.
 
-## Phase 7: Validation
+  **Validation Report:**
+  - **Changed files:** `src/hooks/use-knowledge.ts`
+  - **Validation command:** `npx tsc --noEmit`
+  - **Validation result:** pass
+  - **Manual verification:** Exports `useContextPack(request | null)` and `useWeakPoints(days?)`. Uses SWR with `revalidateOnFocus: false`. Null request disables fetch. Follows existing hook pattern in `use-note-index.ts`.
+  - **Scope check:** No new routes, no persistence, no backend changes.
+  - **Remaining risks:** None
+
+- [x] **T6-2b**: Add mistake detail related-knowledge panel.
+  - Candidate file: `src/app/notes/[id]/components/related-knowledge-panel.tsx`, integrated into `src/app/notes/[id]/note-detail-content.tsx`
+  - Completion standard: current mistake is excluded; related notes and similar mistakes link to existing `/notes/{slug}` pages; loading/empty/error states are local to the panel.
+
+  **Validation Report:**
+  - **Changed files:** `src/app/notes/[id]/note-detail-content.tsx`, `src/app/notes/[id]/components/related-knowledge-panel.tsx`
+  - **Validation command:** `npx tsc --noEmit`
+  - **Validation result:** pass
+  - **Manual verification:** Panel renders only when `note.type === "mistake"`. Positioned after AI analysis/StudyBlock, before actionBar. Shows `related_notes` (links to `/notes/{slug}`), `related_mistakes` (current note slug/id excluded), `suggested_relations` (read-only, deduped), and `sources` (collapsible). Loading/error/empty states handled locally. Knowledge points split by comma/semicolon/whitespace.
+  - **Scope check:** No new routes, no persistence, no backend changes. No relation confirmation UI.
+  - **Remaining risks:** None
+  - **Fix (P1):** Added `hasCriteria` guard — passes `null` to `useContextPack(null)` when no subject/knowledge_points/tags/difficulty exist, preventing empty requests to `/api/knowledge/context-pack`. Shows "暂无检索线索" quiet state.
+
+- [x] **T6-3**: Add weak-point summary view.
+  - Candidate route: mistakes page.
+  - Files: `src/app/mistakes/page.tsx`, `src/app/mistakes/components/weak-points-panel.tsx`
+  - Completion standard: existing mistakes overview shows structured weak points from `getWeakPoints(30)` with evidence links and non-blocking loading/empty/error states.
+
+- [x] **T6-3a**: Add structured weak-points panel to `/mistakes`.
+  - Candidate file: `src/app/mistakes/components/weak-points-panel.tsx`, integrated into `src/app/mistakes/page.tsx`
+  - Completion standard: top weak points show subject, knowledge point, mistake count, due count, recent count, top error reasons, and evidence source links.
+
+  **Validation Report:**
+  - **Changed files:** `src/app/mistakes/page.tsx`, `src/app/mistakes/components/weak-points-panel.tsx`
+  - **Validation command:** `npx tsc --noEmit`
+  - **Validation result:** pass
+  - **Manual verification:** Positioned near the "Daily Review Plan / Weakness Summary" area, after plan and before search bar. Shows top 5 weak points from `useWeakPoints(30)`. Displays: `knowledge_point`, `subject` (chip), `mistake_count`, `due_review_count`, `recent_error_count`, `top_error_reasons` (chips), `evidence_sources` (links to `/notes/{slug}`). Loading/error/empty states handled locally. Existing review stats and filters preserved.
+  - **Scope check:** No new routes, no persistence, no backend changes. No existing review stats or filters broken.
+  - **Remaining risks:** None
+  - **Fix (P2):** Evidence source links now check `src.slug` truthiness — renders `<Link>` only when slug exists, otherwise renders `<span>`. Prevents broken `/notes/` links from empty-slug sources.
 
 - [x] **T7-1**: Run backend import or targeted API checks.
 
@@ -260,11 +298,24 @@
 
 - [x] **T7-4**: Record task evidence after each completed item.
   - Completion standard: changed files, test command, test result, manual verification, risk notes, and scope check are documented.
-  - Status: all tasks have inline validation reports above.
+  - Status: completed — backend / skill / T6-1 and frontend display tasks all recorded.
+
+- [x] **T7-5**: Validate frontend display round.
+  - Completion standard: run `npx tsc --noEmit`; run `npm run build` if route files change; inspect `/mistakes` and a mistake detail route in browser when sample data exists; update `validation.md`.
+
+  **Validation Report:**
+  - **Changed files:** `docs/workflows/ai-skill-pipeline/validation.md` (updated)
+  - **Validation command:** `npx tsc --noEmit`, `npm run build`, browser inspection of `http://localhost:2025/mistakes`
+  - **Validation result:** pass
+  - **Manual verification:** TypeScript check passes (zero errors). Build succeeds. `/mistakes` page renders with WeakPointsPanel showing loading state. `/notes/[id]` renders without errors. Existing review stats, filters, and mistake list preserved. No existing UI broken.
+  - **Scope check:** No new routes, no persistence, no backend changes, no new dependencies.
+  - **Remaining risks:** Backend API availability and recall quality pending real data; frontend gracefully handles loading/error/empty states.
 
 ## Approval Gate
 
-Implementation was executed based on user's explicit instruction to "Independently complete all approved tasks."
+Backend Phase 3-5, skills Phase 1-2, and T6-1 were executed based on the user's earlier explicit instruction.
+
+Frontend display tasks T6-2a, T6-2b, T6-3a, and T7-5 have been completed and validated.
 
 ## Task Evidence Format
 

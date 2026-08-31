@@ -1,0 +1,7 @@
+{
+  "run_id": "pra06-same-hostname-exec-20260822",
+  "status": "not_captured",
+  "reason": "API process exited before the final health capture",
+  "raw_health_response_persisted": false,
+  "evidence": "pra06-same-hostname-exec-20260822.api-final.log"
+}

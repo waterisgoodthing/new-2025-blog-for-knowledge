@@ -1,0 +1,28 @@
+PRA-08 pre-cleanup state (2026-08-22, current run)
+
+Scope: exact isolated run pra04-20260822-auWgUg only; no main service/database action.
+Main worktree: /Users/limengyang/2025-blog-public
+Main HEAD: 202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f
+Main branch: refactor/baseline
+Main status sha256: 6de303c46f48dfd069c96161d5b6e967a54ba056fa60879093ebd3ef21ea2476
+Worktree-list sha256: 13d55b738665ae7f7a34d1af2090ca7f356dadf37a6b797829fba0d4595648d9
+
+Exact current-run worktree:
+/private/tmp/pra04-20260822-auWgUg/worktree
+
+Pre-existing worktrees recorded:
+/Users/limengyang/2025-blog-public
+/Users/limengyang/2025-blog-public/.kilo/worktrees/industrious-jump
+/Users/limengyang/2025-blog-public/.kilo/worktrees/luxuriant-butter
+/Users/limengyang/Documents/Codex/2026-08-02/she/outputs/refactor-markdown-poc-workspace
+
+Target processes observed:
+frontend PID 84751: next-server (v16.2.12), listener *:3100
+API PID 84872: isolated uvicorn on 127.0.0.1:8100, listener 127.0.0.1:8100
+PostgreSQL PID 84161: isolated cluster /private/tmp/pra04-20260822-auWgUg/postgres/data, listener 127.0.0.1:55432
+
+Port 3000: no listener at pre-cleanup capture.
+Run-scoped browser candidates: none matched the isolated run/worktree/base URLs.
+Isolated PostgreSQL status: running, PID 84161.
+
+No password, session cookie, token, or credential value was printed or persisted by this capture.

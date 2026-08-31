@@ -17,6 +17,7 @@ import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
 import { toast } from 'sonner'
 import SnowfallBackground from '@/layout/backgrounds/snowfall'
+import LearningSpaceCard from './learning-space-card'
 
 export default function Home() {
 	const { maxSM } = useSize()
@@ -72,6 +73,7 @@ export default function Home() {
 				{cardStyles.likePosition?.enabled !== false && <LikePosition />}
 				{cardStyles.hatCard?.enabled !== false && <HatCard />}
 				{cardStyles.beianCard?.enabled !== false && <BeianCard />}
+				<LearningSpaceCard />
 			</div>
 
 			{siteContent.enableChristmas && <SnowfallBackground zIndex={2} count={!maxSM ? 125 : 20} />}

@@ -1,0 +1,50 @@
+{
+  "run_id": "pra06-same-hostname-diagnostic-20260822",
+  "status": "blocked",
+  "purpose": "single same-hostname cross-origin cookie diagnostic; startup blocked before login",
+  "frontend_base": "http://api.localhost:3104",
+  "api_base": "http://api.localhost:8104",
+  "api_bind": "http://127.0.0.1:8104",
+  "runtime": {
+    "next_public_api_url": "http://api.localhost:8104",
+    "allowed_origins": "http://api.localhost:3104",
+    "api_bind": "127.0.0.1:8104",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "fixture": {
+    "profile": "M30",
+    "created": false,
+    "temporary_admin_created": false,
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 0,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "result": {
+    "started": false,
+    "normal_login_attempts": 0,
+    "login_preflight_status": null,
+    "login_response_status": null,
+    "set_cookie_attribute_presence": null,
+    "cdp_blocked_cookie_reasons": null,
+    "browser_cookie_jar": null,
+    "request_cookie_header_presence": null,
+    "auth_me_status": null,
+    "strict_management_status": null,
+    "cors_headers": null,
+    "readiness_dom": null,
+    "readiness_marks": null
+  },
+  "failure_reason": "startup-frontend-build-failed:production-guard-or-build; login-not-submitted",
+  "startup_failure_artifact": "pra06-same-hostname-diagnostic-20260822.build.log",
+  "claims": {
+    "diagnosis_only": true,
+    "readiness": false,
+    "performance_baseline": false
+  }
+}

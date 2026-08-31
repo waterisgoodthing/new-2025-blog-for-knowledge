@@ -18,8 +18,8 @@ The pipeline should connect current AI actions, future skill capabilities, struc
 
 ## Current Status
 
-- Status: planning.
-- Runtime implementation: not started.
+- Status: frontend display planning for T6-2 and T6-3.
+- Runtime implementation: backend Phase 3-5 complete; frontend API client T6-1 complete.
 - User decisions recorded:
   - Priority is postgraduate exam review.
   - Do not create first-class `KnowledgePoint` entities in phase 1.
@@ -27,6 +27,15 @@ The pipeline should connect current AI actions, future skill capabilities, struc
   - Use structured retrieval first.
   - Allow automatic bidirectional relation suggestions.
   - AI-generated knowledge output must include citations or source references.
+
+## Frontend Display Round
+
+This round focuses on making the completed Phase 1 backend visible in existing frontend workflows without adding new routes:
+
+- `T6-2`: show related notes and similar mistakes in the existing mistake detail view.
+- `T6-3`: show structured weak-point summaries in the existing mistakes/review surfaces.
+
+Implementation remains blocked until the updated T6 task list is explicitly approved.
 
 ## Skill Installation Notes
 

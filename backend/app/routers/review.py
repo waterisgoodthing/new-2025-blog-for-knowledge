@@ -1,5 +1,7 @@
 from datetime import date, datetime, timezone
 
+from app.utils.datetime import utc_now_naive
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,8 +55,8 @@ async def submit_review(
     note.interval = interval
     note.repetitions = repetitions
     note.next_review = next_review
-    note.last_reviewed = datetime.now(timezone.utc)
-    note.updated_at = datetime.now(timezone.utc)
+    note.last_reviewed = utc_now_naive()
+    note.updated_at = utc_now_naive()
 
     await db.flush()
     await db.refresh(note)

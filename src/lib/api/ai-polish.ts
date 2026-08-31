@@ -1,4 +1,8 @@
-export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap' | 'data_chart'
+import { getApiBase } from './config'
+
+const API_BASE = getApiBase()
+
+export type PolishAction = 'polish' | 'summarize' | 'expand' | 'continue' | 'translate_en' | 'translate_zh' | 'extract_tags' | 'generate_questions' | 'title' | 'outline' | 'tags' | 'diagram' | 'compare' | 'mindmap' | 'data_chart' | 'custom'
 
 export type PolishCallbacks = {
 	onChunk: (chunk: string) => void
@@ -6,31 +10,20 @@ export type PolishCallbacks = {
 	onError: (error: string) => void
 }
 
-function getAuthToken(): string | null {
-	if (typeof window === 'undefined') return null
-	return localStorage.getItem('token')
-}
-
 export async function streamPolish(
 	text: string,
 	action: PolishAction,
 	callbacks: PolishCallbacks,
-	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[] }
+	options?: { context?: string; signal?: AbortSignal; title?: string; noteType?: string; existingTags?: string[]; custom_prompt?: string }
 ): Promise<void> {
-	const token = getAuthToken()
-	if (!token) {
-		callbacks.onError('未登录')
-		return
-	}
-
 	let response: Response
 	try {
-		response = await fetch('/api/ai/polish', {
+		response = await fetch(`${API_BASE}/api/ai/polish`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
 			},
+			credentials: 'include',
 			body: JSON.stringify({
 				text,
 				action,
@@ -38,11 +31,12 @@ export async function streamPolish(
 				title: options?.title,
 				note_type: options?.noteType,
 				existing_tags: options?.existingTags,
+				custom_prompt: options?.custom_prompt,
 			}),
 			signal: options?.signal,
 		})
 	} catch (err: any) {
-		if (err.name === 'AbortError') return
+		if (err.name === 'AbortError') { callbacks.onDone(); return }
 		callbacks.onError('网络错误')
 		return
 	}
@@ -103,7 +97,7 @@ export async function streamPolish(
 		}
 		callbacks.onDone()
 	} catch (err: any) {
-		if (err.name === 'AbortError') return
+		if (err.name === 'AbortError') { callbacks.onDone(); return }
 		callbacks.onError('读取响应失败')
 	}
 }

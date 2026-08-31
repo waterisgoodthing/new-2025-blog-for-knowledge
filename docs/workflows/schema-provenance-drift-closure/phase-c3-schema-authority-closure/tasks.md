@@ -1,0 +1,22 @@
+# C+3 Tasks
+
+- [x] C3-01 Create the task workspace and capture scope boundaries.
+- [x] C3-02 Inspect guest models, router, schemas, registration, documentation, and Alembic history.
+- [x] C3-03 Execute read-only database metadata SELECT queries for tables, columns, indexes, and NULL counts.
+- [x] C3-04 Produce the guest schema ownership decision.
+- [x] C3-05 Produce the schema drift semantic decision package.
+- [x] C3-06 Produce the Alembic-only transition plan.
+- [x] C3-07 Produce the closure decision and validation reports.
+- [x] C3-09 Produce the guest schema authority decision.
+- [x] C3-10 Produce the schema drift resolution plan.
+- [x] C3-11 Produce the Alembic authority implementation design.
+- [ ] C3-08 Implement remediation. Deferred: forbidden by the C+3 execution mode and requires separate human approval.
+- [x] C4-01 Produce the schema remediation approval package.
+- [x] C4-02 Produce the guest final decision preparation.
+- [x] C4-03 Produce the nullable contract decision.
+- [x] C4-04 Produce the index metadata policy.
+- [x] C4-05 Produce the Phase C+4 execution report.
+- [x] C5-01 Freeze the future implementation scope.
+- [x] C5-02 Produce the migration execution plan.
+- [x] C5-03 Produce the future code-change plan.
+- [x] C5-04 Produce the Phase C+5 readiness report.

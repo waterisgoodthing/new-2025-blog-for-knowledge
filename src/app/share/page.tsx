@@ -1,27 +1,50 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import GridView from './grid-view'
 import CreateDialog from './components/create-dialog'
 import { pushShares } from './services/push-shares'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
-import initialList from './list.json'
+import { getShares } from '@/lib/api/content'
 import type { Share } from './components/share-card'
 import type { LogoItem } from './components/logo-upload-dialog'
 
 export default function Page() {
-	const [shares, setShares] = useState<Share[]>(initialList as Share[])
-	const [originalShares, setOriginalShares] = useState<Share[]>(initialList as Share[])
+	const router = useRouter()
+	const { isAdmin, isLoading: authLoading } = useAdminAuth({ mode: 'optional' })
+	const [shares, setShares] = useState<Share[]>([])
+	const [originalShares, setOriginalShares] = useState<Share[]>([])
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [editingShare, setEditingShare] = useState<Share | null>(null)
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [logoItems, setLogoItems] = useState<Map<string, LogoItem>>(new Map())
+	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	useEffect(() => {
+		if (!authLoading && !isAdmin) {
+			router.replace('/discover?tab=shares')
+		}
+	}, [authLoading, isAdmin, router])
+
+	useEffect(() => {
+		getShares()
+			.then(data => {
+				setShares(data as Share[])
+				setOriginalShares(data as Share[])
+			})
+			.catch(err => {
+				console.error('Failed to load shares:', err)
+				toast.error('加载分享列表失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
 
 	const handleUpdate = (updatedShare: Share, oldShare: Share, logoItem?: LogoItem) => {
 		setShares(prev => prev.map(s => (s.url === oldShare.url ? updatedShare : s)))
@@ -89,7 +112,7 @@ export default function Page() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 			}
@@ -99,7 +122,23 @@ export default function Page() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
+
+	if (authLoading || (!isAdmin && !isLoading)) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
+
+	if (isLoading) {
+		return (
+			<div className='flex min-h-[70vh] items-center justify-center'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -130,7 +169,7 @@ export default function Page() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

@@ -1,0 +1,35 @@
+{
+  "date": "2026-08-01",
+  "reverse_delta": {
+    "from": "blog_v2",
+    "to": "blog_db",
+    "source_count": 125,
+    "target_count": 125,
+    "inserted": 0,
+    "updated": 0,
+    "deleted": 0,
+    "delta_count": 0,
+    "aggregate_match": true,
+    "replay": "NO_OP"
+  },
+  "rollback_authority": {
+    "database": "blog_db",
+    "upload_root": "/Users/limengyang/2025-blog-public/backend/uploads",
+    "database_default_transaction_read_only": false,
+    "target_default_transaction_read_only": true
+  },
+  "auth_bypass": false,
+  "rollback_observation_rounds": 2,
+  "round_contract": {
+    "health": 200,
+    "public_notes": 200,
+    "anonymous_admin": 401,
+    "invalid_admin": 401,
+    "admin_me": 200,
+    "admin_dashboard": 200,
+    "non_admin_dashboard": 403
+  },
+  "post_observation_delta_count": 0,
+  "backend_listeners_after_observation": 0,
+  "passed": true
+}

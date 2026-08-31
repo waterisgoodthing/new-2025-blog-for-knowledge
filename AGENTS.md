@@ -1,48 +1,41 @@
-# Agent Architecture Rules
+# Repository Agent Rules
 
-This file is mandatory for all AI agents working in this repository. Read it before inspecting or editing code. If a user request conflicts with this file, ask for explicit confirmation before breaking these rules.
+This is the mandatory entry point for AI agents working in this repository. Read it before inspecting or editing project files. Current source, tests, runtime evidence, and explicit user instructions outrank historical descriptions and remembered architecture.
 
-## Project Shape
+Detailed orchestration and Persona Worker guidance lives under [`agents/`](agents/README.md).
 
-This project has two active architectural lines:
+## 1. Start With Current Reality
 
-1. Frontend and original static-blog system: Next.js App Router under `src/`.
-2. Personal knowledge backend: FastAPI, PostgreSQL, JWT auth, notes, mistakes, review, AI, and GitHub sync under `backend/`.
+Before changing anything:
 
-Do not blur these lines accidentally. Every change must state which line it affects.
+1. Run `git status --short` and identify existing user changes.
+2. Read the files and tests in the touched domain.
+3. Identify whether the task affects the Next.js frontend, FastAPI backend, PostgreSQL data, deployment, or more than one boundary.
+4. State important assumptions when they cannot be verified cheaply.
+5. Prefer existing project patterns over speculative redesign.
 
-## Required First Steps
+Never revert, overwrite, reformat, stage, or include unrelated dirty files. Historical workflow documents are evidence of prior decisions, not proof of current implementation or authorization.
 
-Before making code changes:
+## 2. Use Process Proportionate To Risk
 
-1. Check `git status --short`.
-2. Identify the touched domain: `blog`, `notes`, `mistakes`, `review`, `auth`, `sync`, `home`, `share`, `manage`, or shared infrastructure.
-3. Read the existing files in that domain before editing.
-4. Prefer existing patterns over new abstractions.
-5. Preserve user changes and generated content. Never revert unrelated dirty files.
+Workflow documents are a risk-control tool, not mandatory ceremony.
 
-## Task Workspace And Workflow Files
+Proceed directly without a dedicated `docs/workflows/<task-name>/` folder when work is clear, bounded, reversible, and low risk, including:
 
-Every non-trivial task must follow the repository workflow below. Skills, external prompts, or agent habits do not override this workflow.
+- small documentation, wording, link, formatting, prompt, comment, example, or Agent-rule updates;
+- read-only inspection, search, status checks, and test execution;
+- small single-domain fixes with explicit acceptance criteria and no high-risk boundary.
 
-Required workflow order:
+For these tasks, inspect relevant files, preserve unrelated changes, validate proportionately, and report the exact result. Do not create empty planning documents merely to satisfy process.
 
-1. Create or reuse a task workspace folder.
-2. Write or update `README.md`.
-3. Write or update `design.md`.
-4. Write or update `requirements.md`.
-5. Write or update `tasks.md`.
-6. Stop and request explicit user approval for `tasks.md`.
-7. Only after approval, execute tasks one by one.
-8. After each task item is completed, immediately update `tasks.md` and mark that exact item complete.
-9. Record validation in `validation.md`.
-10. Record handoff notes or external-agent prompts in `handoff-prompt.md` when needed.
+Create or reuse a workflow folder when the user requests a plan/audit/report, or when work is multi-phase, cross-domain, architectural, difficult to reverse, or touches:
 
-Agents must not skip directly from discussion to implementation when a task requires workflow files. If the user asks to "start tasks", "implement", "push", or "continue" before approving `tasks.md`, the agent must first ask for approval of the task list.
+- authentication, authorization, security, or public/private route ownership;
+- API contracts, database schema, migrations, data ownership, or bulk data changes;
+- core recommendation/AI behavior or runtime-impacting dependencies;
+- production configuration, credentials, deployment, external writes, destructive actions, commit, push, or release.
 
-Every non-trivial task must have a task workspace folder before design, requirements, task lists, audits, prompts, reports, screenshots, or handoff notes are created.
-
-Use this structure:
+Required workflow files are normally:
 
 ```text
 docs/workflows/<task-name>/
@@ -50,237 +43,135 @@ docs/workflows/<task-name>/
   design.md
   requirements.md
   tasks.md
-  diff-report.md
-  audit.md
   validation.md
-  handoff-prompt.md
-  assets/
 ```
 
-Rules:
+When a workflow is required:
 
-- `<task-name>` must be a short, stable, kebab-case name that describes the user-visible task, for example `ai-mistake-navigation-upgrade` or `note-editor-ui-upgrade`.
-- `README.md` is mandatory. It must state the task goal, touched domains, current status, and links to the main workflow files in that folder.
-- `design.md`, `requirements.md`, and `tasks.md` are mandatory before implementation starts for any feature, UI change, architecture change, backend contract change, deployment change, or multi-step bugfix.
-- `tasks.md` must use checkboxes for implementation items. Use `[ ]` for pending, `[x]` for completed, and clearly label blocked, skipped, or deferred items with a short reason.
-- Starting implementation from `tasks.md` requires explicit user approval in the conversation. Approval must refer to the task list or phase being executed.
-- After completing each individual task item, update `tasks.md` immediately in the same turn before starting the next task item. Do not batch all task-document updates at the end.
-- If implementation changes the plan, update `design.md` or `requirements.md` first, then update `tasks.md`, then continue only if the change stays within the user-approved scope. If scope expands, request approval again.
-- Put workflow-generated files in the task folder, not directly under `docs/`, unless the user explicitly asks for a top-level canonical document.
-- Keep source code in its normal architectural location. Do not move implementation files into `docs/workflows/`.
-- Put screenshots, pasted references, exported reports, and other supporting artifacts under `docs/workflows/<task-name>/assets/` when they should be kept in the repository.
-- If continuing an existing task, reuse its existing task folder instead of creating a new parallel folder with a similar name.
-- If a legacy workflow document already exists directly under `docs/`, do not move it casually. For new work on that topic, create or reuse a task folder and link back to the legacy document from `README.md`.
-- Handoff prompts for Mimo or other agents must live in `handoff-prompt.md` inside the relevant task folder.
-- Validation results must be recorded in `validation.md` or in a clearly named dated validation file inside the task folder.
-- If the task is small enough that no workflow files are needed, do not create an empty folder just for ceremony. The folder rule applies once the task produces planning, audit, prompt, report, or multi-step validation artifacts.
+1. Establish goal, scope, requirements, task order, risks, and validation.
+2. Obtain explicit approval for the task list or named phase before implementation.
+3. Execute approved items serially when the workflow requires serial execution.
+4. Update the exact task and evidence immediately after each item.
+5. Do not carry approval into later phases, migrations, deployment, production writes, commit, or push.
 
-## Frontend Boundaries
+If an initially exempt task expands into a high-risk boundary, stop before the expanded work and establish the required workflow and approval.
 
-Use these ownership rules:
+## 3. Project Shape And Boundaries
 
-- `src/app/<route>/page.tsx`: route-level UI and page composition only.
-- `src/app/<route>/components/`: route-specific UI components.
-- `src/app/<route>/services/`: client-side services tied to that route only.
-- `src/app/<route>/hooks/`: route-specific hooks only.
-- `src/components/`: shared UI used by more than one route.
-- `src/hooks/`: shared hooks used by more than one route.
-- `src/lib/api/`: typed API clients and request DTOs only. No React.
-- `src/lib/`: shared pure utilities, markdown rendering, auth helpers, and client helpers.
-- `src/config/`: static JSON configuration. Do not rely on JSON inference for public types.
-- `public/`: static assets and static generated content only.
+The active system contains:
 
-Do not put API calls directly in components when an API wrapper already exists or should exist in `src/lib/api/`.
+- Next.js App Router frontend under `src/`, delivered through OpenNext/Cloudflare Workers.
+- FastAPI backend under `backend/app/` with PostgreSQL, personal knowledge, notes, mistakes, review, search, files, AI, recommendation, audit, and administration capabilities.
+- Static/public content and legacy GitHub/export flows that coexist with backend-managed data.
 
-Do not create a new top-level route for a domain if an existing domain route should own it.
+Do not collapse these boundaries or migrate ownership without explicit, separately verified authorization.
 
-## Backend Boundaries
+### Frontend
 
-Use these ownership rules:
+- `src/app/`: route composition and route-owned UI.
+- `src/components/`: shared UI used by multiple routes.
+- `src/hooks/`: shared React hooks.
+- `src/lib/api/`: typed API clients and DTOs; no React components.
+- `src/lib/`: shared pure utilities, rendering, auth helpers, and client helpers.
+- `src/config/`: static configuration with explicit public types.
+- `public/`: intentionally public static assets and generated public content only.
 
-- `backend/app/models/`: SQLAlchemy database models only.
-- `backend/app/schemas/`: Pydantic request and response contracts only.
-- `backend/app/routers/`: HTTP routing, dependency wiring, status codes, and thin orchestration.
-- `backend/app/services/`: business logic such as SM-2 review, AI analysis, GitHub sync, import/export, and domain operations.
+Use `page/component -> hook or local action -> src/lib/api/* -> backend API`. Do not put direct API calls in components when a suitable API client exists. Do not invent a new top-level route when an existing domain owns the flow.
+
+### Backend
+
+- `backend/app/models/`: SQLAlchemy persistence models.
+- `backend/app/schemas/`: Pydantic request/response contracts.
+- `backend/app/routers/`: HTTP routing, dependencies, status codes, and thin orchestration.
+- `backend/app/services/`: domain and application behavior.
 - `backend/app/utils/`: small framework-independent helpers.
-- `backend/app/config.py`: settings only.
-- `backend/alembic/versions/`: database migrations.
+- `backend/app/config.py`: settings.
+- `backend/alembic/versions/`: migrations.
 
-Routers must stay thin. If a route grows complex, move logic into `services/`.
+Use `router -> schema validation -> service/model -> response schema`. Keep routers thin. A contract or model change must be reconciled across affected schemas, clients, migrations, and tests; do not add a field in only one layer.
 
-Model changes require matching schema, API client, and migration changes unless there is a documented reason.
+### Domain And Data
 
-## Domain Model Rules
+Confirm domain facts from current models, migrations, routes, clients, and compatibility tests. The repository currently contains canonical `Question`/`Mistake` models and private `/api/admin/questions` and `/api/admin/mistakes` boundaries while legacy note-based mistake flows may still coexist. Do not assume either generation is the sole authority or delete/cut over a compatibility path without current evidence and separate authorization.
 
-The current knowledge model is centered on `Note` with these content types:
+For persistence changes, identify whether the owner is static files under `public/`, PostgreSQL through FastAPI, GitHub/export output, external storage, or another verified system.
 
-- `note`: ordinary notes.
-- `blog`: blog-like long-form entries.
-- `mistake`: wrong-question records with review metadata.
+Protect data correctness, provenance, versioning, auditability, idempotency, and rollback. AI-generated or parsed content is not verified fact and must not silently overwrite trusted structured data.
 
-If adding podcast records, do not overload `music` or `blog` silently. Add an explicit `podcast` content type and update all of these together:
+## 4. Current Authentication And Authorization Contract
 
-- Backend enum/schema/model.
-- Frontend API types in `src/lib/api/`.
-- List filters and labels.
-- Create/edit UI.
-- Detail UI.
-- Management UI.
-- GitHub sync/export.
-- Tests or verification notes.
+The currently verified admin contract is stateful session authentication:
 
-Mistake records must preserve these fields as first-class data, not only markdown text:
+- the backend issues an HttpOnly `admin_session` cookie backed by `AdminSession`;
+- frontend API calls use `credentials: 'include'` where session state is required;
+- `get_current_admin` is the backend authorization boundary for protected mutations and administrative operations;
+- public reads may use optional session resolution but must filter content according to current publication/visibility rules.
 
-- `subject`
-- `difficulty`
-- `question`
-- `my_answer`
-- `correct_answer`
-- `analysis`
-- `knowledge_points`
-- `ef`
-- `interval`
-- `repetitions`
-- `next_review`
-- `last_reviewed`
+Do not describe Bearer/JWT as the current contract and do not infer permission to migrate authentication. The GitHub App/private-key flow, where still present, is a separate integration boundary.
 
-## Data Flow Rules
+Security invariants:
 
-Frontend pages must use this flow:
+- Backend authorization is the real boundary; `AuthGate` is navigation and user-experience protection only.
+- Creating, editing, deleting, uploading, AI actions, private review/learning data, and management operations require current backend authorization unless source and approved design prove otherwise.
+- Public content routes must not be made private accidentally.
+- Never expose secrets, session tokens, private keys, database URLs, dumps, or unintentionally private content.
+- Never enable or weaken authentication bypass in production.
+- Verify current routes and tests before stating an exhaustive access matrix.
 
-`page/component -> hook or local action -> src/lib/api/* -> backend API`
+## 5. Change And Risk Discipline
 
-Backend APIs must use this flow:
+- `LOW`: local, bounded, reversible, no security/data/contract risk.
+- `MEDIUM`: multi-file or regression-prone but no high-risk boundary.
+- `HIGH`: schema, auth, permissions, core domain rules, core recommendation/AI behavior, migrations, or broad architecture.
+- `CRITICAL`: production data, credentials, destructive operations, irreversible migration, or production deployment.
 
-`router -> schema validation -> service/model -> response schema`
+Safe in-scope implementation may proceed when explicitly requested. High and critical operations require the evidence and approval defined in [`agents/gates.md`](agents/gates.md). Approval for analysis or one phase never implies approval for migration, deployment, production writes, commit, or push.
 
-Do not introduce a second data source for the same domain unless the architecture decision is documented in this file or in a dedicated architecture note.
+Keep changes minimal and domain-scoped. Do not perform opportunistic refactors, dependency upgrades, route cutovers, or file moves for tidiness.
 
-The original GitHub-file workflow and the new backend workflow are both present. When changing persistence, be explicit about whether data lives in:
+## 6. Validation And Truthful Status
 
-- static files under `public/`
-- PostgreSQL through the backend
-- GitHub export/sync generated from backend data
+Validate in proportion to the touched boundary:
 
-## Type And Contract Rules
+- TypeScript: targeted tests, `npx tsc --noEmit`, and build when build-sensitive.
+- UI: relevant browser evidence when layout, interaction, SVG/Canvas, navigation, or real-browser behavior matters.
+- Python: targeted tests using the repository environment; from `backend/`, use `PYTHONPATH=.` when required.
+- API contracts: verify frontend clients and backend schemas together.
+- Database: migration graph, isolated replay, integrity queries, and rollback evidence as risk requires.
+- Documentation: link/file existence, internal consistency, targeted searches, and `git diff --check`.
 
-Do not trust inferred JSON types for mutable configuration. Define explicit TypeScript types when arrays may start empty, especially:
+Do not use jsdom as proof of real-browser behavior. Do not use ignored type/build errors as proof of health. If validation cannot run or fails for a pre-existing reason, report it precisely.
 
-- `siteContent.artImages`
-- `siteContent.socialButtons`
-- background images
-- route config arrays
+Allowed final states are `PASS`, `PARTIAL`, `FAIL`, `BLOCKED`, `NOT_VERIFIED`, and `NOT_AUTHORIZED`. Never claim execution, verification, approval, commit, push, migration, deployment, or production status without direct evidence.
 
-Keep frontend TypeScript types in sync with backend Pydantic schemas.
+## 7. Persona Workers And Collaboration
 
-Do not hide contract failures by adding `any` unless the code is integrating an untyped external boundary and the unsafe part is isolated.
+Persona Workers are specialist reasoning profiles under `agents/workers/`; they are not Cloudflare Workers or background jobs.
 
-Do not add new fields in only one layer.
+- Choose exactly one Primary Owner for a non-trivial task.
+- Add consulted specialists only when the task crosses their domain.
+- Keep implementation, independent review, verification, gate decisions, and final approval separate.
+- A role title, seniority claim, or Persona voice is not evidence.
+- Do not invoke all Workers by default.
+- A single agent adopting several Personas in sequence is not independent review; label it as a perspective pass unless a separate agent/process actually reviewed it.
 
-## Auth And Security Rules
+Follow [`agents/orchestration.md`](agents/orchestration.md), [`agents/permissions.md`](agents/permissions.md), [`agents/gates.md`](agents/gates.md), [`agents/task-template.md`](agents/task-template.md), and [`agents/report-template.md`](agents/report-template.md).
 
-There are two auth concepts:
+## 8. Stop Conditions
 
-1. Original GitHub App private-key auth for static content updates.
-2. Backend JWT auth for notes, mistakes, review, and management APIs.
+Stop and report evidence, impact, options, and recommendation when:
 
-Do not mix these casually. A feature must clearly use one path.
+- scope or target cannot be resolved safely;
+- requirements conflict or a critical fact is unknown;
+- the operation may destroy data or expose secrets;
+- schema, auth, route ownership, or production scope expands beyond approval;
+- a required gate is blocked;
+- unrelated dirty changes overlap and cannot be preserved;
+- validation reveals a serious regression;
+- specialist conclusions conflict on a material domain fact.
 
-For backend-protected mutations, use JWT auth through `Authorization: Bearer <token>`.
+## 9. Final Report
 
-Do not expose broad registration, wildcard CORS, or persistent secrets in production without calling it out as a security risk.
+Lead with the outcome. Include only relevant sections: `Conclusion`, `Changes`, `Evidence`, `Verification`, `Risks`, `Remaining`, and `Decision Needed`.
 
-Never commit real `.env`, private keys, tokens, database dumps, or personal content not intentionally public.
-
-## UI And Product Rules
-
-The project is a personal knowledge/blog system, not a generic demo. Core user workflows are:
-
-- write and read notes
-- record and review mistakes
-- write blog posts
-- optionally add podcast records if the domain type is introduced
-- manage content safely
-
-Do not add landing-page marketing screens for these workflows.
-
-For operational pages such as notes, mistakes, review, and manage, prefer dense but readable interfaces over decorative hero sections.
-
-Every public icon-only button must have an accessible name.
-
-Every image that conveys meaning must have `alt`.
-
-Do not disable user zoom.
-
-## Static Assets And Content Rules
-
-Static content references must point to files that exist under `public/`.
-
-If removing imported public content, update all indexes and references in the same change.
-
-If a UI uses `/music/*`, `/images/share/*`, `/images/art/*`, `/images/blogger/*`, or `/blogs/*`, verify the referenced files exist.
-
-Do not commit generated caches:
-
-- `.next/`
-- `.open-next/`
-- `.output/`
-- `node_modules/`
-- `backend/.venv/`
-- `__pycache__/`
-- `.pytest_cache/`
-- `*.pyc`
-
-## Validation Rules
-
-Choose validation based on touched files:
-
-- Frontend TypeScript changes: run `npx tsc --noEmit`.
-- Frontend build-sensitive changes: run `npm run build`.
-- Frontend UI changes: run the dev server and inspect the relevant route in a browser.
-- Backend Python changes: run targeted tests if present, or at least import/start checks for FastAPI.
-- API contract changes: verify both frontend client types and backend schemas.
-- Database model changes: add or update Alembic migrations.
-
-If validation fails because of pre-existing issues, report that clearly and include the first relevant failure.
-
-Do not rely on `next.config.ts` `ignoreBuildErrors` as proof that the project is healthy.
-
-## Package And Tooling Rules
-
-Prefer the package manager already chosen by the repository. If both `pnpm-lock.yaml` and `package-lock.json` exist, do not update both casually. Ask or document which one is authoritative before changing dependencies.
-
-Do not add large dependencies for small utilities.
-
-Do not introduce a new state library; the project already uses Zustand and SWR.
-
-## Change Discipline
-
-Keep changes small and domain-scoped.
-
-Do not refactor unrelated old blog features while implementing notes, mistakes, or podcast records.
-
-Do not move files only for tidiness unless the user asked for architecture cleanup.
-
-When creating a new domain feature, include:
-
-- route
-- API client
-- backend schema/router/service/model updates
-- navigation entry if user-facing
-- empty state
-- create/edit/read flow
-- validation notes
-
-## Current Known Architecture Debt
-
-Agents must be aware of these known issues and avoid deepening them:
-
-- TypeScript checking currently fails because JSON empty arrays infer as `never[]`.
-- `next.config.ts` ignores build type errors.
-- Static assets referenced by the UI may be missing after upstream content removal.
-- Backend and original GitHub App persistence models are not fully unified.
-- Backend registration and CORS are suitable for local prototype use, not production.
-- Podcast records are not a first-class domain yet.
-
-When working near these areas, either fix the debt in scope or explicitly avoid making it worse.
+Distinguish completed, verified, blocked, deferred, unexecuted, and unauthorized work. See [`agents/report-template.md`](agents/report-template.md).

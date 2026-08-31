@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          # Must be non-localhost to pass the production guard in src/lib/api/config.ts.
+          # .invalid TLD (RFC 6761) guarantees instant NXDOMAIN — no DNS hang.
+          NEXT_PUBLIC_API_URL: http://ci-check.invalid:8000
+
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/blog_db
+      JWT_SECRET_KEY: ci-test-secret-key
+      AUTH_BYPASS: "false"
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: blog_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U user -d blog_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The LSR03 harness requires the interpreter to live in backend/.venv
+      # (project runtime contract enforced by tests/lsr03_guarded_runner.py).
+      - name: Create project virtualenv
+        run: python -m venv .venv
+        working-directory: backend
+
+      - name: Install dependencies
+        run: .venv/bin/pip install -r requirements.txt pytest
+        working-directory: backend
+
+      - name: Import check
+        run: .venv/bin/python -c "from main import app"
+        working-directory: backend
+
+      - name: Initialize database schema
+        run: .venv/bin/python -m alembic upgrade head
+        working-directory: backend
+
+      - name: Run tests
+        run: .venv/bin/python -m pytest tests/ -v --tb=short
+        working-directory: backend

@@ -1,0 +1,26 @@
+{
+  "run_id": "pra06-m30-negative-final-20260822",
+  "purpose": "M30 browser-cold/server-warm raw sampling only; no performance aggregation",
+  "environment_mode": "production-build-local-isolated",
+  "browser_temperature": "cold",
+  "server_temperature": "warm",
+  "requested_valid_count": 1,
+  "max_attempts": 1,
+  "attempts": 0,
+  "valid_count": 0,
+  "failed_count": 0,
+  "failure_rate": null,
+  "samples": [],
+  "negative_boundary": {
+    "run_id": "pra06-m30-negative-final-20260822-negative",
+    "path": "/Users/limengyang/2025-blog-public/docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822-negative.json",
+    "exit_code": 0,
+    "valid": true
+  },
+  "p50": null,
+  "p90": null,
+  "performance_baseline": false,
+  "production_readiness_claim": false,
+  "status": "blocked",
+  "recorded_at": "2026-08-22T14:30:37.554Z"
+}

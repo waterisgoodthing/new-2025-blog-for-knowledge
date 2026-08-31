@@ -34,7 +34,6 @@ class RecommendationHistoryItem(BaseModel):
     target: str | None = None
     action_label: str | None = None
     source: str | None = None
-    raw_context: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

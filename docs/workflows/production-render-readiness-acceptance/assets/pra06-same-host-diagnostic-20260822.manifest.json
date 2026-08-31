@@ -1,0 +1,71 @@
+{
+  "run_id": "pra06-same-host-diagnostic-20260822",
+  "status": "blocked",
+  "purpose": "single normal browser login cookie propagation diagnosis; startup blocked before login",
+  "source": {
+    "main_worktree": "/Users/limengyang/2025-blog-public",
+    "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+    "entry_main_status_hash": "6de303c46f48dfd069c96161d5b6e967a54ba056fa60879093ebd3ef21ea2476",
+    "snapshot_worktree": "/private/tmp/pra06-same-host-diagnostic-20260822-sBC76G/worktree",
+    "snapshot_mode": "complete dirty-tree detached snapshot with private dependencies",
+    "product_source_changed": false
+  },
+  "runtime": {
+    "frontend_base": "http://localhost:3103",
+    "api_base": "http://localhost:8103",
+    "api_bind": "http://127.0.0.1:8103",
+    "next_public_api_url": "http://localhost:8103",
+    "allowed_origins": "http://localhost:3103",
+    "auth_bypass": false,
+    "auth_bypass_allow": false,
+    "postgres": "127.0.0.1:55435/pra06_same_host",
+    "alembic_revision": "025",
+    "private_dependencies": true
+  },
+  "fixture": {
+    "profile": "M30",
+    "created": false,
+    "temporary_admin_created": false,
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 0,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "result": {
+    "status": "not_started",
+    "failure_reason": "startup-frontend-build-failed:production-guard-rejected-localhost-api; login-not-submitted",
+    "startup_failure_artifact": "pra06-same-host-diagnostic-20260822-build.log",
+    "login_response_status": null,
+    "set_cookie_attribute_presence": null,
+    "browser_cookie_jar": null,
+    "request_cookie_header_presence": null,
+    "auth_me_status": null,
+    "strict_management_status": null,
+    "readiness_dom": null,
+    "readiness_marks": null
+  },
+  "cleanup": {
+    "temporary_admin_created": false,
+    "temporary_admin_disabled": "NOT_APPLICABLE",
+    "isolated_sessions_revoked": "NOT_APPLICABLE",
+    "services_stopped": true,
+    "ports_3103_8103_55435_listeners": false,
+    "temporary_root_present": false,
+    "detached_worktree_unregistered": true,
+    "recoverable_copy": "/Users/limengyang/.Trash/pra06-same-host-diagnostic-20260822-sBC76G",
+    "main_status_hash_after_cleanup": "6de303c46f48dfd069c96161d5b6e967a54ba056fa60879093ebd3ef21ea2476",
+    "main_diff_check": "PASS",
+    "main_or_production_resources_touched": false
+  },
+  "claims": {
+    "diagnosis_only": true,
+    "auth_cors_fix_authorized": false,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness": false
+  }
+}

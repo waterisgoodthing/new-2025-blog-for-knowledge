@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useState, useRef, type ReactElement, Fragment } from 'react'
-import { renderMarkdown, type TocItem } from '@/lib/markdown-renderer'
+import dynamic from 'next/dynamic'
+import type { TocItem } from '@/lib/markdown-renderer'
 import { MarkdownImage } from '@/components/markdown-image'
 import { CodeBlock } from '@/components/code-block'
-import { MermaidBlock } from '@/components/mermaid-block'
-import { MarkmapBlock } from '@/components/markmap-block'
-import { ChartBlock } from '@/components/chart-block'
+
+const MermaidBlock = dynamic(() => import('@/components/mermaid-block').then(mod => mod.MermaidBlock), { ssr: false })
+const MarkmapBlock = dynamic(() => import('@/components/markmap-block').then(mod => mod.MarkmapBlock), { ssr: false })
+const ChartBlock = dynamic(() => import('@/components/chart-block').then(mod => mod.ChartBlock), { ssr: false })
+const MarkdownMath = dynamic(() => import('@/components/markdown-math').then(mod => mod.MarkdownMath), { ssr: false })
 
 let parseModule: typeof import('html-react-parser') | null = null
 
@@ -39,12 +42,13 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 			const md = latestMarkdown.current
 			setLoading(true)
 			try {
-				const [{ html, toc }, parseMod] = await Promise.all([renderMarkdown(md), loadParser()])
+				const [rendererMod, parseMod] = await Promise.all([import('@/lib/markdown-renderer'), loadParser()])
+				const { html, toc } = await rendererMod.renderMarkdown(md)
 				const parse = parseMod.default
 				if (cancelled || md !== latestMarkdown.current) return
 
 				const codeBlocks: Array<{ placeholder: string; code: string; preHtml: string }> = []
-				const mathBlocks: Array<{ placeholder: string; tag: string; html: string }> = []
+				const mathBlocks: Array<{ placeholder: string; tag: 'div' | 'span'; content: string; displayMode: boolean }> = []
 				let processedHtml = html.replace(/<div class="ag-code-block" data-code="([^"]*)">([\s\S]*?)<\/div><!--ag-code-block-end-->/g, (match, codeAttr, content) => {
 					const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`
 					const code = codeAttr
@@ -61,9 +65,19 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 					return placeholder
 				})
 
-				processedHtml = processedHtml.replace(/<(div|span) class="ag-math-container"><!--ag-math-start-->([\s\S]*?)<!--ag-math-end--><\/\1>/g, (match, tag, mathHtml) => {
+				processedHtml = processedHtml.replace(/<(div|span) class="ag-math-container"><!--ag-math-start-->([\s\S]*?)<!--ag-math-end--><\/\1>/g, (match, tag, mathPayload) => {
 					const placeholder = `__MATH_BLOCK_${mathBlocks.length}__`
-					mathBlocks.push({ placeholder, tag, html: mathHtml })
+					try {
+						const parsed = JSON.parse(decodeURIComponent(mathPayload))
+						mathBlocks.push({
+							placeholder,
+							tag,
+							content: String(parsed.content || ''),
+							displayMode: Boolean(parsed.displayMode),
+						})
+					} catch {
+						mathBlocks.push({ placeholder, tag, content: mathPayload, displayMode: tag === 'div' })
+					}
 					return placeholder
 				})
 
@@ -133,8 +147,7 @@ export function useMarkdownRender(markdown: string, debounceMs = 300): MarkdownR
 											} else if (item.startsWith('__MATH_BLOCK_')) {
 												const block = mathBlocks.find(b => b.placeholder === item)
 												if (block) {
-													const Tag = block.tag as any
-													return <Tag key={block.placeholder} className="ag-math" dangerouslySetInnerHTML={{ __html: block.html }} />
+													return <MarkdownMath key={block.placeholder} tag={block.tag} content={block.content} displayMode={block.displayMode} />
 												}
 											}
 											return item ? <Fragment key={index}>{item}</Fragment> : null

@@ -7,10 +7,19 @@ import { WriteEditor } from './components/editor'
 import { WriteSidebar } from './components/sidebar'
 import { WriteActions } from './components/actions'
 import { useEffect } from 'react'
+import { AuthGate } from '@/components/auth-gate'
 
 const WritePreview = dynamic(() => import('./components/preview').then(m => m.WritePreview), { ssr: false })
 
 export default function WritePage() {
+	return (
+		<AuthGate>
+			<WriteContent />
+		</AuthGate>
+	)
+}
+
+function WriteContent() {
 	const { form, cover, reset } = useWriteStore()
 	useEffect(() => reset(), [])
 	const { isPreview, closePreview } = usePreviewStore()

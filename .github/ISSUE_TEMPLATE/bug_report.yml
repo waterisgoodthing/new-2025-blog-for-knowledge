@@ -1,0 +1,58 @@
+name: "Bug Report / 错误报告"
+description: "Report a bug or unexpected behavior / 报告错误或异常行为"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你报告问题！请尽量填写以下信息，方便定位和修复。
+        Thanks for reporting! Please fill in as much as possible.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description / 问题描述
+      description: What happened? What did you expect? / 发生了什么？期望的行为是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Step-by-step instructions to reproduce the issue.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 运行环境
+      description: OS, browser, Node.js version, Python version, etc.
+      placeholder: |
+        OS: macOS 15 / Windows 11 / Ubuntu 24.04
+        Browser: Chrome 126
+        Node.js: 20.x
+        Python: 3.12
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Logs / 截图或日志
+      description: Attach screenshots or error logs if helpful.
+    validations:
+      required: false
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Security impact / 安全影响
+      description: Does this issue involve authentication, authorization, data exposure, or secrets? / 是否涉及认证、授权、数据泄露或密钥？
+    validations:
+      required: false

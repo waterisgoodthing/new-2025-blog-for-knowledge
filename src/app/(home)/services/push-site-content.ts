@@ -1,11 +1,16 @@
-import { fileToBase64NoPrefix } from '@/lib/file-utils'
-import { saveConfigToGithub, type UploadFileItem } from '@/lib/api/sync'
+import { updateSiteSettings, uploadContentImage, deleteContentImage, type SiteSettingsPayload } from '@/lib/api/content'
 import { toast } from 'sonner'
 import type { SiteContent, CardStyles } from '../stores/config-store'
 import type { FileItem, ArtImageUploads, SocialButtonImageUploads, BackgroundImageUploads } from '../config-dialog/site-settings'
 
 type ArtImageConfig = SiteContent['artImages'][number]
 type BackgroundImageConfig = SiteContent['backgroundImages'][number]
+
+async function uploadIfFile(item: FileItem | null | undefined, scope: string): Promise<string | null> {
+	if (!item || item.type !== 'file') return null
+	const result = await uploadContentImage(item.file, scope)
+	return result.url
+}
 
 export async function pushSiteContent(
 	siteContent: SiteContent,
@@ -18,65 +23,79 @@ export async function pushSiteContent(
 	removedBackgroundImages?: BackgroundImageConfig[],
 	socialButtonImageUploads?: SocialButtonImageUploads
 ): Promise<void> {
-	toast.info('正在准备站点配置及文件...')
+	toast.info('正在保存站点配置...')
 
-	let syncFavicon: UploadFileItem | null = null
+	let currentSiteContent = { ...siteContent }
+
 	if (faviconItem?.type === 'file') {
-		const base64 = await fileToBase64NoPrefix(faviconItem.file)
-		syncFavicon = { content_base64: base64, filename: faviconItem.file.name }
+		const url = await uploadIfFile(faviconItem, 'site')
+		if (url) currentSiteContent.faviconUrl = url
 	}
 
-	let syncAvatar: UploadFileItem | null = null
 	if (avatarItem?.type === 'file') {
-		const base64 = await fileToBase64NoPrefix(avatarItem.file)
-		syncAvatar = { content_base64: base64, filename: avatarItem.file.name }
+		const url = await uploadIfFile(avatarItem, 'site')
+		if (url) currentSiteContent.avatarUrl = url
 	}
 
-	const syncArtImageUploads: Record<string, UploadFileItem> = {}
 	if (artImageUploads) {
 		for (const [id, item] of Object.entries(artImageUploads)) {
 			if (item.type === 'file') {
-				const base64 = await fileToBase64NoPrefix(item.file)
-				syncArtImageUploads[id] = { content_base64: base64, filename: item.file.name }
+				const result = await uploadContentImage(item.file, 'site')
+				currentSiteContent = {
+					...currentSiteContent,
+					artImages: currentSiteContent.artImages.map(art =>
+						art.id === id ? { ...art, url: result.url } : art
+					),
+				}
 			}
 		}
 	}
 
-	const syncBackgroundImageUploads: Record<string, UploadFileItem> = {}
+	if (removedArtImages) {
+		for (const art of removedArtImages) {
+			await deleteContentImage(art.url).catch(() => {})
+		}
+	}
+
 	if (backgroundImageUploads) {
 		for (const [id, item] of Object.entries(backgroundImageUploads)) {
 			if (item.type === 'file') {
-				const base64 = await fileToBase64NoPrefix(item.file)
-				syncBackgroundImageUploads[id] = { content_base64: base64, filename: item.file.name }
+				const result = await uploadContentImage(item.file, 'site')
+				currentSiteContent = {
+					...currentSiteContent,
+					backgroundImages: currentSiteContent.backgroundImages.map(bg =>
+						bg.id === id ? { ...bg, url: result.url } : bg
+					),
+				}
 			}
 		}
 	}
 
-	const syncSocialButtonImageUploads: Record<string, UploadFileItem> = {}
+	if (removedBackgroundImages) {
+		for (const bg of removedBackgroundImages) {
+			await deleteContentImage(bg.url).catch(() => {})
+		}
+	}
+
 	if (socialButtonImageUploads) {
 		for (const [id, item] of Object.entries(socialButtonImageUploads)) {
 			if (item.type === 'file') {
-				const base64 = await fileToBase64NoPrefix(item.file)
-				syncSocialButtonImageUploads[id] = { content_base64: base64, filename: item.file.name }
+				const result = await uploadContentImage(item.file, 'site')
+				currentSiteContent = {
+					...currentSiteContent,
+					socialButtons: currentSiteContent.socialButtons.map(btn =>
+						btn.id === id ? { ...btn, value: result.url } : btn
+					),
+				}
 			}
 		}
 	}
 
-	const syncRemovedArtImages = removedArtImages?.map(art => ({ id: art.id, url: art.url })) || []
-	const syncRemovedBackgroundImages = removedBackgroundImages?.map(bg => ({ id: bg.id, url: bg.url })) || []
+	const payload: SiteSettingsPayload = {
+		siteContent: currentSiteContent as SiteSettingsPayload['siteContent'],
+		cardStyles: cardStyles as Record<string, unknown>,
+	}
 
-	toast.info('正在向后端推送站点配置...')
-	const res = await saveConfigToGithub({
-		siteContent,
-		cardStyles,
-		favicon: syncFavicon,
-		avatar: syncAvatar,
-		artImageUploads: syncArtImageUploads,
-		removedArtImages: syncRemovedArtImages,
-		backgroundImageUploads: syncBackgroundImageUploads,
-		removedBackgroundImages: syncRemovedBackgroundImages,
-		socialButtonImageUploads: syncSocialButtonImageUploads
-	})
-
-	toast.success(`配置保存成功！(提交: ${res.commit_sha.substring(0, 8)})`)
+	await updateSiteSettings(payload)
+	toast.success('站点配置保存成功！')
 }

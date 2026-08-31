@@ -1,0 +1,22 @@
+{
+  "run_id": "pra06-checkpoint-20260822",
+  "probe": "logout-invalid-session-boundary",
+  "valid": false,
+  "browser_version": "151.0.7922.34",
+  "environment_mode": "production-build-local-isolated",
+  "base_url": "http://localhost:3100",
+  "api_base": "http://api.localhost:8100",
+  "navigation_status": null,
+  "authenticated_before_logout": false,
+  "logout_status": null,
+  "no_cookie_after_logout": null,
+  "rejected": {
+    "auth_me_status": null,
+    "strict_management_status": null
+  },
+  "public_reads_allowed": {
+    "notes_list_status": null
+  },
+  "failure_reason": "harness:page.waitForFunction: Timeout 30000ms exceeded.",
+  "recorded_at": "2026-08-22T09:13:18.562Z"
+}
