@@ -187,6 +187,65 @@ class CallTextSuccessTest(unittest.IsolatedAsyncioTestCase):
         )
 
 
+class CallTextProvenanceGuardTest(unittest.IsolatedAsyncioTestCase):
+    """DR-B05: canonical (creation) calls must fail closed without a Run."""
+
+    async def test_canonical_call_refuses_provider_without_persisted_run(self):
+        with (
+            patch(
+                "app.services.ai_gateway._call_with_fallback",
+                new_callable=AsyncMock,
+            ) as provider,
+            patch(
+                "app.services.ai_gateway._write_call_log",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "app.services.ai_gateway._start_run_record",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
+        ):
+            result = await call_text(
+                AiTaskType.CAPTURE_DRAFT,
+                [{"role": "user", "content": "hi"}],
+                creation_context={"contract": "canonical_ai_creation_v1"},
+            )
+
+        self.assertFalse(result.success)
+        provider.assert_not_awaited()
+
+    async def test_non_canonical_call_still_degrades_without_run(self):
+        mock_result = CallResult(
+            data={"question_text": "q"},
+            attempts=[ProviderAttempt(provider="deepseek", model="m1", success=True)],
+            provider_used="deepseek",
+        )
+        with (
+            patch(
+                "app.services.ai_gateway._call_with_fallback",
+                new_callable=AsyncMock,
+                return_value=mock_result,
+            ) as provider,
+            patch(
+                "app.services.ai_gateway._write_call_log",
+                new_callable=AsyncMock,
+            ),
+            patch(
+                "app.services.ai_gateway._start_run_record",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
+        ):
+            result = await call_text(
+                AiTaskType.CAPTURE_DRAFT,
+                [{"role": "user", "content": "hi"}],
+            )
+
+        self.assertTrue(result.success)
+        provider.assert_awaited_once()
+
+
 class CallTextFailureTest(unittest.IsolatedAsyncioTestCase):
     """测试 call_text 失败路径。"""
 

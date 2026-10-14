@@ -311,6 +311,19 @@ async def call_text(
         created_by=created_by,
     )
 
+    if creation_context is not None and run_id is None:
+        # Canonical creation must be traceable to a persisted Run. If the Run
+        # could not be started, refuse to call the provider (fail closed) so an
+        # untracked, unconfirmable generation never happens.
+        gw_result = _build_failure_result(
+            RuntimeError("AI Run provenance unavailable; canonical generation refused"),
+            latency_ms=0,
+        )
+        await _write_call_log(
+            task_type_str, gw_result, input_summary, prompt_version=prompt_version
+        )
+        return gw_result
+
     start = time.monotonic()
     try:
         required_caps = {"text", "json"} if json_mode else {"text"}
