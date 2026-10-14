@@ -37,16 +37,15 @@ describe('NotesPage', () => {
 		await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('delete failed'))
 	})
 
-	it('does not expose legacy mistake notes in the note and blog workspace', () => {
+	it('requests note and blog server-side instead of filtering legacy rows', () => {
 		mocks.useNoteIndex.mockReturnValue({
 			data: {
 				items: [
-					{ slug: 'note-one', title: 'Note', type: 'note', status: 'draft', updated_at: '2026-01-01T00:00:00Z' },
-					{ slug: 'legacy-mistake', title: 'Legacy mistake', type: 'mistake', status: 'published', updated_at: '2026-01-02T00:00:00Z' }
+					{ slug: 'note-one', title: 'Note', type: 'note', status: 'draft', updated_at: '2026-01-01T00:00:00Z' }
 				],
-				total: 2,
+				total: 1,
 				page: 1,
-				size: 20
+				size: 30
 			},
 			isLoading: false,
 			mutate: vi.fn()
@@ -55,6 +54,11 @@ describe('NotesPage', () => {
 		render(<NotesPage />)
 
 		expect(screen.getByText('Note')).toBeInTheDocument()
-		expect(screen.queryByText('Legacy mistake')).not.toBeInTheDocument()
+		const params = mocks.useNoteIndex.mock.calls[0][0]
+		// The workspace excludes legacy mistake rows on the server, not by
+		// dropping a single client page.
+		expect(params.types).toBe('note,blog')
+		expect(params.type).toBeUndefined()
+		expect(params.size).toBe(30)
 	})
 })
