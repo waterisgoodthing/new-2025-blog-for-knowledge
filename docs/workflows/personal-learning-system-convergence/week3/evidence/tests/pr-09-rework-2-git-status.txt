@@ -1,0 +1,12 @@
+# PR-09 rework-2 write-scope check (agent PR-09-rework-2)
+
+## git status --short (in-scope paths)
+?? backend/app/services/wk3_mistake_visibility_migration.py
+?? backend/tests/test_pr09_rework.py
+?? docs/workflows/personal-learning-system-convergence/week3/evidence/
+
+## new evidence produced
+pr-09-rework-2-git-status.txt
+pr-09-rework-2-regression-full.txt
+pr-09-rework-2-targeted-tests.txt
+README-stale.md

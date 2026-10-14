@@ -1,0 +1,10 @@
+             slug             | source_next_review |        target_next_due        | next_due_matches_source |     algorithm     | interval_days | repetitions 
+------------------------------+--------------------+-------------------------------+-------------------------+-------------------+---------------+-------------
+ pr09-published_hidden        |                    | 2026-09-24 16:11:36.056611+08 |                         | fixed_interval_v2 |             0 |           0
+ pr09-published_visible       | 2026-12-15         | 2026-09-24 16:11:36.092506+08 | f                       | fixed_interval_v2 |             0 |           0
+ pr09-published_visible-extra |                    | 2026-09-24 16:11:36.071588+08 |                         | fixed_interval_v2 |             0 |           0
+ pr09-unpublished_hidden      |                    | 2026-09-24 16:11:36.002785+08 |                         | fixed_interval_v2 |             0 |           0
+ pr09-unpublished_visible     | 2027-01-20         | 2026-09-24 16:11:36.082672+08 | f                       | fixed_interval_v2 |             0 |           0
+(5 rows)
+
+PASS: db_name='astra_week3_pr09_db4' source=explicit:--db-name; executing ['psql', '-h', 'localhost', '-U', 'limengyang', '-d', 'astra_week3_pr09_db4', '-c', "\n    SELECT n.slug, n.next_review AS source_next_review,\n           ri.next_review_at AS target_next_due,\n           (ri.next_review_at::date = n.next_review) AS next_due_matches_source,\n           ri.algorithm, ri.interval_days, ri.repetitions\n    FROM public.notes n\n    JOIN public.legacy_note_migrations l ON l.source_note_id=n.id\n    JOIN public.review_items ri ON ri.id=l.target_review_item_id\n    WHERE n.type='mistake'\n    ORDER BY n.slug;\n  "]

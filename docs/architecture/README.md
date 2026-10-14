@@ -1,4 +1,14 @@
-# 个人学习系统目标架构
+# 架构文档入口与目标设计
+
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
+## 当前基线优先级
+
+- [当前真实架构](ARCHITECTURE_CURRENT.md)：实际代码边界。
+- [当前审查](../audits/ARCHITECTURE_AUDIT.md)、[开发状态](../PROJECT_STATUS.md)、[下一阶段路线](../ROADMAP.md)。
+- [AI 治理当前契约](ai-governance.md)：目标文档集中的当前契约例外，明确未闭合事项。
+- [设计合理性评估](DESIGN_RATIONALE_REVIEW.md)：2026-10-11至12日提出的最小演进建议和前端八维验收目标；非已实现架构或视觉通过声明。
+- 以下原有章节和分域文档是长期目标/历史阶段设计，不能推导完成或授权。
 
 ## 项目重新定义
 

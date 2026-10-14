@@ -1,0 +1,13 @@
+# Evidence directory for Week 4
+
+All Week 4 execution evidence will be stored here:
+
+- Baseline snapshots
+- Migration replay logs
+- Test outputs
+- Browser screenshots
+- CI run logs
+- Cleanup evidence documents
+- Gate verification matrix
+
+Created: 2026-09-26

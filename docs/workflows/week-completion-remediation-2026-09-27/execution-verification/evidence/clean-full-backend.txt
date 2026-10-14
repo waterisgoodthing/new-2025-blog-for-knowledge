@@ -1,0 +1,79 @@
+........................................................................ [  7%]
+........................................................................ [ 15%]
+................................................................................................................. [ 27%]
+......................ssss.............................................. [ 34%]
+.....................ss................................................. [ 42%]
+.............................................................. [ 48%]
+........................................................................ [ 56%]
+........................................................................ [ 63%]
+........................................................................ [ 71%]
+........................................................................ [ 79%]
+......................................................................................sss................................................. [ 93%]
+.............................................................            [100%]
+=============================== warnings summary ===============================
+tests/test_ai_gateway.py::LogWriteFailureTest::test_log_write_failure_does_not_block
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:107: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 336, in test_log_write_failure_does_not_block
+      gw = await call_text("test_task", [{"role": "user", "content": "hi"}])
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 321, in call_text
+      await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 107, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_ai_gateway.py::LogWriteFailureTest::test_write_call_log_catches_exception
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:107: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/async_case.py", line 113, in _callMaybeAsync
+      return self._asyncioRunner.run(
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 361, in test_write_call_log_catches_exception
+      await _write_call_log("test", result, "summary")
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 107, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:164: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:103: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:33: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:185: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:76: LSR03_DATABASE_URL is required for isolated fixture tests
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:87: LSR03_DATABASE_URL is required for isolated archive tests
+SKIPPED [1] tests/test_review_schema_v2.py:504: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:393: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:471: scratch DB only
+941 passed, 9 skipped, 2 warnings, 47 subtests passed in 23.91s

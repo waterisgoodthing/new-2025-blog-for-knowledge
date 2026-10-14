@@ -1,5 +1,7 @@
 # 个人学习系统 V2 最高层架构
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 > 状态：目标架构与执行基线，待分阶段审批和迁移验证。本文档不表示代码、数据库、API、部署或数据迁移已经完成。
 
 ## 1. 产品定位
@@ -17,7 +19,7 @@
 项目保留两条清晰的技术线：
 
 - Next.js App Router 下的公开内容和原始静态博客系统。
-- FastAPI、PostgreSQL、JWT、Redis 下的私有个人学习系统。
+- FastAPI、PostgreSQL 下的私有个人学习系统；认证沿用服务端有状态会话，Redis 队列仅为未落地的长期候选。
 
 两条线共享必要的内容、渲染、认证和发布基础设施，但不得继续为同一业务维护两套可独立修改的主数据。
 

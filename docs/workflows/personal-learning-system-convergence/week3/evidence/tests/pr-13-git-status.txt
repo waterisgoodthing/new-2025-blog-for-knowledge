@@ -1,0 +1,75 @@
+# PR-13 write-scope git status (filtered)
+
+ M backend/main.py
+?? backend/app/routers/practice.py
+?? backend/app/schemas/practice.py
+?? backend/app/services/practice_service.py
+?? backend/tests/test_pr13_practice_http.py
+?? backend/tests/test_pr13_practice_service.py
+
+# full backend/app + backend/tests + main.py tracked status
+ M backend/app/models/__init__.py
+ M backend/app/models/attempt.py
+ M backend/app/models/mistake.py
+ M backend/app/models/registry.py
+ M backend/app/models/review_item.py
+ M backend/app/routers/admin_mistakes.py
+ M backend/app/routers/attempts.py
+ M backend/app/routers/knowledge_points.py
+ M backend/app/routers/notes.py
+ M backend/app/routers/review.py
+ M backend/app/routers/review_items.py
+ M backend/app/schemas/attempt.py
+ M backend/app/schemas/mistake.py
+ M backend/app/schemas/review_item.py
+ M backend/app/services/legacy_note_migration_adapter.py
+ M backend/app/services/mistake_service.py
+ M backend/app/services/review_item_service.py
+ M backend/main.py
+ M backend/tests/lsr03_final_verifier_harness.py
+ M backend/tests/test_legacy_note_migration_contract.py
+ M backend/tests/test_mistake_review_service.py
+ M backend/tests/test_security_settings_guards.py
+?? backend/app/models/note_knowledge_point.py
+?? backend/app/routers/admin_notes.py
+?? backend/app/routers/practice.py
+?? backend/app/routers/public_mistakes.py
+?? backend/app/schemas/kp_analytics.py
+?? backend/app/schemas/note_knowledge_point.py
+?? backend/app/schemas/practice.py
+?? backend/app/services/kp_analytics_service.py
+?? backend/app/services/legacy_mistake_freeze.py
+?? backend/app/services/note_knowledge_point_service.py
+?? backend/app/services/practice_service.py
+?? backend/app/services/reanswer_service.py
+?? backend/app/services/wk3_mistake_visibility_migration.py
+?? backend/tests/_pr09_evidence_constraint.py
+?? backend/tests/_pr09_evidence_seed.py
+?? backend/tests/_pr10_n1_evidence.py
+?? backend/tests/_pr13_attempt_count_evidence.py
+?? backend/tests/test_guest_migration_contract.py
+?? backend/tests/test_pr09_legacy_mistake_freeze.py
+?? backend/tests/test_pr09_migration.py
+?? backend/tests/test_pr09_permissions.py
+?? backend/tests/test_pr09_rework.py
+?? backend/tests/test_pr09_routes.py
+?? backend/tests/test_pr09_verify_api_contract.py
+?? backend/tests/test_pr09_verify_http.py
+?? backend/tests/test_pr09_wk3_runner.py
+?? backend/tests/test_pr10_kp_analytics_contract.py
+?? backend/tests/test_pr10_kp_analytics_http.py
+?? backend/tests/test_pr10_kp_analytics_service.py
+?? backend/tests/test_pr10_verify_contract.py
+?? backend/tests/test_pr10_verify_matrix.py
+?? backend/tests/test_pr12_note_knowledge_points_contract.py
+?? backend/tests/test_pr12_note_knowledge_points_http.py
+?? backend/tests/test_pr12_note_knowledge_points_service.py
+?? backend/tests/test_pr12_verify_api.py
+?? backend/tests/test_pr12_verify_concurrency.py
+?? backend/tests/test_pr13_practice_http.py
+?? backend/tests/test_pr13_practice_service.py
+?? backend/tests/test_reanswer_v2.py
+?? backend/tests/test_review_scheduling_v2.py
+?? backend/tests/test_review_schema_v2.py
+?? backend/tests/test_week3_contracts.py
+?? backend/tests/week3_contracts_support.py

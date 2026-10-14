@@ -1,0 +1,78 @@
+== A1. fresh pre-state ==
+PASS: fresh DB has no notes table
+PASS: fresh DB has no note_knowledge_points
+PASS: fresh DB has no knowledge_point_links
+
+== A2. fresh -> 032 ==
+025 -> 026, Install the governed legacy Note migration contract.
+INFO  [alembic.runtime.migration] Running upgrade 026 -> 027, Provision the guestbook tables without taking ownership of legacy tables.
+INFO  [alembic.runtime.migration] Running upgrade 027 -> 028, Widen review_items state/algorithm enumerations and add last_rating.
+INFO  [alembic.runtime.migration] Running upgrade 028 -> 029, Add previous_state and new_state to review_records.
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+INFO  [alembic.runtime.migration] Running upgrade 031 -> 032, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+PASS: fresh upgrade head exits 0
+PASS: 032 applied
+PASS: current == 032 | 032 (head)
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+== A3. single head ==
+PASS: single head == 032 | 032 (head)
+
+== A4. shape at 032 ==
+columns={'note_id': ('uuid', 'uuid', 'NO'), 'knowledge_point_id': ('integer', 'int4', 'NO'), 'created_at': ('timestamp with time zone', 'timestamptz', 'NO')}
+PASS: 3 columns | ['note_id', 'knowledge_point_id', 'created_at']
+PASS: note_id UUID | ('uuid', 'uuid', 'NO')
+PASS: knowledge_point_id INTEGER | ('integer', 'int4', 'NO')
+PASS: link cols NOT NULL
+PASS: composite PK (note_id, knowledge_point_id) | ['note_id', 'knowledge_point_id']
+fks={'fk_note_knowledge_points_knowledge_point_id': ('c', 'knowledge_points'), 'fk_note_knowledge_points_note_id': ('c', 'notes')}
+PASS: exactly 2 FKs | ['fk_note_knowledge_points_knowledge_point_id', 'fk_note_knowledge_points_note_id']
+PASS: both FKs ON DELETE CASCADE | {'fk_note_knowledge_points_knowledge_point_id': ('c', 'knowledge_points'), 'fk_note_knowledge_points_note_id': ('c', 'notes')}
+PASS: FK targets notes & knowledge_points
+indexes=['note_knowledge_points_pkey', 'idx_note_knowledge_points_kp']
+PASS: idx_note_knowledge_points_kp exists
+PASS: PK index exists
+PASS: kp index leads with knowledge_point_id | CREATE INDEX idx_note_knowledge_points_kp ON public.note_knowledge_points USING btree (knowledge_point_id, note_id)
+
+== A5. duplicate + cascade (real SQL) ==
+duplicate rejected: IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "note_knowledge_points_pkey"
+DETAIL:  Key (note_id, knowledge_point_id)=(cd690f23-8bad-47f8-b179-41d101912509, 1) already exists.
+
+[SQL: INSERT INTO public.note_knowledge_points(note_id,knowledge_point_id) VALUES(%(n)s,%(k)s)]
+[parameters: {'n': UUID('cd690f23-8bad-47f8-b179-41d101912509'), 'k': 1}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+PASS: duplicate (note_id,kp) rejected by UNIQUE/PK
+PASS: delete note -> link gone | 0
+PASS: delete kp -> link gone | 0
+
+== B. 032 -> 031 (downgrade) ==
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 032 -> 031, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+PASS: downgrade to 031 exits 0
+PASS: table dropped at 031
+PASS: current == 031 after downgrade | 031
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+== C. 031 -> 032 (upgrade) ==
+PASS: upgrade 031->032 exits 0
+PASS: table present at 032
+PASS: index present at 032
+PASS: current == 032 after re-upgrade | 032 (head)
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+
+== D. knowledge_point_links untouched (031 vs 032) ==
+PASS: knowledge_point_links present
+PASS: kp_links snapshot identical 031 vs 032
+kp_links.columns=['id', 'knowledge_point_id', 'target_type', 'target_id', 'created_at']
+kp_links.fks={'knowledge_point_links_knowledge_point_id_fkey': ('c', 'knowledge_points')}
+kp_links.indexes=['knowledge_point_links_pkey', 'uq_knowledge_point_links_target', 'idx_knowledge_point_links_target']
+PASS: kp_links legacy columns intact
+
+== SUMMARY ==
+MIGRATION_MATRIX_ALL_PASS
+PASS: db_name='astra_week3_pr12_verify' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', '/var/folders/my/wkqqwvb576z76ztsdntshdpm0000gn/T/opencode/pr12_verify_matrix.py']

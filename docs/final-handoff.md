@@ -1,5 +1,7 @@
 # Final Handoff
 
+> 文档治理（2026-10-09）：逻辑归档：保留历史方案/状态和原路径。本文中“当前/完成/批准”仅属于原时点；当前路线改用 docs/ROADMAP.md。过期 JWT/Bearer、恢复 auth bypass、强制先删旧路径等条款不得直接执行。 当前入口见 [文档索引](DOCUMENTATION_INDEX.md)。
+
 Status: `completed`
 
 Last updated: 2026-07-09

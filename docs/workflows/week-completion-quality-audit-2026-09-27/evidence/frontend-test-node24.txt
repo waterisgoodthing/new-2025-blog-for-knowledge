@@ -1,0 +1,135 @@
+
+> 2025-blog@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-content-verify.test.tsx (1 test) 310ms
+   ✓ PR-11 verify: DashboardContent retry refocuses result region > retries then moves focus to the result region when data arrives  309ms
+ ✓ src/app/manage/(workspace)/drafts/components/draft-workspace.test.tsx (5 tests) 193ms
+ ✓ src/app/manage/(workspace)/review/review-queue.test.tsx (4 tests) 241ms
+ ✓ src/app/manage/(workspace)/ai/static-placeholders.test.tsx (4 tests) 113ms
+ ✓ src/app/write-mistake/components/legacy-mistake-write-freeze.test.tsx (2 tests) 193ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-verify.test.tsx (7 tests) 332ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx (12 tests) 369ms
+ ✓ src/app/manage/(workspace)/notes/components/content-editor.test.tsx (9 tests) 292ms
+ ✓ src/app/manage/manage-auth.test.tsx (4 tests) 252ms
+ ✓ src/app/manage/(workspace)/capture/components/capture-content.test.tsx (2 tests) 72ms
+ ✓ src/app/manage/(workspace)/capture/components/capture-workspace.test.tsx (6 tests) 125ms
+ ✓ src/lib/markdown-poc/__tests__/unit.test.ts (144 tests) 60ms
+ ✓ src/features/ui-v2/resources/resources.test.tsx (4 tests) 49ms
+(node:76481) TimeoutNaNWarning: NaN is not a number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/components/auth-gate.test.tsx (2 tests) 99ms
+ ✓ src/app/manage/(workspace)/practice/practice-today.test.tsx (4 tests) 153ms
+ ✓ src/app/manage/(workspace)/ai/components/ai-runs-panel.test.tsx (3 tests) 90ms
+ ✓ src/lib/markdown-poc/__tests__/ssr.test.tsx (62 tests) 93ms
+ ✓ src/app/manage/(workspace)/settings/admin-profile-settings.test.tsx (4 tests) 172ms
+ ✓ src/components/mobile-nav.test.tsx (2 tests) 75ms
+ ✓ src/components/ui-v2/AppShell.test.tsx (12 tests) 87ms
+ ✓ src/app/manage/components/manage-mobile-nav.test.tsx (5 tests) 111ms
+ ✓ src/app/write-note/legacy-mistake-write-freeze.test.tsx (3 tests) 89ms
+ ✓ src/components/async-state-panel.test.tsx (4 tests) 82ms
+ ✓ src/app/notes/page.test.tsx (3 tests) 62ms
+ ✓ src/features/ui-v2/review/review.test.tsx (6 tests) 75ms
+ ✓ src/app/mistakes/page.test.tsx (5 tests) 161ms
+ ✓ src/features/ui-v2/mistakes/mistakes.test.tsx (6 tests) 152ms
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): safe-to-malicious update does not introduce danger > safe content survives update to malicious markdown
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): safe-to-malicious update does not introduce danger > update produces CLIENT_UPDATE_SANITIZED warning
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): failure is local, not global > malformed input preserves safe heading after hydration
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): failure is local, not global > malformed input does not introduce dangerous elements
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): repeated renders are stable (no residue) > rendering malicious markdown multiple times does not accumulate danger
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): repeated renders are stable (no residue) > rendering malicious markdown multiple times does not accumulate danger
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): special renderer inert fallback does not leak > malicious mermaid does not produce onerror or __markdownPocXss
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): special renderer inert fallback does not leak > malicious markmap does not produce javascript: protocol
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): special renderer inert fallback does not leak > malicious chart does not introduce script or event handlers
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M5.2 Code final-output contract: hydration preserves exact hostile code text > updates to hostile code as exact parsed text without executable DOM
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): stub produces meaningful red-light > hydrated output contains safe heading (red for stub)
+The current testing environment is not configured to support act(...)
+
+stderr | src/lib/markdown-poc/__tests__/hydration.test.tsx > M3 Hydration (real hydrateRoot): stub produces meaningful red-light > hydrated output is non-empty (red for stub)
+The current testing environment is not configured to support act(...)
+
+ ✓ src/lib/markdown-poc/__tests__/hydration.test.tsx (12 tests) 70ms
+ ✓ src/app/manage/components/feature-state.test.tsx (3 tests) 58ms
+ ✓ src/features/ui-v2/analytics/analytics.test.tsx (5 tests) 77ms
+ ✓ src/features/ui-v2/settings/settings.test.tsx (2 tests) 75ms
+stderr | src/features/ui-v2/dashboard/dashboard.test.tsx > useDashboardModel > transitions loading -> ready and supports retry after failure
+An update to Probe inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/features/ui-v2/dashboard/dashboard.test.tsx (7 tests) 81ms
+ ✓ src/hooks/use-admin-auth.test.tsx (3 tests) 33ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-content.test.tsx (2 tests) 78ms
+ ✓ src/app/manage/(workspace)/notes/page.test.tsx (3 tests) 128ms
+ ✓ src/app/manage/(workspace)/ai/page.test.tsx (1 test) 115ms
+ ✓ src/features/ui-v2/today/today.test.tsx (5 tests) 87ms
+ ✓ src/features/ui-v2/knowledge/knowledge.test.tsx (3 tests) 95ms
+ ✓ src/features/ui-v2/notes/notes.test.tsx (4 tests) 68ms
+ ✓ src/lib/markdown-poc/__tests__/math-isolated.test.ts (4 tests) 28ms
+ ✓ src/lib/markdown-poc/__tests__/adapter-decisions.test.ts (5 tests) 44ms
+ ✓ src/features/ui-v2/questions/questions.test.tsx (4 tests) 82ms
+ ✓ src/components/ui-v2/components.test.tsx (6 tests) 55ms
+ ✓ src/app/manage/(workspace)/capability-state.test.tsx (2 tests) 66ms
+ ✓ src/lib/markdown-poc/__tests__/dom-safety.test.ts (41 tests) 48ms
+ ✓ src/lib/markdown-poc/__tests__/mermaid-isolated.test.ts (3 tests) 21ms
+ ✓ src/lib/manage-display.test.ts (2 tests) 26ms
+ ✓ src/lib/markdown-poc/__tests__/final-output-contract.test.ts (4 tests) 29ms
+ ✓ src/lib/markdown-poc/__tests__/sa-03-cross-adapter.test.ts (2 tests) 28ms
+ ✓ src/lib/api/mistakes.test.ts (5 tests) 9ms
+ ✓ src/lib/markdown-poc/__tests__/markmap-isolated.test.ts (2 tests) 21ms
+ ✓ src/lib/markdown-poc/__tests__/chart-isolated.test.ts (2 tests) 10ms
+ ✓ src/lib/markdown-poc/__tests__/m6-adapter-deferral.test.ts (7 tests) 4ms
+ ✓ src/lib/api/dashboard.test.ts (4 tests) 8ms
+ ✓ src/lib/render-readiness.test.ts (2 tests) 3ms
+ ✓ src/mocks/ui-v2/mocks.test.ts (3 tests) 2ms
+ ✓ src/app/batch7-compatibility.test.ts (5 tests) 4ms
+ ✓ src/lib/api/knowledge-points.test.ts (3 tests) 4ms
+ ✓ src/lib/api/practice.test.ts (5 tests) 10ms
+ ✓ src/lib/api/notes.test.ts (6 tests) 8ms
+ ✓ src/app/public-session-state-consumers.test.ts (15 tests) 4ms
+ ✓ src/lib/api/auth.test.ts (1 test) 2ms
+ ✓ src/lib/api/search.test.ts (1 test) 9ms
+ ✓ src/hooks/use-note-index.test.ts (2 tests) 3ms
+ ✓ src/lib/api/governance.test.ts (1 test) 2ms
+ ✓ src/app/manage/components/manage-sidebar.test.ts (1 test) 2ms
+ ✓ src/app/manage/components/manage-sidebar.test.tsx (2 tests) 2ms
+ ✓ src/adapters/ui-v2/from-backend.test.ts (5 tests) 2ms
+ ✓ src/layout/head.test.tsx (1 test) 1ms
+ ✓ src/lib/api/admin-profile.test.ts (1 test) 1ms
+
+ Test Files  70 passed (70)
+      Tests  522 passed (522)
+   Start at  18:57:38
+   Duration  5.76s (transform 1.63s, setup 2.71s, collect 7.97s, tests 5.60s, environment 17.08s, prepare 3.05s)
+

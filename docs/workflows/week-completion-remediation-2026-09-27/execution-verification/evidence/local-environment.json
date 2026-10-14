@@ -1,0 +1,10 @@
+{
+  "root": "/var/folders/my/wkqqwvb576z76ztsdntshdpm0000gn/T/week-remediation-verification-j4vvu1d1",
+  "port": 60535,
+  "db": "astra_week4_execution_verify",
+  "pgbin": "/opt/homebrew/opt/postgresql@16/bin",
+  "api_port": 60727,
+  "web_port": 60728,
+  "backend_pid": 10347,
+  "frontend_pid": 10348
+}

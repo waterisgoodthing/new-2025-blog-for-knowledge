@@ -2,14 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, "refactor/**"]
   pull_request:
     branches: [main, master]
 
 jobs:
+  # Job 1 — Frontend: install, type-check (shipped + test trees), unit tests, production build.
+  # W4-E09: no ruff/mypy here or in Job 2; backend/requirements.txt has no ruff/mypy and there
+  # is no pyproject config, so adding lint/type-check steps would fail the job. Not added.
   frontend:
     name: Frontend checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -21,8 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript check
+      - name: TypeScript check (shipped sources)
         run: npx tsc --noEmit
+
+      - name: TypeScript check (test tree)
+        run: npm run test:typecheck
+
+      - name: Unit tests
+        run: npm test
 
       - name: Build
         run: npm run build
@@ -31,11 +41,18 @@ jobs:
           # .invalid TLD (RFC 6761) guarantees instant NXDOMAIN — no DNS hang.
           NEXT_PUBLIC_API_URL: http://ci-check.invalid:8000
 
+  # Job 2 — Backend: real PostgreSQL, migrations, full pytest suite.
+  # The CI database uses an astra_week4_* scratch name (astra_week4_ci), not a legacy
+  # production name, so it satisfies the repo's own DB safety guards:
+  # backend/alembic/env.py:require_migration_target and the pytest tests/conftest.py
+  # connection guard both require a local astra_week3_*/*astra_week4_* scratch name.
+  # This is guard compatibility, not a relaxation of the guards.
   backend:
     name: Backend checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
-      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/blog_db
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/astra_week4_ci
       JWT_SECRET_KEY: ci-test-secret-key
       AUTH_BYPASS: "false"
 
@@ -45,11 +62,11 @@ jobs:
         env:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: blog_db
+          POSTGRES_DB: astra_week4_ci
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U user -d blog_db"
+          --health-cmd="pg_isready -U user -d astra_week4_ci"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -61,6 +78,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: backend/requirements.txt
 
       # The LSR03 harness requires the interpreter to live in backend/.venv
       # (project runtime contract enforced by tests/lsr03_guarded_runner.py).
@@ -80,6 +98,254 @@ jobs:
         run: .venv/bin/python -m alembic upgrade head
         working-directory: backend
 
-      - name: Run tests
-        run: .venv/bin/python -m pytest tests/ -v --tb=short
+      # B04: dual schema gate. ORM autogenerate drift and governed-catalog
+      # definition drift (SQL-owned tables/columns/constraints/functions/
+      # triggers) each block the job. The catalog manifest is version-controlled
+      # in app/models/schema_manifest.json.
+      - name: Schema drift gates (ORM + governed catalog)
+        run: |
+          .venv/bin/python -m alembic check
+          .venv/bin/python -m app.models.schema_catalog_gate
         working-directory: backend
+
+      # R03 — deterministic green. The three previously deselected cross-test isolation
+      # failures are now fixed in-suite (dashboard service tests deactivate prior canonical
+      # rows inside each per-test transaction; the public empty-envelope test serves from a
+      # transaction-scoped session). The full suite runs with NO deselects. The
+      # test_lsr03_guarded_runner psycopg2/asyncpg test stays active so CI still catches that
+      # environment regression. See docs/ci-local-reproduction.md "Deselected backend debt".
+      - name: Run tests
+        run: |
+          .venv/bin/python -m pytest tests/ -v --tb=short
+        working-directory: backend
+
+  # Job 3 — Runtime smoke: production OpenNext/Workers build + backend + workerd preview,
+  # then verify the served shell, its referenced assets, and the backend health probe.
+  runtime-smoke:
+    name: Runtime smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ENV: development
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/astra_week4_ci
+      JWT_SECRET_KEY: ci-test-secret-key
+      AUTH_BYPASS: "false"
+      ALLOWED_ORIGINS: http://localhost:8787
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: astra_week4_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U user -d astra_week4_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Create project virtualenv
+        run: python -m venv .venv
+        working-directory: backend
+
+      - name: Install backend dependencies
+        run: .venv/bin/pip install -r requirements.txt
+        working-directory: backend
+
+      - name: Initialize database schema
+        run: .venv/bin/python -m alembic upgrade head
+        working-directory: backend
+
+      # The frontend never calls the API during smoke, so a guard-safe but unroutable
+      # build-time URL is used; the smoke script probes the backend directly at 127.0.0.1:8001.
+      - name: Build frontend (workerd artifact)
+        run: npm run build:cf
+        env:
+          NEXT_PUBLIC_API_URL: http://ci-check.invalid:8001
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup .venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001 > /tmp/backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8001/api/health > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "backend did not become healthy"; cat /tmp/backend.log; exit 1
+
+      - name: Start workerd preview
+        run: |
+          nohup npm run preview -- --port 8787 > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:8787/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "preview did not become healthy"; cat /tmp/preview.log; exit 1
+
+      - name: Run runtime smoke
+        run: node scripts/runtime-smoke.mjs
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-logs
+          path: |
+            /tmp/backend.log
+            /tmp/preview.log
+          if-no-files-found: ignore
+
+  # Job 4 — Critical E2E: full stack with a deterministic admin seed, Chromium only, workers=1.
+  # app.ci.test and api.ci.test both resolve to 127.0.0.1 via /etc/hosts, so the built
+  # frontend gets a non-localhost API URL (production guard) that is still same-site with the
+  # preview origin — required for the SameSite=Lax admin_session cookie.
+  e2e:
+    name: Critical E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ENV: development
+      DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/astra_week4_ci
+      JWT_SECRET_KEY: ci-test-secret-key
+      AUTH_BYPASS: "false"
+      ALLOWED_ORIGINS: http://app.ci.test:8787
+      E2E_BASE_URL: http://app.ci.test:8787
+      E2E_ADMIN_USERNAME: ci-admin
+      E2E_ADMIN_PASSWORD: ci-test-admin-password
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: astra_week4_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U user -d astra_week4_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Create project virtualenv
+        run: python -m venv .venv
+        working-directory: backend
+
+      - name: Install backend dependencies
+        run: .venv/bin/pip install -r requirements.txt
+        working-directory: backend
+
+      - name: Initialize database schema
+        run: .venv/bin/python -m alembic upgrade head
+        working-directory: backend
+
+      - name: Seed deterministic admin user
+        working-directory: backend
+        run: |
+          .venv/bin/python - <<'PY'
+          import asyncio
+
+          from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+          from app.cli import bootstrap_temp_admin
+          from app.config import get_settings
+
+
+          async def main() -> None:
+              engine = create_async_engine(get_settings().DATABASE_URL)
+              factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+              async with factory() as session:
+                  await bootstrap_temp_admin(
+                      session,
+                      username="ci-admin",
+                      password="ci-test-admin-password",
+                  )
+                  await session.commit()
+              await engine.dispose()
+
+
+          asyncio.run(main())
+          PY
+
+      - name: Map preview/API test hostnames to loopback
+        run: sudo sh -c 'echo "127.0.0.1 app.ci.test api.ci.test" >> /etc/hosts'
+
+      - name: Build frontend (workerd artifact)
+        run: npm run build:cf
+        env:
+          NEXT_PUBLIC_API_URL: http://api.ci.test:8001
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup .venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001 > /tmp/backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8001/api/health > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "backend did not become healthy"; cat /tmp/backend.log; exit 1
+
+      - name: Start workerd preview
+        run: |
+          nohup npm run preview -- --port 8787 > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:8787/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "preview did not become healthy"; cat /tmp/preview.log; exit 1
+
+      - name: Run E2E tests
+        run: npx playwright test --workers=1
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs
+          path: |
+            /tmp/backend.log
+            /tmp/preview.log
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

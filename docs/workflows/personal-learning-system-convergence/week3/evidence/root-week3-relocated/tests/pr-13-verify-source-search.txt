@@ -1,0 +1,28 @@
+## E1: KP_ANALYTICS_SORT_KEY declarations in backend/app
+backend/app/services/kp_analytics_service.py:15:KP_ANALYTICS_SORT_KEY: tuple[str, ...] = (
+
+## E2: AI/ML token scan (4 practice files)
+NO AI/ML matches
+
+## E3: legacy Note source scan (4 practice files)
+NO legacy Note matches
+
+## E4: practice_service imports
+21:from __future__ import annotations
+23:import uuid
+24:from datetime import datetime, timedelta, timezone
+26:from sqlalchemy import select
+27:from sqlalchemy.ext.asyncio import AsyncSession
+29:from app.models.attempt import Attempt
+30:from app.models.mistake import Mistake
+31:from app.models.question import Question, QuestionKnowledgePoint
+32:from app.models.review_item import ReviewItem
+33:from app.models.taxonomy import KnowledgePoint
+34:from app.schemas.kp_analytics import KnowledgePointAnalyticsItem
+35:from app.schemas.practice import PracticeEmptyMetadata, PracticeItem, PracticeTodayResponse
+36:from app.services.kp_analytics_service import get_knowledge_point_analytics
+
+## E5: PR-10 authoritative sort key + contract
+backend/app/services/kp_analytics_service.py:15:KP_ANALYTICS_SORT_KEY: tuple[str, ...] = (
+backend/app/services/kp_analytics_service.py:36:def kp_analytics_sort_key(
+backend/tests/week3_contracts_support.py:115:KP_ANALYTICS_SORT_KEY: tuple[str, ...] = (

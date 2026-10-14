@@ -1,0 +1,2 @@
+SMOKE referenced=20 ok=20 failed=0 checks=23 failed=0 frontend=http://127.0.0.1:18487/
+SMOKE_JSON {"frontend":"http://127.0.0.1:18487/","apiHealth":"http://127.0.0.1:18401/api/health","referenced":20,"ok":20,"failed":0,"totalChecks":23,"totalFailed":0,"failures":[]}

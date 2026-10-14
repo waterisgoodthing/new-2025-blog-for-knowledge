@@ -1,0 +1,13 @@
+▲ Next.js 16.2.12 (Turbopack)
+- Local:         http://127.0.0.1:60728
+- Network:       http://127.0.0.1:60728
+- Environments: .env.development
+✓ Ready in 227ms
+
+ GET /manage 200 in 911ms (next.js: 783ms, application-code: 128ms)
+ GET /manage/review 200 in 51ms (next.js: 10ms, application-code: 41ms)
+ GET /manage 200 in 19ms (next.js: 1777µs, application-code: 17ms)
+ GET /manage/capture 200 in 563ms (next.js: 538ms, application-code: 25ms)
+ GET /manage 200 in 16ms (next.js: 1243µs, application-code: 15ms)
+ GET /manage/capture 200 in 23ms (next.js: 1099µs, application-code: 22ms)
+[?25h

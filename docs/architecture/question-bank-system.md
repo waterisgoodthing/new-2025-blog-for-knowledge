@@ -1,5 +1,7 @@
 # 题库系统设计
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 ## 1. 系统定位
 
 题库系统保存题目本体，是练习、错题和未来复习能力共享的基础数据层。题库系统不等于错题系统；做对和做错的题都可以进入题库。

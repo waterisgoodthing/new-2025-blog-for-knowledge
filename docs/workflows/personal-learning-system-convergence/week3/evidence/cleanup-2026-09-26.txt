@@ -1,0 +1,185 @@
+Week 3 scratch resource cleanup evidence
+=====================================================================
+agent_id : WEEK3-cleanup
+role     : verifier
+date     : 2026-09-26 10:56 - 11:01 +0800
+host     : limengyangdeMacBook-Air-2.local
+repo     : /Users/limengyang/2025-blog-public
+rule     : week3/README.md §6 -- "Only processes and scratch resources created
+           for Week 3 may be cleaned up. Resident services and unrelated dirty
+           files are protected."
+mode     : read-only enumeration first, then per-target allowlist re-check,
+           then delete. No git write operations performed.
+
+=====================================================================
+1. PRE-CLEANUP SNAPSHOT (read-only)
+=====================================================================
+
+-- astra_week3_* databases on the resident PostgreSQL server :5432 (server PID 871) --
+count: 34
+astra_week3_gate            astra_week3_pr09_db1          astra_week3_pr12
+astra_week3_gate_contract   astra_week3_pr09_db2          astra_week3_pr12_mig
+astra_week3_gate_dw         astra_week3_pr09_db3          astra_week3_pr12_rev1
+astra_week3_gate_full       astra_week3_pr09_db4          astra_week3_pr12_verify
+astra_week3_gate_http       astra_week3_pr09_db5          astra_week3_pr13
+astra_week3_gate_iso        astra_week3_pr09_recheck      astra_week3_pr13_g4
+astra_week3_gate_iso2       astra_week3_pr09_recheck_full astra_week3_pr13_verify
+astra_week3_gate_mig        astra_week3_pr09_recheck_full2
+astra_week3_gate_suite      astra_week3_pr09_rw2
+astra_week3_gate_targ       astra_week3_pr10
+astra_week3_inc02_clean     astra_week3_pr10_g4
+astra_week3_inc02_fix       astra_week3_pr10_rw
+                            astra_week3_pr10_verify
+                            astra_week3_pr11
+                            astra_week3_pr11_verify
+
+-- per-DB active client connections before cleanup (excluding the checking backend) --
+astra_week3_gate | 4      <-- held by the :8001 PR-11 verification backend pool
+(all other astra_week3_* DBs: 0 connections)
+
+-- /tmp/astra-week3-* scratch PostgreSQL instances (initdb'd by Week 3) --
+/tmp/astra-week3-pr09-20260922   PID 77653  port 49621  data dir .../pgdata
+/tmp/astra-week3-pr09-rw         PID 4978   port 51469  data dir /tmp/astra-week3-pr09-rw
+  DBs inside 49621: astra_week3_pr09_main, astra_week3_pr09_ui,
+                    astra_week3_pr09_ui_api, astra_week3_pr09_verify_api,
+                    astra_week3_pr09_verify_led, astra_week3_pr09_verify_mig
+  DBs inside 51469: astra_week3_pr09_rw_verify, astra_week3_pr09_tf
+  Client backends on each instance: only the enumerating probe -> no other session.
+
+-- listeners on protected / Week 3 ports --
+127.0.0.1:8000  Python PID 82072  RESIDENT backend          -> PROTECTED, never touched
+127.0.0.1:8001  Python PID 8069   Week 3 PR-11 verification -> stop
+127.0.0.1:8787  workerd PID 96720 Week 3 Gate/PR-11 preview -> stop
+
+-- root /Users/limengyang/2025-blog-public/week3/ (untracked) --
+93 files, all Week 3 evidence (PR-11, Gate, inc-02, screenshots, tests).
+Ownership: Week 3 scratch (create mtime 2026-09-25), stale duplicate location.
+
+=====================================================================
+2. PROCESSES STOPPED (Week 3 validation services only)
+=====================================================================
+PID 8069  .venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001   TERM -> GONE
+PID 96675 npm run preview (root)                                     TERM -> GONE
+PID 96692 node opennextjs-cloudflare preview                         TERM -> GONE
+PID 96695 npm exec wrangler dev                                      TERM -> GONE
+PID 96717 node .bin/wrangler dev                                     TERM -> GONE
+PID 96718 node wrangler cli.js dev                                   TERM -> GONE
+PID 96719 esbuild --service                                         TERM -> GONE
+PID 96720 workerd serve ... :8787                                    TERM -> GONE
+PID 96722 workerd serve (inspector)                                 TERM -> GONE
+
+Post-stop listeners:
+  127.0.0.1:8000  Python PID 82072  LISTEN   <-- :8000 UNTOUCHED, still resident
+  8001 and 8787: free (no listener)
+
+=====================================================================
+3. DATABASES DROPPED (resident :5432) -- guard + zero-conn re-checked per DB
+=====================================================================
+protocol per database name:
+  1) python3 scripts/week3-scratch-guard.py check --db-name <name>  must print PASS
+     (allowlist ^astra_week3_[a-z0-9_]+$; blog_db/blog_v2 rejected)
+  2) SELECT count(*) FROM pg_stat_activity WHERE datname=<name> ... must be 0
+  3) DROP DATABASE "<name>"
+
+result (34/34 dropped):
+astra_week3_gate            | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_contract   | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_dw         | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_full       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_http       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_iso        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_iso2       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_mig        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_suite      | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_gate_targ       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_inc02_clean     | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_inc02_fix       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_db1        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_db2        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_db3        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_db4        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_db5        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_recheck    | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_recheck_full  | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_recheck_full2 | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr09_rw2        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr10            | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr10_g4         | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr10_rw         | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr10_verify     | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr11            | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr11_verify     | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr12            | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr12_mig        | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr12_rev1       | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr12_verify     | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr13            | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr13_g4         | guard=PASS | conns=0 | DROP DATABASE
+astra_week3_pr13_verify     | guard=PASS | conns=0 | DROP DATABASE
+
+=====================================================================
+4. /tmp SCRATCH POSTGRESQL INSTANCES STOPPED AND REMOVED
+=====================================================================
+pg_ctl -D /tmp/astra-week3-pr09-rw stop -m fast
+  -> waiting for server to shut down.... done / server stopped   (PID 4978)
+pg_ctl -D /tmp/astra-week3-pr09-20260922/pgdata stop -m fast
+  -> waiting for server to shut down.... done / server stopped   (PID 77653)
+remaining "postgres -D /tmp/astra-week3" processes: (none)
+
+rm -rf /tmp/astra-week3-pr09-rw /tmp/astra-week3-pr09-20260922   exit=0
+remaining /tmp/astra-week3-*: (none)
+/tmp/astra-week2-*: (none existed; untouched)
+
+=====================================================================
+5. ROOT week3/ (leftover) -- PRESERVED THEN REMOVED
+=====================================================================
+Root week3/ contained 93 UNIQUE Gate / PR-11 verification artefacts that were
+NOT present in the canonical docs evidence directory. To satisfy "root week3/
+must not exist" without destroying evidence, the tree was first relocated into
+the canonical evidence path, then the stray root directory was removed.
+
+relocated to:
+  docs/workflows/personal-learning-system-convergence/week3/evidence/root-week3-relocated/
+files relocated  : 93  (cp -n, no clobber; destination count = 93)
+manifest         : root-week3-relocated/RELOCATED-MANIFEST.sha256 (sha256 per file)
+rm -rf /Users/limengyang/2025-blog-public/week3   exit=0
+root week3/ now  : "No such file or directory"
+
+NOTE / CONFLICT: docs/workflows/.../week3/TRACKING.md and tasks/w3-00.md refer to
+"week3/evidence/" for Week 3 evidence. The task classified root week3/ as a stray
+leftover. Because the contents were unique and referenced, they were preserved in
+the canonical docs evidence directory rather than deleted outright.
+
+=====================================================================
+6. POST-CLEANUP VERIFICATION
+=====================================================================
+remaining astra_week3_* databases on :5432 : count = 0
+pg_stat_activity rows for astra_week3_*      : (empty)
+
+PROTECTED - :8000 resident backend:
+  127.0.0.1:8000  Python PID 82072  LISTEN  (main:app --host 127.0.0.1 --port 8000)
+  :8001 and :8787 : no listener (freed)
+PROTECTED - blog_v2 / blog_db present and untouched:
+  blog_db, blog_v2
+  blog_v2 connection still alive: blog_v2|82079|blog_user|idle
+PROTECTED - resident PostgreSQL server :5432 PID 871 : running, untouched
+PROTECTED - /tmp/astra-week2-* : none existed, untouched
+git: no add/commit/push/stage performed (working tree left as-is)
+
+=====================================================================
+7. SKIPPED / UNCERTAIN
+=====================================================================
+- astra_week3_gate had 4 live connections at first enumeration. It was NOT dropped
+  while occupied: the connections belonged to the Week 3 :8001 backend pool, so the
+  backend was stopped first; after that the DB showed 0 connections and was dropped.
+- No other resource was skipped. No non-astra_week3_* database was touched.
+- No Week 2 / resident resource was touched.
+
+=====================================================================
+8. RESIDUAL
+=====================================================================
+- astra_week3_* databases: 0
+- /tmp/astra-week3-*: 0
+- root week3/: removed (93 files preserved under docs .../evidence/root-week3-relocated/)
+- Week 3 validation processes :8001 / :8787: stopped
+- Nothing else outstanding.

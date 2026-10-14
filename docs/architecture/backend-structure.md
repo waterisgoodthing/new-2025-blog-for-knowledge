@@ -1,5 +1,7 @@
 # 后端结构规范
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 > 目标结构，均为待实现或待迁移，不表示当前后端已经具有这些模块。
 
 相关文档：[功能域](./domains.md)、[数据模型](./data-model.md)、[API](./api-design.md)、[权限](./permissions.md)、[技术栈](./tech-stack.md)。

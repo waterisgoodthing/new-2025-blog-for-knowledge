@@ -1,0 +1,6 @@
+PRESSED [
+  { text: 'A. 选项一', pressed: 'false' },
+  { text: 'B. 选项二', pressed: 'false' },
+  { text: 'C. 选项三', pressed: 'true' }
+]
+{"http":201,"submitted_answer":"C","is_correct":false,"evaluation":{"verdict":"incorrect","recommendation":2}}

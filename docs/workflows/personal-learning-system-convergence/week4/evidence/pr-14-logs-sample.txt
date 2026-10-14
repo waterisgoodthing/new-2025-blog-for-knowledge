@@ -1,0 +1,29 @@
+# PR-14 — Detail-free category log lines
+# Source: app.services.capture_recognition / app.services.capture_ai_draft loggers
+# Format: "Recognition failed category=%s code=%s capture_id=%s"
+#         "AI draft failed category=%s code=%s capture_id=%s"
+# The log line intentionally carries ONLY category, error code and capture_id.
+# Provider exception text is never logged: ai_service embeds the raw provider
+# response body in RuntimeError(f"AI API error ({status}): {response.text}"),
+# so any exception text is treated as secret-bearing and is never emitted.
+# These are representative lines captured from the local deterministic harness
+# (test_capture_taxonomy.py / test_ocr_baseline.py), not from a real provider.
+
+Recognition failed category=provider_auth code=no_provider capture_id=capture-xyz
+Recognition failed category=provider_timeout code=timeout capture_id=3f1c2d00-aaaa-bbbb-cccc-111122223333
+Recognition failed category=provider_auth code=provider_auth capture_id=capture-abc
+Recognition failed category=invalid_model code=invalid_model capture_id=4a2b3c4d-0000-1111-2222-333344445555
+Recognition failed category=unknown code=provider_error capture_id=5b6c7d8e-2222-3333-4444-555566667777
+Recognition failed category=invalid_response code=parse_error capture_id=6c7d8e9f-3333-4444-5555-666677778888
+AI draft failed category=provider_auth code=provider_auth capture_id=7d8e9f00-4444-5555-6666-777788889999
+
+# Notes:
+# - No trailing detail field exists. Raw provider response bodies, API keys,
+#   Bearer tokens, and full exception text never appear in log output.
+# - Recognized error codes that can accompany a category:
+#   provider_auth / invalid_model / timeout / provider_error (generic -> unknown).
+# - Asserted by backend/tests/test_capture_taxonomy.py::LogSanitizationTest
+#   (secret "sk-live-ABC123SECRETKEY" and the provider body itself must not
+#   appear in captured log output), plus
+#   test_capture_taxonomy.py::DtoFailureCategorySerializationTest for the
+#   DTO-serialized failure_category.

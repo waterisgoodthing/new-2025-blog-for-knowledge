@@ -49,7 +49,7 @@ docs/workflows/<task-name>/
 When a workflow is required:
 
 1. Establish goal, scope, requirements, task order, risks, and validation.
-2. Obtain explicit approval for the task list or named phase before implementation.
+2. Use explicit approval already given for the task list or named phase; do not request it again. Obtain approval only when the required scope is not yet authorized.
 3. Execute approved items serially when the workflow requires serial execution.
 4. Update the exact task and evidence immediately after each item.
 5. Do not carry approval into later phases, migrations, deployment, production writes, commit, or push.
@@ -146,14 +146,16 @@ Allowed final states are `PASS`, `PARTIAL`, `FAIL`, `BLOCKED`, `NOT_VERIFIED`, a
 
 ## 7. Persona Workers And Collaboration
 
-Persona Workers are specialist reasoning profiles under `agents/workers/`; they are not Cloudflare Workers or background jobs.
+Worker files under `agents/workers/` define specialist profiles, not Cloudflare Workers or background jobs. A profile describes expertise; an assignment role describes what an actual agent does in this task.
 
-- Choose exactly one Primary Owner for a non-trivial task.
-- Add consulted specialists only when the task crosses their domain.
-- Keep implementation, independent review, verification, gate decisions, and final approval separate.
-- A role title, seniority claim, or Persona voice is not evidence.
-- Do not invoke all Workers by default.
-- A single agent adopting several Personas in sequence is not independent review; label it as a perspective pass unless a separate agent/process actually reviewed it.
+- Classify the task at the start and briefly state why. Use `SOLO` only when the goal is clear, scope is small and bounded, risk is low, verification is straightforward, and no auth, data/schema, API contract, core business/AI rule, or production boundary is affected. Simple wording, links, read-only lookups, local styling, and well-understood local fixes may qualify.
+- Non-simple tasks default to `WORKER`: the main agent is the single `primary_owner`, responsible for planning, finalizing the solution, choosing modification scope and acceptance criteria, assigning real subagents, judging rework, and final code accept.
+- Workers execute bounded investigation, consultation, implementation, review, or verification and return evidence and unresolved issues. They cannot expand scope or grant final accept.
+- Independent review of non-simple results requires a real separate agent without implementation ownership. Persona switching is only a perspective pass. Select only needed specialists; do not invoke all Workers.
+- Do not classify by file count or line count alone, split work merely to use agents, or split a complex task into small pieces to evade review or gates. Reclassify if dependencies, uncertainty, or scope grow.
+- Run independent work concurrently only with disjoint write ownership and satisfied dependencies. Required serial tasks and gates remain serial.
+- Final code accept belongs to the main agent and requires relevant review, verification, and gates; it does not authorize commit, push, merge, migration, deployment, or production writes. Required user approvals remain separate.
+- Follow higher-priority instructions and actual tool availability. If real subagents cannot run, report the limitation and follow the fallback in orchestration; never fabricate delegation or independent review.
 
 Follow [`agents/orchestration.md`](agents/orchestration.md), [`agents/permissions.md`](agents/permissions.md), [`agents/gates.md`](agents/gates.md), [`agents/task-template.md`](agents/task-template.md), and [`agents/report-template.md`](agents/report-template.md).
 

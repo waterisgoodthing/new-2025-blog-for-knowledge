@@ -1,6 +1,35 @@
 # Public Deploy Runbook
 
-Last updated: 2026-06-05
+Last updated: 2026-09-04
+
+## Post-Deploy Smoke (Mandatory)
+
+After every public deploy, re-run the runtime smoke against the production URL **before** declaring the release good (Phase 0 T-00b contract, evidence: `docs/workflows/personal-learning-system-convergence/phase-0-evidence.md`):
+
+1. `GET <production-url>/` → HTTP 200
+2. Parse the returned HTML for `<script src>` / `<link href>` assets and request each one → all HTTP 200 (`referenced = successful`, `failed = 0`)
+3. `GET <production-url>/notes` → HTTP 200
+4. `GET <backend-url>/api/health` → HTTP 200 with `{"status":"ok"}`
+
+If any check fails, treat the deployment as bad and follow [Rollback](#rollback).
+
+The dedicated smoke script `scripts/runtime-smoke.mjs` covers the status-code checks above (home page, every referenced asset, `/notes`, and the health endpoint's HTTP status; asset counting + exit-code gating; any 2xx is accepted). It does not inspect response bodies, so the health JSON body (`{"status":"ok"}`, step 4) must still be confirmed manually.
+
+Pre-deploy (local): after `npm run build:cf`, start the production preview on :8787 (`npm run preview`, workerd) and the smoke backend on :8001, then run:
+
+```bash
+node scripts/runtime-smoke.mjs   # or: npm run smoke
+```
+
+The defaults match that topology (`--frontend-url http://localhost:8787`, `--api-health-url http://127.0.0.1:8001/api/health`).
+
+Post-deploy (production): re-run against the live URLs before declaring the release good:
+
+```bash
+node scripts/runtime-smoke.mjs --frontend-url https://<production-url> --api-health-url https://<backend-url>/api/health
+```
+
+Record the `SMOKE` / `SMOKE_JSON` output (`referenced` / `failed` counts) in the release record. Any failed check makes the script exit with code 1: pre-deploy, do not run `npm run deploy`; post-deploy, treat the deployment as bad and follow [Rollback](#rollback).
 
 ## Latest Deployment
 
@@ -152,7 +181,9 @@ For task-based work:
 git status --short
 npx tsc --noEmit
 npm run build
+npm run build:cf   # production artifact; verify locally via `npm run preview` (workerd, :8787)
 npm run deploy
+# then: run Post-Deploy Smoke (above) against the production URL
 ```
 
 Optional GitHub push after a clean commit:

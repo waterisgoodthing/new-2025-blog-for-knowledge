@@ -1,0 +1,11 @@
+......                                                                   [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_archived_question_mistake_and_inactive_kp_are_excluded
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_multi_kp_question_counts_fully_for_each_kp_and_ties_sort_by_id
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_practice_attempt_metrics_exclude_review_and_editor_context
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_query_count_does_not_grow_with_knowledge_point_count
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_review_metrics_cover_due_future_and_mastered_items
+PASSED tests/test_pr10_kp_analytics_service.py::KPAnalyticsServiceTest::test_zero_denominator_returns_zero_floats_not_none_or_nan
+6 passed in 0.64s
+PASS: db_name='astra_week3_pr10' source=explicit:--db-name; executing ['zsh', '-c', 'PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr10_kp_analytics_service.py -q -rA']

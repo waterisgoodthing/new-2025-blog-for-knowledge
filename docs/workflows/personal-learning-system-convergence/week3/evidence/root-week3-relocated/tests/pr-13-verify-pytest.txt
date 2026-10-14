@@ -1,0 +1,46 @@
+$ python3 scripts/week3-scratch-guard.py run --db-name astra_week3_pr13_verify -- backend/.venv/bin/python -m pytest tests/test_pr13_verify_practice.py -v -s
+
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 23 items
+
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_a_all_excluded_empty_metadata_is_honest PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_a_more_than_ten_is_deterministic_and_sorted PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_a_service_matrix_0_1_2_3_12 PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_a_target_count_function_matrix PR13_VERIFY_MATRIX {"target_count": {"0": 0, "1": 1, "2": 2, "3": 3, "10": 3, "11": 3}}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_a_zero_candidates_empty_metadata_is_honest PR13_VERIFY_EMPTY_ZERO {"eligible_candidate_count": 0, "mastered_excluded_count": 0, "raw_candidate_count": 0, "reason": "no_eligible_candidates", "recent_attempt_excluded_count": 0, "returned_count": 0, "target_count": 0, "window_hours": 168}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_archived_question_excluded PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_lapse_and_due_reasons_flow_from_pr10 PR13_VERIFY_REASONS {"5": "weak_kp_wrong_rate", "6": "weak_kp_lapse", "7": "weak_kp_due"}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_mastered_archived_mistake_still_excludes_observation PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_mastered_linked_mistake_excluded PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_multi_kp_question_uses_weakest_linked_kp PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_question_without_kp_is_not_a_candidate PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_selection_reason_and_empty_reason_catalogs_locked PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_stable_tie_across_kps_by_kp_id PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_stable_tie_same_kp_by_question_id PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_weak_kp_priority_consumes_pr10_order PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_b_window_boundary_and_review_context PASSED
+tests/test_pr13_verify_practice.py::PracticeMatrixAndFilterTests::test_c_service_call_creates_no_rows PR13_VERIFY_READONLY_SERVICE {"after": {"attempts": 0, "review_items": 0, "review_records": 0}, "before": {"attempts": 0, "review_items": 0, "review_records": 0}}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeHttpContractTests::test_d1_anonymous_forbidden_admin_allowed PR13_VERIFY_AUTH {"anonymous": 401, "admin": 200}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeHttpContractTests::test_d2_dto_three_way_agreement PR13_VERIFY_DTO_THREEWAY {"schema_item": ["knowledge_point_id", "question_id", "selection_reason"], "schema_meta": ["eligible_candidate_count", "mastered_excluded_count", "raw_candidate_count", "reason", "recent_attempt_excluded_count", "returned_count", "target_count", "window_hours"], "ts_item": ["knowledge_point_id", "question_id", "selection_reason"], "ts_meta": ["eligible_candidate_count", "mastered_excluded_count", "raw_candidate_count", "reason", "recent_attempt_excluded_count", "returned_count", "target_count", "window_hours"]}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeHttpContractTests::test_d3_forbidden_fields_absent_json_and_openapi PR13_VERIFY_READONLY_HTTP {"after": {"attempts": 0, "review_items": 0, "review_records": 0}, "before": {"attempts": 0, "review_items": 0, "review_records": 0}}
+PR13_VERIFY_HTTP_PAYLOAD {"empty_metadata": {"eligible_candidate_count": 1, "mastered_excluded_count": 0, "raw_candidate_count": 1, "reason": "candidates_returned", "recent_attempt_excluded_count": 0, "returned_count": 1, "target_count": 1, "window_hours": 168}, "items": [{"knowledge_point_id": 21, "question_id": "e8ffb922-28c6-4540-8e35-151eee8b05c4", "selection_reason": "stable_order_fallback"}]}
+PASSED
+tests/test_pr13_verify_practice.py::PracticeSourceContractTests::test_e_no_ai_ml_in_practice_vertical PR13_VERIFY_AI_SCAN []
+PASSED
+tests/test_pr13_verify_practice.py::PracticeSourceContractTests::test_e_no_legacy_note_source PR13_VERIFY_LEGACY_SCAN []
+PASSED
+tests/test_pr13_verify_practice.py::PracticeSourceContractTests::test_e_reuses_pr10_sort_key_without_second_weighting PR13_VERIFY_SORTKEY_DECL ["backend/app/services/kp_analytics_service.py:KP_ANALYTICS_SORT_KEY: tuple[str, ...] = ("]
+PASSED
+
+============================== 23 passed in 2.01s ==============================
+PASS: db_name='astra_week3_pr13_verify' source=explicit:--db-name; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr13_verify_practice.py', '-v', '-s']

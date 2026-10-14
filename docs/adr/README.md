@@ -1,5 +1,7 @@
 # Architecture Decision Records
 
+> 文档治理（2026-10-09）：Accepted 表示设计决策接受，不表示 /today、KnowledgeNode、完整发布模型等已实现；实现基线以 ARCHITECTURE_CURRENT 为准。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 这里记录影响个人学习系统 V2 长期边界的架构决策。ADR 解释“为什么这样设计”，而 `docs/architecture/` 描述“目标系统是什么”，`docs/workflows/` 描述“如何分阶段执行”。
 
 ## 决策索引

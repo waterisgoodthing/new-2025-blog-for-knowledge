@@ -1,0 +1,12 @@
+          conname          |                                              pg_get_constraintdef                                               
+---------------------------+-----------------------------------------------------------------------------------------------------------------
+ ck_questions_visibility   | CHECK (((visibility)::text = 'private'::text))
+ ck_attachments_visibility | CHECK (((visibility)::text = 'private'::text))
+ ck_mistakes_visibility    | CHECK (((visibility)::text = ANY ((ARRAY['private'::character varying, 'public'::character varying])::text[])))
+(3 rows)
+
+ version_num 
+-------------
+ 031
+(1 row)
+

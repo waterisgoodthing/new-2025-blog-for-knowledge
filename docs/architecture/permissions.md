@@ -1,5 +1,7 @@
 # 目标权限模型
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 > 目标模型采用管理通行密钥保护私有学习面；本轮不扩展复杂登录、角色、Passkey 或多用户 RBAC。
 
 ## 角色

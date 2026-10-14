@@ -1,0 +1,2 @@
+{"attempts_after": 0, "attempts_before": 0, "first_returned_count": 0, "second_returned_count": 0, "unchanged": true}
+PASS: db_name='astra_week3_pr13' source=explicit:--db-name; executing ['.venv/bin/python', 'tests/_pr13_attempt_count_evidence.py']

@@ -1,5 +1,7 @@
 # 实施阶段与第一版收口
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 > 以下均为待实现规划，不构成本轮代码、数据库迁移、依赖或部署批准。Phase 0–6 是唯一主线，不再维护另一套“第一阶段至第十三阶段”编号。
 
 ## 总体原则

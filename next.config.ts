@@ -46,10 +46,10 @@ const nextConfig: NextConfig = {
 			// Route Cutover: legacy write-* 与旧入口下线，统一重定向到 /manage/* 主线
 			{ source: '/write-mistake', destination: '/manage/capture', permanent: false },
 			{ source: '/write-mistake/:slug', destination: '/manage/mistakes', permanent: false },
-			{ source: '/write-note', destination: '/manage/dashboard', permanent: false },
-			{ source: '/write-note/:slug', destination: '/manage/dashboard', permanent: false },
-			{ source: '/write', destination: '/manage/dashboard', permanent: false },
-			{ source: '/write/:slug', destination: '/manage/dashboard', permanent: false },
+			{ source: '/write-note', destination: '/manage/notes/new?type=note', permanent: false },
+			{ source: '/write-note/:slug', destination: '/manage/notes/:slug', permanent: false },
+			{ source: '/write', destination: '/manage/notes/new?type=blog', permanent: false },
+			{ source: '/write/:slug', destination: '/manage/notes/:slug', permanent: false },
 			{ source: '/mistakes/review', destination: '/manage/review', permanent: false }
 		]
 	}

@@ -1,6 +1,8 @@
-# 路线图 2026-09（唯一活文档）
+# 历史路线图 2026-09
 
-> 本文档取代 `refactor-plan-2026-08-02.md`、`refactor-plan/`、`refactor-executive-summary.md`、`refactor-github-opensource-report.md` 四份重叠报告，作为唯一滚动路线源。历史过程证据保留在 `docs/workflows/`（后续归档到 `docs/archive/`），不再新增同级别过程文档；小任务不建 workflow 文件夹（比例性原则见 AGENTS.md §2）。
+> 文档治理（2026-10-09）：逻辑归档：保留历史方案/状态和原路径。本文中“当前/完成/批准”仅属于原时点；当前路线改用 docs/ROADMAP.md。过期 JWT/Bearer、恢复 auth bypass、强制先删旧路径等条款不得直接执行。 当前入口见 [文档索引](DOCUMENTATION_INDEX.md)。
+
+> 本文档取代 `refactor-plan-2026-08-02.md`、`refactor-plan/`、`refactor-executive-summary.md`、`refactor-github-opensource-report.md` 四份重叠报告，曾作为当期滚动路线源，现由 `docs/ROADMAP.md` 接替。历史过程证据保留在 `docs/workflows/`（后续归档到 `docs/archive/`），不再新增同级别过程文档；小任务不建 workflow 文件夹（比例性原则见 AGENTS.md §2）。
 
 ## 路线规则
 

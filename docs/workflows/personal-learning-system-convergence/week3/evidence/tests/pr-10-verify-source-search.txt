@@ -1,0 +1,47 @@
+# PR-10 verification — source search (D) — 2026-09-25T09:51:17Z
+
+## 1. PR-10 surface imports (no external analytics/ML libs)
+backend/app/services/kp_analytics_service.py:1:from __future__ import annotations
+backend/app/services/kp_analytics_service.py:3:from datetime import datetime, timezone
+backend/app/services/kp_analytics_service.py:5:from sqlalchemy import String, and_, cast, func, select
+backend/app/services/kp_analytics_service.py:6:from sqlalchemy.ext.asyncio import AsyncSession
+backend/app/services/kp_analytics_service.py:8:from app.models.attempt import Attempt
+backend/app/services/kp_analytics_service.py:9:from app.models.mistake import Mistake
+backend/app/services/kp_analytics_service.py:10:from app.models.question import Question, QuestionKnowledgePoint
+backend/app/services/kp_analytics_service.py:11:from app.models.review_item import ReviewItem, ReviewRecord
+backend/app/services/kp_analytics_service.py:12:from app.models.taxonomy import KnowledgePoint, KnowledgePointLink
+backend/app/services/kp_analytics_service.py:13:from app.schemas.kp_analytics import KnowledgePointAnalyticsItem
+backend/app/schemas/kp_analytics.py:1:from pydantic import BaseModel
+
+## 2. weight / ML / trend / AI tokens in PR-10 surface (expect NONE)
+NONE
+
+## 3. backend dependency manifests unchanged by PR-10 (git diff empty)
+(end diff)
+
+## 4. requirements.txt ML scan
+no ML deps
+
+## 5. sort implementation vs locked contract tuple
+-- service --
+KP_ANALYTICS_SORT_KEY: tuple[str, ...] = (
+    "-wrong_rate",
+    "-lapse_count",
+    "-due_count",
+    "knowledge_point_id",
+)
+-- contract support --
+KP_ANALYTICS_SORT_KEY: tuple[str, ...] = (
+    "-wrong_rate",
+    "-lapse_count",
+    "-due_count",
+    "knowledge_point_id",
+)
+-- design D7 --
+**Weakness 第一版采用排序规则**（不引入加权分数/ML）：
+
+```
+wrong_rate DESC → lapse_count DESC → due_count DESC
+```
+
+`lapse_count` = 该 KP 关联错题的 canonical `ReviewRecord.rating <= 2` lifetime 计数。多 KP 题对每个关联 KP 各记一次完整观测；不做分数拆分。Archived Question/Mistake 与 inactive KP 不参与第一版统计；最终排序以 `knowledge_point_id` 稳定收口。

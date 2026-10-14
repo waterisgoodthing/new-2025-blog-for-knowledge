@@ -1,0 +1,20 @@
+┌──────────────────────────────┐
+│ OpenNext — Generating bundle │
+└──────────────────────────────┘
+
+Bundling middleware function...
+Bundling static assets...
+Bundling cache assets...
+Building server function: default...
+Applying code patches: 1.040s
+# copyPackageTemplateFiles
+[35m⚙️ Bundling the OpenNext server...
+[0m
+[35mWorker saved in `.open-next/worker.js` 🚀
+[0m
+OpenNext build complete.
+
+### Post-run verification (added by main agent 2026-09-26)
+# The tee'd command above did not persist a literal exit code; independent confirmation:
+-rw-r--r--@ 1 limengyang  staff  2278 Sep 26 15:54 .open-next/worker.js
+BUILD_CF_ARTIFACT_PRESENT=yes

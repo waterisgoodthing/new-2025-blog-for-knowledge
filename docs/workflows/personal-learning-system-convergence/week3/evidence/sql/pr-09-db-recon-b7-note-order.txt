@@ -1,0 +1,12 @@
+                  id                  |             slug             |   status    | hidden |       bucket        
+--------------------------------------+------------------------------+-------------+--------+---------------------
+ 0048fd3b-2839-4508-ace7-ee66040a4aa8 | pr09-unpublished_hidden      | unpublished | t      | unpublished_hidden
+ 633818c7-19d3-454d-b2b0-460980031d41 | pr09-aaa-reject-me           | unpublished | f      | unpublished_visible
+ 6dbd7017-9e76-4e1f-b7c6-46c833bdc769 | pr09-published_visible-extra | published   | f      | published_visible
+ 7ee65eca-ab38-421b-a22d-ad95552ece2f | pr09-unpublished_visible     | unpublished | f      | unpublished_visible
+ 8c2db12e-1c2c-4c56-9981-1a6b823f0f08 | pr09-published_visible       | published   | f      | published_visible
+ a0980cfd-8eff-4d2f-af44-580abab938da | pr09-aaa-invalid             | published   | f      | published_visible
+ b64deaf7-3f47-4acc-b25a-230296fcee8b | pr09-published_hidden        | published   | t      | published_hidden
+(7 rows)
+
+PASS: db_name='astra_week3_pr09_db5' source=explicit:--db-name; executing ['psql', '-h', 'localhost', '-U', 'limengyang', '-d', 'astra_week3_pr09_db5', '-c', "\n    SELECT id, slug, status, hidden,\n      CASE WHEN status='published' AND hidden=false THEN 'published_visible'\n           WHEN status='published' THEN 'published_hidden'\n           WHEN hidden=false THEN 'unpublished_visible'\n           ELSE 'unpublished_hidden' END AS bucket\n    FROM public.notes WHERE type='mistake' ORDER BY id;\n  "]

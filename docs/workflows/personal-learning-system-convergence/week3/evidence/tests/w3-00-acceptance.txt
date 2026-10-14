@@ -1,0 +1,82 @@
+=== W3-00 acceptance evidence (W3-00-impl-contracts) ===
+date: 2026-09-23T05:42:53Z
+
+=== [1] pytest tests/test_week3_contracts.py -q ===
+................................                                         [100%]
+32 passed in 0.16s
+exit=0
+
+=== [2] check --db-name astra_week3_demo (expect PASS) ===
+PASS: db_name='astra_week3_demo' source=explicit:--db-name
+exit=0
+
+=== [3] negative checks (each expect FAIL exit 1) ===
+--- check --db-name 'blog_db' ---
+FAIL: database name contains forbidden substring 'blog_db' (source=explicit:--db-name)
+exit=1
+--- check --db-name 'blog_v2' ---
+FAIL: database name contains forbidden substring 'blog_v2' (source=explicit:--db-name)
+exit=1
+--- check --db-name 'astra_week2_x' ---
+FAIL: database name 'astra_week2_x' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+exit=1
+--- check --db-name '' ---
+FAIL: empty database name (source=explicit:--db-name)
+exit=1
+--- check (env DATABASE_URL=backend/.env default blog_v2) ---
+FAIL: URL contains forbidden substring 'blog_v2' (source=env:DATABASE_URL)
+exit=1
+--- check --url prod url ---
+FAIL: database name 'production_db' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--url)
+exit=1
+
+=== [4] run FAIL does not execute child (expect no SHOULD_NOT_RUN) ===
+FAIL: database name contains forbidden substring 'blog_db' (source=explicit:--db-name)
+child command NOT executed
+exit=1
+--- run FAIL with prod url ---
+FAIL: URL contains forbidden substring 'blog_v2' (source=explicit:--url)
+child command NOT executed
+exit=1
+
+=== [4b] run PASS executes child ===
+CHILD_RAN postgresql+asyncpg://localhost:5432/astra_week3_demo
+PASS: db_name='astra_week3_demo' source=explicit:--db-name; executing ['python3', '-c', "import os; print('CHILD_RAN', os.environ.get('DATABASE_URL'))"]
+exit=0
+
+=== [5] guard unit tests ===
+FAIL: URL contains forbidden substring 'blog_v2' (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+FAIL: database name 'production_db' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+FAIL: run requires a child command after --
+exit=0
+
+=== [5b] guard unit tests (unittest summary) ===
+test_empty_name_fails (__main__.TestCheckSubcommand.test_empty_name_fails) ... ok
+test_env_database_url_with_legal_scratch_name_passes (__main__.TestCheckSubcommand.test_env_database_url_with_legal_scratch_name_passes) ... ok
+test_env_database_url_with_prod_db_fails (__main__.TestCheckSubcommand.test_env_database_url_with_prod_db_fails) ... ok
+test_illegal_names_fail (__main__.TestCheckSubcommand.test_illegal_names_fail) ... ok
+test_legal_names_pass (__main__.TestCheckSubcommand.test_legal_names_pass) ... ok
+test_legal_url_passes (__main__.TestCheckSubcommand.test_legal_url_passes) ... ok
+test_no_args_without_env_fails (__main__.TestCheckSubcommand.test_no_args_without_env_fails) ... ok
+test_prod_urls_fail (__main__.TestCheckSubcommand.test_prod_urls_fail) ... ok
+test_validate_target_raises_guard_error_on_blog_db (__main__.TestCheckSubcommand.test_validate_target_raises_guard_error_on_blog_db) ... ok
+test_validate_target_raises_on_url_substring (__main__.TestCheckSubcommand.test_validate_target_raises_on_url_substring) ... ok
+test_run_does_not_execute_child_on_fail (__main__.TestRunSubcommand.test_run_does_not_execute_child_on_fail) ... ok
+test_run_executes_child_on_pass (__main__.TestRunSubcommand.test_run_executes_child_on_pass) ... ok
+test_run_without_child_command_fails (__main__.TestRunSubcommand.test_run_without_child_command_fails) ... ok
+Ran 13 tests in 0.078s
+OK
+exit=0
+
+=== git status --short (new files from W3-00-impl-contracts only) ===
+?? backend/tests/test_week3_contracts.py
+?? backend/tests/week3_contracts_support.py
+?? scripts/week3-scratch-guard.py
+?? scripts/week3-scratch-guard.test.py
+
+=== git diff --stat (no tracked-file modifications from this agent) ===
+ src/lib/content-routes.ts                          |   2 +-
+ src/styles/globals.css                             |   1 +
+ 37 files changed, 1352 insertions(+), 1103 deletions(-)

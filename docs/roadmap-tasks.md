@@ -1,10 +1,12 @@
 # 个人知识系统演进路线 — 任务清单
 
+> 文档治理（2026-10-09）：逻辑归档：保留历史方案/状态和原路径。本文中“当前/完成/批准”仅属于原时点；当前路线改用 docs/ROADMAP.md。过期 JWT/Bearer、恢复 auth bypass、强制先删旧路径等条款不得直接执行。 当前入口见 [文档索引](DOCUMENTATION_INDEX.md)。
+
 > 版本: 1.2
 > 日期: 2026-06-03
 > 关联: `docs/roadmap-design.md` | `docs/personal-knowledge-system-design.md` | `docs/ui-upgrade-design.md` | `docs/ui-upgrade-requirements.md` | `docs/ui-upgrade-tasks.md` | `AGENTS.md`
 >
-> **本文档是当前权威任务清单**。后续以本文档为准；旧文档（`docs/personal-knowledge-system-tasks.md`、`tasks.md`、`design.md`）仅作历史参考，部分条目已标记完成状态。
+> **本文档曾是该阶段权威任务清单，现已逻辑归档**。当前以后来建立的 `docs/ROADMAP.md` 为准；旧文档（`docs/personal-knowledge-system-tasks.md`、`tasks.md`、`design.md`）仅作历史参考，部分条目已标记完成状态。
 
 ---
 

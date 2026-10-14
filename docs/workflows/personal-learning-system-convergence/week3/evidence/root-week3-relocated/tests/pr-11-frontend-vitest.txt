@@ -1,0 +1,43 @@
+# PR-11 frontend self-cert — targeted vitest
+agent_id: PR-11-impl-frontend
+date: 2026-09-25 19:20:27
+command: npx vitest run src/app/manage src/lib/api
+---
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+(node:25473) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/app/manage/(workspace)/ai/components/ai-runs-panel.test.tsx (3 tests) 108ms
+ ✓ src/app/manage/components/manage-mobile-nav.test.tsx (5 tests) 111ms
+ ✓ src/app/manage/(workspace)/practice/practice-today.test.tsx (4 tests) 162ms
+ ✓ src/app/manage/(workspace)/settings/admin-profile-settings.test.tsx (4 tests) 156ms
+ ✓ src/app/manage/(workspace)/drafts/components/draft-workspace.test.tsx (5 tests) 209ms
+ ✓ src/app/manage/(workspace)/review/review-queue.test.tsx (4 tests) 234ms
+ ✓ src/app/manage/manage-auth.test.tsx (4 tests) 262ms
+ ✓ src/app/manage/(workspace)/notes/components/content-editor.test.tsx (9 tests) 328ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx (12 tests) 525ms
+ ✓ src/app/manage/(workspace)/ai/page.test.tsx (1 test) 97ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-content.test.tsx (2 tests) 110ms
+ ✓ src/app/manage/(workspace)/notes/page.test.tsx (3 tests) 125ms
+ ✓ src/app/manage/components/feature-state.test.tsx (3 tests) 77ms
+ ✓ src/app/manage/(workspace)/capture/components/capture-content.test.tsx (2 tests) 92ms
+ ✓ src/lib/api/notes.test.ts (6 tests) 10ms
+ ✓ src/lib/api/practice.test.ts (5 tests) 9ms
+ ✓ src/app/manage/(workspace)/ai/static-placeholders.test.tsx (4 tests) 117ms
+ ✓ src/app/manage/(workspace)/capability-state.test.tsx (2 tests) 136ms
+ ✓ src/lib/api/knowledge-points.test.ts (3 tests) 5ms
+ ✓ src/lib/api/mistakes.test.ts (5 tests) 8ms
+ ✓ src/lib/api/search.test.ts (1 test) 4ms
+ ✓ src/lib/api/dashboard.test.ts (4 tests) 6ms
+ ✓ src/lib/api/auth.test.ts (1 test) 2ms
+ ✓ src/lib/api/admin-profile.test.ts (1 test) 2ms
+ ✓ src/lib/api/governance.test.ts (1 test) 3ms
+ ✓ src/app/manage/components/manage-sidebar.test.tsx (2 tests) 2ms
+ ✓ src/app/manage/components/manage-sidebar.test.ts (1 test) 1ms
+
+ Test Files  27 passed (27)
+      Tests  97 passed (97)
+   Start at  19:20:27
+   Duration  2.81s (transform 957ms, setup 1.17s, collect 4.27s, tests 2.90s, environment 7.40s, prepare 1.43s)
+

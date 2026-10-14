@@ -2,6 +2,10 @@
 
 这是一个个人知识库与博客系统，前端使用 Next.js App Router，后端使用 FastAPI。项目当前面向个人内容管理、笔记写作、错题复盘、博客发布、公开内容展示和后台管理。
 
+## 当前技术文档基线
+
+当前工作区架构、开发状态和后续顺序统一从 [项目概览](docs/PROJECT_OVERVIEW.md) 与 [文档索引](docs/DOCUMENTATION_INDEX.md) 阅读。系统为可用 MVP、部分学习闭环；历史 Gate 与测试数量不代表最新发布验收。
+
 ## 来源与致谢
 
 本仓库是在原开源项目基础上改造而来，并继续保留原项目的 MIT License 许可声明。当前仓库内可核验的许可证信息显示原版权人为 `YYsuni`。
@@ -24,7 +28,7 @@
 |---|---|---|
 | Router | `backend/app/routers/` | HTTP 路由、状态码、依赖注入 |
 | Schema | `backend/app/schemas/` | Pydantic 请求/响应契约 |
-| Service | `backend/app/services/` | 业务逻辑（SM-2 复习、AI 分析、内容存储等） |
+| Service | `backend/app/services/` | 业务逻辑（canonical fixed_interval_v2 复习、AI 分析、内容存储等；legacy SM-2 写已冻结） |
 | Model | `backend/app/models/` | SQLAlchemy 数据库模型 |
 | Migration | `backend/alembic/versions/` | 数据库迁移 |
 
@@ -34,7 +38,7 @@
 |---|---|---|
 | Route page | `src/app/<route>/page.tsx` | 页面组件 |
 | Route components | `src/app/<route>/components/` | 路由专属 UI |
-| Route services | `src/app/<route>/services/` | 路络专属数据操作 |
+| Route services | `src/app/<route>/services/` | 路由专属数据操作 |
 | Shared components | `src/components/` | 跨路由共享 UI |
 | API clients | `src/lib/api/` | 类型化 API 客户端 |
 | Shared utils | `src/lib/` | 通用工具函数 |
@@ -144,7 +148,7 @@ npm run dev
 ### 环境变量
 
 - 根目录 `.env`：前端变量（`NEXT_PUBLIC_API_URL`、`NEXT_PUBLIC_IMAGE_BASE_URL`）。
-- `backend/.env`：后端变量（数据库、JWT、AI、CORS 等）。
+- `backend/.env`：后端变量（数据库、管理员会话相关配置、AI、CORS 等）。
 
 参考 `.env.example` 和 `backend/.env.example` 创建本地配置。不要提交真实 `.env`、私钥、令牌或其他敏感信息。
 
@@ -153,7 +157,7 @@ npm run dev
 | 变量 | 文件 | 说明 |
 |---|---|---|
 | `DATABASE_URL` | `backend/.env` | PostgreSQL 连接字符串 |
-| `JWT_SECRET_KEY` | `backend/.env` | 会话签名密钥，生产环境必须修改 |
+| `JWT_SECRET_KEY` | `backend/.env` | 历史命名的安全配置项，生产环境禁止默认值；当前 admin_session 为随机 token + 数据库 token hash，不是 JWT 签名 cookie |
 | `ALLOWED_ORIGINS` | `backend/.env` | CORS 来源列表，使用逗号分隔，不是 JSON 数组 |
 | `NEXT_PUBLIC_API_URL` | `.env` | 后端 API 地址；本地开发可用 localhost，生产构建必须使用非 localhost URL |
 
@@ -183,11 +187,13 @@ AI 功能通过 `npm run setup` 交互式配置，或手动编辑 `backend/.env`
 
 ## 内容真源
 
-当前所有活跃内容域都通过后端 API 管理，并存储在 PostgreSQL 中：
+当前活跃内容记录通过后端 API 管理，正式数据存储在 PostgreSQL；附件字节、公开图片与静态素材仍有文件系统边界：
 
 | 领域 | 存储 | API |
 |---|---|---|
-| notes, blog, mistakes | PostgreSQL | `/api/notes` |
+| notes, blog | PostgreSQL | `/api/notes` |
+| canonical questions / mistakes | PostgreSQL | 私有 `/api/admin/questions`、`/api/admin/mistakes`；公开错题 `/api/public/mistakes` |
+| legacy Note 型 mistakes | PostgreSQL（兼容只读） | `/api/notes` 和旧 `/api/review/*`；写操作冻结 |
 | about | PostgreSQL | `/api/content/about` |
 | share | PostgreSQL | `/api/content/shares` |
 | projects | PostgreSQL | `/api/content/projects` |
@@ -207,3 +213,5 @@ AI 功能通过 `npm run setup` 交互式配置，或手动编辑 `backend/.env`
 贡献前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。安全问题请按 [SECURITY.md](./SECURITY.md) 中的方式私下报告。
 
 提交 Issue 和 PR 时，GitHub 会自动引导你使用对应的模板。
+
+管理员授权以 HttpOnly `admin_session` / `AdminSession` / `get_current_admin` 为准；前端 API 需要会话时携带 `credentials: include`。上面的初始化、迁移与凭据命令是操作指南，必须先确认目标和授权，不能作为本轮审查已执行证据。

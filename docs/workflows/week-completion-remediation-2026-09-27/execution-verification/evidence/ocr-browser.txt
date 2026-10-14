@@ -1,0 +1,12 @@
+OCR_UI_DISABLED {"recognizeButtons":0,"manualInput":true}
+MANUAL_SAVE 200
+locator.selectOption: Timeout 15000ms exceeded.
+Call log:
+[2m  - waiting for locator('form').filter({ has: getByRole('heading', { name: '确认并转为错题草稿', exact: true }) }).locator('select').first()[22m
+
+    at /Users/limengyang/2025-blog-public/docs/workflows/week-completion-remediation-2026-09-27/execution-verification/evidence/ocr_browser.cjs:5:140 {
+  log: [
+    "  - waiting for locator('form').filter({ has: getByRole('heading', { name: '确认并转为错题草稿', exact: true }) }).locator('select').first()"
+  ],
+  name: 'TimeoutError'
+}

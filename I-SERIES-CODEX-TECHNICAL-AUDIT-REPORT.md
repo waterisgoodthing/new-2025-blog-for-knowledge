@@ -1,5 +1,7 @@
 # I系列Codex技术审查报告
 
+> 文档治理（2026-10-09）：历史审计/建议快照保留。测试、版本、缺陷与权限描述只对应报告原时点；本轮重新核验结果以当前审查和状态为准，不覆盖原裁定。 当前入口见 [文档索引](docs/DOCUMENTATION_INDEX.md)。
+
 **报告日期**: 2026-07-30  
 **审查范围**: Personal Learning System V2 Unification - I系列完整闭环  
 **报告状态**: FINAL CLOSURE AUDIT  

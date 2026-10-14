@@ -1,0 +1,612 @@
+........................................................................ [  7%]
+........................................................................ [ 15%]
+................................................................................................................. [ 27%]
+......................ssss.............................................. [ 34%]
+.....................ss................................................. [ 42%]
+.............................................................. [ 48%]
+........................................................................ [ 56%]
+........................................................................ [ 63%]
+........................................................................ [ 71%]
+.................................FF.FFF..FF..FFFFFF.FF.F..FFFFF......... [ 79%]
+......................................................................................sss................................................. [ 93%]
+.............................................................            [100%]
+=================================== FAILURES ===================================
+___________ PracticeServiceTest.test_all_candidates_excluded_reason ____________
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_all_candidates_excluded_reason>
+
+    async def test_all_candidates_excluded_reason(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        await self._attempt(
+            question,
+            is_correct=False,
+            submitted_at=self.now - timedelta(hours=1),
+        )
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_practice_service.py:326: AssertionError
+_____________ PracticeServiceTest.test_archived_question_excluded ______________
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_archived_question_excluded>
+
+    async def test_archived_question_excluded(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        await self._question(subject, [kp.id], status="archived")
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_practice_service.py:254: AssertionError
+_ PracticeServiceTest.test_more_than_ten_candidates_returns_target_three_deterministically _
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_more_than_ten_candidates_returns_target_three_deterministically>
+
+    async def test_more_than_ten_candidates_returns_target_three_deterministically(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        for _ in range(12):
+            await self._question(subject, [kp.id])
+        first = await self._practice()
+        second = await self._practice()
+        self.assertEqual(len(first.items), 3)
+        self.assertEqual(
+            [item.question_id for item in first.items],
+            [item.question_id for item in second.items],
+        )
+>       self.assertEqual(first.empty_metadata.eligible_candidate_count, 12)
+E       AssertionError: 13 != 12
+
+tests/test_pr13_practice_service.py:194: AssertionError
+_ PracticeServiceTest.test_old_practice_attempt_outside_window_does_not_exclude _
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_old_practice_attempt_outside_window_does_not_exclude>
+
+    async def test_old_practice_attempt_outside_window_does_not_exclude(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        await self._attempt(
+            question,
+            is_correct=True,
+            submitted_at=self.now - timedelta(hours=7 * 24 + 1),
+        )
+        result = await self._practice()
+>       self.assertEqual([item.question_id for item in result.items], [str(question.id)])
+E       AssertionError: Lists differ: ['e946d448-632f-4e91-b28a-a28ff6b7d1cb', '86f01c19-3f3d-4579-9498-fab52ec24e8c'] != ['86f01c19-3f3d-4579-9498-fab52ec24e8c']
+E       
+E       First differing element 0:
+E       'e946d448-632f-4e91-b28a-a28ff6b7d1cb'
+E       '86f01c19-3f3d-4579-9498-fab52ec24e8c'
+E       
+E       First list contains 1 additional elements.
+E       First extra element 1:
+E       '86f01c19-3f3d-4579-9498-fab52ec24e8c'
+E       
+E       - ['e946d448-632f-4e91-b28a-a28ff6b7d1cb', '86f01c19-3f3d-4579-9498-fab52ec24e8c']
+E       + ['86f01c19-3f3d-4579-9498-fab52ec24e8c']
+
+tests/test_pr13_practice_service.py:290: AssertionError
+_ PracticeServiceTest.test_question_without_knowledge_point_is_not_a_candidate _
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_question_without_knowledge_point_is_not_a_candidate>
+
+    async def test_question_without_knowledge_point_is_not_a_candidate(self):
+        subject = await self._subject()
+        await self._question(subject, [])
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_practice_service.py:312: AssertionError
+____________ PracticeServiceTest.test_single_candidate_returns_one _____________
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_single_candidate_returns_one>
+
+    async def test_single_candidate_returns_one(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        result = await self._practice()
+>       self.assertEqual(len(result.items), 1)
+E       AssertionError: 2 != 1
+
+tests/test_pr13_practice_service.py:158: AssertionError
+____ PracticeServiceTest.test_stable_tie_falls_back_to_kp_then_question_id _____
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_stable_tie_falls_back_to_kp_then_question_id>
+
+    async def test_stable_tie_falls_back_to_kp_then_question_id(self):
+        subject = await self._subject()
+        first_kp = await self._kp(subject)
+        second_kp = await self._kp(subject)
+        first_question = await self._question(subject, [first_kp.id])
+        second_question = await self._question(subject, [second_kp.id])
+    
+        result = await self._practice()
+        ordered = [
+            (item.knowledge_point_id, item.question_id) for item in result.items
+        ]
+>       self.assertEqual(
+            ordered,
+            [
+                (first_kp.id, str(first_question.id)),
+                (second_kp.id, str(second_question.id)),
+            ],
+        )
+E       AssertionError: Lists differ: [(20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb[92 chars]40')] != [(146, '1f43ae73-fb42-4866-a932-b4de53052fc[46 chars]40')]
+E       
+E       First differing element 0:
+E       (20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb')
+E       (146, '1f43ae73-fb42-4866-a932-b4de53052fcf')
+E       
+E       First list contains 1 additional elements.
+E       First extra element 2:
+E       (147, 'f1f84b3a-af3c-4cac-b541-97f6bf404c40')
+E       
+E       - [(20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb'),
+E       -  (146, '1f43ae73-fb42-4866-a932-b4de53052fcf'),
+E       ? ^
+E       
+E       + [(146, '1f43ae73-fb42-4866-a932-b4de53052fcf'),
+E       ? ^
+E       
+E          (147, 'f1f84b3a-af3c-4cac-b541-97f6bf404c40')]
+
+tests/test_pr13_practice_service.py:240: AssertionError
+______________ PracticeServiceTest.test_two_candidates_return_two ______________
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_two_candidates_return_two>
+
+    async def test_two_candidates_return_two(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        await self._question(subject, [kp.id])
+        await self._question(subject, [kp.id])
+        result = await self._practice()
+>       self.assertEqual(len(result.items), 2)
+E       AssertionError: 3 != 2
+
+tests/test_pr13_practice_service.py:170: AssertionError
+__ PracticeServiceTest.test_weak_knowledge_point_priority_consumes_pr10_order __
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_weak_knowledge_point_priority_consumes_pr10_order>
+
+    async def test_weak_knowledge_point_priority_consumes_pr10_order(self):
+        subject = await self._subject()
+        weak_kp = await self._kp(subject)
+        calm_kp = await self._kp(subject)
+        weak_question = await self._question(subject, [weak_kp.id])
+        calm_question = await self._question(subject, [calm_kp.id])
+        await self._attempt(
+            weak_question,
+            is_correct=False,
+            submitted_at=self.now - timedelta(days=8),
+        )
+    
+        result = await self._practice()
+>       self.assertEqual(
+            [item.knowledge_point_id for item in result.items],
+            [weak_kp.id, calm_kp.id],
+        )
+E       AssertionError: Lists differ: [150, 20, 151] != [150, 151]
+E       
+E       First differing element 1:
+E       20
+E       151
+E       
+E       First list contains 1 additional elements.
+E       First extra element 2:
+E       151
+E       
+E       - [150, 20, 151]
+E       ?       ----
+E       
+E       + [150, 151]
+
+tests/test_pr13_practice_service.py:214: AssertionError
+________ PracticeServiceTest.test_zero_candidates_returns_honest_empty _________
+
+self = <test_pr13_practice_service.PracticeServiceTest testMethod=test_zero_candidates_returns_honest_empty>
+
+    async def test_zero_candidates_returns_honest_empty(self):
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_practice_service.py:146: AssertionError
+__ PracticeMatrixAndFilterTests.test_a_all_excluded_empty_metadata_is_honest ___
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_a_all_excluded_empty_metadata_is_honest>
+
+    async def test_a_all_excluded_empty_metadata_is_honest(self) -> None:
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        await self._attempt(
+            question, is_correct=False, submitted_at=self.now - timedelta(hours=1)
+        )
+        result = await self._practice()
+        md = result.empty_metadata
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_verify_practice.py:329: AssertionError
+_ PracticeMatrixAndFilterTests.test_a_more_than_ten_is_deterministic_and_sorted _
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_a_more_than_ten_is_deterministic_and_sorted>
+
+    async def test_a_more_than_ten_is_deterministic_and_sorted(self) -> None:
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        questions = [await self._question(subject, [kp.id]) for _ in range(12)]
+        first = await self._practice()
+        second = await self._practice()
+        ids = [item.question_id for item in first.items]
+        expected = sorted(str(q.id) for q in questions)[:3]
+>       self.assertEqual(ids, expected)
+E       AssertionError: Lists differ: ['e946d448-632f-4e91-b28a-a28ff6b7d1cb', '1[72 chars]25b'] != ['156e8dfd-a05f-49d8-a1e9-4c5effff6c47', '3[72 chars]d09']
+E       
+E       First differing element 0:
+E       'e946d448-632f-4e91-b28a-a28ff6b7d1cb'
+E       '156e8dfd-a05f-49d8-a1e9-4c5effff6c47'
+E       
+E       - ['e946d448-632f-4e91-b28a-a28ff6b7d1cb',
+E       -  '156e8dfd-a05f-49d8-a1e9-4c5effff6c47',
+E       ? ^
+E       
+E       + ['156e8dfd-a05f-49d8-a1e9-4c5effff6c47',
+E       ? ^
+E       
+E       -  '33e4f6f9-0a79-4068-91aa-de5aa2e0125b']
+E       ?                                        ^
+E       
+E       +  '33e4f6f9-0a79-4068-91aa-de5aa2e0125b',
+E       ?                                        ^
+E       
+E       +  '433e0715-1186-4079-a2ad-c1ccd2683d09']
+
+tests/test_pr13_verify_practice.py:344: AssertionError
+________ PracticeMatrixAndFilterTests.test_a_service_matrix_0_1_2_3_12 _________
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_a_service_matrix_0_1_2_3_12>
+
+    async def test_a_service_matrix_0_1_2_3_12(self) -> None:
+        subject = await self._subject()
+        kp = await self._kp(subject)
+    
+        zero = await self._practice()
+>       self.assertEqual(len(zero.items), 0)
+E       AssertionError: 1 != 0
+
+tests/test_pr13_verify_practice.py:279: AssertionError
+_ PracticeMatrixAndFilterTests.test_a_zero_candidates_empty_metadata_is_honest _
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_a_zero_candidates_empty_metadata_is_honest>
+
+    async def test_a_zero_candidates_empty_metadata_is_honest(self) -> None:
+        result = await self._practice()
+        md = result.empty_metadata
+        print(
+            "PR13_VERIFY_EMPTY_ZERO "
+            + json.dumps(md.model_dump(), sort_keys=True)
+        )
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_verify_practice.py:312: AssertionError
+----------------------------- Captured stdout call -----------------------------
+PR13_VERIFY_EMPTY_ZERO {"eligible_candidate_count": 1, "mastered_excluded_count": 0, "raw_candidate_count": 1, "reason": "candidates_returned", "recent_attempt_excluded_count": 0, "returned_count": 1, "target_count": 1, "window_hours": 168}
+________ PracticeMatrixAndFilterTests.test_b_archived_question_excluded ________
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_archived_question_excluded>
+
+    async def test_b_archived_question_excluded(self) -> None:
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        await self._question(subject, [kp.id], status="archived")
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_verify_practice.py:443: AssertionError
+_ PracticeMatrixAndFilterTests.test_b_mastered_archived_mistake_still_excludes_observation _
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_mastered_archived_mistake_still_excludes_observation>
+
+    async def test_b_mastered_archived_mistake_still_excludes_observation(self) -> None:
+        # Task text says "any linked canonical Mistake" without a status
+        # qualifier; this records the current (unfiltered) behaviour explicitly.
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        mistake = await self._mistake(subject, question, status="archived")
+        await self._review_item(mistake, state="mastered")
+        result = await self._practice()
+>       self.assertEqual(result.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_verify_practice.py:505: AssertionError
+__ PracticeMatrixAndFilterTests.test_b_question_without_kp_is_not_a_candidate __
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_question_without_kp_is_not_a_candidate>
+
+    async def test_b_question_without_kp_is_not_a_candidate(self) -> None:
+        subject = await self._subject()
+        no_kp = await self._question(subject, [])
+        first = await self._practice()
+        second = await self._practice()
+>       self.assertEqual(first.items, [])
+E       AssertionError: Lists differ: [PracticeItem(question_id='e946d448-632f-4[84 chars]ck')] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')
+E       
+E       - [PracticeItem(question_id='e946d448-632f-4e91-b28a-a28ff6b7d1cb', knowledge_point_id=20, selection_reason='stable_order_fallback')]
+E       + []
+
+tests/test_pr13_verify_practice.py:513: AssertionError
+_ PracticeMatrixAndFilterTests.test_b_selection_reason_and_empty_reason_catalogs_locked _
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_selection_reason_and_empty_reason_catalogs_locked>
+
+    async def test_b_selection_reason_and_empty_reason_catalogs_locked(self) -> None:
+        self.assertEqual(
+            {
+                practice_service.SELECTION_REASON_WRONG_RATE,
+                practice_service.SELECTION_REASON_LAPSE,
+                practice_service.SELECTION_REASON_DUE,
+                practice_service.SELECTION_REASON_STABLE_FALLBACK,
+            },
+            SELECTION_REASONS,
+        )
+        self.assertEqual(
+            {
+                practice_service.EMPTY_REASON_RETURNED,
+                practice_service.EMPTY_REASON_NO_CANDIDATES,
+                practice_service.EMPTY_REASON_ALL_EXCLUDED,
+            },
+            EMPTY_REASONS,
+        )
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        result = await self._practice()
+        self.assertIn(result.items[0].selection_reason, SELECTION_REASONS)
+        _assert_metadata_honest(self, result.empty_metadata)
+        self.assertNotEqual(result.items[0].selection_reason, "")
+>       self.assertEqual(result.items[0].question_id, str(question.id))
+E       AssertionError: 'e946d448-632f-4e91-b28a-a28ff6b7d1cb' != '8dd608cf-fce7-4741-94a9-689742c58c77'
+E       - e946d448-632f-4e91-b28a-a28ff6b7d1cb
+E       + 8dd608cf-fce7-4741-94a9-689742c58c77
+
+tests/test_pr13_verify_practice.py:555: AssertionError
+______ PracticeMatrixAndFilterTests.test_b_stable_tie_across_kps_by_kp_id ______
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_stable_tie_across_kps_by_kp_id>
+
+    async def test_b_stable_tie_across_kps_by_kp_id(self) -> None:
+        subject = await self._subject()
+        first_kp = await self._kp(subject)
+        second_kp = await self._kp(subject)
+        first_q = await self._question(subject, [first_kp.id])
+        second_q = await self._question(subject, [second_kp.id])
+        result = await self._practice()
+        ordered = [(i.knowledge_point_id, i.question_id) for i in result.items]
+        self.assertLess(first_kp.id, second_kp.id)
+>       self.assertEqual(
+            ordered,
+            [(first_kp.id, str(first_q.id)), (second_kp.id, str(second_q.id))],
+        )
+E       AssertionError: Lists differ: [(20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb[92 chars]61')] != [(164, 'a165bc66-cf91-4c66-a406-d510bbe53e6[46 chars]61')]
+E       
+E       First differing element 0:
+E       (20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb')
+E       (164, 'a165bc66-cf91-4c66-a406-d510bbe53e6f')
+E       
+E       First list contains 1 additional elements.
+E       First extra element 2:
+E       (165, '26b650c6-92b2-4e7c-8b17-548e58ef9761')
+E       
+E       - [(20, 'e946d448-632f-4e91-b28a-a28ff6b7d1cb'),
+E       -  (164, 'a165bc66-cf91-4c66-a406-d510bbe53e6f'),
+E       ? ^
+E       
+E       + [(164, 'a165bc66-cf91-4c66-a406-d510bbe53e6f'),
+E       ? ^
+E       
+E          (165, '26b650c6-92b2-4e7c-8b17-548e58ef9761')]
+
+tests/test_pr13_verify_practice.py:402: AssertionError
+____ PracticeMatrixAndFilterTests.test_b_stable_tie_same_kp_by_question_id _____
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_stable_tie_same_kp_by_question_id>
+
+    async def test_b_stable_tie_same_kp_by_question_id(self) -> None:
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        late = await self._question(subject, [kp.id])
+        early = await self._question(subject, [kp.id])
+        result = await self._practice()
+        ids = [item.question_id for item in result.items]
+>       self.assertEqual(ids, sorted([str(late.id), str(early.id)]))
+E       AssertionError: Lists differ: ['e946d448-632f-4e91-b28a-a28ff6b7d1cb', '1[72 chars]b9f'] != ['15eb5751-b638-4cb6-a68f-27dd360d32ca', 'c[32 chars]b9f']
+E       
+E       First differing element 0:
+E       'e946d448-632f-4e91-b28a-a28ff6b7d1cb'
+E       '15eb5751-b638-4cb6-a68f-27dd360d32ca'
+E       
+E       First list contains 1 additional elements.
+E       First extra element 2:
+E       'c807e0fc-b2b7-4b4d-b1d5-40007f860b9f'
+E       
+E       + ['15eb5751-b638-4cb6-a68f-27dd360d32ca', 'c807e0fc-b2b7-4b4d-b1d5-40007f860b9f']
+E       - ['e946d448-632f-4e91-b28a-a28ff6b7d1cb',
+E       -  '15eb5751-b638-4cb6-a68f-27dd360d32ca',
+E       -  'c807e0fc-b2b7-4b4d-b1d5-40007f860b9f']
+
+tests/test_pr13_verify_practice.py:391: AssertionError
+___ PracticeMatrixAndFilterTests.test_b_weak_kp_priority_consumes_pr10_order ___
+
+self = <test_pr13_verify_practice.PracticeMatrixAndFilterTests testMethod=test_b_weak_kp_priority_consumes_pr10_order>
+
+    async def test_b_weak_kp_priority_consumes_pr10_order(self) -> None:
+        subject = await self._subject()
+        weak_kp = await self._kp(subject)
+        calm_kp = await self._kp(subject)
+        weak_question = await self._question(subject, [weak_kp.id])
+        calm_question = await self._question(subject, [calm_kp.id])
+        await self._attempt(
+            weak_question,
+            is_correct=False,
+            submitted_at=self.now - timedelta(days=8),
+        )
+        result = await self._practice()
+>       self.assertEqual(
+            [item.knowledge_point_id for item in result.items],
+            [weak_kp.id, calm_kp.id],
+        )
+E       AssertionError: Lists differ: [167, 20, 168] != [167, 168]
+E       
+E       First differing element 1:
+E       20
+E       168
+E       
+E       First list contains 1 additional elements.
+E       First extra element 2:
+E       168
+E       
+E       - [167, 20, 168]
+E       ?       ----
+E       
+E       + [167, 168]
+
+tests/test_pr13_verify_practice.py:361: AssertionError
+=============================== warnings summary ===============================
+tests/test_ai_gateway.py::LogWriteFailureTest::test_log_write_failure_does_not_block
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:107: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 336, in test_log_write_failure_does_not_block
+      gw = await call_text("test_task", [{"role": "user", "content": "hi"}])
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 321, in call_text
+      await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 107, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_ai_gateway.py::LogWriteFailureTest::test_write_call_log_catches_exception
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:107: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/async_case.py", line 113, in _callMaybeAsync
+      return self._asyncioRunner.run(
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 361, in test_write_call_log_catches_exception
+      await _write_call_log("test", result, "summary")
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 107, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:164: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:103: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:33: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:185: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:76: LSR03_DATABASE_URL is required for isolated fixture tests
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:87: LSR03_DATABASE_URL is required for isolated archive tests
+SKIPPED [1] tests/test_review_schema_v2.py:504: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:393: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:471: scratch DB only
+21 failed, 920 passed, 9 skipped, 2 warnings, 47 subtests passed in 24.07s

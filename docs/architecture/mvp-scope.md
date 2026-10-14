@@ -1,5 +1,7 @@
 # MVP 第一版范围冻结
 
+> 文档治理（2026-10-09）：此文保留目标设计/阶段起点，不是当前实现或执行授权。canonical Question/Mistake/Review 已有实现；阶段号、未实现表名、JWT/Redis及旧 Note 起点按原设计时点解读，认证以现行有状态会话为准。当前事实见 [ARCHITECTURE_CURRENT](ARCHITECTURE_CURRENT.md)。 当前入口见 [文档索引](../DOCUMENTATION_INDEX.md)。
+
 > 状态：Batch 0 已冻结的实现边界。
 > 本文定义 8 批 MVP 的执行上限，不表示候选页面、数据表或 API 已经实现。
 > 长期目标架构继续保留，但不得覆盖本文的批次顺序与非目标。

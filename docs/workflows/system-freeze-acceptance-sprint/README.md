@@ -29,7 +29,7 @@ The repository has a large pre-existing dirty worktree. This sprint preserved un
 - [Audit](audit.md)
 - [Diff Report](diff-report.md)
 - [Final Decision](final-decision.md)
-- [Handoff Prompt](handoff-prompt.md)
+- Handoff Prompt：原引用 `handoff-prompt.md` 未找到（2026-10-09）；保留缺失说明，当前交接从 [文档索引](../../DOCUMENTATION_INDEX.md) 开始。
 
 ## Planned Outputs
 

@@ -1,0 +1,25 @@
+const {chromium}=require('playwright');
+const path=require('path');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--host-resolver-rules=MAP api.ci.test 127.0.0.1, MAP app.ci.test 127.0.0.1','--no-proxy-server']});
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ await page.goto('http://app.ci.test:18487/manage');
+ await page.locator('#username').fill('ci-admin');await page.locator('#password').fill('ci-test-admin-password');
+ await page.getByRole('button',{name:'密码登录',exact:true}).click();
+ await page.getByRole('heading',{name:'管理面板',exact:true}).waitFor();
+ await page.goto('http://app.ci.test:18487/manage/review');
+ const card=page.getByRole('heading',{name:'E2E-W4-REVIEW-Q 固定间隔复习 v2：连续成功第 1 次应推进到几天？',exact:true}).locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+ await card.getByRole('button',{name:'再答',exact:true}).click();
+ await card.getByRole('button',{name:'A. 选项一',exact:true}).click();
+ await card.getByRole('button',{name:'C. 选项三',exact:true}).click();
+ console.log('PRESSED',await card.getByRole('group',{name:'作答选项',exact:true}).locator('button').evaluateAll(bs=>bs.map(b=>({text:b.textContent,pressed:b.getAttribute('aria-pressed')}))));
+ const wait=page.waitForResponse(r=>r.url().endsWith('/api/admin/attempts/review')&&r.request().method()==='POST');
+ await card.getByRole('button',{name:'提交作答',exact:true}).click();
+ const response=await wait;const body=await response.json();
+ console.log(JSON.stringify({http:response.status(),submitted_answer:body.attempt.submitted_answer,is_correct:body.attempt.is_correct,evaluation:body.evaluation}));
+ await page.getByText('判定：作答有误',{exact:false}).waitFor();
+ await page.screenshot({path:path.join(__dirname,'multiple-choice-failure.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:path.join(__dirname,'review-mobile.png'),fullPage:true});
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

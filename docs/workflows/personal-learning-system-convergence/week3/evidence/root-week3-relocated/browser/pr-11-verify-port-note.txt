@@ -1,0 +1,12 @@
+PR-11-verify pre-browser port reconciliation
+date: 2026-09-25T11:24:19Z
+Mandated ports :8001 (backend) and :8787 (workerd preview) were held by stale
+Week 3 PR-09 scratch services started 2026-09-24 16:22 and left running:
+  PID  PPID STARTED                      COMMAND
+86181     1 Thu Sep 24 16:24:31 2026     /opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python -m uvicorn main:app --host 127.0.0.1 --port 8001
+  PID  PPID STARTED                      COMMAND
+84715 84714 Thu Sep 24 16:22:08 2026     /opt/homebrew/Cellar/node/26.0.0/bin/node --no-warnings /Users/limengyang/2025-blog-public/node_modules/wrangler/wrangler-dist/cli.js dev
+  PID  PPID STARTED                      COMMAND
+84717 84715 Thu Sep 24 16:22:08 2026     /Users/limengyang/2025-blog-public/node_modules/@cloudflare/workerd-darwin-arm64/bin/workerd serve --binary --experimental --socket-addr=entry=localhost:8787 --external-addr=loopback=127.0.0.1:51344 --control-fd=3 -
+backend DATABASE_URL db = astra_week3_pr09_ui (PR-09 scratch, not PR-11)
+Action: TERM the three stale PR-09 scratch PIDs only; resident :8000 untouched; no product/data writes.

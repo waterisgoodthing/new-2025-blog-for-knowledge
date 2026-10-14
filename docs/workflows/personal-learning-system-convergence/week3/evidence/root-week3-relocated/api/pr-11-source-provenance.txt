@@ -1,0 +1,14 @@
+$ rg -n "Note|notes" backend/app/services/dashboard_service.py
+(no matches)
+
+$ canonical tables imported by dashboard_service.py
+8:from app.models.attachment import Attachment
+9:from app.models.mistake import Mistake
+10:from app.models.question import Question
+11:from app.models.review_item import ReviewItem, ReviewRecord
+12:from app.models.taxonomy import KnowledgePoint
+
+$ PR-13/PR-10 service reuse
+27:from app.services import kp_analytics_service, practice_service
+125:    ranked = await kp_analytics_service.get_knowledge_point_analytics(session, now=now)
+261:        practice = await practice_service.get_daily_practice(session, now=generated_at)

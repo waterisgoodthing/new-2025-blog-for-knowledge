@@ -26,6 +26,7 @@
 		"predeploy:frontend": "node scripts/predeploy-frontend-audit.mjs",
 		"predeploy:backend": "node scripts/predeploy-backend-audit.mjs",
 		"preview": "opennextjs-cloudflare preview",
+		"smoke": "node scripts/runtime-smoke.mjs",
 		"postinstall": "node scripts/patch-opennext-node-minify.mjs",
 		"deploy": "opennextjs-cloudflare deploy",
 		"deploy:frontend": "npm run predeploy:frontend && opennextjs-cloudflare deploy",
@@ -37,7 +38,8 @@
 		"setup": "node scripts/setup.mjs --setup",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:typecheck": "node node_modules/typescript/bin/tsc --noEmit --project tsconfig.test.json"
+		"test:typecheck": "node node_modules/typescript/bin/tsc --noEmit --project tsconfig.test.json",
+		"test:e2e": "playwright test --workers=1"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.3.1",

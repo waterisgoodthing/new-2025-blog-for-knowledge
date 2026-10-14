@@ -1,5 +1,7 @@
 # Codex 任务组技术审计报告
 
+> 文档治理（2026-10-09）：历史审计/建议快照保留。测试、版本、缺陷与权限描述只对应报告原时点；本轮重新核验结果以当前审查和状态为准，不覆盖原裁定。 当前入口见 [文档索引](docs/DOCUMENTATION_INDEX.md)。
+
 **审计日期**: 2026-08-01
 **审计范围**: Personal Learning System V2 Unification (I-Series: I10/I11/I12)
 **审计师**: Claude (Opus 4.8)

@@ -11,5 +11,12 @@
     "**/*.tsx",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/features/ui-v2/**",
+    "src/adapters/ui-v2/**",
+    "src/contracts/ui-v2/**",
+    "src/mocks/ui-v2/**",
+    "src/components/ui-v2/**"
+  ]
 }

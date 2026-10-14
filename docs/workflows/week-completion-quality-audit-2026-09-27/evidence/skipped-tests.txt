@@ -1,0 +1,12 @@
+................................sss...ssssss                       [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_review_schema_v2.py:504: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:393: scratch DB only
+SKIPPED [1] tests/test_review_schema_v2.py:471: scratch DB only
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:76: LSR03_DATABASE_URL is required for isolated fixture tests
+SKIPPED [1] tests/test_lsr03_fixture_rehearsal.py:87: LSR03_DATABASE_URL is required for isolated archive tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:164: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:103: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:33: LSR03_DATABASE_URL is required for isolated database tests
+SKIPPED [1] tests/test_legacy_note_migration_contract.py:185: LSR03_DATABASE_URL is required for isolated database tests
+35 passed, 9 skipped, 6 subtests passed in 0.31s

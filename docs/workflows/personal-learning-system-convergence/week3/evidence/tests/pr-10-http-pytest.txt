@@ -1,0 +1,7 @@
+..                                                                       [100%]
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_pr10_kp_analytics_http.py::test_analytics_endpoint_is_anonymous_unauthorized
+PASSED tests/test_pr10_kp_analytics_http.py::test_analytics_endpoint_returns_admin_payload
+2 passed in 0.79s
+PASS: db_name='astra_week3_pr10' source=explicit:--db-name; executing ['zsh', '-c', 'PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr10_kp_analytics_http.py -q -rA']

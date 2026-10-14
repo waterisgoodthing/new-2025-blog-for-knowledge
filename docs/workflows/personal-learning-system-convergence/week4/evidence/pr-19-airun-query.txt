@@ -1,0 +1,91 @@
+PR-19 — AiRun target coverage query (scratch DB: astra_week4_pr19)
+=================================================================
+
+Target: postgresql://limengyang@localhost:5432/astra_week4_pr19
+Method: every step ran through
+  python3 scripts/week4-scratch-guard.py run \
+    --url "postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr19" \
+    -- bash -c "<command>"
+including the psql coverage queries, so all SQL was guard-routed.
+No migration was authored for PR-19 (target_type/target_id already exist on ai_runs).
+
+This refresh also demonstrates the real creation-type backfill helper
+`ai_run_service.backfill_ai_run_target`.
+
+Step 1 — seed (real service calls, no network)
+----------------------------------------------
+Ran a temp script using ai_run_service.start_ai_run:
+  - capture_recognition, target_type='Capture', target_id=<linked uuid>
+  - capture_draft, NULL target (will be backfilled)
+  - mistake_question_draft, NULL target (abandoned, stays NULL)
+observed: "seeded: linked capture_recognition target_id=6168ed37-... ;
+unlinked capture_draft; unlinked abandoned mistake_question_draft"
+
+Step 2 — coverage BEFORE backfill
+---------------------------------
+SQL A:
+
+SELECT task_type, count(*) AS total, count(target_type) AS with_target_type, count(target_id) AS with_target_id FROM ai_runs GROUP BY task_type ORDER BY task_type;
+
+       task_type        | total | with_target_type | with_target_id
+------------------------+-------+------------------+----------------
+ capture_draft          |     1 |                0 |              0
+ capture_recognition    |     1 |                1 |              1
+ mistake_question_draft |     1 |                0 |              0
+(3 rows)
+
+SQL B:
+
+SELECT count(*) AS total_runs, count(target_id) AS linked_runs, count(*) - count(target_id) AS unlinked_runs FROM ai_runs;
+
+ total_runs | linked_runs | unlinked_runs
+------------+-------------+---------------
+          3 |           1 |             2
+(1 row)
+
+Step 3 — call backfill_ai_run_target on the NULL capture_draft run
+------------------------------------------------------------------
+Ran a temp script that selects the unlinked capture_draft run and calls
+`backfill_ai_run_target(session, run.id, <new uuid>, target_type="Mistake")`,
+then commits.
+observed: "backfill_ai_run_target returned=True for run_id=4d49c123-... ->
+target_type=Mistake target_id=2162ba55-..."
+
+Step 4 — coverage AFTER backfill
+--------------------------------
+SQL C:
+
+SELECT task_type, target_type, count(*) AS total, count(target_id) AS with_target_id FROM ai_runs GROUP BY task_type, target_type ORDER BY task_type;
+
+       task_type        | target_type | total | with_target_id
+------------------------+-------------+-------+----------------
+ capture_draft          | Mistake     |     1 |              1
+ capture_recognition    | Capture     |     1 |              1
+ mistake_question_draft |             |     1 |              0
+(3 rows)
+
+SQL D:
+
+SELECT count(*) AS total_runs, count(target_id) AS linked_runs, count(*) - count(target_id) AS unlinked_runs FROM ai_runs;
+
+ total_runs | linked_runs | unlinked_runs
+------------+-------------+---------------
+          3 |           2 |             1
+(1 row)
+
+Interpretation
+--------------
+- A target-linked call (capture_recognition with capture_id) stores target_type
+  and target_id on the ai_runs row.
+- A creation-type run created with NULL target (capture_draft) is backfilled by
+  `backfill_ai_run_target`, moving linked_runs from 1/3 to 2/3; the row now
+  shows target_type=Mistake with the new entity id.
+- The abandoned run (mistake_question_draft) still has NULL target after the
+  backfill call and is reported as the remaining unlinked row — the documented
+  valid terminal state.
+- Integration status: `backfill_ai_run_target` is implemented and exercised here
+  and in tests/test_ai_governance.py, but NO production confirmation endpoint
+  calls it yet (NOT_YET_WIRED; see docs/architecture/ai-governance.md).
+
+Cleanup: seeded rows removed with DELETE FROM ai_runs; the table is empty after
+this run (verified count(*) = 0).

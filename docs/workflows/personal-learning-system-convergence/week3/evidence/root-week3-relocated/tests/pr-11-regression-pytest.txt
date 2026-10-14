@@ -1,0 +1,4 @@
+........................................................................ [ 80%]
+..................                                                       [100%]
+90 passed in 2.27s
+PASS: db_name='astra_week3_pr11' source=explicit:--db-name; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_dashboard_routes.py', 'tests/test_dashboard_dependency_lifecycle.py', 'tests/test_week3_contracts.py', 'tests/test_pr13_practice_service.py', 'tests/test_pr10_kp_analytics_service.py', '-q']

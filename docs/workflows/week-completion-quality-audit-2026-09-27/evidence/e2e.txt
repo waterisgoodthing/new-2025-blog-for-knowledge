@@ -1,0 +1,13 @@
+[e2e-seed] question=a5a180fe-29d2-4997-a116-c2dab9fb9606 review_item=adbe1a4e-7f63-46e4-9ce2-c2f12514fcb8 marker=E2E-W4-BUSINESS
+
+Running 5 tests using 1 worker
+
+(node:72631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/01-login-dashboard.spec.ts:24:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页 (2.2s)
+  ✓  2 [chromium] › tests/e2e/02-note-creation.spec.ts:20:5 › E2E-02: 新建笔记并保存后可再次编辑保存 (1.7s)
+  ✓  3 [chromium] › tests/e2e/03-capture.spec.ts:15:5 › E2E-03: 错误作答生成待确认错题草稿（真实页面操作 + 后端读回） (3.1s)
+  ✓  4 [chromium] › tests/e2e/04-review-flow.spec.ts:23:5 › E2E-04: 复习再答并写入 ReviewRecord（真实页面操作 + 后端读回） (2.0s)
+  ✓  5 [chromium] › tests/e2e/05-error-retry.spec.ts:8:5 › E2E-05: 公开笔记页 API 失败时显示错误状态，重试后恢复 (1.2s)
+
+  5 passed (11.2s)

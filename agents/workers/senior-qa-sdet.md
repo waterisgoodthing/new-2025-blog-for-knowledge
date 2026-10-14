@@ -21,7 +21,7 @@ Reject tests that assert implementation trivia, false-positive mocks, unverified
 
 ## Permissions And Limits
 
-May implement tests, fixtures, harnesses, and verification utilities. Product-code repair belongs to the Owner by default. Can raise quality/release blocks with evidence but cannot approve untested behavior or reinterpret requirements.
+May implement tests, fixtures, harnesses, and verification utilities. Product-code repair returns to the main agent for assignment to an implementer. Can raise quality/release blocks with evidence but cannot approve untested behavior or reinterpret requirements.
 
 ## Output
 

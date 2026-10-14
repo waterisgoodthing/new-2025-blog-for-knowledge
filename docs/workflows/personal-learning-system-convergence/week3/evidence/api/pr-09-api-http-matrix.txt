@@ -1,0 +1,45 @@
+# PR-09-A HTTP contract / permission / freeze matrix
+agent: PR-09-verify-api · date: 2026-09-24T08:16:49Z
+scratch DB: astra_week3_pr09_ui_api @ 127.0.0.1:49621 via scripts/week3-scratch-guard.py
+tests: backend/tests/test_pr09_verify_api_contract.py (fresh DB + alembic head=031 per run)
+run log: evidence/tests/pr-09-api-pytest.txt
+
+## Results (23 passed / 1 failed — failure is a product defect, see findings)
+
+| # | item | expectation | result | evidence |
+|---|------|-------------|--------|----------|
+| A.1 | GET /api/public/mistakes zero rows | explicit Empty (empty=true + message) | PASS | test_public_zero_rows_explicit_empty |
+| A.2 | populated: only active+public; field-level forbid my_answer/source_draft_item_id/subject_id/version/review_item_id/status/visibility | 1 row; keys==11-field allowlist; forbidden absent in JSON keys AND raw text | PASS | test_public_populated_only_active_public_and_field_level |
+| A.3a | PATCH /api/admin/mistakes/{id}/visibility anon | 401/403 | PASS | test_anonymous_visibility_patch_denied |
+| A.3b | GET /api/admin/mistakes anon | 401/403 | PASS | test_anonymous_admin_list_denied |
+| A.3c | PUT /api/admin/mistakes/{id} anon | 401/403 | PASS | test_anonymous_admin_update_denied |
+| A.4-F1 | POST /api/notes type=mistake | 410 + code legacy_mistake_write_frozen | PASS | test_F1_create_type_mistake_frozen |
+| A.4-F2 | PUT type note→mistake AND mistake→note | 410 both directions | PASS | test_F2_update_type_into/out_of_mistake_frozen |
+| A.4-F3 | promote note→mistake AND mistake→note | 410 both directions | PASS | test_F3_promote_to/from_mistake_frozen |
+| A.4-F4 | staged-mistake-form create API (POST notes type=mistake) | 410 | PASS | test_F4_staged_mistake_form_create_api_frozen |
+| A.4-F5 | mistake-form edit-save API (PUT content on mistake row) | 410 | PASS | test_F5_mistake_form_edit_save_api_frozen |
+| A.4-F6 | write-note content write on mistake row | 410 | PASS | test_F6_write_note_content_write_frozen |
+| A.4-F7 | POST /api/review/{slug} SM-2 submit | 410 | PASS | test_F7_review_sm2_submit_frozen |
+| A.4-F8 | PUT field update on mistake row | 410 | PASS | test_F8_field_update_frozen |
+| A.4-F9 | DELETE + POST batch-delete | 410 both | PASS | test_F9_delete/batch_delete_frozen |
+| A.4+ | note-type create still allowed (control) | 201 | PASS | test_note_type_create_still_allowed |
+| A.5a | compat read GET /api/notes | 200 | PASS | test_compat_read_list_notes |
+| A.5b | compat read POST /api/admin/search | 200 (admin session) | PASS | test_compat_read_search |
+| A.5c | compat read GET /api/review/queue | 200 (admin session) | PASS | test_compat_read_review_queue |
+| A.5d | compat read GET /api/notes/{slug} on mistake row | 200 type=mistake | PASS | test_compat_read_single_mistake_note |
+| A.6 | admin visibility wrong version | 409 | PASS | test_visibility_wrong_version_409 |
+| A.x  | EXTRA: admin visibility correct version toggle | 200 + version increment | **FAIL 500** | test_visibility_correct_version_toggles — product defect FINDING-01 |
+
+## Freeze detail contract observed
+410 body: {"detail": {"code": "legacy_mistake_write_frozen", "operation": "<op>", "message": "..."}}
+operations observed: notes.create / notes.update / notes.promote / notes.delete / notes.batch_delete / review.sm2_submit
+
+## Repro for FINDING-01 (mutation -> 500, read/no-op -> 200)
+$ guarded python /tmp/pr09_repro_vis6.py  (scratch astra_week3_pr09_ui_api)
+PATCH-correct-version: 500
+PUT-correct-version: 500
+DELETE-correct-version: 500
+PATCH-noop-same-visibility: 200   # no flush -> no expired updated_at -> serialization OK
+GET /api/admin/mistakes/{id}: 200 # full load, no flush
+PATCH wrong version: 409          # raises before flush
+root cause: mistake_service.update_mistake_visibility/update_mistake/archive_mistake mutate+flush (server onupdate on mistakes.updated_at) then return ORM-backed MistakeRecord; FastAPI response serialization lazy-loads expired updated_at in sync context -> sqlalchemy.exc.MissingGreenlet -> 500 (swallowed by request_observability middleware).
