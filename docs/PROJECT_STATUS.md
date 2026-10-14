@@ -2,6 +2,14 @@
 
 源码/产品测试基线：2026-10-09；文档复核：2026-10-12。系统与学习闭环 `PARTIAL`；当前本地质量检查包含一个明确 FAIL（测试类型检查）。这不是撤销历史用户验收，也不是本轮发布验收。基线对象为 dirty工作区，完整结果见 [本轮证据](audits/CURRENT_REVIEW_EVIDENCE.md)。
 
+> **2026-10-13 现状更新（取代下文部分当前描述）**
+> - **A13 已修复**：`test:typecheck` 退出 0（原两处 TS2322 已修）；应用构建不受影响。
+> - **本地质量门禁转绿**：后端 `pytest` **957 passed / 9 skipped / 0 failed**（经 scratch 守卫）；前端 `test:typecheck` 0。
+> - **后端可启动**：开发库 `blog_v2` 已迁移 032→034（`main.EXPECTED_ALEMBIC_REVISION="034"` 满足）。
+> - **本轮已关闭的缺陷**：A01–A03（AI 确认来源/快照/锁）、A04/DR-B01（KP 写协议）、A05、A06、A08（归档 due 过滤）、A11、A12、DR-B04、DR-B05。
+> - **仍开放/延后**：A07/A09/A10（见 [领域裁决](domain-decisions-a07-a10.md)）；A15 完整同源 E2E 与远端 CI 仍未执行。
+> - 工作区已建立基线并 **clean**。下文以 2026-10-09 为时点的测试/门禁描述保留为历史记录。
+
 ## 状态口径
 
 `VERIFIED_COMPLETE`只用于明确范围内当前已核验的交付；`PARTIALLY_COMPLETE`表示实现/部分证据存在但未满足全退出条件；`NOT_IMPLEMENTED`表示所列目标未找到实现；`BLOCKED`表示具体依赖阻断；`UNVERIFIED`表示本轮缺少足够证据；`OBSOLETE`表示作为当前执行依据已过期。历史PASS原样保留，不能把本轮“未重跑”伪装成历史失败。
