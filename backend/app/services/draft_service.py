@@ -133,6 +133,10 @@ async def create_question_draft(
     await session.flush()
 
     values = payload.model_dump(exclude={"knowledge_point_ids"})
+    if values.get("difficulty") == "unspecified":
+        # ``question_drafts.difficulty`` CHECK only allows NULL/easy/medium/hard;
+        # the canonical "unspecified" value is stored as NULL for drafts.
+        values["difficulty"] = None
     draft = QuestionDraft(draft_item_id=item.id, **values)
     session.add(draft)
     await session.flush()
@@ -219,6 +223,9 @@ async def update_question_draft(
     )
 
     values = validated.model_dump(exclude={"knowledge_point_ids"})
+    if values.get("difficulty") == "unspecified":
+        # See create_question_draft: the draft CHECK has no "unspecified".
+        values["difficulty"] = None
     for field, value in values.items():
         setattr(record.draft, field, value)
 

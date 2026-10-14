@@ -78,6 +78,22 @@ class QuestionDraftServiceTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(draft.item.source_type, "manual")
         self.assertEqual(draft.knowledge_point_ids, [point.id])
 
+    async def test_draft_unspecified_difficulty_is_stored_as_null(self):
+        subject = await create_subject(
+            self.session,
+            SubjectCreate(name="A06 Draft Subject"),
+        )
+        draft = await create_question_draft(
+            self.session,
+            QuestionDraftCreate(
+                subject_id=subject.id,
+                question_text="A06 draft",
+                question_type="short_answer",
+                difficulty="unspecified",
+            ),
+        )
+        self.assertIsNone(draft.difficulty)
+
     async def test_stale_draft_version_cannot_overwrite_newer_edit(self):
         subject = await create_subject(
             self.session,
