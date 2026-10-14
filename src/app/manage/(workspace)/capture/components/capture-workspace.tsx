@@ -140,12 +140,19 @@ export function CaptureWorkspace() {
       setSelected(null)
       return
     }
+    let cancelled = false
     getCapture(selectedId)
-      .then(setSelected)
+      .then((detail) => {
+        if (!cancelled) setSelected(detail)
+      })
       .catch(() => {
+        if (cancelled) return
         toast.error('加载采集详情失败')
         setSelected(null)
       })
+    return () => {
+      cancelled = true
+    }
   }, [selectedId])
 
   useEffect(() => {
@@ -182,10 +189,12 @@ export function CaptureWorkspace() {
   )
 
   const updateSelected = useCallback((capture: Capture) => {
-    setSelected(capture)
     setCaptures((prev) =>
       prev.map((c) => (c.id === capture.id ? capture : c)),
     )
+    // A late response for a capture the user has since navigated away from
+    // must not overwrite the current selection.
+    setSelected((prev) => (prev && prev.id === capture.id ? capture : prev))
   }, [])
 
   const handleRecognize = useCallback(async () => {
@@ -871,6 +880,15 @@ function ConvertForm({
     capture.question_draft_text,
     capture.error_summary_draft,
   ])
+
+  // Switching capture must not carry over the previous item's answer / reason /
+  // difficulty / knowledge points into the conversion form.
+  useEffect(() => {
+    setMyAnswer('')
+    setReasonCategory('unknown')
+    setDifficulty(null)
+    setSelectedKpIds([])
+  }, [capture.id])
 
   const canConvert = subjectId !== null && questionText.trim().length > 0
 

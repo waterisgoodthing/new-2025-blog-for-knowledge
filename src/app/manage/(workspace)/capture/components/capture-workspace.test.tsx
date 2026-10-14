@@ -278,3 +278,60 @@ describe('CaptureWorkspace — EV05 manual capture path', () => {
     ).toBeInTheDocument()
   })
 })
+
+describe('CaptureWorkspace — A11 late detail response', () => {
+  beforeEach(() => {
+    vi.mocked(taxonomyApi.listSubjects).mockResolvedValue([])
+    vi.mocked(taxonomyApi.listKnowledgePoints).mockResolvedValue([])
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 404 }),
+    )
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    vi.clearAllMocks()
+  })
+
+  it('ignores a late detail response after switching capture', async () => {
+    const first = makeCapture({
+      id: 'aaaaaaaa-0000-0000-0000-000000000000',
+      status: 'recognized',
+      question_draft_text: '题目甲',
+      recognized_text: 'FIRST-TEXT',
+    })
+    const second = makeCapture({
+      id: 'bbbbbbbb-0000-0000-0000-000000000000',
+      status: 'recognized',
+      question_draft_text: '题目乙',
+      recognized_text: 'SECOND-TEXT',
+    })
+    vi.mocked(capturesApi.listCaptures).mockResolvedValue([first, second])
+
+    let resolveFirst: ((capture: Capture) => void) | undefined
+    vi.mocked(capturesApi.getCapture).mockImplementation((id: string) => {
+      if (id === first.id) {
+        return new Promise<Capture>((resolve) => {
+          resolveFirst = resolve
+        })
+      }
+      return Promise.resolve(second)
+    })
+
+    render(<CaptureWorkspace />)
+
+    fireEvent.click(await screen.findByText('题目乙'))
+
+    expect(await screen.findByDisplayValue('SECOND-TEXT')).toBeInTheDocument()
+
+    // The stale response for the first capture arrives late and must be dropped.
+    resolveFirst?.(first)
+
+    await waitFor(() =>
+      expect(screen.queryByDisplayValue('FIRST-TEXT')).not.toBeInTheDocument(),
+    )
+    expect(screen.getByDisplayValue('SECOND-TEXT')).toBeInTheDocument()
+  })
+})
