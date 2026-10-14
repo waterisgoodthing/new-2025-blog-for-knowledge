@@ -8,4 +8,4 @@
 - [x] T6 测试：更新既有 confirm 体；新增 A01 不一致、A02 快照、A03 加锁刷新用例
 - [x] T7 运行定向 + 全量测试（定向 30 passed；全量 950 passed）
 - [x] T8 独立审查（另一 agent）→ PASS（见 validation.md）
-- [ ] T9 单独提交 — **受阻**：目标文件含既有未提交 WIP（见 validation.md 说明）
+- [x] T9 提交：`92ab227`（作为 B05 功能提交的一环；因目标文件整体为未提交 WIP，无法从 WIP 中单独剥离 A01–A03）

@@ -29,4 +29,5 @@ A01 redress 隔离性：`test_b05_ai_canonical.py` 的不一致场景只改 `use
 ## 提交受阻说明（重要）
 A01–A03 改动所落的文件**本身是未提交的 B05 功能 WIP**：`HEAD` 中不存在 `ai-confirm`、`MistakeAiConfirmRequest`、`get_ai_run_for_update`。即整个 B05 尚未入库。
 因此无法把 A01–A03 从既有 WIP 中干净剥离成"单独提交"（除 `routers/ai_runs.py` 的一行替换 + 新 helper 外）。
-**处理需先决策**（见主报告）：(a) 将涉及的 B05 文件整体作为一个"完成 B05 信任合同"提交；或 (b) 先做 312 脏文件分离，建立 B05 基线后再提交。
+**处置（已执行）**：先做脏文件分离（基线），把 AI 确认相关文件作为**一个**功能提交 `92ab227 feat(ai): canonical AI confirmation with trusted source (B05, A01-A03)`；其余 WIP 按域分别提交为基线（`a899fa9` 后端 / `db702ec` 前端 / `fc871d5` docs+脚本）。工作区随后 **clean**。
+附带说明：`admin_mistakes.py` 等文件同时含少量非 AI 的既有编辑（如 `update_mistake`/`MistakeOut`），随该文件一并进入 `92ab227`。
