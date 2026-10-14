@@ -7,7 +7,7 @@ import { deleteNote } from '@/lib/api/notes'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { FeatureState } from '../../components/feature-state'
 import { ManagePageHeader } from '../../components/manage-page-header'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function NotesPage() {
 	const params = useSearchParams()
@@ -24,6 +24,10 @@ export default function NotesPage() {
 	const items = data?.items ?? []
 	const total = data?.total ?? 0
 	const totalPages = Math.max(1, Math.ceil(total / 30))
+
+	useEffect(() => {
+		setPage(1)
+	}, [type])
 	const remove = async (slug: string) => {
 		if (!window.confirm('确认删除这条内容？')) return
 		setDeleteError('')

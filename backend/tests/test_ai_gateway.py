@@ -199,7 +199,7 @@ class CallTextProvenanceGuardTest(unittest.IsolatedAsyncioTestCase):
             patch(
                 "app.services.ai_gateway._write_call_log",
                 new_callable=AsyncMock,
-            ),
+            ) as write_log,
             patch(
                 "app.services.ai_gateway._start_run_record",
                 new_callable=AsyncMock,
@@ -214,6 +214,7 @@ class CallTextProvenanceGuardTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(result.success)
         provider.assert_not_awaited()
+        write_log.assert_awaited_once()
 
     async def test_non_canonical_call_still_degrades_without_run(self):
         mock_result = CallResult(
