@@ -1,11 +1,14 @@
+import os
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from app.utils.scratch_db_safety import require_migration_target
 from app.config import get_settings
-from app.models.registry import EXCLUDED_SCHEMA_TABLES, SCHEMA_LIFECYCLE_METADATA
+from app.models.registry import SCHEMA_LIFECYCLE_METADATA
+from app.models.sql_owned import include_object
 
 config = context.config
 if config.config_file_name is not None:
@@ -15,18 +18,6 @@ settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 target_metadata = SCHEMA_LIFECYCLE_METADATA
-
-
-def include_object(object_, name, type_, reflected, compare_to):
-    if type_ == "table" and name in EXCLUDED_SCHEMA_TABLES:
-        return False
-
-    if type_ == "index":
-        table = getattr(object_, "table", None)
-        if table is not None and table.name in EXCLUDED_SCHEMA_TABLES:
-            return False
-
-    return True
 
 
 def run_migrations_offline() -> None:
@@ -53,6 +44,10 @@ def do_run_migrations(connection):
 
 
 async def run_async_migrations() -> None:
+    require_migration_target(
+        config.get_main_option("sqlalchemy.url"),
+        approved_target=os.environ.get("BLOG_APPROVED_MIGRATION_TARGET"),
+    )
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

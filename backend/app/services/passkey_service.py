@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import logging
 import secrets
 from datetime import datetime, timezone
@@ -8,12 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.models.session import PasskeyCredential
+from app.services import webauthn_challenge_service as challenge_service
 
 logger = logging.getLogger(__name__)
-
-_reg_challenge_store: dict[str, bytes] = {}
-_auth_challenge_store: dict[str, bytes] = {}
-_operator_reg_challenge_store: dict[str, bytes] = {}
 
 
 def _get_rp_id() -> str:
@@ -47,12 +45,52 @@ def _b64url_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s)
 
 
-def generate_registration_options(
+async def _resolve_client_challenge(
+    db: AsyncSession,
+    credential,
+    purpose: str,
+    *,
+    session_id: str | None = None,
+    user_id=None,
+):
+    """Resolve the stored challenge the client actually answered (W4-F03).
+
+    Returns ``(record, raw_challenge_bytes)`` or ``(None, None)``. Fails closed
+    when the client payload is missing/malformed, no matching unconsumed and
+    unexpired row exists for the purpose/binding, or the stored raw challenge
+    differs from the client-presented bytes. Never falls back to the latest
+    pending challenge.
+    """
+    client_bytes = challenge_service.client_challenge_bytes(credential)
+    if client_bytes is None:
+        return None, None
+    record = await challenge_service.get_valid_challenge_by_hash(
+        db,
+        hashlib.sha256(client_bytes).hexdigest(),
+        purpose,
+        session_id=session_id,
+        user_id=user_id,
+    )
+    if record is None:
+        return None, None
+    stored_bytes = _b64url_decode(record.challenge)
+    if stored_bytes != client_bytes:
+        logger.warning("Challenge hash/raw mismatch for purpose %s", purpose)
+        return None, None
+    return record, stored_bytes
+
+
+async def generate_registration_options(
+    db: AsyncSession,
     rp_id: str | None = None,
 ) -> dict:
+    """Return PublicKeyCredentialCreationOptions and persist an unbound
+    ``registration`` challenge (session_id/user_id NULL)."""
     challenge = secrets.token_bytes(32)
     user_id = secrets.token_bytes(16)
-    _reg_challenge_store["current"] = challenge
+    await challenge_service.store_challenge(
+        db, challenge, challenge_service.PURPOSE_REGISTRATION
+    )
     return {
         "publicKey": {
             "rp": {"name": _get_rp_name(), "id": _resolve_rp_id(rp_id)},
@@ -77,16 +115,24 @@ def generate_registration_options(
     }
 
 
-def verify_registration(
+async def verify_registration(
+    db: AsyncSession,
     attestation: dict,
     expected_origin: str | None = None,
     expected_rp_id: str | None = None,
 ) -> dict | None:
+    """Verify an attestation against the ``registration`` challenge the client
+    answered (matched by challenge hash, not merely the latest). Returns
+    ``{"credential_id": str, "public_key": bytes, "sign_count": int}`` on success
+    (``public_key`` is the raw COSE bytes) or ``None``. The challenge is marked
+    consumed only on success."""
     from webauthn import verify_registration_response
 
-    expected_challenge = _reg_challenge_store.get("current")
-    if not expected_challenge:
-        logger.warning("Registration: no challenge stored")
+    record, expected_challenge = await _resolve_client_challenge(
+        db, attestation, challenge_service.PURPOSE_REGISTRATION
+    )
+    if not record:
+        logger.warning("Registration: no matching challenge stored")
         return None
 
     try:
@@ -96,7 +142,7 @@ def verify_registration(
             expected_origin=_resolve_origin(expected_origin),
             expected_rp_id=_resolve_rp_id(expected_rp_id),
         )
-        del _reg_challenge_store["current"]
+        await challenge_service.mark_consumed(db, record)
         return {
             "credential_id": _b64url_encode(verification.credential_id),
             "public_key": verification.credential_public_key,
@@ -107,13 +153,21 @@ def verify_registration(
         return None
 
 
-def generate_operator_registration_options(
+async def generate_operator_registration_options(
+    db: AsyncSession,
     session_id: str,
     rp_id: str | None = None,
 ) -> dict:
+    """Return creation options and persist an ``operator_registration``
+    challenge bound to the supplied ephemeral ``session_id``."""
     challenge = secrets.token_bytes(32)
     user_id = secrets.token_bytes(16)
-    _operator_reg_challenge_store[session_id] = challenge
+    await challenge_service.store_challenge(
+        db,
+        challenge,
+        challenge_service.PURPOSE_OPERATOR_REGISTRATION,
+        session_id=session_id,
+    )
     return {
         "publicKey": {
             "rp": {"name": _get_rp_name(), "id": _resolve_rp_id(rp_id)},
@@ -138,18 +192,31 @@ def generate_operator_registration_options(
     }
 
 
-def verify_operator_registration(
+async def verify_operator_registration(
+    db: AsyncSession,
     attestation: dict,
     session_id: str,
     expected_origin: str | None = None,
     expected_rp_id: str | None = None,
 ) -> dict | None:
+    """Verify an operator attestation against the challenge the client answered,
+    bound to ``session_id`` and matched by challenge hash. Returns
+    ``{"credential_id": str, "public_key": bytes, "sign_count": int}`` or
+    ``None``. The challenge is marked consumed BEFORE verification (preserved
+    operator semantics)."""
     from webauthn import verify_registration_response
 
-    expected_challenge = _operator_reg_challenge_store.pop(session_id, None)
-    if not expected_challenge:
-        logger.warning(f"Operator registration: no challenge for session {session_id[:8]}...")
+    record, expected_challenge = await _resolve_client_challenge(
+        db,
+        attestation,
+        challenge_service.PURPOSE_OPERATOR_REGISTRATION,
+        session_id=session_id,
+    )
+    if not record:
+        logger.warning(f"Operator registration: no matching challenge for session {session_id[:8]}...")
         return None
+
+    await challenge_service.mark_consumed(db, record)
 
     try:
         verification = verify_registration_response(
@@ -168,11 +235,16 @@ def verify_operator_registration(
         return None
 
 
-def generate_authentication_options(
+async def generate_authentication_options(
+    db: AsyncSession,
     rp_id: str | None = None,
 ) -> dict:
+    """Return PublicKeyCredentialRequestOptions and persist an unbound
+    ``authentication`` challenge (session_id/user_id NULL)."""
     challenge = secrets.token_bytes(32)
-    _auth_challenge_store["current"] = challenge
+    await challenge_service.store_challenge(
+        db, challenge, challenge_service.PURPOSE_AUTHENTICATION
+    )
     return {
         "publicKey": {
             "challenge": _b64url_encode(challenge),
@@ -183,7 +255,8 @@ def generate_authentication_options(
     }
 
 
-def verify_authentication(
+async def verify_authentication(
+    db: AsyncSession,
     assertion: dict,
     stored_credential_id: str,
     stored_public_key: bytes,
@@ -191,11 +264,20 @@ def verify_authentication(
     expected_origin: str | None = None,
     expected_rp_id: str | None = None,
 ) -> tuple[bool, int]:
+    """Verify an assertion against the ``authentication`` challenge the client
+    answered (matched by challenge hash, not merely the latest). Returns
+    ``(ok, sign_count)``; on failure the original ``stored_sign_count`` is
+    returned unchanged. ``stored_public_key`` is the raw COSE bytes from the
+    credential row (``stored_credential_id`` is carried for call-site symmetry
+    but is not read by the verifier). The challenge is marked consumed only on
+    success."""
     from webauthn import verify_authentication_response
 
-    expected_challenge = _auth_challenge_store.get("current")
-    if not expected_challenge:
-        logger.warning("Auth: no challenge stored")
+    record, expected_challenge = await _resolve_client_challenge(
+        db, assertion, challenge_service.PURPOSE_AUTHENTICATION
+    )
+    if not record:
+        logger.warning("Auth: no matching challenge stored")
         return False, stored_sign_count
 
     try:
@@ -208,7 +290,7 @@ def verify_authentication(
             credential_current_sign_count=stored_sign_count,
             require_user_verification=True,
         )
-        del _auth_challenge_store["current"]
+        await challenge_service.mark_consumed(db, record)
         return True, verification.new_sign_count
     except Exception as e:
         logger.error(f"Authentication verification failed: {e}")

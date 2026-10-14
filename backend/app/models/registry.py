@@ -25,12 +25,14 @@ from .music_daily import (
     NetEaseApiConfig,
 )
 from .note import Category, Note, Subject, Tag, User
+from .note_knowledge_point import NoteKnowledgePoint
 from .knowledge_markdown import NoteLink, NoteVersion
 from .question import DraftItem, Question, QuestionDraft, QuestionSource
 from .recommendation import DailyRecommendation
 from .review_item import ReviewItem, ReviewRecord
 from .session import AdminPassword, AdminSession, PasskeyCredential
 from .taxonomy import KnowledgePoint, KnowledgePointLink
+from .webauthn_challenge import WebAuthnChallenge
 
 MODEL_REGISTRY = (
     User,
@@ -44,6 +46,7 @@ MODEL_REGISTRY = (
     AdminSession,
     PasskeyCredential,
     AdminPassword,
+    WebAuthnChallenge,
     AuditLog,
     NetEaseApiConfig,
     MusicSourceRule,
@@ -53,6 +56,7 @@ MODEL_REGISTRY = (
     ManagedContentEntry,
     KnowledgePoint,
     KnowledgePointLink,
+    NoteKnowledgePoint,
     DraftItem,
     QuestionDraft,
     Question,

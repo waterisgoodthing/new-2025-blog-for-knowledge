@@ -4,11 +4,35 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.note import Tag, note_tags
+from app.models.note import Note, Tag, note_tags
 from app.routers.auth import get_current_admin
 from app.schemas.note import NameCreate, TagOut
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    assert_not_legacy_mistake_write,
+    freeze_error_detail,
+)
 
 router = APIRouter(prefix="/api/tags", tags=["tags"])
+
+
+async def _assert_tag_not_on_legacy_mistake(
+    db: AsyncSession, tag_id: int, operation: str
+) -> None:
+    """F03: merging/deleting a tag rewrites which tags each note has; if any
+    affected note is a legacy mistake that write is frozen."""
+    result = await db.execute(
+        select(Note.type)
+        .join(note_tags, note_tags.c.note_id == Note.id)
+        .where(note_tags.c.tag_id == tag_id)
+    )
+    try:
+        assert_not_legacy_mistake_write(*(row[0] for row in result.all()), operation=operation)
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
 
 
 def _canonical_tag_or_400(name: str) -> str:
@@ -102,6 +126,8 @@ async def merge_tag(
     source_name = source_tag.name
     target_name = target_tag.name
 
+    await _assert_tag_not_on_legacy_mistake(db, tag_id, "tags.merge")
+
     overlapping = select(note_tags.c.note_id).where(
         note_tags.c.tag_id == req.target_tag_id
     )
@@ -145,6 +171,8 @@ async def delete_tag(
     tag = result.scalar_one_or_none()
     if tag is None:
         raise HTTPException(status_code=404, detail="Tag not found")
+
+    await _assert_tag_not_on_legacy_mistake(db, tag_id, "tags.delete")
 
     from app.services.audit_service import audit_action
     await audit_action(db, action="delete", session_token=session_token, request=request, entity_type="tag", entity_id=str(tag_id), before={"name": tag.name})

@@ -14,6 +14,11 @@ from app.schemas.knowledge_assistant import (
     SuggestionListResponse,
 )
 from app.services.knowledge_assistant import generate_suggestions
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    assert_not_legacy_mistake_write,
+    freeze_error_detail,
+)
 
 WEEKLY_FOLDER_NAME = "周度总结"
 
@@ -39,26 +44,47 @@ async def execute_suggestion(
     failed = 0
     errors: list[str] = []
 
-    if req.action == "add_tag" and req.tag:
+    # W3-D09/F03: freeze legacy mistake metadata writes here too. The batch is
+    # preflighted as a whole so a frozen target fails closed (410) and no
+    # ordinary target in the same batch is mutated before the rejection.
+    async def _preflight(operation: str) -> dict[str, Note]:
+        notes: dict[str, Note] = {}
         for slug in req.targets:
             result = await db.execute(select(Note).where(Note.slug == slug))
             note = result.scalar_one_or_none()
-            if not note:
+            if note is not None:
+                notes[slug] = note
+        try:
+            assert_not_legacy_mistake_write(*(note.type for note in notes.values()), operation=operation)
+        except LegacyMistakeWriteFrozen as freeze:
+            raise HTTPException(
+                status_code=410,
+                detail=freeze_error_detail(freeze.operation),
+            ) from freeze
+        return notes
+
+    if req.action == "add_tag" and req.tag:
+        from app.services.tag_canonicalization import canonicalize_tag
+
+        canonical_name = canonicalize_tag(req.tag)
+        if not canonical_name:
+            for _slug in req.targets:
+                failed += 1
+                errors.append(f"Tag '{req.tag}' filtered as low-value")
+            return {"executed": executed, "failed": failed, "errors": errors}
+        notes = await _preflight("suggestions.add_tag")
+        tag_result = await db.execute(select(Tag).where(Tag.name == canonical_name))
+        tag = tag_result.scalar_one_or_none()
+        if not tag:
+            tag = Tag(name=canonical_name)
+            db.add(tag)
+            await db.flush()
+        for slug in req.targets:
+            note = notes.get(slug)
+            if note is None:
                 failed += 1
                 errors.append(f"Note {slug} not found")
                 continue
-            from app.services.tag_canonicalization import canonicalize_tag
-            canonical_name = canonicalize_tag(req.tag)
-            if not canonical_name:
-                failed += 1
-                errors.append(f"Tag '{req.tag}' filtered as low-value")
-                continue
-            tag_result = await db.execute(select(Tag).where(Tag.name == canonical_name))
-            tag = tag_result.scalar_one_or_none()
-            if not tag:
-                tag = Tag(name=canonical_name)
-                db.add(tag)
-                await db.flush()
             if tag not in note.tags:
                 note.tags.append(tag)
             executed += 1
@@ -68,10 +94,10 @@ async def execute_suggestion(
         folder = await db.get(Folder, folder_uuid)
         if not folder:
             raise HTTPException(status_code=404, detail="Folder not found")
+        notes = await _preflight("suggestions.move_to_folder")
         for slug in req.targets:
-            result = await db.execute(select(Note).where(Note.slug == slug))
-            note = result.scalar_one_or_none()
-            if not note:
+            note = notes.get(slug)
+            if note is None:
                 failed += 1
                 continue
             note.folder_id = folder_uuid

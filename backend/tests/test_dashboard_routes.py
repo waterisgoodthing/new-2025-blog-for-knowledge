@@ -174,10 +174,29 @@ class DashboardFailureMatrixTest(unittest.IsolatedAsyncioTestCase):
             all=lambda: [],
         )
 
+    @staticmethod
+    def _scripted_execute(results):
+        """Replay scripted execute results, then pad with empty results.
+
+        The summary now issues extra canonical read queries (practice, weak
+        top3, recently mastered) after the learning/activity/storage probes.
+        Padding keeps each failure test focused on the section it targets.
+        """
+        pending = list(results)
+
+        async def _execute(*_args, **_kwargs):
+            if pending:
+                result = pending.pop(0)
+                if isinstance(result, Exception):
+                    raise result
+                return result
+            return DashboardFailureMatrixTest._empty_result()
+
+        return _execute
+
     async def test_learning_failure_keeps_activity_and_storage_independent(self):
-        empty_result = self._empty_result()
         session = SimpleNamespace(
-            execute=AsyncMock(side_effect=[SQLAlchemyError("learning offline"), empty_result, empty_result, empty_result]),
+            execute=AsyncMock(side_effect=self._scripted_execute([SQLAlchemyError("learning offline")])),
             scalar=AsyncMock(return_value=0),
             rollback=AsyncMock(),
         )
@@ -193,7 +212,7 @@ class DashboardFailureMatrixTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_activity_failure_keeps_learning_and_storage_independent(self):
         session = SimpleNamespace(
-            execute=AsyncMock(side_effect=[self._counts_result(), SQLAlchemyError("activity offline")]),
+            execute=AsyncMock(side_effect=self._scripted_execute([self._counts_result(), SQLAlchemyError("activity offline")])),
             scalar=AsyncMock(return_value=0),
             rollback=AsyncMock(),
         )
@@ -210,7 +229,7 @@ class DashboardFailureMatrixTest(unittest.IsolatedAsyncioTestCase):
     async def test_storage_failure_keeps_learning_and_activity_independent(self):
         empty_result = self._empty_result()
         session = SimpleNamespace(
-            execute=AsyncMock(side_effect=[self._counts_result(), empty_result, empty_result, empty_result]),
+            execute=AsyncMock(side_effect=self._scripted_execute([self._counts_result(), empty_result, empty_result, empty_result])),
             scalar=AsyncMock(side_effect=SQLAlchemyError("storage offline")),
             rollback=AsyncMock(),
         )

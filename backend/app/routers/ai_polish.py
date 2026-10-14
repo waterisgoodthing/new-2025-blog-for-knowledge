@@ -14,6 +14,8 @@ router = APIRouter(prefix="/api/ai", tags=["ai"])
 _rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
 
 
+# Polish is a transient preview path and is exempt from AiRun target linkage;
+# it bypasses the AI gateway entirely. See docs/architecture/ai-governance.md.
 @router.post("/polish")
 async def polish(
     req: PolishRequest,

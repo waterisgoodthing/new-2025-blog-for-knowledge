@@ -176,7 +176,9 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
         mistake = await convert_mistake_draft(self.session, draft.item.id, version=1)
         item = await self.session.get(ReviewItem, mistake.review_item_id)
         expected = item.next_review_at
-        mappings = {0: 1, 1: 1, 2: 1, 3: 3, 4: 7, 5: 14}
+        # fixed_interval_v2 (design D2): ratings 0/1 lapse to 1d, 2 lapses to 2d,
+        # successes climb 3/7/14/30 by streak — in this 0..5 sequence: 1,1,2,3,7,14.
+        mappings = {0: 1, 1: 1, 2: 2, 3: 3, 4: 7, 5: 14}
         previous_interval = 0
         for rating, days in mappings.items():
             now = expected + timedelta(minutes=1)

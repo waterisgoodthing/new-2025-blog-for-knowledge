@@ -3,6 +3,28 @@ from functools import lru_cache
 from pathlib import Path
 
 
+def parse_login_throttle_delays(value: str) -> list[float]:
+    """Parse ``LOGIN_THROTTLE_DELAYS`` ("2,5,15") into an ordered list of floats.
+
+    Blank entries, non-numeric entries, and negative values are ignored so a
+    malformed ``.env`` override degrades to "no delay" instead of raising during
+    a login attempt. Order is preserved: index 0 is the shortest delay.
+    """
+    delays: list[float] = []
+    for raw in str(value or "").split(","):
+        token = raw.strip()
+        if not token:
+            continue
+        try:
+            seconds = float(token)
+        except ValueError:
+            continue
+        if seconds < 0:
+            continue
+        delays.append(seconds)
+    return delays
+
+
 class Settings(BaseSettings):
     ENV: str = "development"
     DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/blog_db"
@@ -20,6 +42,12 @@ class Settings(BaseSettings):
     DASHSCOPE_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     DASHSCOPE_MODEL: str = "qwen3.7-plus"
 
+    # F04/D06: automatic OCR/vision recognition is off by default until a real
+    # provider evaluation meets the PR-14 bar. When false, the recognize/retry
+    # entry points refuse before any provider call and the manual entry path is
+    # the supported flow. Set true only under separate provider authorization.
+    OCR_AUTO_RECOGNITION_ENABLED: bool = False
+
     DEEPSEEK_API_KEY: str = ""
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
     DEEPSEEK_MODEL: str = "deepseek-v4-pro"
@@ -34,6 +62,14 @@ class Settings(BaseSettings):
     WEBAUTHN_RP_ID: str = "localhost"
     WEBAUTHN_ORIGIN: str = "http://localhost:2025"
     WEBAUTHN_RP_NAME: str = "Blog Admin"
+    WEBAUTHN_CHALLENGE_TTL_SECONDS: int = 300
+
+    LOGIN_THROTTLE_ENABLED: bool = True
+    LOGIN_THROTTLE_WARN_THRESHOLD: int = 3
+    LOGIN_THROTTLE_DELAYS: str = "2,5,15"
+    LOGIN_THROTTLE_IP_TTL_SECONDS: int = 3600
+    LOGIN_THROTTLE_ACCOUNT_MAX_FAILURES: int = 10
+    LOGIN_THROTTLE_MAX_ACCOUNTS: int = 10_000
 
     OPERATOR_REGISTRATION_KEY: str = ""
 

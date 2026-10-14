@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import asyncio
 import hashlib
 import logging
 import secrets
@@ -23,6 +24,7 @@ from app.schemas.auth import (
     SetPasswordRequest,
     UserOut,
 )
+from app.services import login_throttle
 from app.utils.auth import (
     PASSKEY_SESSION_DAYS,
     PASSWORD_SESSION_DAYS,
@@ -175,10 +177,41 @@ async def login(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    settings = get_settings()
+    account = req.username
+    ip = request.client.host if request.client else None
+
+    if settings.LOGIN_THROTTLE_ENABLED:
+        delay = login_throttle.get_required_delay(account, ip, settings)
+        if delay > 0:
+            count = login_throttle.get_failure_count(account, ip, settings)
+            logger.warning(
+                "Login throttled: account=%s ip=%s failures=%s delay=%.2fs",
+                account,
+                ip,
+                count,
+                delay,
+            )
+            await asyncio.sleep(delay)
+
     result = await db.execute(select(User).where(User.username == req.username))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(req.password, user.password_hash):
+        if settings.LOGIN_THROTTLE_ENABLED:
+            login_throttle.record_failure(account, ip)
+            count = login_throttle.get_failure_count(account, ip, settings)
+            if count > settings.LOGIN_THROTTLE_ACCOUNT_MAX_FAILURES:
+                logger.warning(
+                    "Login failure alert: account=%s ip=%s failures=%s threshold=%s",
+                    account,
+                    ip,
+                    count,
+                    settings.LOGIN_THROTTLE_ACCOUNT_MAX_FAILURES,
+                )
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    if settings.LOGIN_THROTTLE_ENABLED:
+        login_throttle.record_success(account)
 
     token = generate_session_token()
     token_hash = hash_session_token(token)
@@ -238,7 +271,8 @@ async def login_passkey(
     if not cred:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No passkey registered")
 
-    ok, new_sign_count = verify_authentication(
+    ok, new_sign_count = await verify_authentication(
+        db,
         assertion,
         stored_credential_id=cred.credential_id,
         stored_public_key=cred.public_key,
@@ -295,9 +329,9 @@ async def login_passkey(
 
 
 @router.get("/passkey/auth-options")
-async def passkey_auth_options():
+async def passkey_auth_options(db: AsyncSession = Depends(get_db)):
     from app.services.passkey_service import generate_authentication_options
-    return generate_authentication_options()
+    return await generate_authentication_options(db)
 
 
 def _require_operator_key(x_operator_registration_key: str | None) -> None:
@@ -329,6 +363,7 @@ async def operator_validate_key(
 async def operator_passkey_reg_options(
     req: OperatorRegOptionsRequest,
     x_operator_registration_key: str | None = Header(None, alias="X-Operator-Registration-Key"),
+    db: AsyncSession = Depends(get_db),
 ):
     _require_operator_key(x_operator_registration_key)
 
@@ -336,7 +371,7 @@ async def operator_passkey_reg_options(
     from app.services.passkey_service import generate_operator_registration_options
 
     session_id = secrets_mod.token_hex(16)
-    options = generate_operator_registration_options(session_id)
+    options = await generate_operator_registration_options(db, session_id)
     return {"options": options, "session_id": session_id}
 
 
@@ -351,7 +386,8 @@ async def operator_passkey_register(
     from app.services.passkey_service import verify_operator_registration, replace_credential
 
     settings = get_settings()
-    result = verify_operator_registration(
+    result = await verify_operator_registration(
+        db,
         req.attestation,
         session_id=req.session_id,
         expected_origin=settings.WEBAUTHN_ORIGIN,

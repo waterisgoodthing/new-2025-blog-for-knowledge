@@ -88,7 +88,7 @@ class Mistake(Base):
 
     __table_args__ = (
         CheckConstraint("status IN ('active','archived')", name="ck_mistakes_status"),
-        CheckConstraint("visibility = 'private'", name="ck_mistakes_visibility"),
+        CheckConstraint("visibility IN ('private','public')", name="ck_mistakes_visibility"),
         CheckConstraint("version > 0", name="ck_mistakes_version"),
         Index("idx_mistakes_subject_status", "subject_id", "status"),
     )

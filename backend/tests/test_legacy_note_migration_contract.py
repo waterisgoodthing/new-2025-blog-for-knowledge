@@ -176,7 +176,7 @@ class LegacyNoteMigrationContractTest(unittest.IsolatedAsyncioTestCase):
                 migration_schema = await connection.scalar(
                     text("SELECT to_regnamespace('legacy_migration')::text")
                 )
-            self.assertEqual(revision, "026")
+            self.assertEqual(revision, "027")
             self.assertEqual(ledger, "legacy_note_migrations")
             self.assertEqual(migration_schema, "legacy_migration")
         finally:

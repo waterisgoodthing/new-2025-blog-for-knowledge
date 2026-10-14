@@ -2,7 +2,12 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator
+
+from app.services.capture_failure_taxonomy import (
+    CaptureFailureCategory,
+    categorize_failure,
+)
 
 
 CaptureStatus = Literal[
@@ -153,6 +158,14 @@ class CaptureOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @computed_field
+    @property
+    def failure_category(self) -> CaptureFailureCategory | None:
+        """派生字段：仅 failed 状态给出分类，不持久化（无 DB 列）。"""
+        if self.status != "failed":
+            return None
+        return categorize_failure(self.error_code)
 
 
 class ConvertResultOut(BaseModel):

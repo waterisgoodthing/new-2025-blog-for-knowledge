@@ -17,6 +17,11 @@ from app.schemas.folder import (
     FolderUpdate,
     MoveNoteRequest,
 )
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    assert_not_legacy_mistake_write,
+    freeze_error_detail,
+)
 
 router = APIRouter(prefix="/api/folders", tags=["folders"])
 
@@ -186,14 +191,25 @@ async def delete_folder(
         select(Folder).where(Folder.parent_id == folder_id)
     )
     child_folders = list(result.scalars().all())
-    for child in child_folders:
-        child.parent_id = folder.parent_id
-        db.add(child)
 
     result = await db.execute(
         select(Note).where(Note.folder_id == folder_id)
     )
     notes_in_folder = list(result.scalars().all())
+    # Deleting the folder detaches its notes; that is still a legacy mistake
+    # metadata write, so fail closed before mutating children/notes.
+    try:
+        assert_not_legacy_mistake_write(
+            *(note.type for note in notes_in_folder), operation="folders.delete"
+        )
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
+    for child in child_folders:
+        child.parent_id = folder.parent_id
+        db.add(child)
     for note in notes_in_folder:
         note.folder_id = None
         db.add(note)
@@ -243,6 +259,14 @@ async def move_note_to_folder(
     note = result.scalar_one_or_none()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
+
+    try:
+        assert_not_legacy_mistake_write(note.type, operation="folders.move_note")
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
 
     if req.folder_id:
         folder = await db.get(Folder, req.folder_id)

@@ -37,10 +37,10 @@ async def generate_question_draft(images: list[dict], text: str) -> dict:
             raise RuntimeError(gw.error or "AI call failed")
         result = gw.data
 
-    return _normalize_question_draft(result)
+    return _normalize_question_draft(result, gw.run_id)
 
 
-def _normalize_question_draft(raw: dict) -> dict:
+def _normalize_question_draft(raw: dict, run_id=None) -> dict:
     """Normalize raw AI output to QuestionDraftResponse shape."""
     from app.services.ai_repair_service import _list_of_strings
 
@@ -53,6 +53,7 @@ def _normalize_question_draft(raw: dict) -> dict:
         key_conditions = [c.strip() for c in key_conditions.replace("，", ",").split(",") if c.strip()]
 
     return {
+        "source_run_id": str(run_id) if run_id else None,
         "title": str(raw.get("title", ""))[:30],
         "question": raw.get("question", ""),
         "options": options,
@@ -97,6 +98,7 @@ async def generate_error_interpretation(
     version = len(rejection_history or []) + 1
 
     return {
+        "source_run_id": str(gw.run_id) if gw.run_id else None,
         "interpretation_id": interpretation_id,
         "version": version,
         "summary": result.get("summary", ""),
@@ -133,6 +135,7 @@ async def generate_final_analysis(
     from app.services.ai_repair_service import _list_of_strings
 
     return {
+        "source_run_id": str(gw.run_id) if gw.run_id else None,
         "analysis": result.get("analysis", ""),
         "error_reason": result.get("error_reason", ""),
         "key_step": result.get("key_step", ""),

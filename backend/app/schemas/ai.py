@@ -66,6 +66,9 @@ class QuestionDraftRequest(BaseModel):
 
 
 class QuestionDraftResponse(BaseModel):
+    # F05: AiRun id of the generation call (None if the run record is unavailable);
+    # pass it to the canonical save so the run is bound to the saved entity.
+    source_run_id: str | None = None
     title: str
     question: str
     options: list[str] = Field(default_factory=list)
@@ -97,6 +100,7 @@ class ErrorInterpretationRequest(BaseModel):
 
 
 class ErrorInterpretationResponse(BaseModel):
+    source_run_id: str | None = None
     interpretation_id: str
     version: int = 1
     summary: str
@@ -122,6 +126,7 @@ class FinalAnalysisRequest(BaseModel):
 
 
 class FinalAnalysisResponse(BaseModel):
+    source_run_id: str | None = None
     analysis: str
     error_reason: str
     key_step: str

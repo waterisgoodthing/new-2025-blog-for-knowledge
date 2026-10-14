@@ -4,6 +4,7 @@ from app.models.folder import Folder
 from app.models.music import MusicItem
 from app.models.recommendation import DailyRecommendation
 from app.models.session import AdminSession, PasskeyCredential, AdminPassword
+from app.models.webauthn_challenge import WebAuthnChallenge
 from app.models.audit import AuditLog
 from app.models.music_daily import MusicSourceRule, MusicCandidate, DailySong, MusicSyncLog, NetEaseApiConfig
 from app.models.guest_message import GuestMessage, GuestMessageBan
@@ -18,6 +19,7 @@ from app.models.capture import CaptureItem
 from app.models.attempt import Attempt
 from app.models.admin_profile import AdminProfile
 from app.models.knowledge_markdown import NoteLink, NoteVersion
+from app.models.note_knowledge_point import NoteKnowledgePoint
 
 __all__ = [
     "Note",
@@ -32,6 +34,7 @@ __all__ = [
     "AdminSession",
     "PasskeyCredential",
     "AdminPassword",
+    "WebAuthnChallenge",
     "AuditLog",
     "MusicSourceRule",
     "MusicCandidate",
@@ -59,5 +62,6 @@ __all__ = [
     "AdminProfile",
     "NoteLink",
     "NoteVersion",
+    "NoteKnowledgePoint",
     "note_tags",
 ]

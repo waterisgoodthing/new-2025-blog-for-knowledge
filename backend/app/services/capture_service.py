@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.models.capture import CaptureItem
 from app.models.note import Subject
 from app.schemas.attachment import AttachmentLinkCreate
@@ -60,6 +61,12 @@ class CaptureValidationError(CaptureError):
 
 
 _PATCHABLE_STATUSES = {"uploaded", "recognized", "ready", "failed"}
+
+# D06: stable code the UI renders as "automatic recognition is off".
+RECOGNITION_DISABLED_CODE = "recognition_disabled"
+RECOGNITION_DISABLED_MESSAGE = (
+    "Automatic recognition is disabled; enter the question text manually"
+)
 
 
 @dataclass
@@ -184,6 +191,17 @@ async def trigger_recognition(
     if capture.status in ("converted", "archived"):
         raise CaptureConflict(f"Cannot recognize a {capture.status} capture")
 
+    # D06: fail closed before any provider call. The manual path (patch
+    # question_draft_text -> ready -> convert) remains available, and existing
+    # recognized_text is preserved read-only.
+    if not use_fake and not get_settings().OCR_AUTO_RECOGNITION_ENABLED:
+        capture.error_code = RECOGNITION_DISABLED_CODE
+        capture.error_message_safe = RECOGNITION_DISABLED_MESSAGE
+        capture.last_stage = "recognize"
+        await session.flush()
+        await session.refresh(capture)
+        return capture
+
     capture.status = "recognizing"
     capture.started_at = datetime.now(timezone.utc)
     capture.last_stage = "recognize"
@@ -214,6 +232,7 @@ async def trigger_recognition(
         attachment.mime_type,
         use_fake=use_fake,
         fake_text=fake_text,
+        capture_id=str(capture.id),
     )
 
     if result.success:
@@ -281,7 +300,7 @@ async def trigger_draft(
         subject_label=subject_label,
     )
 
-    result = await draft_mistake(draft_input, use_fake=use_fake)
+    result = await draft_mistake(draft_input, use_fake=use_fake, capture_id=str(capture.id))
 
     if result.success and result.suggestion:
         capture.question_draft_text = result.suggestion.question_text

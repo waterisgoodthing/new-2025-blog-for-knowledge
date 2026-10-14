@@ -13,6 +13,11 @@ from app.routers.auth import get_current_admin
 from app.schemas.note import NoteOut, ReviewPlan, ReviewRequest, ReviewStats
 from app.services.review_planner import build_review_plan
 from app.services.sm2 import sm2
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    assert_not_legacy_mistake_write,
+    freeze_error_detail,
+)
 
 router = APIRouter(prefix="/api/review", tags=["review"])
 
@@ -43,6 +48,14 @@ async def submit_review(
     note = result.scalar_one_or_none()
     if note is None:
         raise HTTPException(status_code=404, detail="Mistake not found")
+
+    try:
+        assert_not_legacy_mistake_write(note.type, operation="review.sm2_submit")
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
 
     ef, interval, repetitions, next_review = sm2(
         quality=req.quality,

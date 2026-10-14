@@ -65,7 +65,7 @@ def test_development_environments_keep_bypass_semantics(env: str) -> None:
 
 
 def test_pinned_revision_matches_the_newest_migration() -> None:
-    assert main.EXPECTED_ALEMBIC_REVISION == "026"
+    assert main.EXPECTED_ALEMBIC_REVISION == "034"
 
 
 def test_orphaned_passkey_registration_options_endpoint_is_removed() -> None:

@@ -2,6 +2,7 @@ import argparse
 import asyncio
 from dataclasses import dataclass
 import json
+import logging
 import secrets
 import sys
 import threading
@@ -24,6 +25,7 @@ from app.services.passkey_service import (
 )
 from app.utils.auth import hash_password
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_TEMP_ADMIN_USERNAME = "temp-admin"
 
@@ -154,10 +156,77 @@ def _registration_origin(host: str, port: int) -> str:
     return f"http://{host}:{port}"
 
 
+class _ServerEventLoop:
+    """One asyncio event loop per registration server, on a daemon thread.
+
+    W4-F02: the async engine's pooled asyncpg connections are bound to the loop
+    that created them. Creating and closing a fresh loop per request reused a
+    pooled connection across loops and raised ``InterfaceError: cannot perform
+    operation: another operation is in progress`` / cross-loop future errors.
+    """
+
+    def __init__(self) -> None:
+        self._loop = asyncio.new_event_loop()
+        self._thread = threading.Thread(
+            target=self._run_forever,
+            name="passkey-registration-loop",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def _run_forever(self) -> None:
+        asyncio.set_event_loop(self._loop)
+        self._loop.run_forever()
+
+    def run(self, coro):
+        return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
+
+    def close(self) -> None:
+        if not self._loop.is_closed():
+            self._loop.call_soon_threadsafe(self._loop.stop)
+        self._thread.join(timeout=5)
+        if not self._loop.is_closed():
+            self._loop.close()
+
+
+class _RegistrationHTTPServer(HTTPServer):
+    """HTTP server that owns the DB engine and its event loop for shutdown."""
+
+    def __init__(self, server_address, handler_cls, *, engine, event_loop):
+        super().__init__(server_address, handler_cls)
+        self._engine = engine
+        self._event_loop = event_loop
+        self._closed = False
+
+    def server_close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            super().server_close()
+        finally:
+            try:
+                self._event_loop.run(self._engine.dispose())
+            except Exception:
+                logger.warning("Registration DB engine disposal failed", exc_info=True)
+            finally:
+                self._event_loop.close()
+
+
 def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
+    event_loop = _ServerEventLoop()
     engine = create_async_engine(db_url)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     origin = _registration_origin(host, port)
+
+    def _run_on_db(coro_factory):
+        async def _run():
+            async with session_factory() as session:
+                result = await coro_factory(session)
+                await session.commit()
+                return result
+
+        return event_loop.run(_run())
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, format, *args):
@@ -165,7 +234,9 @@ def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
 
         def do_GET(self):
             if self.path == "/api/passkey/register/options":
-                opts = generate_registration_options(rp_id=host)
+                opts = _run_on_db(
+                    lambda session: generate_registration_options(session, rp_id=host)
+                )
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Access-Control-Allow-Origin", "*")
@@ -188,10 +259,13 @@ def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
                 attestation = body.get("attestation", {})
                 device_name = body.get("deviceName", "Unknown Device")
 
-                result = verify_registration(
-                    attestation,
-                    expected_origin=origin,
-                    expected_rp_id=host,
+                result = _run_on_db(
+                    lambda session: verify_registration(
+                        session,
+                        attestation,
+                        expected_origin=origin,
+                        expected_rp_id=host,
+                    )
                 )
                 if not result:
                     self.send_response(400)
@@ -216,11 +290,7 @@ def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
                             await session.rollback()
                             return False, str(e)
 
-                loop = asyncio.new_event_loop()
-                try:
-                    ok, err = loop.run_until_complete(_register())
-                finally:
-                    loop.close()
+                ok, err = event_loop.run(_register())
 
                 if ok:
                     self.send_response(200)
@@ -243,7 +313,21 @@ def create_registration_server(port: int, host: str, db_url: str) -> HTTPServer:
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
             self.end_headers()
 
-    return HTTPServer((host, port), Handler)
+    try:
+        return _RegistrationHTTPServer(
+            (host, port), Handler, engine=engine, event_loop=event_loop
+        )
+    except Exception:
+        try:
+            event_loop.run(engine.dispose())
+        except Exception:
+            logger.warning(
+                "Registration DB engine disposal after bind failure failed",
+                exc_info=True,
+            )
+        finally:
+            event_loop.close()
+        raise
 
 
 def cmd_register_passkey(args):

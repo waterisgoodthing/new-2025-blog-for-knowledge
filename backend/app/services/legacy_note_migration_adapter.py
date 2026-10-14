@@ -295,6 +295,17 @@ def should_retain_public_only(payload: dict) -> bool:
     return False
 
 
+def map_legacy_note_to_mistake_visibility(status: object, hidden: object) -> str:
+    """W3-D06 matrix: published AND not hidden -> 'public'; everything else -> 'private'."""
+    is_public = status == "published" and not bool(hidden)
+    return "public" if is_public else "private"
+
+
+V2_DEFAULT_INTERVAL_DAYS = 0
+V2_DEFAULT_REPETITIONS = 0
+V2_REVIEW_ALGORITHM = "fixed_interval_v2"
+
+
 async def _assert_runner(session: AsyncSession) -> None:
     row = (await session.execute(text("SELECT current_user, session_user"))).one()
     if row.current_user != "legacy_note_adapter_runner" or row.session_user != "legacy_note_adapter_runner":
@@ -432,6 +443,9 @@ async def _create_targets(
         }
 
     mistake_reason = "legacy_note_migration"
+    mistake_visibility = map_legacy_note_to_mistake_visibility(
+        payload.get("status"), payload.get("hidden")
+    )
     await session.execute(text("""
       INSERT INTO public.draft_items
         (id,draft_type,source_type,source_id,status,version,target_type,target_id,created_by,
@@ -455,19 +469,19 @@ async def _create_targets(
         (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,
          analysis,reason_category,mistake_reason,difficulty,status,visibility,version)
       VALUES (:id,:draft,CAST(:question AS uuid),:subject,:title,:question_text,:my_answer,:correct,:analysis,
-         'unknown',:reason,:difficulty,'active','private',1)
+         'unknown',:reason,:difficulty,'active',:visibility,1)
     """), {"id": mistake_id, "draft": mistake_draft_item_id, "question": question_id,
             "subject": subject_id, "title": title, "question_text": question_text, "my_answer": (payload.get("answers") or {}).get("my_answer"),
             "correct": correct_answer, "analysis": payload.get("analysis"), "reason": mistake_reason,
-            "difficulty": difficulty})
+            "difficulty": difficulty, "visibility": mistake_visibility})
     if review_item_id:
         await session.execute(text("""
           INSERT INTO public.review_items
             (id,target_type,target_id,state,algorithm,interval_days,repetitions,next_review_at,last_reviewed_at,mistake_id)
-          VALUES (:id,'mistake',:target,'active','fixed_interval_v1',:interval,:repetitions,:next_review,:last,:mistake)
-        """), {"id": review_item_id, "target": str(mistake_id), "interval": interval,
-                "repetitions": repetitions, "next_review": next_review_at,
-                "last": _as_datetime(payload.get("last_reviewed")), "mistake": mistake_id})
+          VALUES (:id,'mistake',:target,'active',:algorithm,:interval,:repetitions,:next_review,NULL,:mistake)
+        """), {"id": review_item_id, "target": str(mistake_id), "algorithm": V2_REVIEW_ALGORITHM,
+                "interval": V2_DEFAULT_INTERVAL_DAYS, "repetitions": V2_DEFAULT_REPETITIONS,
+                "next_review": next_review_at, "mistake": mistake_id})
     projection_ids: list[int] = []
     for kp_id in kp_ids:
         projection = (await session.execute(text("""
@@ -505,6 +519,7 @@ async def _finish_mistake_targets(
     repetitions: int,
     last_reviewed: object | None,
     next_review_at: datetime | None,
+    mistake_visibility: str = "private",
 ) -> list[int]:
     """Create the mistake side only after its independent approval is recorded."""
     await session.execute(text("""
@@ -530,19 +545,19 @@ async def _finish_mistake_targets(
         (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,
          analysis,reason_category,mistake_reason,difficulty,status,visibility,version)
       VALUES (:id,:draft,CAST(:question AS uuid),:subject,:title,:question_text,:my_answer,:correct,:analysis,
-         'unknown','legacy_note_migration',:difficulty,'active','private',1)
+         'unknown','legacy_note_migration',:difficulty,'active',:visibility,1)
     """), {"id": mistake_id, "draft": mistake_draft_item_id, "question": question_id,
             "subject": subject_id, "title": title, "question_text": question_text,
             "my_answer": answers.get("my_answer"), "correct": answers["correct_answer"],
-            "analysis": analysis, "difficulty": difficulty})
+            "analysis": analysis, "difficulty": difficulty, "visibility": mistake_visibility})
     if review_item_id:
         await session.execute(text("""
           INSERT INTO public.review_items
             (id,target_type,target_id,state,algorithm,interval_days,repetitions,next_review_at,last_reviewed_at,mistake_id)
-          VALUES (:id,'mistake',:target,'active','fixed_interval_v1',:interval,:repetitions,:next_review,:last,:mistake)
-        """), {"id": review_item_id, "target": str(mistake_id), "interval": interval,
-                "repetitions": repetitions, "next_review": next_review_at,
-                "last": _as_datetime(last_reviewed), "mistake": mistake_id})
+          VALUES (:id,'mistake',:target,'active',:algorithm,:interval,:repetitions,:next_review,NULL,:mistake)
+        """), {"id": review_item_id, "target": str(mistake_id), "algorithm": V2_REVIEW_ALGORITHM,
+                "interval": V2_DEFAULT_INTERVAL_DAYS, "repetitions": V2_DEFAULT_REPETITIONS,
+                "next_review": next_review_at, "mistake": mistake_id})
     projection_ids: list[int] = []
     for kp_id in kp_ids:
         projection_ids.append(int((await session.execute(text("""
@@ -683,6 +698,9 @@ async def migrate(
         """), {"ledger": ledger_id, "mapping": mapping_version, "hash": source_hash,
                 "actor": schedule_approved_by, "at": schedule_approved_at, "seq": schedule_approval_sequence})
     normalized = validate_legacy_mapping_payload(canonical_payload)
+    mistake_visibility = map_legacy_note_to_mistake_visibility(
+        canonical_payload.get("status"), canonical_payload.get("hidden")
+    )
     bundle["target_projection_ids"] = await _finish_mistake_targets(
         session, question_id=bundle["target_question_id"],
         mistake_draft_item_id=bundle["target_mistake_draft_item_id"],
@@ -694,7 +712,7 @@ async def migrate(
         source_hash=source_hash, mistake_actor_id=mistake_conversion_approved_by,
         kp_ids=list(bundle["target_qkp_ids"]), interval=canonical_payload["interval"],
         repetitions=canonical_payload["repetitions"], last_reviewed=canonical_payload.get("last_reviewed"),
-        next_review_at=mapped_next_review_at,
+        next_review_at=mapped_next_review_at, mistake_visibility=mistake_visibility,
     )
     bundle_tuple = "ROW(:qditem,:qdraft,:question,:qsource,:mditem,:mdraft,:mistake,:review,CAST(:qkps AS integer[]),CAST(:projections AS integer[]))::legacy_migration.legacy_note_migration_target_bundle"
     transition = "migrated_active" if active else "migrated_paused"

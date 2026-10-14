@@ -48,6 +48,42 @@ class DashboardSections(BaseModel):
     storage: Literal["ready", "unknown", "empty"]
 
 
+class DashboardWeakKnowledgePoint(BaseModel):
+    knowledge_point_id: int
+    name: str
+    attempt_count: int
+    wrong_rate: float
+    lapse_count: int
+    due_count: int
+
+
+class DashboardRecentlyMasteredItem(BaseModel):
+    review_item_id: uuid.UUID
+    mistake_id: uuid.UUID
+    question_text: str
+    mastered_at: datetime
+
+
+class DashboardSectionAction(BaseModel):
+    section: Literal["review", "practice"]
+    count: int
+    available: bool
+    target_route: str
+    reason: str
+
+
+class DashboardSectionActions(BaseModel):
+    review: DashboardSectionAction
+    practice: DashboardSectionAction
+
+
+class DashboardTodayFirstAction(BaseModel):
+    kind: Literal["review", "practice", "none"]
+    count: int
+    target_route: str | None
+    reason: str
+
+
 class DashboardSummary(BaseModel):
     generated_at: datetime
     counts: DashboardCounts
@@ -56,3 +92,9 @@ class DashboardSummary(BaseModel):
     recent_reviews: list[DashboardReviewActivity]
     sections: DashboardSections
     system: DashboardSystemStatus
+    review_today_count: int
+    practice_today_count: int
+    weak_top3: list[DashboardWeakKnowledgePoint]
+    recently_mastered_4: list[DashboardRecentlyMasteredItem]
+    today_first_action: DashboardTodayFirstAction
+    section_actions: DashboardSectionActions

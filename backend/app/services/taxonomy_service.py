@@ -4,6 +4,8 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.note import Subject
+from app.models.note import Note
+from app.models.note_knowledge_point import NoteKnowledgePoint
 from app.models.taxonomy import KnowledgePoint, KnowledgePointLink
 from app.schemas.taxonomy import (
     KnowledgePointCreate,
@@ -13,6 +15,10 @@ from app.schemas.taxonomy import (
     SubjectCreate,
     SubjectSummary,
     SubjectUpdate,
+)
+from app.services.legacy_mistake_freeze import (
+    LEGACY_MISTAKE_TYPE,
+    LegacyMistakeWriteFrozen,
 )
 
 
@@ -248,7 +254,21 @@ async def delete_knowledge_point(
     session: AsyncSession,
     knowledge_point_id: int,
 ) -> None:
-    knowledge_point = await get_knowledge_point(session, knowledge_point_id)
+    # W3-D09/F03 + EV02: lock the KP row with the same stable lock order used by
+    # Note<->KP link/unlink, then fail closed if any *legacy mistake* Note is
+    # still associated through ``note_knowledge_points`` (whose KP foreign key
+    # cascades). Deleting without this check silently destroys the frozen
+    # legacy association and its audit trail.
+    knowledge_point = (
+        await session.execute(
+            select(KnowledgePoint)
+            .where(KnowledgePoint.id == knowledge_point_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+    ).scalar_one_or_none()
+    if knowledge_point is None:
+        raise TaxonomyNotFound("Knowledge point not found")
     child = await _one_or_none(
         session,
         select(KnowledgePoint.id).where(KnowledgePoint.parent_id == knowledge_point_id).limit(1),
@@ -263,6 +283,18 @@ async def delete_knowledge_point(
     )
     if link is not None:
         raise TaxonomyConflict("Knowledge point is still in use")
+    legacy_note = await _one_or_none(
+        session,
+        select(Note.id)
+        .join(NoteKnowledgePoint, NoteKnowledgePoint.note_id == Note.id)
+        .where(
+            NoteKnowledgePoint.knowledge_point_id == knowledge_point_id,
+            Note.type == LEGACY_MISTAKE_TYPE,
+        )
+        .limit(1),
+    )
+    if legacy_note is not None:
+        raise LegacyMistakeWriteFrozen("taxonomy.delete_knowledge_point")
     await session.delete(knowledge_point)
     await session.flush()
 

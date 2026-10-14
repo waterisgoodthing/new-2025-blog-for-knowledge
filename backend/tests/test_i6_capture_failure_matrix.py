@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from sqlalchemy import func, select
@@ -66,7 +67,13 @@ class CaptureFailureMatrixTest(unittest.IsolatedAsyncioTestCase):
             for model in (DraftItem, MistakeDraft, Mistake, ReviewItem)
         }
 
-        updated = await trigger_recognition(self.session, capture.id)
+        # D06: recognition is off by default; enable it to reach the
+        # attachment-missing branch this test covers.
+        with patch(
+            "app.services.capture_service.get_settings",
+            return_value=SimpleNamespace(OCR_AUTO_RECOGNITION_ENABLED=True),
+        ):
+            updated = await trigger_recognition(self.session, capture.id)
 
         self.assertEqual(updated.status, "failed")
         self.assertEqual(updated.error_code, "attachment_missing")

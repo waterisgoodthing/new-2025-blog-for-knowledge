@@ -20,8 +20,21 @@ from app.services.ai_gateway import call_text
 from app.services.ai_prompt_registry import build_text_messages
 from app.services.ai_task_types import AiTaskType
 from app.services.ai_validator import validate_ai_output
+from app.services.capture_failure_taxonomy import (
+    CaptureFailureCategory,
+    categorize_failure,
+    categorize_provider_category,
+    categorize_provider_error,
+)
 
 logger = logging.getLogger(__name__)
+
+# 安全约定：warning 日志只记录分类、错误码与 capture_id。provider 异常文本可能
+# 内嵌原始响应体 / 凭据，绝不写入日志。
+#
+# F05: ai_service 已把 provider 失败收敛为 AIProviderError（只带分类/状态），
+# gateway 通过 failure_category 透传。本模块优先使用该结构化分类，只有缺失时才
+# 回退到 categorize_provider_error 本地嗅探（与 capture_recognition 一致）。
 
 
 @dataclass
@@ -38,6 +51,7 @@ async def draft_mistake(
     draft_input: CaptureDraftInput,
     *,
     use_fake: bool = False,
+    capture_id: str | None = None,
 ) -> DraftResult:
     """从识别文本和用户错因生成结构化错题草稿。
 
@@ -80,12 +94,19 @@ async def draft_mistake(
             user_content += f"\n\n学科上下文：{draft_input.subject_label}"
 
         messages = build_text_messages(AiTaskType.CAPTURE_DRAFT, user_content)
-        gw = await call_text(AiTaskType.CAPTURE_DRAFT, messages, input_summary=draft_input.recognized_text[:200])
+        gw = await call_text(
+            AiTaskType.CAPTURE_DRAFT,
+            messages,
+            input_summary=draft_input.recognized_text[:200],
+            target_type="Capture" if capture_id is not None else None,
+            target_id=capture_id,
+        )
         if not gw.success:
             err = gw.error or ""
             if "no provider" in err.lower() or "not configured" in err.lower():
                 raise ValueError(err)
-            raise RuntimeError(err)
+            category = _resolve_provider_category(gw.failure_category, err)
+            return _draft_provider_failure_result(category, capture_id)
         raw = gw.data
         validation = validate_ai_output(AiTaskType.CAPTURE_DRAFT, raw)
         if validation.success:
@@ -102,43 +123,104 @@ async def draft_mistake(
                 error_code=validation.error_code,
                 error_message_safe=validation.error_message_safe,
             )
-    except ValidationError as e:
-        logger.warning("AI draft schema validation failed: %s", str(e)[:200])
+    except ValidationError:
+        code = "schema_error"
+        category = categorize_failure(code).value
+        logger.warning(
+            "AI draft failed category=%s code=%s capture_id=%s",
+            category,
+            code,
+            capture_id,
+        )
         return DraftResult(
             suggestion=None,
             success=False,
-            error_code="schema_error",
+            error_code=code,
             error_message_safe="AI output failed schema validation",
         )
-    except ValueError as e:
-        logger.warning("AI draft failed (no provider): %s", str(e)[:200])
+    except ValueError:
+        code = "no_provider"
+        category = categorize_failure(code).value
+        logger.warning(
+            "AI draft failed category=%s code=%s capture_id=%s",
+            category,
+            code,
+            capture_id,
+        )
         return DraftResult(
             suggestion=None,
             success=False,
-            error_code="no_provider",
+            error_code=code,
             error_message_safe="No AI provider configured",
         )
     except RuntimeError as e:
-        err_str = str(e)[:200]
-        is_timeout = "timeout" in err_str.lower() or "timed out" in err_str.lower()
-        logger.warning("AI draft failed (provider error): %s", err_str)
-        return DraftResult(
-            suggestion=None,
-            success=False,
-            error_code="timeout" if is_timeout else "provider_error",
-            error_message_safe="AI provider error"
-            if not is_timeout
-            else "AI draft timed out",
+        # 优先使用结构化分类；缺失时回退本地嗅探。异常文本绝不进日志或 DTO。
+        category = _resolve_provider_category(getattr(e, "category", None), str(e))
+        return _draft_provider_failure_result(category, capture_id)
+    except Exception:
+        code = "parse_error"
+        category = categorize_failure(code).value
+        logger.warning(
+            "AI draft failed category=%s code=%s capture_id=%s",
+            category,
+            code,
+            capture_id,
         )
-    except Exception as e:
-        err_str = str(e)[:200]
-        logger.warning("AI draft failed (unexpected): %s", err_str)
         return DraftResult(
             suggestion=None,
             success=False,
-            error_code="parse_error",
+            error_code=code,
             error_message_safe="Failed to parse AI draft result",
         )
+
+
+def _resolve_provider_category(
+    explicit: str | None, message: str
+) -> CaptureFailureCategory:
+    """优先使用结构化 provider 分类，缺失时回退到字符串嗅探。"""
+    mapped = categorize_provider_category(explicit)
+    if mapped is not None:
+        return mapped
+    return categorize_provider_error(message)
+
+
+def _draft_provider_failure_result(
+    category: CaptureFailureCategory, capture_id: str | None
+) -> DraftResult:
+    """记录脱敏 warning 并构造 provider 失败结果。"""
+    error_code, error_message_safe = _draft_provider_failure_fields(category)
+    logger.warning(
+        "AI draft failed category=%s code=%s capture_id=%s",
+        category.value,
+        error_code,
+        capture_id,
+    )
+    return DraftResult(
+        suggestion=None,
+        success=False,
+        error_code=error_code,
+        error_message_safe=error_message_safe,
+    )
+
+
+def _draft_provider_failure_fields(
+    category: CaptureFailureCategory,
+) -> tuple[str, str]:
+    """把 provider 失败分类映射为稳定的 error_code / 安全错误信息。
+
+    泛化失败仍落到 `provider_error`（分类 unknown），保持既有 error_code 合同；
+    可归因失败使用既有细分 error_code（timeout / provider_auth / invalid_model /
+    parse_error），与 capture_recognition 的映射保持一致。
+    """
+    if category is CaptureFailureCategory.PROVIDER_TIMEOUT:
+        return "timeout", "AI draft timed out"
+    if category is CaptureFailureCategory.PROVIDER_AUTH:
+        return "provider_auth", "AI provider authentication failed"
+    if category is CaptureFailureCategory.INVALID_MODEL:
+        return "invalid_model", "AI model unavailable"
+    if category is CaptureFailureCategory.INVALID_RESPONSE:
+        return "parse_error", "AI response could not be parsed"
+    return "provider_error", "AI provider error"
 
 
 def _validate_suggestion(raw: dict) -> MistakeDraftSuggestionV1:

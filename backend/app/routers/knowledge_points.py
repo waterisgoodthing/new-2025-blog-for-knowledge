@@ -3,12 +3,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.routers.auth import get_current_admin
+from app.schemas.kp_analytics import KnowledgePointAnalyticsItem
 from app.schemas.taxonomy import (
     KnowledgePointCreate,
     KnowledgePointOut,
     KnowledgePointUpdate,
 )
-from app.services import taxonomy_service
+from app.services import kp_analytics_service, taxonomy_service
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    freeze_error_detail,
+)
 
 router = APIRouter(
     prefix="/api/admin/knowledge-points",
@@ -38,6 +43,13 @@ async def list_knowledge_points(
         parent_id=parent_id,
         status=status,
     )
+
+
+@router.get("/analytics", response_model=list[KnowledgePointAnalyticsItem])
+async def knowledge_point_analytics(
+    db: AsyncSession = Depends(get_db),
+):
+    return await kp_analytics_service.get_knowledge_point_analytics(db)
 
 
 @router.get("/{knowledge_point_id}", response_model=KnowledgePointOut)
@@ -89,6 +101,11 @@ async def delete_knowledge_point(
 ):
     try:
         await taxonomy_service.delete_knowledge_point(db, knowledge_point_id)
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
     except taxonomy_service.TaxonomyError as error:
         _raise_http(error)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -9,6 +9,7 @@
 
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from sqlalchemy import func, select
@@ -198,6 +199,36 @@ class CaptureServiceTest(unittest.IsolatedAsyncioTestCase):
                 ),
             )
 
+    async def test_recognition_disabled_by_default_never_calls_provider(self):
+        capture = await self._make_capture()
+        with (
+            patch(
+                "app.services.capture_service.get_settings",
+                return_value=SimpleNamespace(OCR_AUTO_RECOGNITION_ENABLED=False),
+            ),
+            patch(
+                "app.services.capture_service.recognize_image",
+                new_callable=AsyncMock,
+            ) as recognize,
+        ):
+            updated = await trigger_recognition(self.session, capture.id)
+        recognize.assert_not_awaited()
+        self.assertEqual(updated.status, "uploaded")
+        self.assertEqual(updated.error_code, "recognition_disabled")
+        # manual path still completes: provide question text, then convert
+        ready = await patch_capture(
+            self.session,
+            capture.id,
+            CapturePatch(question_draft_text="手写题干", subject_id=self.subject.id),
+        )
+        self.assertEqual(ready.status, "ready")
+        result = await convert_capture(
+            self.session,
+            capture.id,
+            CaptureConvert(subject_id=self.subject.id, question_text=ready.question_draft_text),
+        )
+        self.assertIsNotNone(result.mistake_draft_item_id)
+
     async def test_recognition_failure_zero_pollution(self):
         mistakes_before = await self._count(Mistake)
         drafts_before = await self._count(MistakeDraft)
@@ -205,7 +236,13 @@ class CaptureServiceTest(unittest.IsolatedAsyncioTestCase):
         items_before = await self._count(DraftItem)
 
         capture = await self._make_capture()
-        updated = await trigger_recognition(self.session, capture.id)
+        # D06: recognition is off by default; enable it to exercise the provider
+        # failure path (no real provider is called without the flag).
+        with patch(
+            "app.services.capture_service.get_settings",
+            return_value=SimpleNamespace(OCR_AUTO_RECOGNITION_ENABLED=True),
+        ):
+            updated = await trigger_recognition(self.session, capture.id)
         self.assertEqual(updated.status, "failed")
         self.assertIsNotNone(updated.error_code)
 

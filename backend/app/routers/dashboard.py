@@ -8,8 +8,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.database import get_db
 from app.routers.auth import get_current_admin
-from app.schemas.dashboard import DashboardCounts, DashboardSections, DashboardSummary, DashboardSystemStatus
+from app.schemas.dashboard import (
+    DashboardCounts,
+    DashboardSectionAction,
+    DashboardSectionActions,
+    DashboardSections,
+    DashboardSummary,
+    DashboardSystemStatus,
+    DashboardTodayFirstAction,
+)
 from app.services import dashboard_service
+from app.services.dashboard_service import (
+    FIRST_ACTION_REASON_NOTHING,
+    PRACTICE_REASON_UNAVAILABLE,
+    PRACTICE_TARGET_ROUTE,
+    REVIEW_REASON_UNAVAILABLE,
+    REVIEW_TARGET_ROUTE,
+)
 
 
 router = APIRouter(
@@ -34,4 +49,27 @@ async def dashboard_summary(db: AsyncSession = Depends(get_db)):
             recent_questions=[], recent_mistakes=[], recent_reviews=[],
             sections=DashboardSections(learning="unavailable", activity="unavailable", storage="unknown"),
             system=DashboardSystemStatus(service="ok", database="unavailable", storage="unknown"),
+            review_today_count=0,
+            practice_today_count=0,
+            weak_top3=[],
+            recently_mastered_4=[],
+            today_first_action=DashboardTodayFirstAction(
+                kind="none", count=0, target_route=None, reason=FIRST_ACTION_REASON_NOTHING
+            ),
+            section_actions=DashboardSectionActions(
+                review=DashboardSectionAction(
+                    section="review",
+                    count=0,
+                    available=False,
+                    target_route=REVIEW_TARGET_ROUTE,
+                    reason=REVIEW_REASON_UNAVAILABLE,
+                ),
+                practice=DashboardSectionAction(
+                    section="practice",
+                    count=0,
+                    available=False,
+                    target_route=PRACTICE_TARGET_ROUTE,
+                    reason=PRACTICE_REASON_UNAVAILABLE,
+                ),
+            ),
         )

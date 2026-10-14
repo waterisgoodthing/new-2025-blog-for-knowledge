@@ -34,6 +34,7 @@ def _item_out(item, mistake) -> ReviewItemOut:
         repetitions=item.repetitions,
         next_review_at=item.next_review_at,
         last_reviewed_at=item.last_reviewed_at,
+        last_rating=item.last_rating,
         question_text=mistake.question_text,
         mistake_reason=mistake.mistake_reason,
     )
@@ -75,8 +76,13 @@ async def submit_review(
             item_id,
             rating=payload.rating,
             expected_next_review_at=payload.expected_next_review_at,
+            attempt_id=payload.attempt_id,
         )
         mistake = await review_item_service.get_review_mistake(db, item)
         return _item_out(item, mistake)
     except review_item_service.ReviewError as error:
         _raise_http(error)
+    except ValueError as error:
+        # Defense in depth (L2): service-level guards unreachable via HTTP
+        # (ReviewSubmit already constrains rating 0..5) still map to 400.
+        raise HTTPException(status_code=400, detail=str(error)) from error

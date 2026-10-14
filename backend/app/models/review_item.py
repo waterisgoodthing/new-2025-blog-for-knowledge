@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, SmallInteger, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,18 +20,19 @@ class ReviewItem(Base):
         nullable=False,
     )
     state: Mapped[str] = mapped_column(String(20), default="active", server_default="active", nullable=False)
-    algorithm: Mapped[str] = mapped_column(String(30), default="fixed_interval_v1", server_default="fixed_interval_v1", nullable=False)
+    algorithm: Mapped[str] = mapped_column(String(30), default="fixed_interval_v2", server_default="fixed_interval_v2", nullable=False)
     interval_days: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     repetitions: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     last_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_rating: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     __table_args__ = (
         CheckConstraint("target_type = 'mistake'", name="ck_review_items_target_type"),
-        CheckConstraint("state IN ('active','paused')", name="ck_review_items_state"),
-        CheckConstraint("algorithm = 'fixed_interval_v1'", name="ck_review_items_algorithm"),
+        CheckConstraint("state IN ('active','mastered','paused')", name="ck_review_items_state"),
+        CheckConstraint("algorithm IN ('fixed_interval_v1','fixed_interval_v2')", name="ck_review_items_algorithm"),
         CheckConstraint("interval_days >= 0 AND repetitions >= 0", name="ck_review_items_counts"),
         UniqueConstraint("target_type", "target_id", name="uq_review_items_target"),
         Index("uq_review_items_mistake_id", "mistake_id", unique=True),
@@ -52,10 +53,17 @@ class ReviewRecord(Base):
     next_interval_days: Mapped[int] = mapped_column(Integer, nullable=False)
     previous_next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    previous_state: Mapped[str] = mapped_column(String(20), server_default="active", nullable=False)
+    new_state: Mapped[str] = mapped_column(String(20), server_default="active", nullable=False)
+    attempt_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("attempts.id", ondelete="RESTRICT"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (
         CheckConstraint("rating BETWEEN 0 AND 5", name="ck_review_records_rating"),
         CheckConstraint("previous_interval_days >= 0 AND next_interval_days > 0", name="ck_review_records_intervals"),
+        CheckConstraint("previous_state IN ('active','mastered','paused')", name="ck_review_records_state"),
+        CheckConstraint("new_state IN ('active','mastered','paused')", name="ck_review_records_new_state"),
         Index("idx_review_records_item_time", "review_item_id", "reviewed_at"),
     )

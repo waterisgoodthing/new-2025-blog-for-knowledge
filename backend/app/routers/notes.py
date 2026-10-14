@@ -31,6 +31,11 @@ from app.schemas.note import (
     TagOut,
 )
 from app.services.knowledge_markdown_service import create_initial_version, create_next_version, list_backlinks, list_note_versions, sync_wikilinks
+from app.services.legacy_mistake_freeze import (
+    LegacyMistakeWriteFrozen,
+    assert_not_legacy_mistake_write,
+    freeze_error_detail,
+)
 
 router = APIRouter(prefix="/api/notes", tags=["notes"])
 
@@ -243,6 +248,14 @@ async def create_note(
     _admin=Depends(get_current_admin),
     session_token: str | None = Cookie(None, alias="admin_session"),
 ):
+    try:
+        assert_not_legacy_mistake_write(req.type.value, operation="notes.create")
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
+
     existing = await db.execute(select(Note).where(Note.slug == req.slug))
     if existing.scalar_one_or_none() is not None:
         from app.utils.slug import ensure_unique_slug
@@ -317,6 +330,17 @@ async def update_note(
     note = result.scalar_one_or_none()
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
+
+    request_type = req.type.value if req.type is not None else None
+    try:
+        assert_not_legacy_mistake_write(
+            note.type, request_type, operation="notes.update"
+        )
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
 
     update_data = req.model_dump(exclude_unset=True)
     expected_revision = update_data.pop("expected_revision", None)
@@ -406,6 +430,14 @@ async def delete_note(
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
 
+    try:
+        assert_not_legacy_mistake_write(note.type, operation="notes.delete")
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
+
     from app.services.audit_service import audit_action
     await audit_action(
         db,
@@ -425,6 +457,14 @@ async def batch_delete_notes(slugs: list[str], db: AsyncSession = Depends(get_db
     result = await db.execute(select(Note).where(Note.slug.in_(slugs)))
     notes = result.scalars().all()
     for note in notes:
+        try:
+            assert_not_legacy_mistake_write(note.type, operation="notes.batch_delete")
+        except LegacyMistakeWriteFrozen as freeze:
+            raise HTTPException(
+                status_code=410,
+                detail=freeze_error_detail(freeze.operation),
+            ) from freeze
+    for note in notes:
         await db.delete(note)
 
 
@@ -439,6 +479,16 @@ async def promote_note(
     note = result.scalar_one_or_none()
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
+
+    try:
+        assert_not_legacy_mistake_write(
+            note.type, new_type.value, operation="notes.promote"
+        )
+    except LegacyMistakeWriteFrozen as freeze:
+        raise HTTPException(
+            status_code=410,
+            detail=freeze_error_detail(freeze.operation),
+        ) from freeze
 
     note.type = new_type.value
     if new_type == NoteType.mistake and note.next_review is None:

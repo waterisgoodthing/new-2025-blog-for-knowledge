@@ -9,6 +9,47 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+# Stable provider-failure categories. Kept in sync with
+# capture_failure_taxonomy.categorize_provider_category so the category can
+# travel across layers without re-sniffing provider text.
+ALLOWED_ERROR_CATEGORIES = frozenset({
+    "provider_auth",
+    "provider_timeout",
+    "invalid_model",
+    "invalid_response",
+    "provider_error",
+    "no_provider",
+})
+
+_AUTH_STATUS_CODES = frozenset({401, 403, 429})
+
+
+class AIProviderError(RuntimeError):
+    """Typed AI provider failure carrying a stable ``category``.
+
+    The message never embeds the raw provider response body; only the
+    category and a short status/reason are preserved. This keeps provider
+    bodies and credentials out of logs, ``ai_call_logs`` and ``ai_runs``.
+
+    ``attempts`` is an internal, sanitized trail (``ProviderAttempt`` objects
+    whose ``error`` is a category only). It is not persisted by the gateway.
+    """
+
+    def __init__(self, category: str, message: str, attempts=None):
+        super().__init__(message)
+        self.category = category
+        self.attempts = list(attempts) if attempts else []
+
+
+def _classify_status(status_code: int) -> str:
+    if status_code in _AUTH_STATUS_CODES:
+        return "provider_auth"
+    if status_code == 404:
+        return "invalid_model"
+    if 500 <= status_code <= 599:
+        return "provider_error"
+    return "provider_error"
+
 
 @dataclass
 class ProviderAttempt:
@@ -117,34 +158,43 @@ async def _call_provider(
         body["response_format"] = response_format
 
     async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(
-            f"{provider['base_url']}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {provider['key']}",
-                "Content-Type": "application/json",
-            },
-            json=body,
-        )
+        try:
+            response = await client.post(
+                f"{provider['base_url']}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {provider['key']}",
+                    "Content-Type": "application/json",
+                },
+                json=body,
+            )
+        except (httpx.TimeoutException, httpx.ConnectError) as exc:
+            raise AIProviderError("provider_timeout", "AI provider timeout") from exc
+        except httpx.HTTPError as exc:
+            raise AIProviderError("provider_error", "AI provider transport error") from exc
 
     if response.status_code != 200:
-        raise RuntimeError(f"AI API error ({response.status_code}): {response.text}")
+        category = _classify_status(response.status_code)
+        raise AIProviderError(category, f"AI API error ({response.status_code})")
 
-    return response.json()
+    try:
+        return response.json()
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise AIProviderError("invalid_response", "Failed to parse AI response") from exc
 
 
 def _parse_json_response(data: dict) -> dict:
     try:
         content = data["choices"][0]["message"]["content"]
         return json.loads(content)
-    except (KeyError, json.JSONDecodeError) as e:
-        raise RuntimeError(f"Failed to parse AI response: {e}")
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as e:
+        raise AIProviderError("invalid_response", "Failed to parse AI response") from e
 
 
 def _parse_text_response(data: dict) -> str:
     try:
         return data["choices"][0]["message"]["content"]
-    except (KeyError, IndexError) as e:
-        raise RuntimeError(f"Failed to parse AI response: {e}")
+    except (KeyError, IndexError, TypeError) as e:
+        raise AIProviderError("invalid_response", "Failed to parse AI response") from e
 
 
 async def _call_with_fallback(
@@ -158,15 +208,20 @@ async def _call_with_fallback(
 ) -> CallResult:
     providers = _select_providers(required_caps, preferred, fallback_chain)
     if not providers:
+        # Kept as ValueError for backward compatibility: the capture adapter
+        # maps this to the stable `no_provider` error_code contract.
         raise ValueError("No AI provider configured with required capabilities")
 
     attempts: list[ProviderAttempt] = []
     last_error: Exception | None = None
+    last_index = len(providers) - 1
 
-    for provider in providers:
+    for index, provider in enumerate(providers):
+        is_last = index == last_index
         start = time.monotonic()
         try:
             data = await _call_provider(provider, messages, max_tokens, response_format)
+            parsed = _parse_json_response(data) if parse_json else _parse_text_response(data)
             latency_ms = int((time.monotonic() - start) * 1000)
             attempts.append(ProviderAttempt(
                 provider=provider["name"],
@@ -174,43 +229,42 @@ async def _call_with_fallback(
                 success=True,
                 latency_ms=latency_ms,
             ))
-            parsed = _parse_json_response(data) if parse_json else _parse_text_response(data)
             return CallResult(
                 data=parsed,
                 attempts=attempts,
                 provider_used=provider["name"],
                 fallback_used=len(attempts) > 1,
             )
-        except RuntimeError as e:
-            latency_ms = int((time.monotonic() - start) * 1000)
-            err_str = str(e)
-            is_retryable = any(code in err_str for code in ["429", "500", "502", "503", "504", "timeout", "ConnectError"])
-            attempts.append(ProviderAttempt(
-                provider=provider["name"],
-                model=provider["model"],
-                success=False,
-                latency_ms=latency_ms,
-                error=err_str[:200],
-            ))
-            last_error = e
-            if not is_retryable and provider == providers[-1]:
-                break
-            logger.warning("AI provider %s failed (%s), trying next...", provider["name"], err_str[:100])
-            continue
         except Exception as e:
             latency_ms = int((time.monotonic() - start) * 1000)
+            category = getattr(e, "category", None)
+            if category not in ALLOWED_ERROR_CATEGORIES:
+                category = "provider_error"
             attempts.append(ProviderAttempt(
                 provider=provider["name"],
                 model=provider["model"],
                 success=False,
                 latency_ms=latency_ms,
-                error=str(e)[:200],
+                error=category,
             ))
             last_error = e
+            if is_last:
+                break
+            logger.warning(
+                "AI provider %s failed (category=%s), trying next...",
+                provider["name"],
+                category,
+            )
             continue
 
-    error_trail = "; ".join(f"{a.provider}: {a.error}" for a in attempts if not a.success)
-    raise RuntimeError(f"All AI providers failed. Trail: {error_trail}")
+    last_category = getattr(last_error, "category", None)
+    if last_category not in ALLOWED_ERROR_CATEGORIES:
+        last_category = "provider_error"
+    raise AIProviderError(
+        category=last_category,
+        message="All AI providers failed",
+        attempts=attempts,
+    )
 
 
 async def call_ocr_model(messages: list[dict], max_tokens: int = 4000) -> dict:

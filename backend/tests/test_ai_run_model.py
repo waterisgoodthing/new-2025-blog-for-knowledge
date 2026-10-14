@@ -33,6 +33,11 @@ def test_ai_run_table_has_business_audit_fields():
         "finished_at",
         "created_at",
         "updated_at",
+        # B05a: trusted server-injected provenance columns (migration 034).
+        "created_by",
+        "creation_context",
+        "confirmed_payload_hash",
+        "confirmed_at",
     }
 
     assert required == set(columns.keys())

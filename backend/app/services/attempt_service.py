@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.attempt import Attempt
 from app.models.question import Question
 from app.schemas.mistake import MistakeDraftCreate
-from app.services import mistake_service
+from app.services import mistake_service, question_service
 
 
 class AttemptError(Exception):
@@ -55,12 +55,16 @@ async def create_mistake_draft_for_attempt(session: AsyncSession, attempt_id: uu
     question = await session.get(Question, attempt.question_id)
     if question is None:
         raise AttemptNotFound("Attempt question not found")
+    # F02: snapshot the question's current knowledge points onto the auto draft
+    # so the mistake inherits the KP set the question had at creation time.
+    source = await question_service.get_question(session, question.id)
     record = await mistake_service.create_mistake_draft(
         session,
         MistakeDraftCreate(
             question_id=question.id,
             my_answer=attempt.submitted_answer,
             difficulty=None if question.difficulty == "unspecified" else question.difficulty,
+            knowledge_point_ids=list(source.knowledge_point_ids),
         ),
         created_by=created_by,
         attempt_id=attempt.id,

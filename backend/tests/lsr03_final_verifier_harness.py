@@ -450,8 +450,8 @@ async def verify_positive(raw: str) -> dict[str, object]:
              t.qs_note::jsonb->>'source_revision' IS DISTINCT FROM t.source_revision::text
           )) AS target_parity_mismatch,
           (SELECT count(*) FROM target_rows t WHERE t.expected_state='migrated_active' AND (
-             t.ri_state IS DISTINCT FROM 'active' OR t.ri_algorithm IS DISTINCT FROM 'fixed_interval_v1' OR
-             t.ri_interval IS DISTINCT FROM t.legacy_interval OR t.ri_repetitions IS DISTINCT FROM t.legacy_repetitions OR
+             t.ri_state IS DISTINCT FROM 'active' OR t.ri_algorithm IS DISTINCT FROM 'fixed_interval_v2' OR
+             t.ri_interval IS DISTINCT FROM 0 OR t.ri_repetitions IS DISTINCT FROM 0 OR
              t.ri_next IS DISTINCT FROM t.mapped_next_review_at OR t.mapped_next_review_at IS NULL OR t.manual_review_required IS DISTINCT FROM false
           )) AS active_review_mismatch,
           (SELECT count(*) FROM target_rows t WHERE t.expected_state='migrated_paused' AND (
