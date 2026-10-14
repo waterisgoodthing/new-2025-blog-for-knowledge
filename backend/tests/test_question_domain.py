@@ -1,11 +1,25 @@
 import unittest
 
 from pydantic import ValidationError
+from sqlalchemy import select
 
 from app.database import async_session, engine
+from app.models.question import QuestionKnowledgePoint
+from app.models.taxonomy import KnowledgePointLink
 from app.schemas.taxonomy import KnowledgePointCreate, SubjectCreate
-from app.schemas.question import QuestionCreate, QuestionSourceCreate
-from app.services.question_service import QuestionValidationError, create_question
+from app.schemas.question import (
+    QuestionCreate,
+    QuestionPatch,
+    QuestionSourceCreate,
+    QuestionUpdate,
+)
+from app.services.question_service import (
+    QuestionValidationError,
+    create_question,
+    get_question,
+    update_canonical_question,
+    update_question,
+)
 from app.services.taxonomy_service import create_knowledge_point, create_subject
 
 
@@ -92,3 +106,156 @@ class QuestionDomainServiceTest(unittest.IsolatedAsyncioTestCase):
                     knowledge_point_links=[{"knowledge_point_id": point.id}],
                 ),
             )
+
+    async def test_put_update_keeps_knowledge_point_representations_in_sync(self):
+        subject = await create_subject(self.session, SubjectCreate(name="A04 Sync Subject"))
+        first = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="A04 Point A"),
+        )
+        second = await create_knowledge_point(
+            self.session,
+            KnowledgePointCreate(subject_id=subject.id, name="A04 Point B"),
+        )
+        created = await create_question(
+            self.session,
+            QuestionCreate(
+                subject_id=subject.id,
+                stem_md="A04 question",
+                question_type="short_answer",
+                answer_data={"kind": "short_answer", "value": "答案"},
+                knowledge_point_links=[{"knowledge_point_id": first.id}],
+            ),
+        )
+
+        await update_question(
+            self.session,
+            created.question.id,
+            QuestionUpdate(
+                version=created.question.version,
+                knowledge_point_ids=[second.id],
+            ),
+        )
+
+        reloaded = await get_question(self.session, created.question.id)
+        self.assertEqual(reloaded.knowledge_point_ids, [second.id])
+
+        dedicated = set(
+            (
+                await self.session.execute(
+                    select(QuestionKnowledgePoint.knowledge_point_id).where(
+                        QuestionKnowledgePoint.question_id == created.question.id
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        projection = set(
+            (
+                await self.session.execute(
+                    select(KnowledgePointLink.knowledge_point_id).where(
+                        KnowledgePointLink.target_type == "question",
+                        KnowledgePointLink.target_id == str(created.question.id),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        self.assertEqual(dedicated, {second.id})
+        self.assertEqual(projection, {second.id})
+
+    async def _kp_representations(self, question_id):
+        dedicated = set(
+            (
+                await self.session.execute(
+                    select(QuestionKnowledgePoint.knowledge_point_id).where(
+                        QuestionKnowledgePoint.question_id == question_id
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        projection = set(
+            (
+                await self.session.execute(
+                    select(KnowledgePointLink.knowledge_point_id).where(
+                        KnowledgePointLink.target_type == "question",
+                        KnowledgePointLink.target_id == str(question_id),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return dedicated, projection
+
+    async def _seeded_question(self, name, first, second):
+        subject = await create_subject(self.session, SubjectCreate(name=name))
+        first_point = await create_knowledge_point(
+            self.session, KnowledgePointCreate(subject_id=subject.id, name=first)
+        )
+        second_point = await create_knowledge_point(
+            self.session, KnowledgePointCreate(subject_id=subject.id, name=second)
+        )
+        created = await create_question(
+            self.session,
+            QuestionCreate(
+                subject_id=subject.id,
+                stem_md="A04 question",
+                question_type="short_answer",
+                answer_data={"kind": "short_answer", "value": "答案"},
+                knowledge_point_links=[{"knowledge_point_id": first_point.id}],
+            ),
+        )
+        return first_point, second_point, created
+
+    async def test_patch_update_keeps_knowledge_point_representations_in_sync(self):
+        first, second, created = await self._seeded_question(
+            "A04 Patch Subject", "A04P A", "A04P B"
+        )
+        await update_canonical_question(
+            self.session,
+            created.question.id,
+            QuestionPatch(
+                version=created.question.version,
+                knowledge_point_links=[{"knowledge_point_id": second.id}],
+            ),
+        )
+        reloaded = await get_question(self.session, created.question.id)
+        dedicated, projection = await self._kp_representations(created.question.id)
+        self.assertEqual(reloaded.knowledge_point_ids, [second.id])
+        self.assertEqual(dedicated, {second.id})
+        self.assertEqual(projection, {second.id})
+
+    async def test_put_without_knowledge_points_preserves_existing_links(self):
+        first, _second, created = await self._seeded_question(
+            "A04 Preserve Subject", "A04R A", "A04R B"
+        )
+        await update_question(
+            self.session,
+            created.question.id,
+            QuestionUpdate(version=created.question.version, title="renamed"),
+        )
+        reloaded = await get_question(self.session, created.question.id)
+        dedicated, projection = await self._kp_representations(created.question.id)
+        self.assertEqual(reloaded.knowledge_point_ids, [first.id])
+        self.assertEqual(dedicated, {first.id})
+        self.assertEqual(projection, {first.id})
+
+    async def test_put_empty_knowledge_points_clears_both(self):
+        _first, _second, created = await self._seeded_question(
+            "A04 Clear Subject", "A04C A", "A04C B"
+        )
+        await update_question(
+            self.session,
+            created.question.id,
+            QuestionUpdate(version=created.question.version, knowledge_point_ids=[]),
+        )
+        reloaded = await get_question(self.session, created.question.id)
+        dedicated, projection = await self._kp_representations(created.question.id)
+        self.assertEqual(reloaded.knowledge_point_ids, [])
+        self.assertEqual(dedicated, set())
+        self.assertEqual(projection, set())

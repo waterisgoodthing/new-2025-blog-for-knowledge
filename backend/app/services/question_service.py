@@ -75,6 +75,47 @@ class QuestionRecord:
         return {"kind": self.question.question_type, "value": answer}
 
 
+async def _replace_question_knowledge_points(
+    session: AsyncSession,
+    question_id: uuid.UUID,
+    links: list[dict],
+) -> None:
+    """Replace a Question's knowledge points in both representations at once.
+
+    The dedicated ``QuestionKnowledgePoint`` rows are the canonical source for
+    reads, list filters and practice selection; ``KnowledgePointLink`` is kept
+    only as a compatibility projection. Writing a single representation lets
+    the two drift, so both must always be written together.
+    """
+    await session.execute(
+        delete(KnowledgePointLink).where(
+            KnowledgePointLink.target_type == "question",
+            KnowledgePointLink.target_id == str(question_id),
+        )
+    )
+    await session.execute(
+        delete(QuestionKnowledgePoint).where(
+            QuestionKnowledgePoint.question_id == question_id
+        )
+    )
+    for link in links:
+        session.add(
+            QuestionKnowledgePoint(
+                question_id=question_id,
+                knowledge_point_id=link["knowledge_point_id"],
+                role=link.get("role", "primary"),
+                sort_order=link.get("sort_order", 0),
+            )
+        )
+        session.add(
+            KnowledgePointLink(
+                knowledge_point_id=link["knowledge_point_id"],
+                target_type="question",
+                target_id=str(question_id),
+            )
+        )
+
+
 async def create_question(
     session: AsyncSession,
     payload: QuestionCreate,
@@ -102,22 +143,18 @@ async def create_question(
     )
     session.add(question)
     await session.flush()
-    for link in payload.knowledge_point_links:
-        session.add(
-            QuestionKnowledgePoint(
-                question_id=question.id,
-                knowledge_point_id=link.knowledge_point_id,
-                role=link.role,
-                sort_order=link.sort_order,
-            )
-        )
-        session.add(
-            KnowledgePointLink(
-                knowledge_point_id=link.knowledge_point_id,
-                target_type="question",
-                target_id=str(question.id),
-            )
-        )
+    await _replace_question_knowledge_points(
+        session,
+        question.id,
+        [
+            {
+                "knowledge_point_id": link.knowledge_point_id,
+                "role": link.role,
+                "sort_order": link.sort_order,
+            }
+            for link in payload.knowledge_point_links
+        ],
+    )
     sources = payload.sources or [QuestionSourceCreate(source_type="manual", source_title="手工录入")]
     for source in sources:
         session.add(
@@ -310,20 +347,14 @@ async def update_question(
     question.difficulty = question.difficulty or "unspecified"
 
     if "knowledge_point_ids" in changes:
-        await session.execute(
-            delete(KnowledgePointLink).where(
-                KnowledgePointLink.target_type == "question",
-                KnowledgePointLink.target_id == str(question_id),
-            )
+        await _replace_question_knowledge_points(
+            session,
+            question_id,
+            [
+                {"knowledge_point_id": knowledge_point_id}
+                for knowledge_point_id in validated.knowledge_point_ids
+            ],
         )
-        for knowledge_point_id in validated.knowledge_point_ids:
-            session.add(
-                KnowledgePointLink(
-                    knowledge_point_id=knowledge_point_id,
-                    target_type="question",
-                    target_id=str(question_id),
-                )
-            )
     question.version += 1
     await session.flush()
     await session.refresh(question)
@@ -402,24 +433,18 @@ async def update_canonical_question(
     question.difficulty = validated.difficulty
 
     if "knowledge_point_links" in values:
-        await session.execute(
-            delete(QuestionKnowledgePoint).where(QuestionKnowledgePoint.question_id == question_id)
+        await _replace_question_knowledge_points(
+            session,
+            question_id,
+            [
+                {
+                    "knowledge_point_id": link.knowledge_point_id,
+                    "role": link.role,
+                    "sort_order": link.sort_order,
+                }
+                for link in validated.knowledge_point_links
+            ],
         )
-        await session.execute(
-            delete(KnowledgePointLink).where(
-                KnowledgePointLink.target_type == "question",
-                KnowledgePointLink.target_id == str(question_id),
-            )
-        )
-        for link in validated.knowledge_point_links:
-            session.add(QuestionKnowledgePoint(question_id=question_id, **link.model_dump()))
-            session.add(
-                KnowledgePointLink(
-                    knowledge_point_id=link.knowledge_point_id,
-                    target_type="question",
-                    target_id=str(question_id),
-                )
-            )
     if "sources" in values:
         await session.execute(delete(QuestionSource).where(QuestionSource.question_id == question_id))
         for source in validated.sources or []:
