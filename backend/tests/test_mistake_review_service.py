@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 
 from app.database import async_session, engine
 from app.models.mistake import Mistake
+from app.models.question import Question
 from app.models.review_item import ReviewItem, ReviewRecord
 from app.schemas.mistake import MistakeDraftCreate
 from app.schemas.question import QuestionDraftCreate
@@ -230,3 +231,30 @@ class MistakeReviewServiceTest(unittest.IsolatedAsyncioTestCase):
 
         repeated = await archive_mistake(self.session, mistake.id, version=1)
         self.assertEqual(repeated.id, archived.id)
+
+    async def test_archiving_source_question_removes_item_from_due(self):
+        question = await self._question("archive-question")
+        draft = await create_mistake_draft(
+            self.session,
+            MistakeDraftCreate(question_id=question.id),
+        )
+        mistake = await convert_mistake_draft(self.session, draft.item.id, version=1)
+        item = await self.session.get(ReviewItem, mistake.review_item_id)
+        due_at = item.next_review_at + timedelta(minutes=1)
+
+        due_before = self._review_item_ids(
+            await list_due_items(self.session, now=due_at)
+        )
+        self.assertIn(item.id, due_before)
+
+        # Archiving the source question leaves the item active, but it can no
+        # longer be re-answered, so it must drop out of the due queue (A08).
+        db_question = await self.session.get(Question, question.id)
+        db_question.status = "archived"
+        await self.session.flush()
+
+        due_after = self._review_item_ids(
+            await list_due_items(self.session, now=due_at)
+        )
+        self.assertNotIn(item.id, due_after)
+        self.assertEqual(item.state, "active")

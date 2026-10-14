@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from app.models.attempt import Attempt
 from app.models.mistake import Mistake
+from app.models.question import Question
 from app.models.review_item import ReviewItem, ReviewRecord
 
 class ReviewError(Exception): pass
@@ -28,7 +29,18 @@ def schedule_v2(rating,repetitions):
 async def list_due_items(session,now=None):
     now=now or datetime.now(timezone.utc)
     items=(await session.execute(select(ReviewItem).where(ReviewItem.state=="active",ReviewItem.next_review_at<=now).order_by(ReviewItem.next_review_at))).scalars().all()
-    return [(item,await session.get(Mistake,uuid.UUID(item.target_id))) for item in items]
+    due=[]
+    for item in items:
+        mistake=await session.get(Mistake,uuid.UUID(item.target_id))
+        if mistake is not None and mistake.question_id is not None:
+            question=await session.get(Question,mistake.question_id)
+            if question is not None and question.status != "active":
+                # The source question is archived, so it can no longer be
+                # reliably re-answered; keep the records but stop offering it
+                # as due (A08 archive lifecycle).
+                continue
+        due.append((item,mistake))
+    return due
 
 async def list_records(session,item_id):
     if await session.get(ReviewItem, item_id) is None:
