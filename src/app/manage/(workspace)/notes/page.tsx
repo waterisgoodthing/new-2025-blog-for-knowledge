@@ -13,9 +13,17 @@ export default function NotesPage() {
 	const params = useSearchParams()
 	const requestedType = params.get('type')
 	const type: 'note' | 'blog' | undefined = requestedType === 'blog' || requestedType === 'note' ? requestedType : undefined
-	const { data, error, isLoading, mutate } = useNoteIndex({ type })
+	const [page, setPage] = useState(1)
+	const { data, error, isLoading, mutate } = useNoteIndex({
+		type,
+		types: type ? undefined : 'note,blog',
+		page,
+		size: 30,
+	})
 	const [deleteError, setDeleteError] = useState('')
-	const items = data?.items.filter(item => item.type === 'note' || item.type === 'blog') ?? []
+	const items = data?.items ?? []
+	const total = data?.total ?? 0
+	const totalPages = Math.max(1, Math.ceil(total / 30))
 	const remove = async (slug: string) => {
 		if (!window.confirm('确认删除这条内容？')) return
 		setDeleteError('')
@@ -106,6 +114,29 @@ export default function NotesPage() {
 				</p>
 			) : null}
 			{state}
+			{totalPages > 1 ? (
+				<div className='mt-6 flex items-center justify-center gap-3 text-sm'>
+					<button
+						type='button'
+						disabled={page <= 1}
+						onClick={() => setPage(current => Math.max(1, current - 1))}
+						className='rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40'
+					>
+						上一页
+					</button>
+					<span className='text-slate-500'>
+						{page} / {totalPages}
+					</span>
+					<button
+						type='button'
+						disabled={page >= totalPages}
+						onClick={() => setPage(current => Math.min(totalPages, current + 1))}
+						className='rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40'
+					>
+						下一页
+					</button>
+				</div>
+			) : null}
 		</div>
 	)
 }

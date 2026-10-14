@@ -119,6 +119,7 @@ export interface NoteUpdateInput {
 
 export interface NoteListParams {
   type?: "note" | "blog" | "mistake";
+  types?: string;
   tag?: string;
   subject?: string;
   category?: string;
@@ -137,6 +138,7 @@ export interface NoteListParams {
 export async function listNotes(params: NoteListParams = {}): Promise<NoteListResponse> {
   const searchParams = new URLSearchParams();
   if (params.type) searchParams.set("type", params.type);
+  if (params.types) searchParams.set("types", params.types);
   if (params.tag) searchParams.set("tag", params.tag);
   if (params.subject) searchParams.set("subject", params.subject);
   if (params.category) searchParams.set("category", params.category);

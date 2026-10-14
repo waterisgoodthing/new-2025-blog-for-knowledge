@@ -365,6 +365,28 @@ def test_compat_read_list_notes(admin_client):
     assert resp.status_code == 200
 
 
+def test_notes_list_types_filter_is_a_server_side_whitelist(admin_client):
+    # A12: the manage list must exclude legacy rows server-side.
+    note_slug = f"a12-note-{uuid.uuid4().hex[:8]}"
+    blog_slug = f"a12-blog-{uuid.uuid4().hex[:8]}"
+    mistake_slug = f"a12-mistake-{uuid.uuid4().hex[:8]}"
+    asyncio.run(_seed_note(note_slug, note_type="note"))
+    asyncio.run(_seed_note(blog_slug, note_type="blog"))
+    asyncio.run(_seed_note(mistake_slug, note_type="mistake"))
+
+    resp = admin_client.get("/api/notes?types=note,blog&size=100")
+    assert resp.status_code == 200, resp.text
+    listed = resp.json()["items"]
+    assert all(item["type"] in {"note", "blog"} for item in listed)
+    slugs = {item["slug"] for item in listed}
+    assert note_slug in slugs and blog_slug in slugs
+    assert mistake_slug not in slugs
+
+    only_mistake = admin_client.get("/api/notes?types=mistake&size=100")
+    assert only_mistake.status_code == 200
+    assert all(item["type"] == "mistake" for item in only_mistake.json()["items"])
+
+
 def test_compat_read_search(admin_client):
     resp = admin_client.post("/api/admin/search", json={"query": "verify", "limit": 5})
     assert resp.status_code == 200

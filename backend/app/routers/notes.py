@@ -58,6 +58,7 @@ async def _get_or_create_tags(db: AsyncSession, tag_names: list[str]) -> list[Ta
 @router.get("", response_model=NoteListResponse)
 async def list_notes(
     type: Optional[NoteType] = None,
+    types: Optional[str] = None,
     tag: Optional[str] = None,
     subject: Optional[str] = None,
     category: Optional[str] = None,
@@ -82,6 +83,17 @@ async def list_notes(
 
     if type:
         query = query.where(Note.type == type.value)
+
+    if types:
+        wanted = [
+            value
+            for value in (part.strip() for part in types.split(","))
+            if value in {candidate.value for candidate in NoteType}
+        ]
+        # A whitelist of several content types (e.g. "note,blog") so the manage
+        # list can exclude legacy rows server-side instead of filtering a single
+        # page client-side.
+        query = query.where(Note.type.in_(wanted))
 
     if not is_admin:
         query = query.where(Note.hidden == False)
