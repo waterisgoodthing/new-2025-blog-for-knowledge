@@ -53,6 +53,15 @@ class QuestionDomainSchemaTest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             QuestionSourceCreate(source_type="url", source_title="External")
 
+    def test_source_ref_is_capped_at_orm_length(self):
+        QuestionSourceCreate(
+            source_type="manual", source_title="ok", source_ref="x" * 64
+        )
+        with self.assertRaises(ValidationError):
+            QuestionSourceCreate(
+                source_type="manual", source_title="ok", source_ref="x" * 65
+            )
+
 
 class QuestionDomainServiceTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):

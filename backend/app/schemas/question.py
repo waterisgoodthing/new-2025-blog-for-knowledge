@@ -129,7 +129,7 @@ class QuestionKnowledgePointLink(BaseModel):
 class QuestionSourceCreate(BaseModel):
     source_type: Literal["manual", "book", "exam", "note", "url", "other"] = "manual"
     source_title: str | None = Field(default=None, max_length=300)
-    source_ref: str | None = Field(default=None, max_length=500)
+    source_ref: str | None = Field(default=None, max_length=64)
     source_url: str | None = None
     source_note: str | None = None
 
