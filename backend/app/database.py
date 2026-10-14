@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase
 
 from app.config import get_settings
+from app.utils.pending_files import clear_pending_files, discard_pending_files
 
 settings = get_settings()
 
@@ -25,6 +26,11 @@ async def get_db() -> AsyncSession:
         try:
             yield session
             await session.commit()
+            # Committed: the files written this request are now durable.
+            clear_pending_files(session)
         except Exception:
             await session.rollback()
+            # The DB row is gone, so discard any file written this request to
+            # avoid an orphan (flush may have succeeded before commit failed).
+            await discard_pending_files(session)
             raise

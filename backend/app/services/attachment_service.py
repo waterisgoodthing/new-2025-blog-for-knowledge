@@ -15,6 +15,7 @@ from app.models.attachment import Attachment, AttachmentLink
 from app.models.mistake import Mistake
 from app.models.question import Question, QuestionDraft
 from app.schemas.attachment import ALLOWED_MIME_TYPES, AttachmentLinkCreate
+from app.utils.pending_files import track_pending_file
 
 
 class AttachmentError(Exception):
@@ -97,6 +98,8 @@ async def _create_attachment_from_temp(
         if temporary.exists():
             temporary.unlink()
         raise
+
+    track_pending_file(session, destination)
 
     attachment = Attachment(
         original_name=clean_name,
