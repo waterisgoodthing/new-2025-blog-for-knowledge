@@ -10,6 +10,7 @@ import {
   FileText,
   Loader2,
   RefreshCw,
+  ScanLine,
   Upload,
   XCircle,
 } from 'lucide-react'
@@ -23,6 +24,7 @@ import {
 import {
   type Capture,
   type CaptureConvert,
+  type CaptureFailureCategory,
   type CaptureStatus,
   convertCapture,
   createCapture,
@@ -35,6 +37,12 @@ import {
 import { listKnowledgePoints, listSubjects } from '@/lib/api/taxonomy'
 import type { Subject, KnowledgePoint } from '@/lib/api/taxonomy'
 import { cn } from '@/lib/utils'
+
+// D06: automatic OCR is off by default (server enforces the same flag before
+// any provider call). Read at render time so deployment env can enable it.
+export function ocrRecognitionEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_OCR_AUTO_RECOGNITION_ENABLED === 'true'
+}
 
 const STATUS_LABELS: Record<CaptureStatus, string> = {
   uploaded: '待识别',
@@ -60,6 +68,28 @@ const STATUS_COLORS: Record<CaptureStatus, string> = {
 
 function isBusy(status: CaptureStatus): boolean {
   return status === 'recognizing' || status === 'drafting'
+}
+
+const FAILURE_CATEGORY_LABELS: Record<CaptureFailureCategory, string> = {
+  provider_auth: 'AI 服务未授权或额度不足',
+  provider_timeout: 'AI 服务超时',
+  invalid_model: '模型不可用',
+  invalid_response: '识别结果无效',
+  schema_validation: '识别结果格式不符',
+  image_fetch: '图片读取失败',
+  image_format: '图片格式不支持',
+  unknown: '未知错误',
+}
+
+const DRAFT_FAILURE_CATEGORY_LABELS: Record<CaptureFailureCategory, string> = {
+  provider_auth: 'AI 服务未授权或额度不足',
+  provider_timeout: 'AI 服务超时',
+  invalid_model: '模型不可用',
+  invalid_response: '草稿结果无效',
+  schema_validation: '草稿结果格式不符',
+  image_fetch: '草稿生成失败',
+  image_format: '草稿生成失败',
+  unknown: '草稿生成失败',
 }
 
 async function fetchImageBlob(attachmentId: string): Promise<string> {
@@ -160,6 +190,10 @@ export function CaptureWorkspace() {
 
   const handleRecognize = useCallback(async () => {
     if (!selected) return
+    if (!ocrRecognitionEnabled()) {
+      toast.error('自动识别已关闭，请在下方手动录入题干')
+      return
+    }
     try {
       const updated = await triggerRecognition(selected.id)
       updateSelected(updated)
@@ -379,13 +413,30 @@ function CaptureDetail({
   onPatch,
   onConvert,
 }: CaptureDetailProps) {
+  const draftStage = capture.last_stage === 'draft'
+  const showEmptyResult =
+    capture.status === 'failed' &&
+    !draftStage &&
+    capture.error_code === 'empty_result'
   return (
     <div className='space-y-5 rounded-2xl border border-white/45 bg-white/48 p-5'>
       <DetailHeader capture={capture} />
       <ImagePreview attachmentId={capture.source_attachment_id} />
-      {capture.status === 'failed' && capture.error_message_safe && (
-        <ErrorBanner message={capture.error_message_safe} />
+      {capture.error_code === 'recognition_disabled' && (
+        <p className='rounded-lg bg-amber-50 p-3 text-sm text-amber-800'>
+          自动识别当前已关闭（未调用任何识别服务）。请手动录入识别文字与题干后继续转换。
+        </p>
       )}
+      {showEmptyResult && <EmptyResultBanner />}
+      {capture.status === 'failed' &&
+        !showEmptyResult &&
+        capture.error_message_safe && (
+          <ErrorBanner
+            message={capture.error_message_safe}
+            category={capture.failure_category}
+            stage={draftStage ? 'draft' : 'recognize'}
+          />
+        )}
       <RecognizedTextSection
         capture={capture}
         onPatch={onPatch}
@@ -485,11 +536,39 @@ function ImagePreview({ attachmentId }: { attachmentId: string }) {
   )
 }
 
-function ErrorBanner({ message }: { message: string }) {
+function ErrorBanner({
+  message,
+  category,
+  stage,
+}: {
+  message: string
+  category: CaptureFailureCategory | null
+  stage: 'recognize' | 'draft'
+}) {
+  const draftStage = stage === 'draft'
+  const labels = draftStage ? DRAFT_FAILURE_CATEGORY_LABELS : FAILURE_CATEGORY_LABELS
+  const label = category ? labels[category] : draftStage ? '草稿生成失败' : '识别失败'
   return (
     <div className='flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600'>
       <XCircle className='mt-0.5 h-4 w-4 shrink-0' />
-      <span>{message}</span>
+      <div className='space-y-0.5'>
+        <p className='font-medium'>{label}</p>
+        <p className='text-red-500'>{message}</p>
+      </div>
+    </div>
+  )
+}
+
+function EmptyResultBanner() {
+  return (
+    <div className='flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800'>
+      <ScanLine className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
+      <div className='space-y-0.5'>
+        <p className='font-medium'>未识别到内容</p>
+        <p className='text-amber-700'>
+          这张图片里没有识别到可用的文字。可以换一张更清晰的图片重试，或直接在下方手动填写。
+        </p>
+      </div>
     </div>
   )
 }
@@ -625,16 +704,25 @@ function DraftFieldsSection({
     setSaving(false)
   }
 
-  const show = ['recognized', 'drafting', 'ready', 'failed', 'converted'].includes(
-    capture.status,
-  )
+  // B06: an freshly uploaded capture (recognition disabled) is exactly the
+  // manual-entry path — the user types the question text and saves it.
+  const show = [
+    'uploaded',
+    'recognized',
+    'drafting',
+    'ready',
+    'failed',
+    'converted',
+  ].includes(capture.status)
+
+  const heading = capture.status === 'uploaded' ? '人工题面（可编辑）' : 'AI 草稿（可编辑）'
 
   if (!show) return null
 
   return (
     <section className='space-y-3'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-sm font-medium text-slate-700'>AI 草稿（可编辑）</h3>
+        <h3 className='text-sm font-medium text-slate-700'>{heading}</h3>
         {dirty && (
           <button
             onClick={handleSave}
@@ -647,6 +735,11 @@ function DraftFieldsSection({
       </div>
       <div className='space-y-2'>
         <label className='text-xs text-slate-400'>题面</label>
+        {capture.status === 'recognized' && !capture.question_draft_text ? (
+          <p className='rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800'>
+            识别文字已保存。请继续在下方填写题面并保存，保存后即可进入待确认并转换。
+          </p>
+        ) : null}
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -702,7 +795,9 @@ function ActionButtons({
   onDraft: () => void
 }) {
   const busy = isBusy(capture.status)
-  const canRecognize = !busy && capture.status !== 'converted' && capture.status !== 'archived'
+  const recognitionEnabled = ocrRecognitionEnabled()
+  const canRecognize =
+    recognitionEnabled && !busy && capture.status !== 'converted' && capture.status !== 'archived'
   const canDraft =
     !busy &&
     ['recognized', 'failed', 'ready'].includes(capture.status) &&
@@ -729,6 +824,11 @@ function ActionButtons({
           <RefreshCw className='h-4 w-4' />
           {capture.question_draft_text ? '重新生成草稿' : '生成 AI 草稿'}
         </button>
+      )}
+      {!recognitionEnabled && capture.status !== 'converted' && capture.status !== 'archived' && (
+        <p className='w-full rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500'>
+          自动识别当前已关闭。请在下方「识别文字」中手动录入题干后继续。
+        </p>
       )}
     </div>
   )

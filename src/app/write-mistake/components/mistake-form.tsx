@@ -10,6 +10,10 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
+import {
+	LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE,
+	LegacyMistakeWriteFrozenNotice,
+} from '@/components/legacy-mistake-write-frozen'
 import { resolveImageUrl } from '@/lib/api/images'
 import Link from 'next/link'
 import { ClipboardPaste, ImageUp, Loader2, Sparkles, ArrowLeft } from 'lucide-react'
@@ -296,7 +300,14 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 		}
 	}
 
+	// W3-D09: legacy Note(type='mistake') writes are frozen — fail-closed.
+	const legacyMistakeWriteFrozen = true
+
 	const handleSave = async () => {
+		if (legacyMistakeWriteFrozen) {
+			toast.error(LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE)
+			return
+		}
 		if (!form.title.trim()) return toast.warning('请输入标题')
 		if (form.tags.length === 0) {
 			const skipReminder = localStorage.getItem('skipEmptyTagReminder')
@@ -404,6 +415,8 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 					{mode === 'edit' ? '编辑错题' : '添加错题'}
 				</motion.h1>
 			</div>
+
+			<LegacyMistakeWriteFrozenNotice />
 
 			{analyzing && (
 				<motion.div
@@ -608,10 +621,12 @@ export function MistakeForm({ mode, initialData }: MistakeFormProps) {
 				<div className='flex gap-3 pt-4'>
 					<button
 						onClick={handleSave}
-						disabled={saving}
-						className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50'
+						disabled
+						data-testid='legacy-mistake-save-disabled'
+						title={LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE}
+						className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
 					>
-						{saving ? '保存中...' : (mode === 'edit' ? '保存' : '发布')}
+						{mode === 'edit' ? '保存' : '发布'}（已冻结）
 					</button>
 					<Link href='/mistakes' className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</Link>
 				</div>

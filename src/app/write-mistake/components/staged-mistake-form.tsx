@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { resolveImageUrl } from '@/lib/api/images'
+import { LegacyMistakeWriteFrozenNotice } from '@/components/legacy-mistake-write-frozen'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -324,8 +325,13 @@ export function StagedMistakeForm() {
     }
   }
 
-  // Stage 7: Save
+  // Stage 7: Save — fail-closed: legacy Note(type='mistake') writes are frozen (W3-D09)
+  const legacyMistakeWriteFrozen = true
   const handleSave = async () => {
+    if (legacyMistakeWriteFrozen) {
+      toast.error('legacy 错题写入已冻结，请使用 canonical 错题流程')
+      return
+    }
     if (!draft) return
 
     setSaving(true)
@@ -444,6 +450,8 @@ export function StagedMistakeForm() {
         </Link>
         <h1 className="text-2xl font-bold">记录错题</h1>
       </div>
+
+      <LegacyMistakeWriteFrozenNotice />
 
       {/* Progress indicator */}
       <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
@@ -935,20 +943,13 @@ export function StagedMistakeForm() {
 
                 <button
                   onClick={handleSave}
-                  disabled={saving}
-                  className="w-full py-3 bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled
+                  data-testid="legacy-mistake-save-disabled"
+                  title="legacy 错题写入已冻结，请使用 canonical 错题流程"
+                  className="w-full py-3 bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      保存中...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4" />
-                      保存错题
-                    </>
-                  )}
+                  <Save className="w-4 h-4" />
+                  保存错题（已冻结）
                 </button>
               </div>
             )}
@@ -1057,20 +1058,13 @@ export function StagedMistakeForm() {
 
               <button
                 onClick={handleSave}
-                disabled={saving}
-                className="w-full py-3 bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled
+                data-testid="legacy-mistake-save-disabled"
+                title="legacy 错题写入已冻结，请使用 canonical 错题流程"
+                className="w-full py-3 bg-green-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    保存中...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    保存错题
-                  </>
-                )}
+                <Save className="w-4 h-4" />
+                保存错题（已冻结）
               </button>
             </div>
           </div>

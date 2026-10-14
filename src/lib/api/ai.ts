@@ -262,6 +262,7 @@ export interface ImageInput {
 }
 
 export interface QuestionDraftResponse {
+  source_run_id?: string | null;
   title: string;
   question: string;
   options: string[];
@@ -283,6 +284,7 @@ export interface QuestionDraftConfirmResponse {
 }
 
 export interface ErrorInterpretationResponse {
+  source_run_id?: string | null;
   interpretation_id: string;
   version: number;
   summary: string;
@@ -294,6 +296,7 @@ export interface ErrorInterpretationResponse {
 }
 
 export interface FinalAnalysisResponse {
+  source_run_id?: string | null;
   analysis: string;
   error_reason: string;
   key_step: string;

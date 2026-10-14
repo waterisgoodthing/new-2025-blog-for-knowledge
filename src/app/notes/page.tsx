@@ -13,6 +13,7 @@ import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
 import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
 import { EmptyState } from '@/components/empty-state'
+import { AsyncStatePanel } from '@/components/async-state-panel'
 import { moveNoteToFolder, listFolders, findFolderPath, type FolderNode } from '@/lib/api/folders'
 import { deleteNote } from '@/lib/api/notes'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -49,6 +50,8 @@ function NotesPageContent() {
 	const [folderRefreshKey, setFolderRefreshKey] = useState(0)
 	const [ctxMenu, setCtxMenu] = useState<{ slug: string; title: string; type: ContentType; x: number; y: number } | null>(null)
 	const [folderTree, setFolderTree] = useState<FolderNode[]>([])
+	const resultRegionRef = useRef<HTMLDivElement>(null)
+	const retryRequestedRef = useRef(false)
 
 	const folderPath = useMemo(() => {
 		if (!activeFolderId || folderTree.length === 0) return null
@@ -177,11 +180,20 @@ function NotesPageContent() {
 	}
 
 	const emptyDescription = isAdmin ? '可以从工作区创建和整理内容' : '暂时没有公开笔记'
-	const renderState = isLoading ? 'loading' : error ? 'error' : data?.items.length === 0 ? 'empty' : data ? 'ready' : 'error'
+	const renderState = isLoading ? 'loading' : error ? 'error' : data?.items.length === 0 ? 'empty' : data ? 'ready' : 'loading'
 
 	useEffect(() => {
 		if (renderState === 'ready' || renderState === 'empty') markRenderReady('notes:list-ready')
+		if ((renderState === 'ready' || renderState === 'empty') && retryRequestedRef.current) {
+			retryRequestedRef.current = false
+			resultRegionRef.current?.focus()
+		}
 	}, [renderState])
+
+	const retryNotes = () => {
+		retryRequestedRef.current = true
+		return mutate()
+	}
 
 	return (
 		<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
@@ -285,19 +297,24 @@ function NotesPageContent() {
 						</div>
 					)}
 
-					{isLoading ? (
-						<div className='py-20 text-center text-gray-400'>加载中...</div>
-					) : data?.items.length === 0 ? (
-						<div className='py-20'>
-							<EmptyState
-								variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
-								title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
-								description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : emptyDescription}
-								action={isAdmin ? getCreateAction() : null}
-							/>
-						</div>
+					<div ref={resultRegionRef} tabIndex={-1} className='outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>
+					{renderState !== 'ready' ? (
+						<AsyncStatePanel
+							status={renderState}
+							error={error}
+							onRetry={retryNotes}
+							loadingLabel='正在加载笔记'
+							emptyHint={
+								<EmptyState
+									variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
+									title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
+									description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : emptyDescription}
+									action={isAdmin ? getCreateAction() : null}
+								/>
+							}
+						/>
 					) : (
-						<div className='space-y-3'>
+						<div role='region' aria-label='笔记结果' className='space-y-3'>
 							{data?.items.map(item => (
 								<div
 									key={item.id}
@@ -359,6 +376,7 @@ function NotesPageContent() {
 							))}
 						</div>
 					)}
+					</div>
 
 					{data && data.total > 20 && (
 						<div className='mt-6 flex justify-center gap-2'>

@@ -1,0 +1,15 @@
+import { ManagePageHeader } from '../../components/manage-page-header'
+import { PracticeToday } from './practice-today'
+
+export default function ManagePracticePage() {
+  return (
+    <div className='space-y-8'>
+      <ManagePageHeader
+        eyebrow='学习计划'
+        title='今日练习'
+        description='从薄弱知识点中挑选最近未作答的题目进行练习，全部来自 canonical 学习数据。'
+      />
+      <PracticeToday />
+    </div>
+  )
+}

@@ -13,11 +13,14 @@ import {
   rejectMistakeDraft,
   updateMistake,
   updateMistakeDraft,
+  updateMistakeVisibility,
   type Mistake,
   type MistakeDraft,
   type MistakeReason,
+  type MistakeVisibility,
 } from '@/lib/api/mistakes'
-import { attachmentVisibilityLabel, questionStatusLabel } from '@/lib/manage-display'
+import { ApiError } from '@/lib/api/client'
+import { questionStatusLabel } from '@/lib/manage-display'
 import type { Difficulty } from '@/lib/api/questions'
 import { ManageFormPanel } from '../../../components/manage-form-panel'
 import { KnowledgePointMultiSelect } from '../../../components/knowledge-point-select'
@@ -32,6 +35,11 @@ const reasonLabels: Record<MistakeReason, string> = {
 
 function errorMessage(reason: unknown, fallback: string) {
   return reason instanceof Error ? reason.message : fallback
+}
+
+const visibilityLabels: Record<MistakeVisibility, string> = {
+  private: '私有',
+  public: '公开',
 }
 
 export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mistake' }) {
@@ -106,7 +114,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
         <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75'>
           {kind === 'draft'
             ? `错题草稿 · ${draft?.status === 'pending' ? '待确认' : draft?.status === 'needs_fix' ? '需修正' : draft?.status === 'rejected' ? '已拒绝' : '已入库'}`
-            : `正式错题 · ${questionStatusLabel(mistake?.status ?? '')}`} · {attachmentVisibilityLabel(kind === 'mistake' ? mistake?.visibility ?? 'private' : 'private')} · 版本 {record.version}
+            : `正式错题 · ${questionStatusLabel(mistake?.status ?? '')}`} · {kind === 'mistake' ? (visibilityLabels[mistake?.visibility ?? 'private'] ?? '私有') : '私有'} · 版本 {record.version}
         </p>
         <h1 className='mt-2 text-2xl font-semibold text-slate-900'>
           {record.title || '未命名错题'}
@@ -165,24 +173,53 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                 </>
               ) : null}
               {kind === 'mistake' && mistake ? (
-                <button
-                  type='button'
-                  disabled={busy}
-                  onClick={async () => {
-                    if (!window.confirm('确认归档这道错题？对应复习项会暂停。')) return
-                    setBusy(true)
-                    try {
-                      await archiveMistake(mistake.id, mistake.version)
-                      router.push('/manage/mistakes')
-                    } catch (reason) {
-                      setError(errorMessage(reason, '归档失败'))
-                      setBusy(false)
-                    }
-                  }}
-                  className='inline-flex items-center gap-2 rounded-lg border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
-                >
-                  <Archive className='h-4 w-4' />归档
-                </button>
+                <>
+                  <button
+                    type='button'
+                    disabled={busy}
+                    data-testid='mistake-visibility-toggle'
+                    onClick={async () => {
+                      const next: MistakeVisibility = mistake.visibility === 'public' ? 'private' : 'public'
+                      if (!window.confirm(next === 'public' ? '确认将这道错题发布为公开？公开后所有人可见（不含我的答案）。' : '确认将这道错题下架为私有？')) return
+                      setBusy(true)
+                      setError(null)
+                      try {
+                        setMistake(await updateMistakeVisibility(mistake.id, {
+                          visibility: next,
+                          version: mistake.version,
+                        }))
+                      } catch (reason) {
+                        if (reason instanceof ApiError && reason.status === 409) {
+                          setError('可见性更新冲突：该错题已被其他操作修改，请刷新后重试')
+                        } else {
+                          setError(errorMessage(reason, '更新可见性失败'))
+                        }
+                        setBusy(false)
+                      }
+                    }}
+                    className='inline-flex items-center gap-2 rounded-lg border border-sky-200 px-4 py-2 text-sm text-sky-700 disabled:opacity-45'
+                  >
+                    {mistake.visibility === 'public' ? '下架（设为私有）' : '发布（设为公开）'}
+                  </button>
+                  <button
+                    type='button'
+                    disabled={busy}
+                    onClick={async () => {
+                      if (!window.confirm('确认归档这道错题？对应复习项会暂停。')) return
+                      setBusy(true)
+                      try {
+                        await archiveMistake(mistake.id, mistake.version)
+                        router.push('/manage/mistakes')
+                      } catch (reason) {
+                        setError(errorMessage(reason, '归档失败'))
+                        setBusy(false)
+                      }
+                    }}
+                    className='inline-flex items-center gap-2 rounded-lg border border-amber-200 px-4 py-2 text-sm text-amber-700 disabled:opacity-45'
+                  >
+                    <Archive className='h-4 w-4' />归档
+                  </button>
+                </>
               ) : null}
             </div>
             <button

@@ -14,6 +14,16 @@ export type CaptureStatus =
 
 export type CaptureLastStage = 'recognize' | 'draft' | 'convert'
 
+export type CaptureFailureCategory =
+  | 'provider_auth'
+  | 'provider_timeout'
+  | 'invalid_model'
+  | 'invalid_response'
+  | 'schema_validation'
+  | 'image_fetch'
+  | 'image_format'
+  | 'unknown'
+
 export interface KnowledgePointSuggestion {
   id: number | null
   label: string
@@ -42,6 +52,7 @@ export interface Capture {
   last_stage: CaptureLastStage | null
   error_code: string | null
   error_message_safe: string | null
+  failure_category: CaptureFailureCategory | null
   started_at: string | null
   finished_at: string | null
   mistake_draft_item_id: string | null

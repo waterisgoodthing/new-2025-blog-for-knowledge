@@ -1,78 +1,85 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'motion/react'
-import { useNoteIndex, useReviewPlan, useReviewStats } from '@/hooks/use-note-index'
-import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
-import { KnowledgeSidebar } from '@/app/notes/components/knowledge-sidebar'
-import { EmptyState } from '@/components/empty-state'
+import {
+	listPublicMistakes,
+	type PublicMistake,
+	type PublicMistakeListResponse,
+	type MistakeReason,
+} from '@/lib/api/mistakes'
+import { AsyncStatePanel } from '@/components/async-state-panel'
+import { useReviewPlan, useReviewStats } from '@/hooks/use-note-index'
+import { cn } from '@/lib/utils'
 import { WeakPointDiagnosis } from './components/weak-point-diagnosis'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 const diffLabels = { easy: '简单', medium: '中等', hard: '困难' }
+const reasonLabels: Record<MistakeReason, string> = {
+	concept: '概念理解',
+	calculation: '计算过程',
+	reading: '审题阅读',
+	careless: '粗心失误',
+	unknown: '未分类',
+}
+
+const PAGE_SIZE = 20
 
 export default function MistakesPage() {
-	const [subject, setSubject] = useState('')
-	const [difficulty, setDifficulty] = useState('')
-	const [q, setQ] = useState('')
 	const [page, setPage] = useState(1)
-	const [activeFilter, setActiveFilter] = useState('all')
-	const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
-	const [activeTag, setActiveTag] = useState<string | null>(null)
+	const [data, setData] = useState<PublicMistakeListResponse | null>(null)
+	const [error, setError] = useState<unknown>(null)
+	const [isLoading, setIsLoading] = useState(true)
+	const [reloadKey, setReloadKey] = useState(0)
 	const { isAdmin } = useAdminAuth({ mode: 'optional' })
-
-	const { data, isLoading } = useNoteIndex({
-		type: 'mistake',
-		status: 'published',
-		subject: subject || undefined,
-		difficulty: (difficulty as any) || undefined,
-		q: q || undefined,
-		tag: activeTag || undefined,
-		folder_id: activeFolderId || undefined,
-		inbox: activeFilter === 'inbox' ? true : undefined,
-		page,
-		size: 20,
-	})
 
 	const { data: stats } = useReviewStats(isAdmin)
 	const { data: plan } = useReviewPlan(isAdmin)
 
-	const items = data?.items || []
-
-	const tagsRef = useRef(new Map<number, { id: number; name: string }>())
-
-	const pageTags = useMemo(() => {
-		for (const item of items) {
-			for (const tag of item.tags) {
-				if (!tagsRef.current.has(tag.id)) tagsRef.current.set(tag.id, tag)
-			}
+	useEffect(() => {
+		let cancelled = false
+		setIsLoading(true)
+		setError(null)
+		listPublicMistakes({ page, size: PAGE_SIZE })
+			.then((response) => {
+				if (!cancelled) setData(response)
+			})
+			.catch((reason: unknown) => {
+				if (!cancelled) {
+					setData(null)
+					setError(reason)
+				}
+			})
+			.finally(() => {
+				if (!cancelled) setIsLoading(false)
+			})
+		return () => {
+			cancelled = true
 		}
-		return Array.from(tagsRef.current.values())
-	}, [items])
+	}, [page, reloadKey])
+
+	const retry = useCallback(() => {
+		setReloadKey((key) => key + 1)
+	}, [])
+
+	const items = data?.items ?? []
+	const renderState: 'loading' | 'error' | 'empty' | 'ready' = isLoading
+		? 'loading'
+		: error
+			? 'error'
+			: (data?.empty || items.length === 0)
+				? 'empty'
+				: 'ready'
+	const totalPages = data ? Math.max(1, Math.ceil(data.total / (data.size || PAGE_SIZE))) : 1
 
 	return (
-		<div className='mx-auto max-w-6xl px-4 py-8'>
+		<div className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
 			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
 				错题集
 			</motion.h1>
-
-			<div className='flex gap-6'>
-			<KnowledgeSidebar
-				mode='mistake'
-				activeFilter={activeFilter}
-				activeFolderId={activeFolderId}
-				activeTag={activeTag}
-				onFilterChange={setActiveFilter}
-				onFolderChange={setActiveFolderId}
-				onTagChange={setActiveTag}
-				contentTypes={['mistake']}
-				tags={pageTags}
-			/>
-
-				<div className='min-w-0 flex-1'>
 
 			{isAdmin && stats && (
 				<div className='mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4'>
@@ -146,7 +153,7 @@ export default function MistakesPage() {
 								))}
 							</div>
 						) : (
-								<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-gray-500'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
+							<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-gray-500'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
 						)}
 						{plan.subject_summaries.length > 0 && (
 							<div className='mt-3 flex flex-wrap gap-1.5'>
@@ -176,22 +183,9 @@ export default function MistakesPage() {
 						开始复习 ({stats?.due_today})
 					</Link>
 				)}
-				<input
-					value={q}
-					onChange={e => { setQ(e.target.value); setPage(1) }}
-					placeholder='搜索错题...'
-					className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-				/>
-				<select
-					value={difficulty}
-					onChange={e => { setDifficulty(e.target.value); setPage(1) }}
-					className='rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-sm outline-none'
-				>
-					<option value=''>全部难度</option>
-					<option value='easy'>简单</option>
-					<option value='medium'>中等</option>
-					<option value='hard'>困难</option>
-				</select>
+				{data && !data.empty && (
+					<span className='text-sm text-gray-500'>共 {data.total} 道公开错题</span>
+				)}
 				{isAdmin && (
 					<Link
 						href='/manage/capture'
@@ -202,75 +196,109 @@ export default function MistakesPage() {
 				)}
 			</div>
 
-			{isLoading ? (
-				<div className='py-20 text-center text-gray-400'>加载中...</div>
-			) : items.length === 0 ? (
-				<div className='py-20'>
-					<EmptyState
-						variant='no-content'
-						title='还没有错题'
-						description={isAdmin ? '记录第一道错题，开始系统化复习' : '当前没有公开错题'}
-						action={isAdmin ? { label: '添加错题', href: '/manage/capture' } : undefined}
-					/>
-				</div>
+			{renderState !== 'ready' ? (
+				<AsyncStatePanel
+					status={renderState}
+					error={error}
+					onRetry={retry}
+					loadingLabel='正在加载公开错题'
+					emptyHint={data?.message || '当前没有公开错题'}
+				/>
 			) : (
-				<div className='space-y-3'>
+				<div role='region' aria-label='公开错题列表' className='space-y-3'>
 					{items.map((item, i) => (
-						<motion.div
-							key={item.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: i * 0.05 }}
-						>
-							<Link
-								href={`/notes/${item.slug}`}
-								className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'
-							>
-								<div className='mb-2 flex items-center gap-2'>
-									{item.difficulty && (
-										<span className={cn('rounded-full px-2 py-0.5 text-xs', diffColors[item.difficulty])}>
-											{diffLabels[item.difficulty]}
-										</span>
-									)}
-								{item.subject && (
-									<span className='max-w-[120px] truncate rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>
-										{item.subject}
-									</span>
-								)}
-									<span className='ml-auto text-xs text-gray-400'>
-										{dayjs(item.created_at).format('YYYY-MM-DD')}
-									</span>
-								</div>
-								<h3 className='truncate font-medium'>{item.title}</h3>
-								{isAdmin && (
-									<div className='mt-2 flex items-center gap-4 text-xs text-gray-500'>
-										<span>复习 {item.repetitions || 0} 次</span>
-										<span>EF {(item.ef || 2.5).toFixed(2)}</span>
-										{item.next_review && (
-											<span className={cn(
-												dayjs(item.next_review).isBefore(dayjs(), 'day') ? 'text-red-500' : 'text-gray-500'
-											)}>
-												下次: {dayjs(item.next_review).format('MM-DD')}
-											</span>
-										)}
-									</div>
-								)}
-								{item.tags.length > 0 && (
-									<div className='mt-2 flex flex-wrap gap-1'>
-										{item.tags.map(tag => (
-											<span key={tag.id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
-												{tag.name}
-											</span>
-										))}
-									</div>
-								)}
-							</Link>
-						</motion.div>
+						<PublicMistakeCard key={item.id} item={item} index={i} />
 					))}
 				</div>
 			)}
+
+			{renderState === 'ready' && totalPages > 1 && (
+				<div className='mt-6 flex justify-center gap-2'>
+					<button
+						type='button'
+						disabled={page <= 1}
+						onClick={() => setPage((p) => Math.max(1, p - 1))}
+						className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'
+					>
+						上一页
+					</button>
+					<span className='px-3 py-1 text-sm text-gray-500'>{page} / {totalPages}</span>
+					<button
+						type='button'
+						disabled={page >= totalPages}
+						onClick={() => setPage((p) => p + 1)}
+						className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'
+					>
+						下一页
+					</button>
 				</div>
-			</div>
+			)}
 		</div>
+	)
+}
+
+function PublicMistakeCard({ item, index }: { item: PublicMistake; index: number }) {
+	return (
+		<motion.article
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ delay: index * 0.05 }}
+			className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'
+		>
+			<div className='mb-2 flex flex-wrap items-center gap-2'>
+				{item.difficulty && (
+					<span className={cn('rounded-full px-2 py-0.5 text-xs', diffColors[item.difficulty])}>
+						{diffLabels[item.difficulty]}
+					</span>
+				)}
+				<span className='rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>
+					{reasonLabels[item.reason_category] ?? item.reason_category}
+				</span>
+				<span className='ml-auto text-xs text-gray-400'>
+					{dayjs(item.created_at).format('YYYY-MM-DD')}
+					{item.updated_at !== item.created_at && ` · 更新 ${dayjs(item.updated_at).format('YYYY-MM-DD')}`}
+				</span>
+			</div>
+
+			<h2 className='text-base font-medium text-gray-900'>{item.title || '未命名错题'}</h2>
+
+			{item.question_text && (
+				<section className='mt-3'>
+					<h3 className='text-xs font-semibold text-gray-500'>题目</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.question_text}</p>
+				</section>
+			)}
+
+			{item.correct_answer && (
+				<section className='mt-3'>
+					<h3 className='text-xs font-semibold text-gray-500'>正确答案</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.correct_answer}</p>
+				</section>
+			)}
+
+			{item.analysis && (
+				<section className='mt-3'>
+					<h3 className='text-xs font-semibold text-gray-500'>解析</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.analysis}</p>
+				</section>
+			)}
+
+			{item.mistake_reason && (
+				<section className='mt-3'>
+					<h3 className='text-xs font-semibold text-gray-500'>错因说明</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.mistake_reason}</p>
+				</section>
+			)}
+
+			{item.knowledge_point_ids.length > 0 && (
+				<div className='mt-3 flex flex-wrap gap-1'>
+					{item.knowledge_point_ids.map((id) => (
+						<span key={id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
+							KP #{id}
+						</span>
+					))}
+				</div>
+			)}
+		</motion.article>
 	)
 }

@@ -17,6 +17,10 @@ import { NoteTemplatesDropdown } from '../components/note-templates'
 import { SlashCommandMenu } from '../components/slash-command-menu'
 import { AIAssistantPanel } from '../components/ai-assistant-panel'
 import { TagSuggestionDialog } from '@/components/tag-suggestion-dialog'
+import {
+	LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE,
+	LegacyMistakeWriteFrozenNotice,
+} from '@/components/legacy-mistake-write-frozen'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { AuthGate } from '@/components/auth-gate'
 
@@ -177,6 +181,11 @@ function EditNoteContent() {
 	}
 
 	const handleSave = async () => {
+		// W3-D09: legacy Note(type='mistake') writes are frozen — fail-closed.
+		if (note?.type === 'mistake' || form.type === 'mistake') {
+			toast.error(LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE)
+			return
+		}
 		if (form.tags.length === 0) {
 			const skipReminder = localStorage.getItem('skipEmptyTagReminder')
 			if (skipReminder === 'true') {
@@ -193,6 +202,11 @@ function EditNoteContent() {
 
 	const performSave = async (overrideTags?: string[]) => {
 		if (!note) return
+		// W3-D09: legacy Note(type='mistake') writes are frozen — fail-closed.
+		if (note.type === 'mistake') {
+			toast.error(LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE)
+			return
+		}
 		const tags = overrideTags ?? form.tags
 		setSaving(true)
 		try {
@@ -246,6 +260,8 @@ function EditNoteContent() {
 				<div className='rounded-lg bg-white/40 px-3 py-1.5 text-sm text-gray-500'>
 					类型: {{ note: '笔记', blog: '博客', mistake: '错题' }[note.type]} (不可更改)
 				</div>
+
+				{note.type === 'mistake' ? <LegacyMistakeWriteFrozenNotice /> : null}
 
 				<details className='rounded-xl border border-white/40 bg-white/40 p-3'>
 					<summary className='cursor-pointer text-sm font-medium'>版本历史（{versions.length}）</summary>
@@ -446,8 +462,14 @@ function EditNoteContent() {
 				</div>
 
 				<div className='flex gap-3 pt-4'>
-					<button onClick={handleSave} disabled={saving} className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50'>
-						{saving ? '保存中...' : '保存'}
+					<button
+						onClick={handleSave}
+						disabled={saving || note.type === 'mistake'}
+						data-testid={note.type === 'mistake' ? 'legacy-mistake-save-disabled' : undefined}
+						title={note.type === 'mistake' ? LEGACY_MISTAKE_WRITE_FROZEN_MESSAGE : undefined}
+						className='rounded-xl bg-[var(--color-brand)] px-6 py-2.5 text-sm text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+					>
+						{note.type === 'mistake' ? '保存（已冻结）' : saving ? '保存中...' : '保存'}
 					</button>
 					<button onClick={() => router.push(`/notes${folderQuery}`)} className='rounded-xl bg-white/60 px-6 py-2.5 text-sm hover:bg-white/80'>取消</button>
 				</div>

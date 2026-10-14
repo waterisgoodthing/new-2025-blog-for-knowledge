@@ -1,4 +1,5 @@
 import { apiFetch } from "./client";
+import type { KnowledgePoint } from "./taxonomy";
 
 export interface NoteListItem {
   id: string;
@@ -51,6 +52,21 @@ export interface NoteListResponse {
   total: number;
   page: number;
   size: number;
+}
+
+export interface NoteKnowledgePointLink {
+  note_id: string;
+  knowledge_point_id: number;
+  linked: boolean;
+}
+
+export interface KnowledgePointNoteItem {
+  id: string;
+  slug: string;
+  title: string;
+  type: string;
+  status: string;
+  hidden: boolean;
 }
 
 export interface NoteCreateInput {
@@ -175,6 +191,41 @@ export async function batchDeleteNotes(slugs: string[]): Promise<void> {
   });
 }
 
+export async function linkNoteKnowledgePoint(
+  noteId: string,
+  kpId: number,
+): Promise<NoteKnowledgePointLink> {
+  return apiFetch<NoteKnowledgePointLink>(
+    `/api/admin/notes/${noteId}/knowledge-points/${kpId}`,
+    { method: "POST" },
+  );
+}
+
+export async function unlinkNoteKnowledgePoint(
+  noteId: string,
+  kpId: number,
+): Promise<void> {
+  return apiFetch<void>(`/api/admin/notes/${noteId}/knowledge-points/${kpId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function listNoteKnowledgePoints(noteId: string): Promise<KnowledgePoint[]> {
+  return apiFetch<KnowledgePoint[]>(`/api/admin/notes/${noteId}/knowledge-points`);
+}
+
+export async function listKnowledgePointNotes(kpId: number): Promise<KnowledgePointNoteItem[]> {
+  return apiFetch<KnowledgePointNoteItem[]>(
+    `/api/admin/notes/knowledge-points/${kpId}/notes`,
+  );
+}
+
+/**
+ * @deprecated Legacy Note promote is write-frozen for any path that would
+ * create/update a `type='mistake'` Note (W3-D09 F-3). Kept only so existing
+ * callers can still resolve; do not wire new UI to it. Canonical mistakes are
+ * managed via `/api/admin/mistakes` + the capture workspace.
+ */
 export async function promoteNote(slug: string, newType: "note" | "blog" | "mistake"): Promise<NoteDetail> {
   return apiFetch<NoteDetail>(`/api/notes/${slug}/promote?new_type=${newType}`, {
     method: "POST",
