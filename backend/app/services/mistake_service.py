@@ -75,7 +75,18 @@ async def create_mistake_draft(session: AsyncSession, payload: MistakeDraftCreat
     session.add(draft); await session.flush()
     for kp in payload.knowledge_point_ids:
         session.add(KnowledgePointLink(knowledge_point_id=kp,target_type="mistake_draft",target_id=str(draft.id)))
-    await session.flush(); await session.refresh(item); await session.refresh(draft)
+    await session.flush()
+    if payload.source_run_id is not None:
+        # B05b: the loose optional source_run_id binding is retired. Canonical
+        # AI-assisted creation must go through
+        # ``ai_creation_service.confirm_canonical_creation``, which verifies the
+        # trusted run context/payload and binds the entity atomically. Keeping a
+        # second unverified path would let an arbitrary succeeded run be attached
+        # to an unrelated draft.
+        raise MistakeConflict(
+            "source_run_id binding is retired; use the canonical AI confirmation endpoint"
+        )
+    await session.refresh(item); await session.refresh(draft)
     return MistakeDraftRecord(item,draft,sorted(payload.knowledge_point_ids))
 
 async def get_mistake_draft(session, item_id, for_update=False):
@@ -178,7 +189,41 @@ async def update_mistake(session,mistake_id,payload:MistakeUpdate):
         await _validate_points(session,r.subject_id,payload.knowledge_point_ids)
         await session.execute(delete(KnowledgePointLink).where(KnowledgePointLink.target_type=="mistake",KnowledgePointLink.target_id==str(r.id)))
         for kp in payload.knowledge_point_ids: session.add(KnowledgePointLink(knowledge_point_id=kp,target_type="mistake",target_id=str(r.id)))
-    r.mistake.version+=1; await session.flush(); return await get_mistake(session,mistake_id)
+    r.mistake.version+=1; await session.flush(); await session.refresh(r.mistake); return await get_mistake(session,mistake_id)
+
+async def update_mistake_visibility(session,mistake_id,*,visibility:str,version:int):
+    if visibility not in ("private","public"):
+        raise MistakeValidationError("visibility must be 'private' or 'public'")
+    r=await get_mistake(session,mistake_id)
+    if r.version!=version: raise MistakeConflict("Mistake version conflict")
+    if r.mistake.visibility!=visibility:
+        r.mistake.visibility=visibility
+        r.mistake.version+=1
+        await session.flush()
+        await session.refresh(r.mistake)
+    return await get_mistake(session,mistake_id)
+
+async def list_public_mistakes(session,*,page:int=1,size:int=20):
+    from sqlalchemy import func as sa_func
+    base=(select(Mistake)
+          .where(Mistake.status=="active")
+          .where(Mistake.visibility=="public"))
+    total=(await session.execute(select(sa_func.count()).select_from(base.subquery()))).scalar() or 0
+    rows=(await session.execute(
+        base.order_by(Mistake.created_at.desc(),Mistake.id)
+        .offset((page-1)*size).limit(size)
+    )).scalars().all()
+    items=[]
+    for m in rows:
+        kp_ids=await _links(session,"mistake",m.id)
+        items.append({
+            "id":m.id,"title":m.title,"question_text":m.question_text,
+            "correct_answer":m.correct_answer,"analysis":m.analysis,
+            "reason_category":m.reason_category,"mistake_reason":m.mistake_reason,
+            "difficulty":m.difficulty,"knowledge_point_ids":kp_ids,
+            "created_at":m.created_at,"updated_at":m.updated_at,
+        })
+    return items,total
 
 async def archive_mistake(session,mistake_id,version):
     r=await get_mistake(session,mistake_id)
@@ -186,4 +231,4 @@ async def archive_mistake(session,mistake_id,version):
     if r.version!=version: raise MistakeConflict("Mistake version conflict")
     r.mistake.status="archived"; r.mistake.version+=1
     ri=await session.get(ReviewItem,r.review_item_id); ri.state="paused"
-    await session.flush(); return await get_mistake(session,mistake_id)
+    await session.flush(); await session.refresh(r.mistake); return await get_mistake(session,mistake_id)

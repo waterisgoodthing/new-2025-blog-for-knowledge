@@ -5,7 +5,10 @@ import { PlusCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import {
+  confirmMistakeAiCandidate,
+  createMistakeAiCandidate,
   createMistakeDraft,
+  type MistakeAiCandidate,
   type MistakeReason,
 } from '@/lib/api/mistakes'
 import { listQuestions, type Difficulty, type Question } from '@/lib/api/questions'
@@ -42,6 +45,11 @@ export function MistakeDraftEntry() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // B05b: optional AI error-interpretation candidate generated through the
+  // canonical trusted-run contract; cleared whenever its inputs change.
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [candidate, setCandidate] = useState<MistakeAiCandidate | null>(null)
 
   const selectedQuestion = useMemo(
     () => questions.find((question) => question.id === questionId) ?? null,
@@ -57,6 +65,54 @@ export function MistakeDraftEntry() {
       .catch((reason) => setError(message(reason, '加载题目失败')))
       .finally(() => setLoading(false))
   }, [])
+
+  const generateCandidate = async () => {
+    if (!questionId) return
+    const reason = mistakeReason.trim()
+    if (!reason) {
+      setAiError('请先填写错因说明，AI 才能给出错因候选')
+      return
+    }
+    setAiBusy(true)
+    setAiError(null)
+    setCandidate(null)
+    try {
+      const next = await createMistakeAiCandidate({
+        question_id: questionId,
+        my_answer: myAnswer || null,
+        user_error_reason: reason,
+      })
+      setCandidate(next)
+    } catch (generateError) {
+      setAiError(message(generateError, '生成AI错因候选失败'))
+    } finally {
+      setAiBusy(false)
+    }
+  }
+
+  const confirmCandidate = async () => {
+    if (!candidate || !questionId) return
+    setBusy(true)
+    setError(null)
+    try {
+      const created = await confirmMistakeAiCandidate({
+        run_id: candidate.run_id,
+        review_revision: candidate.review_revision,
+        question_id: questionId,
+        my_answer: myAnswer || null,
+        user_error_reason: mistakeReason.trim() || null,
+        reason_category: reasonCategory,
+        mistake_reason: mistakeReason || null,
+        difficulty: difficulty || null,
+        knowledge_point_ids: knowledgePointIds,
+        confirmed_candidate: candidate.candidate,
+      })
+      router.push(`/manage/mistakes/${created.draft_item_id}?kind=draft`)
+    } catch (confirmError) {
+      setError(message(confirmError, 'AI 候选确认失败'))
+      setBusy(false)
+    }
+  }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -109,6 +165,7 @@ export function MistakeDraftEntry() {
           onChange={(event) => {
             setQuestionId(event.target.value)
             setKnowledgePointIds([])
+            setCandidate(null)
           }}
           className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
         >
@@ -130,7 +187,10 @@ export function MistakeDraftEntry() {
         <textarea
           value={myAnswer}
           disabled={busy}
-          onChange={(event) => setMyAnswer(event.target.value)}
+          onChange={(event) => {
+            setMyAnswer(event.target.value)
+            setCandidate(null)
+          }}
           rows={3}
           className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
           placeholder='记录当时的错误答案或思路'
@@ -170,12 +230,44 @@ export function MistakeDraftEntry() {
         <textarea
           value={mistakeReason}
           disabled={busy}
-          onChange={(event) => setMistakeReason(event.target.value)}
+          onChange={(event) => {
+            setMistakeReason(event.target.value)
+            setCandidate(null)
+          }}
           rows={3}
           className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
           placeholder='这一步为什么错？'
         />
       </label>
+      <div className='rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600'>
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <p className='text-slate-700'>AI 错因候选（可选，生成后仍需人工确认）</p>
+          <button
+            type='button'
+            disabled={aiBusy || busy || !questionId || !mistakeReason.trim()}
+            onClick={() => void generateCandidate()}
+            className='inline-flex min-h-10 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 disabled:opacity-45'
+          >
+            {aiBusy ? '生成中…' : candidate ? '重新生成候选' : '生成AI错因候选'}
+          </button>
+        </div>
+        {aiError ? <p className='mt-2 text-sm text-red-600'>{aiError}</p> : null}
+        {candidate ? (
+          <div className='mt-3 space-y-2'>
+            <p className='rounded bg-white p-2 text-slate-700'>
+              AI候选：{String((candidate.candidate as { summary?: string }).summary ?? '（无摘要）')}
+            </p>
+            <button
+              type='button'
+              disabled={busy || aiBusy}
+              onClick={() => void confirmCandidate()}
+              className='inline-flex min-h-10 items-center rounded-lg bg-[var(--color-brand)] px-3 text-sm font-medium text-white disabled:opacity-45'
+            >
+              {busy ? '确认中…' : '按AI候选创建草稿'}
+            </button>
+          </div>
+        ) : null}
+      </div>
       <KnowledgePointMultiSelect
         disabled={busy || !selectedQuestion}
         subjectId={selectedQuestion?.subject_id}

@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +39,11 @@ _FORBIDDEN_REPLAY_KEYS = {
 }
 
 
-class AiRunConflict(Exception):
+class AiRunError(Exception):
+    """Base class for AI Run domain errors surfaced by services/routers."""
+
+
+class AiRunConflict(AiRunError):
     """A requested Run transition conflicts with current state."""
 
 
@@ -46,8 +51,71 @@ class AiRunReplayUnavailable(AiRunConflict):
     """The Run has no safe, structured replay input."""
 
 
-class AiRunNotFound(Exception):
+class AiRunTargetConflict(AiRunConflict):
+    """A Run is already bound to a different entity than the requested one."""
+
+
+class AiRunNotFound(AiRunError):
     """The requested private Run does not exist."""
+
+
+# Task types whose only durable artifact is created by a later user confirmation
+# (F05 creation-type backfill). A run of these types may be bound to the entity
+# created on save; already-typed runs outside this set are rejected.
+AI_CREATION_TASK_TYPES: frozenset[str] = frozenset(
+    {
+        "capture_draft",
+        "mistake_question_draft",
+        "mistake_error_interpretation",
+        "mistake_final_analysis",
+    }
+)
+
+
+async def bind_run_to_entity(
+    db: AsyncSession,
+    run_id: UUID,
+    *,
+    entity_type: str,
+    entity_id: str | UUID,
+    allowed_task_types: frozenset[str] = AI_CREATION_TASK_TYPES,
+) -> bool:
+    """Bind a succeeded creation-type AiRun to the entity it produced (F05).
+
+    Enforced in the caller's transaction so entity creation and provenance land
+    atomically: a conflict raises and the caller's rollback leaves no entity.
+
+    Rules:
+    - the Run must exist and be ``succeeded``;
+    - a ``rejected`` Run must never be bound to a new entity;
+    - the task type must be an allowed creation type;
+    - a Run already bound to a different id/type is rejected (no rebinding);
+    - binding the same run to the same entity is idempotent.
+    """
+    run = await db.get(AiRun, run_id)
+    if run is None:
+        raise AiRunNotFound("AI Run not found")
+    if run.status != "succeeded":
+        raise AiRunConflict("Only succeeded AI Runs can be bound to an entity")
+    if run.review_status == "rejected":
+        raise AiRunConflict("A rejected AI Run cannot be bound to an entity")
+    if run.task_type not in allowed_task_types:
+        raise AiRunConflict(f"AI Run task type is not creation-type: {run.task_type}")
+
+    entity_id_str = str(entity_id)
+    if run.target_id is not None:
+        if run.target_id != entity_id_str or (
+            run.target_type is not None and run.target_type != entity_type
+        ):
+            raise AiRunTargetConflict("AI Run is already bound to a different target")
+        return True
+    if run.target_type is not None and run.target_type != entity_type:
+        raise AiRunTargetConflict("AI Run target type conflicts with the entity type")
+
+    run.target_id = entity_id_str
+    run.target_type = entity_type
+    await db.flush()
+    return True
 
 
 def _validate_replay_input(
@@ -87,6 +155,8 @@ async def start_ai_run(
     review_required: bool = False,
     parent_run_id=None,
     attempt: int = 1,
+    creation_context: dict | None = None,
+    created_by=None,
 ) -> AiRun:
     safe_replay_input = _validate_replay_input(task_type, replay_input)
     run = AiRun(
@@ -102,6 +172,8 @@ async def start_ai_run(
         parent_run_id=parent_run_id,
         review_status="pending" if review_required else "not_required",
         review_revision=0,
+        creation_context=creation_context,
+        created_by=created_by,
         started_at=datetime.now(UTC),
     )
     db.add(run)
@@ -174,6 +246,34 @@ async def retry_ai_run(db: AsyncSession, parent: AiRun) -> AiRun:
     )
 
 
+async def backfill_ai_run_target(
+    db: AsyncSession,
+    run_id: UUID,
+    target_id: str,
+    *,
+    target_type: str | None = None,
+) -> bool:
+    """Link an existing AiRun to the business entity it produced.
+
+    Creation-type flows create a Run before the entity exists (``target_id``
+    NULL) and call this once the user confirms and the entity id is known.
+    ``target_type`` is only overwritten when explicitly provided. Flushes the
+    change and returns True; returns False when the Run does not exist. The
+    caller owns the surrounding transaction and must commit it.
+
+    NOT_YET_WIRED: no production confirmation endpoint calls this helper yet;
+    the contract is defined in docs/architecture/ai-governance.md.
+    """
+    run = await db.get(AiRun, run_id)
+    if run is None:
+        return False
+    run.target_id = target_id
+    if target_type is not None:
+        run.target_type = target_type
+    await db.flush()
+    return True
+
+
 async def decide_ai_run(
     db: AsyncSession,
     run: AiRun,
@@ -225,6 +325,25 @@ async def decide_ai_run(
 
 async def get_ai_run(db: AsyncSession, run_id) -> AiRun:
     run = await db.get(AiRun, run_id)
+    if run is None:
+        raise AiRunNotFound("AI Run not found")
+    return run
+
+
+async def get_ai_run_for_update(db: AsyncSession, run_id) -> AiRun:
+    """Load an AI Run with a row lock and refreshed state.
+
+    Decision endpoints use this so a generic accept/reject serialises on the
+    same AiRun row as the canonical confirmation path (shared lock protocol).
+    """
+    run = (
+        await db.execute(
+            select(AiRun)
+            .where(AiRun.id == run_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+    ).scalar_one_or_none()
     if run is None:
         raise AiRunNotFound("AI Run not found")
     return run

@@ -89,7 +89,7 @@ async def decide_ai_run(
     session_token: str | None = Cookie(None, alias="admin_session"),
 ):
     try:
-        run = await ai_run_service.get_ai_run(db, run_id)
+        run = await ai_run_service.get_ai_run_for_update(db, run_id)
         return await ai_run_service.decide_ai_run(
             db,
             run,

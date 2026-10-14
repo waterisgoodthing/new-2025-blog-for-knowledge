@@ -34,7 +34,12 @@ _HUMAN_REVIEW_TASKS = {
 
 @dataclass
 class GatewayCallResult:
-    """Gateway 调用结果（含元数据供日志写入）。"""
+    """Gateway 调用结果（含元数据供日志写入）。
+
+    ``run_id`` 是该调用的业务 AiRun id（未注册 task 或 run 记录创建失败时为
+    None）。调用方可用它把生成记录关联到用户确认后创建的业务实体
+    （``ai_run_service.bind_run_to_entity``，F05）。
+    """
 
     data: dict | str | None
     provider_used: str
@@ -44,6 +49,8 @@ class GatewayCallResult:
     fallback_used: bool
     attempts: list[dict]  # [{provider, model, success, latency_ms, error}]
     error: str | None = None
+    failure_category: str | None = None
+    run_id: uuid.UUID | None = None
 
 
 def _serialize_attempts(attempts: list) -> list[dict]:
@@ -80,6 +87,8 @@ async def _write_call_log(
     """持久化调用日志到 ai_call_logs。
 
     使用独立 AsyncSession，写入失败仅 log warning，不阻塞主调用。
+    ``result.error`` 只包含安全短消息（provider 分类/状态），provider 原始响应体
+    在 ai_service 层已被剥离，不会落库。
     """
     try:
         async with async_session() as session:
@@ -105,8 +114,22 @@ async def _start_run_record(
     task_type: str,
     input_summary: str | None,
     prompt_version: str | None,
+    target_type: str | None = None,
+    target_id: str | None = None,
+    creation_context: dict | None = None,
+    created_by=None,
 ) -> uuid.UUID | None:
-    """Create a business Run for registered tasks; failures remain observable gaps."""
+    """Create a business Run for registered tasks; failures remain observable gaps.
+
+    ``target_type``/``target_id`` link the Run to the business entity it
+    operates on. When unknown at creation time (creation-type flows) they are
+    left NULL and may be backfilled once the entity is confirmed; see
+    ``docs/architecture/ai-governance.md``.
+
+    ``creation_context``/``created_by`` are server-injected provenance for the
+    canonical AI-creation contract (B05a). They are persisted *before* the
+    provider call so a late confirmation can verify the trusted source.
+    """
 
     try:
         typed_task = AiTaskType(task_type)
@@ -117,9 +140,13 @@ async def _start_run_record(
             run = await start_ai_run(
                 session,
                 task_type=task_type,
+                target_type=target_type,
+                target_id=target_id,
                 prompt_version=prompt_version,
                 input_summary=input_summary,
                 review_required=typed_task in _HUMAN_REVIEW_TASKS,
+                creation_context=creation_context,
+                created_by=created_by,
             )
             await session.commit()
             return run.id
@@ -145,7 +172,7 @@ async def _finish_run_record(
                 await fail_ai_run(
                     session,
                     run,
-                    error_code="provider_error",
+                    error_code=result.failure_category or "provider_error",
                     error_message_safe=result.error or "AI provider call failed",
                     provider_used=result.provider_used,
                     model=result.model,
@@ -174,7 +201,7 @@ async def _finish_run_record(
         logger.warning("AI Run finalize failed for %s: %s", run_id, exc)
 
 
-def _build_success_result(result, latency_ms: int) -> GatewayCallResult:
+def _build_success_result(result, latency_ms: int, run_id=None) -> GatewayCallResult:
     """从 ai_service.CallResult 构建成功的 GatewayCallResult。"""
     return GatewayCallResult(
         data=result.data,
@@ -185,11 +212,16 @@ def _build_success_result(result, latency_ms: int) -> GatewayCallResult:
         fallback_used=result.fallback_used,
         attempts=_serialize_attempts(result.attempts),
         error=None,
+        run_id=run_id,
     )
 
 
-def _build_failure_result(exc: Exception, latency_ms: int) -> GatewayCallResult:
-    """从异常构建失败的 GatewayCallResult。"""
+def _build_failure_result(exc: Exception, latency_ms: int, run_id=None) -> GatewayCallResult:
+    """从异常构建失败的 GatewayCallResult。
+
+    ``error`` 只携带安全的短消息（异常类型/状态），绝不包含 provider 原始响应体；
+    ``failure_category`` 透传 ``AIProviderError.category``，供上层稳定分类。
+    """
     return GatewayCallResult(
         data=None,
         provider_used="",
@@ -199,6 +231,8 @@ def _build_failure_result(exc: Exception, latency_ms: int) -> GatewayCallResult:
         fallback_used=False,
         attempts=[],
         error=str(exc)[:500],
+        failure_category=getattr(exc, "category", None),
+        run_id=run_id,
     )
 
 
@@ -257,13 +291,25 @@ async def call_text(
     preferred: str | None = None,
     json_mode: bool | None = None,
     input_summary: str | None = None,
+    target_type: str | None = None,
+    target_id: str | None = None,
+    creation_context: dict | None = None,
+    created_by=None,
 ) -> GatewayCallResult:
     """文本模型调用（DeepSeek 主路径）。参数为 None 时从 registry 读取默认值。"""
     max_tokens, preferred, json_mode, prompt_version, fallback_chain = _resolve_registry_defaults(
         task_type, max_tokens, preferred, json_mode, fallback_preferred="deepseek"
     )
     task_type_str = task_type.value if isinstance(task_type, AiTaskType) else task_type
-    run_id = await _start_run_record(task_type_str, input_summary, prompt_version)
+    run_id = await _start_run_record(
+        task_type_str,
+        input_summary,
+        prompt_version,
+        target_type=target_type,
+        target_id=target_id,
+        creation_context=creation_context,
+        created_by=created_by,
+    )
 
     start = time.monotonic()
     try:
@@ -279,10 +325,10 @@ async def call_text(
             parse_json=json_mode,
         )
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_success_result(result, latency_ms)
+        gw_result = _build_success_result(result, latency_ms, run_id)
     except Exception as e:
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_failure_result(e, latency_ms)
+        gw_result = _build_failure_result(e, latency_ms, run_id)
 
     await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
     await _finish_run_record(run_id, task_type_str, gw_result)
@@ -295,13 +341,21 @@ async def call_vision(
     *,
     max_tokens: int | None = None,
     input_summary: str | None = None,
+    target_type: str | None = None,
+    target_id: str | None = None,
 ) -> GatewayCallResult:
     """视觉/OCR 模型调用（DashScope Vision 主路径）。参数为 None 时从 registry 读取默认值。"""
     max_tokens, preferred, _, prompt_version, fallback_chain = _resolve_registry_defaults(
         task_type, max_tokens, None, None, fallback_preferred="dashscope_vision"
     )
     task_type_str = task_type.value if isinstance(task_type, AiTaskType) else task_type
-    run_id = await _start_run_record(task_type_str, input_summary, prompt_version)
+    run_id = await _start_run_record(
+        task_type_str,
+        input_summary,
+        prompt_version,
+        target_type=target_type,
+        target_id=target_id,
+    )
 
     start = time.monotonic()
     try:
@@ -315,10 +369,10 @@ async def call_vision(
             parse_json=True,
         )
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_success_result(result, latency_ms)
+        gw_result = _build_success_result(result, latency_ms, run_id)
     except Exception as e:
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_failure_result(e, latency_ms)
+        gw_result = _build_failure_result(e, latency_ms, run_id)
 
     await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
     await _finish_run_record(run_id, task_type_str, gw_result)
@@ -332,13 +386,21 @@ async def call_general(
     max_tokens: int | None = None,
     json_mode: bool | None = None,
     input_summary: str | None = None,
+    target_type: str | None = None,
+    target_id: str | None = None,
 ) -> GatewayCallResult:
     """通用模型调用（Qwen General fallback）。参数为 None 时从 registry 读取默认值。"""
     max_tokens, preferred, json_mode, prompt_version, fallback_chain = _resolve_registry_defaults(
         task_type, max_tokens, None, json_mode, fallback_preferred="qwen_general"
     )
     task_type_str = task_type.value if isinstance(task_type, AiTaskType) else task_type
-    run_id = await _start_run_record(task_type_str, input_summary, prompt_version)
+    run_id = await _start_run_record(
+        task_type_str,
+        input_summary,
+        prompt_version,
+        target_type=target_type,
+        target_id=target_id,
+    )
 
     start = time.monotonic()
     try:
@@ -353,10 +415,10 @@ async def call_general(
             parse_json=json_mode,
         )
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_success_result(result, latency_ms)
+        gw_result = _build_success_result(result, latency_ms, run_id)
     except Exception as e:
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_failure_result(e, latency_ms)
+        gw_result = _build_failure_result(e, latency_ms, run_id)
 
     await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
     await _finish_run_record(run_id, task_type_str, gw_result)
@@ -371,6 +433,8 @@ async def call_stream(
     preferred: str | None = None,
     json_mode: bool | None = None,
     input_summary: str | None = None,
+    target_type: str | None = None,
+    target_id: str | None = None,
 ) -> GatewayCallResult:
     """流式调用入口。参数为 None 时从 registry 读取默认值。
 
@@ -382,7 +446,13 @@ async def call_stream(
         task_type, max_tokens, preferred, json_mode, fallback_preferred="deepseek"
     )
     task_type_str = task_type.value if isinstance(task_type, AiTaskType) else task_type
-    run_id = await _start_run_record(task_type_str, input_summary, prompt_version)
+    run_id = await _start_run_record(
+        task_type_str,
+        input_summary,
+        prompt_version,
+        target_type=target_type,
+        target_id=target_id,
+    )
 
     start = time.monotonic()
     try:
@@ -398,10 +468,10 @@ async def call_stream(
             parse_json=json_mode,
         )
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_success_result(result, latency_ms)
+        gw_result = _build_success_result(result, latency_ms, run_id)
     except Exception as e:
         latency_ms = int((time.monotonic() - start) * 1000)
-        gw_result = _build_failure_result(e, latency_ms)
+        gw_result = _build_failure_result(e, latency_ms, run_id)
 
     await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
     await _finish_run_record(run_id, task_type_str, gw_result)
