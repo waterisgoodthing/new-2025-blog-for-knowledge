@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-07-31T04:02:58.999564+00:00",
+  "target_database": "i10_owner_backfill_20260731_approval",
+  "target_role": "blog_user",
+  "manifest_path": "../../i-series-completion-plan/assets/owner-mapping-manifest-v1.json",
+  "manifest_sha256": "a2d91fd48c96f4dfde15346c33b66e6ee58e581fb25dfa3258725dcd49dbbe4e",
+  "canonical_owner_id": "4c503215-b158-4162-b472-79df8289ed0a",
+  "table_counts": {
+    "notes": 13,
+    "questions": 3,
+    "mistakes": 3,
+    "review_items": 3,
+    "review_records": 4,
+    "attachments": 1,
+    "attachment_links": 1,
+    "capture_items": 0,
+    "draft_items": 6,
+    "ai_runs": 32,
+    "ai_call_logs": 47,
+    "users": 8
+  },
+  "disposition_counts": {
+    "ARCHIVED": 86,
+    "MIGRATED": 35
+  },
+  "relationship_orphans": {
+    "mistake_question": 0,
+    "mistake_draft": 0,
+    "review_item_target": 0,
+    "review_record_item": 0,
+    "attachment_link_attachment": 0,
+    "attachment_link_target": 0,
+    "capture_attachment": 0
+  },
+  "sidecar_key_match": true,
+  "metrics": {
+    "source_count": 121,
+    "manifest_count": 121,
+    "sidecar_count": 121,
+    "missing_count": 0,
+    "extra_count": 0,
+    "hash_drift_count": 0,
+    "owner_conflict_count": 0,
+    "owner_fk_orphan_count": 0,
+    "relationship_orphan_count": 0,
+    "database_revision": "025",
+    "canonical_owner_count": 1
+  },
+  "passed": true
+}

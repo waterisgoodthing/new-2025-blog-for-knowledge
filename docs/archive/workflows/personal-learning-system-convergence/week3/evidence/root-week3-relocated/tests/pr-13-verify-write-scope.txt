@@ -1,0 +1,12 @@
+## Verify write-scope check (no product code edited)
+
+$ git status --short -- backend/tests/test_pr13_verify_practice.py week3/evidence
+?? backend/tests/test_pr13_verify_practice.py
+?? week3/evidence/
+
+## Product files inspected (read-only; untracked, no verifier edits)
+8449dd385fd3  backend/app/services/practice_service.py
+b57ddae13d48  backend/app/schemas/practice.py
+a50ddd9c7772  backend/app/routers/practice.py
+32a0a14a38be  src/lib/api/practice.ts
+01209e66ea3f  backend/app/services/kp_analytics_service.py

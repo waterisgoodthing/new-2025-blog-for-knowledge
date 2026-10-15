@@ -1,0 +1,8 @@
+PR9F-01 row: {'source_next_review': datetime.date(2026, 12, 15), 'target_next_due': datetime.datetime(2026, 12, 15, 0, 0, tzinfo=datetime.timezone.utc), 'next_due_matches_source': True, 'differs_from_run_time': True}
+PR9F-01 report.next_due_from_source: 1
+PR9F-01 report.next_due_default: 0
+W3-D10 rejected reasons: ['source_drift']
+W3-D10 provenance_match: False
+W3-D10 target_title: original-title
+RESULTS: {'PR9F-01': 'PASS', 'W3-D10': 'PASS'}
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '../docs/workflows/personal-learning-system-convergence/week3/evidence/tests/pr-09-repro-next-due-drift.py']

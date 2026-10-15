@@ -1,0 +1,9 @@
+# PR-10 verification — scratch DB (guard) — 2026-09-25T09:51:20Z
+repo: /Users/limengyang/2025-blog-public  | cwd for alembic: backend/
+
+$ python3 scripts/week3-scratch-guard.py check --db-name astra_week3_pr10_verify
+PASS: db_name='astra_week3_pr10_verify' source=explicit:--db-name
+
+$ ... run --db-name astra_week3_pr10_verify -- .venv/bin/python -m alembic current
+031 (head)
+PASS: db_name='astra_week3_pr10_verify' source=explicit:--db-name; executing ['.venv/bin/python', '-m', 'alembic', 'current']

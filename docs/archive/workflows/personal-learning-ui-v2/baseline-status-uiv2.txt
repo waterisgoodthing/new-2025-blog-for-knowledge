@@ -1,0 +1,73 @@
+ # UI V2 Full Implementation independent baseline — 2026-09-15 (UTC)
+# HEAD 4a954ea, branch refactor/baseline, `git diff --check` exit 0.
+# PRE_EXISTING_DIRTY (inherited, READ-ONLY) vs UI_V2_TRACK_CHANGE (this track, whitelist only).
+# Delta vs Foundation baseline (2026-09-13, 52 entries):
+#  + M backend/app/services/review_item_service.py (Week2 PR-05 landing, READ-ONLY)
+#  + M backend/tests/test_mistake_review_service.py (Week2, READ-ONLY)
+#  + untracked Foundation outputs: docs/ui-v2/, docs/workflows/personal-learning-ui-foundation/,
+#    src/adapters/, src/components/ui-v2/, src/contracts/, src/features/, src/mocks/
+#  + untracked Week2: backend/tests/test_review_scheduling_v2.py,
+#    docs/workflows/personal-learning-system-convergence/
+# THIS TRACK CHANGES must be distinguished from all entries below.
+M AGENTS.md
+ M agents/README.md
+ M agents/orchestration.md
+ M agents/permissions.md
+ M agents/report-template.md
+ M agents/task-template.md
+ M agents/workers/senior-qa-sdet.md
+ M backend/app/models/review_item.py
+ M backend/app/routers/review_items.py
+ M backend/app/schemas/review_item.py
+ M backend/app/services/review_item_service.py
+ M backend/main.py
+ M backend/tests/test_legacy_note_migration_contract.py
+ M backend/tests/test_mistake_review_service.py
+ M backend/tests/test_security_settings_guards.py
+ M docs/public-deploy-runbook.md
+ M next.config.ts
+ M package.json
+ M src/app/batch7-compatibility.test.ts
+ M src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+ M src/app/manage/components/feature-state.tsx
+ M src/app/manage/components/manage-sidebar.test.ts
+ M src/app/manage/components/manage-sidebar.test.tsx
+ M src/app/manage/components/manage-sidebar.tsx
+ M src/app/notes/page.tsx
+ M src/app/write-note/hooks/use-note-editor.ts
+ M src/app/write/components/ui/tag-input.tsx
+ M src/lib/api/review-items.ts
+ M src/lib/content-routes.ts
+?? IMPROVEMENT_BACKLOG.md
+?? PERSONAL_LEARNING_SYSTEM_AUDIT.md
+?? agents/workers/api-contract-reviewer.md
+?? agents/workers/compatibility-retirement-engineer.md
+?? agents/workers/learning-workflow-reviewer.md
+?? backend/alembic/versions/027_guestbook.py
+?? backend/alembic/versions/028_review_items_v2.py
+?? backend/alembic/versions/029_review_record_states.py
+?? backend/tests/test_guest_migration_contract.py
+?? backend/tests/test_review_scheduling_v2.py
+?? backend/tests/test_review_schema_v2.py
+?? docs/ui-v2/
+?? docs/workflows/personal-learning-system-convergence/
+?? docs/workflows/personal-learning-ui-foundation/
+?? scripts/runtime-smoke.mjs
+?? scripts/runtime-smoke.test.mjs
+?? src/adapters/
+?? src/app/manage/(workspace)/dashboard/error.tsx
+?? src/app/manage/(workspace)/dashboard/loading.tsx
+?? src/app/manage/(workspace)/notes/
+?? src/app/notes/error.tsx
+?? src/app/notes/loading.tsx
+?? src/app/notes/page.test.tsx
+?? src/components/async-state-panel.test.tsx
+?? src/components/async-state-panel.tsx
+?? src/components/tag-input.tsx
+?? src/components/ui-v2/
+?? src/contracts/
+?? src/features/
+?? src/hooks/use-note-editor.ts
+?? src/mocks/

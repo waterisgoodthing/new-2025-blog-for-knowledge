@@ -1,0 +1,32 @@
+{
+  "run_id": "pra06-same-hostname-3108-20260822",
+  "status": "in_progress",
+  "purpose": "single normal browser login cookie propagation diagnosis",
+  "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "snapshot_worktree": "/private/tmp/pra06-same-hostname-3108-20260822-FcoKuU/worktree",
+  "frontend_base": "http://localhost:3102",
+  "api_base": "http://api.localhost:8102",
+  "api_bind": "http://127.0.0.1:8102",
+  "login_url": "http://api.localhost:8102/api/auth/login",
+  "origin": "http://localhost:3102",
+  "runtime": {
+    "next_public_api_url": "http://api.localhost:8102",
+    "allowed_origins": "http://localhost:3102",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "fixture": {
+    "profile": "M30",
+    "setup": "in_progress",
+    "temporary_admin_username": "pra06-same-hostname-3108-admin",
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 1,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "started_at": "2026-08-22T13:45:26.805Z"
+}

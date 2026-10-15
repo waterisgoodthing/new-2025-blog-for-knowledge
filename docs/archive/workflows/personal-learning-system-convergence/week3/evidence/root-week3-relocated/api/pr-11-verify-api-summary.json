@@ -1,0 +1,71 @@
+{
+ "generated_at": "2026-09-25T12:13:04.962994Z",
+ "review_today_count": 2,
+ "practice_today_count": 3,
+ "weak_top3": [
+  {
+   "knowledge_point_id": 143,
+   "name": "PR11V Alpha",
+   "attempt_count": 2,
+   "wrong_rate": 1.0,
+   "lapse_count": 2,
+   "due_count": 1
+  },
+  {
+   "knowledge_point_id": 144,
+   "name": "PR11V Beta",
+   "attempt_count": 2,
+   "wrong_rate": 0.5,
+   "lapse_count": 0,
+   "due_count": 0
+  },
+  {
+   "knowledge_point_id": 145,
+   "name": "PR11V Gamma",
+   "attempt_count": 1,
+   "wrong_rate": 0.0,
+   "lapse_count": 0,
+   "due_count": 1
+  }
+ ],
+ "recently_mastered_4": [
+  {
+   "review_item_id": "81acf2e5-ec72-44c3-b8d0-2b43d152eeb0",
+   "mistake_id": "79ede97a-c634-498a-9792-a15ea88cc11c",
+   "question_text": "PR11V mistake text m6",
+   "mastered_at": "2026-09-25T11:42:15.127316Z"
+  }
+ ],
+ "today_first_action": {
+  "kind": "review",
+  "count": 2,
+  "target_route": "/manage/review",
+  "reason": "due_reviews_first"
+ },
+ "section_actions": {
+  "review": {
+   "section": "review",
+   "count": 2,
+   "available": true,
+   "target_route": "/manage/review",
+   "reason": "due_reviews_pending"
+  },
+  "practice": {
+   "section": "practice",
+   "count": 3,
+   "available": true,
+   "target_route": "/manage/practice",
+   "reason": "practice_available"
+  }
+ },
+ "sections": {
+  "learning": "ready",
+  "activity": "ready",
+  "storage": "empty"
+ },
+ "system": {
+  "service": "ok",
+  "database": "ok",
+  "storage": "ok"
+ }
+}

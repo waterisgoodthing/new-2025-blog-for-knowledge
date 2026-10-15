@@ -101,6 +101,8 @@ class ContextPackResponse(BaseModel):
 class WeakPointItem(BaseModel):
     subject: str
     knowledge_point: str
+    canonical_name: str = ""
+    aliases: list[str] = Field(default_factory=list)
     mistake_count: int = 0
     due_review_count: int = 0
     recent_error_count: int = 0

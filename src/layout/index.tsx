@@ -11,15 +11,16 @@ import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
 import MusicCard from '@/components/music-card'
-import { usePathname } from 'next/navigation'
-import ConfigDialog from '@/app/(home)/config-dialog/index'
+import { SiteSettingsLoader } from '@/components/site-settings-loader'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()
 	useSizeInit()
-	const { cardStyles, siteContent, regenerateKey, configDialogOpen, setConfigDialogOpen } = useConfigStore()
+	const { cardStyles, siteContent, regenerateKey } = useConfigStore()
 	const { maxSM, init } = useSize()
 	const pathname = usePathname()
+	const router = useRouter()
 
 	const isHome = pathname === '/'
 	const isWrite = pathname.startsWith('/write')
@@ -29,12 +30,12 @@ export default function Layout({ children }: PropsWithChildren) {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.ctrlKey || e.metaKey) && (e.key === 'l' || e.key === ',')) {
 				e.preventDefault()
-				setConfigDialogOpen(true)
+				router.push('/manage?tab=settings')
 			}
 		}
 		window.addEventListener('keydown', handleKeyDown)
 		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [setConfigDialogOpen])
+	}, [router])
 
 	const backgroundImages = (siteContent.backgroundImages ?? []) as Array<{ id: string; url: string }>
 	const currentBackgroundImageId = siteContent.currentBackgroundImageId
@@ -43,6 +44,7 @@ export default function Layout({ children }: PropsWithChildren) {
 
 	return (
 		<>
+			<SiteSettingsLoader />
 			<Toaster
 				position={maxSM && isInnerPage ? 'top-center' : 'bottom-right'}
 				richColors
@@ -74,16 +76,15 @@ export default function Layout({ children }: PropsWithChildren) {
 
 			{!maxSM && isInnerPage && <VerticalNav />}
 
-			<main className={`relative z-10 h-full ${maxSM && isInnerPage ? 'pb-14' : ''}`}>
+			<main className={`relative z-10 h-full ${maxSM && !isWrite ? 'pb-14' : ''}`}>
 				{children}
 				<NavCard />
 
 				{!maxSM && cardStyles.musicCard?.enabled !== false && <MusicCard />}
 			</main>
 
-			{maxSM && isInnerPage && <MobileNav />}
-			{maxSM && init && <ScrollTopButton className={`bg-brand/20 fixed z-50 shadow-md ${maxSM && isInnerPage ? 'right-4 bottom-16' : 'right-6 bottom-8'}`} />}
-			<ConfigDialog open={configDialogOpen} onClose={() => setConfigDialogOpen(false)} />
+			{maxSM && !isWrite && <MobileNav />}
+			{maxSM && init && <ScrollTopButton className={`bg-brand/20 fixed z-50 shadow-md ${maxSM && !isWrite ? 'right-4 bottom-16' : 'right-6 bottom-8'}`} />}
 		</>
 	)
 }

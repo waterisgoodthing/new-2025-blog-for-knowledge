@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useState, type RefObject, type ReactNode } from 'react'
+import { DelayedTooltip } from '@/components/delayed-tooltip'
 import {
 	Bold,
 	Italic,
@@ -125,9 +126,15 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 		{ icon: <GitBranch size={14} />, label: '流程图 (Mermaid)', template: '```mermaid\ngraph TD\n    A[开始] --> B[处理]\n    B --> C[结束]\n```' },
 		{ icon: <BarChart3 size={14} />, label: '数据图表', template: '```chart\n{"type":"bar","title":"学习记录","xAxis":["周一","周二","周三"],"series":[{"name":"完成数","data":[3,5,4]}]}\n```' },
 		{ icon: <Columns size={14} />, label: '对比块', template: ':::compare\ntitle: 函数与方法对比\nleft: 函数\nright: 方法\n- 定义位置：函数独立定义，方法定义在类中\n- 调用方式：函数直接调用，方法通过对象调用\n:::' },
-		{ icon: <Brain size={14} />, label: '思维导图', template: '```markmap\n# 中心主题\n## 分支1\n### 子项1\n### 子项2\n## 分支2\n```' },
 		{ icon: <FlipVertical size={14} />, label: '复习卡片', template: '\n<details>\n<summary>问题</summary>\n\n答案内容\n\n</details>\n' },
-	]
+		{ icon: <GitBranch size={14} />, label: 'Mermaid 状态图', template: '```mermaid\nstateDiagram-v2\n    [*] --> 空闲\n    空闲 --> 处理中\n    处理中 --> 完成\n    完成 --> [*]\n```' },
+		{ icon: <GitBranch size={14} />, label: 'Mermaid 时间线', template: '```mermaid\ntimeline\n    title 时间线标题\n    2024 : 事件A\n         : 事件B\n    2025 : 事件C\n```' },
+		{ icon: <Brain size={14} />, label: 'Markmap 知识地图', template: '```markmap\n# 中心主题\n## 分支1\n### 子项1\n### 子项2\n## 分支2\n```' },
+		{ icon: <BarChart3 size={14} />, label: '图表 (ECharts)', template: '```chart\n{"type":"bar","title":"标题","xAxis":["A","B","C"],"series":[{"name":"数据","data":[10,20,15]}]}\n```' },
+		{ icon: <FileCode2 size={14} />, label: '代码块 (Python)', template: '```python\npass\n```', cursorOffset: 3 },
+		{ icon: <FileCode2 size={14} />, label: '代码块 (TypeScript)', template: '```typescript\n\n```', cursorOffset: 3 },
+		{ icon: <Sigma size={14} />, label: '公式块', template: '$$\n\n$$', cursorOffset: 3 },
+	] as { icon: ReactNode; label: string; template: string; cursorOffset?: number }[]
 
 	const handleClick = (action: ToolbarAction) => {
 		const textarea = textareaRef.current
@@ -169,15 +176,15 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 				<div key={gi} className='flex items-center'>
 					{gi > 0 && <div className='mx-1 h-5 w-px bg-gray-300/50' />}
 					{group.actions.map((action, ai) => (
-						<button
-							key={ai}
-							type='button'
-							onClick={() => handleClick(action)}
-							aria-label={`${action.label}${action.shortcut ? `，快捷键 ${action.shortcut}` : ''}`}
-							title={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}
-							className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
-							{action.icon}
-						</button>
+						<DelayedTooltip key={ai} content={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}>
+							<button
+								type='button'
+								onClick={() => handleClick(action)}
+								aria-label={`${action.label}${action.shortcut ? `，快捷键 ${action.shortcut}` : ''}`}
+								className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
+								{action.icon}
+							</button>
+						</DelayedTooltip>
 					))}
 				</div>
 			))}
@@ -189,14 +196,15 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 			)}
 			<div className='mx-1 h-5 w-px bg-gray-300/50' />
 			<div className='relative'>
-				<button
-					type='button'
-					onClick={() => { setPaletteOpen(!paletteOpen); setInserterOpen(false) }}
-					aria-label='字体颜色'
-					title='字体颜色'
-					className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
-					<Palette size={15} />
-				</button>
+				<DelayedTooltip content='字体颜色'>
+					<button
+						type='button'
+						onClick={() => { setPaletteOpen(!paletteOpen); setInserterOpen(false) }}
+						aria-label='字体颜色'
+						className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
+						<Palette size={15} />
+					</button>
+				</DelayedTooltip>
 				{paletteOpen && (
 					<>
 						<div className='fixed inset-0 z-10' onClick={() => setPaletteOpen(false)} />
@@ -218,15 +226,16 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 			</div>
 			<div className='mx-1 h-5 w-px bg-gray-300/50' />
 			<div className='relative'>
-				<button
-					type='button'
-					onClick={() => setInserterOpen(!inserterOpen)}
-					aria-label='插入内容块'
-					title='插入内容块'
-					className='flex h-7 items-center gap-1 rounded-md px-1.5 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
-					<Plus size={15} />
-					<span className='text-xs'>插入</span>
-				</button>
+				<DelayedTooltip content='插入内容块'>
+					<button
+						type='button'
+						onClick={() => setInserterOpen(!inserterOpen)}
+						aria-label='插入内容块'
+						className='flex h-7 items-center gap-1 rounded-md px-1.5 text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
+						<Plus size={15} />
+						<span className='text-xs'>插入</span>
+					</button>
+				</DelayedTooltip>
 				{inserterOpen && (
 					<>
 						<div className='fixed inset-0 z-10' onClick={() => setInserterOpen(false)} />
@@ -235,7 +244,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 								<button
 									key={i}
 									type='button'
-									onClick={() => { insertText('\n' + block.template + '\n'); setInserterOpen(false) }}
+									onClick={() => { insertText('\n' + block.template + '\n'); if (block.cursorOffset !== undefined) { const ta = textareaRef.current; if (ta) { const pos = ta.selectionStart + block.cursorOffset; setTimeout(() => { ta.setSelectionRange(pos, pos); ta.focus() }, 0) } }; setInserterOpen(false) }}
 									className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors hover:bg-gray-100/50'>
 									{block.icon}
 									<span>{block.label}</span>

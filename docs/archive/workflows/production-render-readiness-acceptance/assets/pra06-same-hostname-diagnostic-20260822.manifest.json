@@ -1,0 +1,99 @@
+{
+  "run_id": "pra06-same-hostname-diagnostic-20260822",
+  "status": "fail",
+  "purpose": "single normal browser login cookie propagation diagnosis",
+  "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "snapshot_worktree": "/private/tmp/pra06-same-hostname-diagnostic-20260822-aqGMr7/worktree",
+  "frontend_base": "http://api.localhost:3104",
+  "api_base": "http://api.localhost:8104",
+  "api_bind": "http://127.0.0.1:8104",
+  "login_url": "http://api.localhost:8104/api/auth/login",
+  "origin": "http://api.localhost:3104",
+  "runtime": {
+    "next_public_api_url": "http://api.localhost:8104",
+    "allowed_origins": "http://api.localhost:3104",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "fixture": {
+    "total": 30,
+    "public_visible": 20,
+    "published_hidden": 5,
+    "drafts": 5,
+    "d1_public": true,
+    "types": {
+      "note": 10,
+      "blog": 10,
+      "mistake": 10
+    },
+    "temporary_admin_username": "pra06-same-hostname-admin",
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 1,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "started_at": "2026-08-22T10:16:44.296Z",
+  "browser_version": "151.0.7922.34",
+  "ended_at": "2026-08-22T10:16:50.502Z",
+  "result": {
+    "sample_id": "M30-cookie-diagnostic-01",
+    "valid": false,
+    "failure_reason": "cookie-jar:admin_session-absent; console-errors; failed-requests",
+    "login_post_statuses": [
+      200
+    ],
+    "me_statuses": [
+      200,
+      401,
+      200
+    ],
+    "strict_management_statuses": [
+      200
+    ],
+    "admin_session_cookie_jar_present": false,
+    "login_set_cookie_attribute_evidence_present": true,
+    "blocked_set_cookie_reason_count": 0,
+    "request_cookie_header_presence": {
+      "me": [
+        false,
+        false,
+        true
+      ],
+      "strict_management": [
+        true
+      ]
+    },
+    "readiness_dom_state": "ready",
+    "readiness_marks": {
+      "auth_submit": 1,
+      "content_ready": 1
+    }
+  },
+  "cleanup": {
+    "postgres_pid": 561,
+    "postgres_data": "/Users/limengyang/.Trash/pra06-same-hostname-diagnostic-20260822-aqGMr7/postgres/data",
+    "postgres_stopped": true,
+    "api_pid": 2509,
+    "frontend_pid": 2510,
+    "ports": [
+      3104,
+      8104,
+      55436
+    ],
+    "ports_free": true,
+    "worktree_unregistered": true,
+    "recoverable_copy": "/Users/limengyang/.Trash/pra06-same-hostname-diagnostic-20260822-aqGMr7",
+    "main_diff_check": "PASS",
+    "production_resources_touched": false,
+    "logs_and_manifest_retained": true
+  },
+  "handoff": {
+    "resources_active": false,
+    "cleanup": "PASS",
+    "next_step": "none; exact resources cleaned per user instruction"
+  }
+}

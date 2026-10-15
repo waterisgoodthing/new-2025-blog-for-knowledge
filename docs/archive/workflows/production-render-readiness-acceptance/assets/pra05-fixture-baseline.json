@@ -1,0 +1,186 @@
+{
+  "run_id": "pra05-e0-smoke-20260822",
+  "recorded_at": "2026-08-22T08:44:38.543Z",
+  "baseline": [
+    {
+      "slug": "pra04-blog-02",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-05",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-08",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-11",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-14",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-17",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-20",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-23",
+      "status": "draft",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-26",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-blog-29",
+      "status": "published",
+      "hidden": false,
+      "type": "blog"
+    },
+    {
+      "slug": "pra04-d1",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-mistake-03",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-06",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-09",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-12",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-15",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-18",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-21",
+      "status": "draft",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-24",
+      "status": "draft",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-27",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-mistake-30",
+      "status": "published",
+      "hidden": false,
+      "type": "mistake"
+    },
+    {
+      "slug": "pra04-note-04",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-07",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-10",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-13",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-16",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-19",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-22",
+      "status": "draft",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-25",
+      "status": "draft",
+      "hidden": false,
+      "type": "note"
+    },
+    {
+      "slug": "pra04-note-28",
+      "status": "published",
+      "hidden": false,
+      "type": "note"
+    }
+  ]
+}

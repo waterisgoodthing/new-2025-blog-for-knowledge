@@ -1,0 +1,48 @@
+{
+  "mapping_version": "wk3-mistake-visibility-v1",
+  "generated_at": "2026-09-23T06:47:30.959473+00:00",
+  "source": {
+    "total_legacy_mistakes": 4,
+    "by_mapping": {
+      "published_visible": 1,
+      "published_hidden": 1,
+      "unpublished_visible": 1,
+      "unpublished_hidden": 1
+    }
+  },
+  "targets": {
+    "created": 4,
+    "visibility_reconciled": 0,
+    "skipped_already_migrated": 0,
+    "skipped_already_migrated_private_ok": 0,
+    "rejected": []
+  },
+  "review_items": {
+    "created_v2": 0,
+    "next_due_from_source": 0,
+    "next_due_default": 0,
+    "unmapped": [
+      "ef",
+      "interval",
+      "repetitions",
+      "last_reviewed"
+    ]
+  },
+  "unmapped_source_fields": [
+    "ef",
+    "interval",
+    "repetitions",
+    "last_reviewed"
+  ],
+  "checks": {
+    "count_match": true,
+    "provenance_match": true,
+    "visibility_matrix_match": true,
+    "public_field_allowlist_match": true,
+    "replay_noop": false
+  },
+  "idempotency": {
+    "replay_noop": false
+  },
+  "dry_run": true
+}

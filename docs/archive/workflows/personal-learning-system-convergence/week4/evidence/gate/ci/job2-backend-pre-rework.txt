@@ -1,0 +1,251 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 001, initial schema
+INFO  [alembic.runtime.migration] Running upgrade 001 -> 002, add status field
+INFO  [alembic.runtime.migration] Running upgrade 002 -> 0ec85724afb9, add user admin field
+INFO  [alembic.runtime.migration] Running upgrade 0ec85724afb9 -> 1119bee5a419, add images to notes
+INFO  [alembic.runtime.migration] Running upgrade 1119bee5a419 -> 003, restore notes status index
+INFO  [alembic.runtime.migration] Running upgrade 003 -> 004, add ai_metadata to notes
+INFO  [alembic.runtime.migration] Running upgrade 004 -> 005, add folders table and folder_id/sort_order to notes
+INFO  [alembic.runtime.migration] Running upgrade 005 -> 006, add admin sessions, passkey credentials, and admin passwords
+INFO  [alembic.runtime.migration] Running upgrade 006 -> 007, change folder parent_id ondelete from CASCADE to SET NULL
+INFO  [alembic.runtime.migration] Running upgrade 007 -> 008, add audit_logs table
+INFO  [alembic.runtime.migration] Running upgrade 008 -> 009, add music daily song tables
+INFO  [alembic.runtime.migration] Running upgrade 009 -> 010, add managed content entries
+INFO  [alembic.runtime.migration] Running upgrade 010 -> 011, add subject taxonomy
+INFO  [alembic.runtime.migration] Running upgrade 011 -> 012, add question drafts and questions
+INFO  [alembic.runtime.migration] Running upgrade 012 -> 013, add mistakes and review
+INFO  [alembic.runtime.migration] Running upgrade 013 -> 014, add attachments
+INFO  [alembic.runtime.migration] Running upgrade 014 -> 015, add capture_items
+INFO  [alembic.runtime.migration] Running upgrade 015 -> 016, add ai_call_logs
+INFO  [alembic.runtime.migration] Running upgrade 016 -> 017, add prompt_version to ai_call_logs
+INFO  [alembic.runtime.migration] Running upgrade 017 -> 018, add independent ai_runs business audit table
+INFO  [alembic.runtime.migration] Running upgrade 018 -> 019, align subject knowledge tree
+INFO  [alembic.runtime.migration] Running upgrade 019 -> 020, add canonical question contract beside legacy question fields
+INFO  [alembic.runtime.migration] Running upgrade 020 -> 021, add protected learning attempts and attempt-backed mistake drafts
+INFO  [alembic.runtime.migration] Running upgrade 021 -> 022, add private administrator profiles and home preferences
+INFO  [alembic.runtime.migration] Running upgrade 022 -> 023, add file workspace metadata
+INFO  [alembic.runtime.migration] Running upgrade 023 -> 024, add markdown versions, wikilinks and search support
+INFO  [alembic.runtime.migration] Running upgrade 024 -> 025, align fresh-install schema with current model metadata
+INFO  [alembic.runtime.migration] Running upgrade 025 -> 026, Install the governed legacy Note migration contract.
+INFO  [alembic.runtime.migration] Running upgrade 026 -> 027, Provision the guestbook tables without taking ownership of legacy tables.
+INFO  [alembic.runtime.migration] Running upgrade 027 -> 028, Widen review_items state/algorithm enumerations and add last_rating.
+INFO  [alembic.runtime.migration] Running upgrade 028 -> 029, Add previous_state and new_state to review_records.
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+INFO  [alembic.runtime.migration] Running upgrade 031 -> 032, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+INFO  [alembic.runtime.migration] Running upgrade 032 -> 033, WebAuthn challenge persistence table (W4-D03 / PR-15).
+........................................................................ [  8%]
+........................................................................ [ 16%]
+.............................................. [ 21%]
+..................................................ssss............. [ 28%]
+...............................................ss...........F........... [ 36%]
+........................................................................ [ 44%]
+.............................................................. [ 51%]
+..................................................................F..... [ 59%]
+...................................................................F.F.. [ 67%]
+........................................................................ [ 75%]
+........................................................................ [ 83%]
+....................................sss........................... [ 91%]
+........................................................................ [ 99%]
+......                                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback _______
+
+    def test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback() -> None:
+        assert importlib.util.find_spec("asyncpg") is not None
+>       assert importlib.util.find_spec("psycopg2") is None
+E       AssertionError: assert ModuleSpec(name='psycopg2', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10e2cb170>, origin='/Users... submodule_search_locations=['/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/psycopg2']) is None
+E        +  where ModuleSpec(name='psycopg2', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10e2cb170>, origin='/Users... submodule_search_locations=['/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/psycopg2']) = <function find_spec at 0x1095b3600>('psycopg2')
+E        +    where <function find_spec at 0x1095b3600> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_lsr03_guarded_runner.py:84: AssertionError
+_____________________ test_public_empty_envelope_explicit ______________________
+
+client = <starlette.testclient.TestClient object at 0x10de70c80>
+
+    def test_public_empty_envelope_explicit(client):
+        resp = client.get("/api/public/mistakes")
+        assert resp.status_code == 200
+        data = resp.json()
+>       assert data["empty"] is True
+E       assert False is True
+
+tests/test_pr09_verify_http.py:166: AssertionError
+__________ DashboardPr11ServiceTest.test_all_empty_answers_are_honest __________
+
+self = <test_pr11_dashboard_service.DashboardPr11ServiceTest testMethod=test_all_empty_answers_are_honest>
+
+    async def test_all_empty_answers_are_honest(self):
+        summary = await self._summary()
+    
+        self.assertEqual(summary.review_today_count, 0)
+        self.assertEqual(summary.practice_today_count, 0)
+>       self.assertEqual(summary.weak_top3, [])
+E       AssertionError: Lists differ: [DashboardWeakKnowledgePoint(knowledge_poi[89 chars]t=0)] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       DashboardWeakKnowledgePoint(knowledge_point_id=15, name='pr09-rework-kp', attempt_count=0, wrong_rate=0.0, lapse_count=0, due_count=0)
+E       
+E       - [DashboardWeakKnowledgePoint(knowledge_point_id=15, name='pr09-rework-kp', attempt_count=0, wrong_rate=0.0, lapse_count=0, due_count=0)]
+E       + []
+
+tests/test_pr11_dashboard_service.py:252: AssertionError
+_ DashboardPr11ServiceTest.test_partial_service_failure_degrades_without_raising _
+
+self = <test_pr11_dashboard_service.DashboardPr11ServiceTest testMethod=test_partial_service_failure_degrades_without_raising>
+
+    async def test_partial_service_failure_degrades_without_raising(self):
+        subject = await self._subject()
+        kp = await self._kp(subject)
+        question = await self._question(subject, [kp.id])
+        mistake = await self._mistake(subject, question)
+        await self._review_item(mistake, state="active", next_review_at=self.now - timedelta(hours=1))
+    
+        async def _boom(*_args, **_kwargs):
+            raise SQLAlchemyError("practice offline")
+    
+        with patch.object(dashboard_service.practice_service, "get_daily_practice", _boom), patch.object(
+            dashboard_service, "load_weak_top3", _boom
+        ):
+>           summary = await self._summary()
+                      ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_pr11_dashboard_service.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pr11_dashboard_service.py:176: in _summary
+    return await dashboard_service.get_dashboard_summary(
+app/services/dashboard_service.py:289: in get_dashboard_summary
+    id=question.id,
+       ^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:566: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1086: in get
+    value = self._fire_loader_callables(state, key, passive)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1116: in _fire_loader_callables
+    return state._load_expired(state, passive)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/state.py:803: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:1670: in load_scalar_attributes
+    result = load_on_ident(
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:509: in load_on_ident
+    return load_on_pk_identity(
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:694: in load_on_pk_identity
+    session.execute(
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2365: in execute
+    return self._execute_internal(
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:2251: in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py:306: in orm_execute_statement
+    result = conn.execute(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1415: in execute
+    return meth(
+.venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:523: in _execute_on_connection
+    return connection._execute_clauseelement(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1637: in _execute_clauseelement
+    ret = self._execute_context(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1842: in _execute_context
+    return self._exec_single_context(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1982: in _exec_single_context
+    self._handle_dbapi_exception(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:2354: in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1963: in _exec_single_context
+    self.dialect.do_execute(
+.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:943: in do_execute
+    cursor.execute(statement, parameters)
+.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:580: in execute
+    self._adapt_connection.await_(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+awaitable = <coroutine object AsyncAdapt_asyncpg_cursor._prepare_and_execute at 0x10e73eb90>
+
+    def await_only(awaitable: Awaitable[_T]) -> _T:
+        """Awaits an async function in a sync method.
+    
+        The sync method must be inside a :func:`greenlet_spawn` context.
+        :func:`await_only` calls cannot be nested.
+    
+        :param awaitable: The coroutine to call.
+    
+        """
+        # this is called in the context greenlet while running fn
+        current = getcurrent()
+        if not getattr(current, "__sqlalchemy_greenlet_provider__", False):
+            _safe_cancel_awaitable(awaitable)
+    
+>           raise exc.MissingGreenlet(
+                "greenlet_spawn has not been called; can't call await_only() "
+                "here. Was IO attempted in an unexpected place?"
+            )
+E           sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)
+
+.venv/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py:123: MissingGreenlet
+=============================== warnings summary ===============================
+tests/test_ai_gateway.py::LogWriteFailureTest::test_log_write_failure_does_not_block
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 336, in test_log_write_failure_does_not_block
+      gw = await call_text("test_task", [{"role": "user", "content": "hi"}])
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 305, in call_text
+      await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 98, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_ai_gateway.py::LogWriteFailureTest::test_write_call_log_catches_exception
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/async_case.py", line 113, in _callMaybeAsync
+      return self._asyncioRunner.run(
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 361, in test_write_call_log_catches_exception
+      await _write_call_log("test", result, "summary")
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 98, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_lsr03_guarded_runner.py::test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback
+FAILED tests/test_pr09_verify_http.py::test_public_empty_envelope_explicit - ...
+FAILED tests/test_pr11_dashboard_service.py::DashboardPr11ServiceTest::test_all_empty_answers_are_honest
+FAILED tests/test_pr11_dashboard_service.py::DashboardPr11ServiceTest::test_partial_service_failure_degrades_without_raising
+4 failed, 882 passed, 9 skipped, 2 warnings, 47 subtests passed in 28.89s
+PASS: db_name='astra_week4_pr17' source=explicit:--url; executing ['bash', '-c', 'cd backend && PYTHONPATH=. .venv/bin/alembic upgrade head && .venv/bin/python -m pytest tests/ -q']

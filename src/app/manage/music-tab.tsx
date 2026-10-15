@@ -1,25 +1,33 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { ExternalLink } from 'lucide-react'
-import { EmptyState } from '@/components/empty-state'
-import { getPlaylist, deleteMusicItem, updateMusicItem, type MusicItem } from '@/lib/api/music'
-import { MusicFormModal } from './music-form-modal'
+import { useCallback, useEffect, useState } from 'react'
+import { AlertCircle, CheckCircle2, Folder, Music, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  generateDailySong,
+  getManageDailySong,
+  getMusicDiagnostics,
+  updateLocalMusicSelection,
+  type DailySongItem,
+  type MusicDiagnostics,
+} from '@/lib/api/music-manage'
 
 export function MusicTab() {
-  const [items, setItems] = useState<MusicItem[]>([])
+  const [track, setTrack] = useState<DailySongItem | null>(null)
+  const [diag, setDiag] = useState<MusicDiagnostics | null>(null)
   const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState<MusicItem | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [selecting, setSelecting] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await getPlaylist()
-      setItems(data)
-    } catch {
-      // ignore
+      const [song, diagnostics] = await Promise.all([
+        getManageDailySong().catch(() => null),
+        getMusicDiagnostics().catch(() => null),
+      ])
+      setTrack(song)
+      setDiag(diagnostics)
     } finally {
       setLoading(false)
     }
@@ -29,146 +37,168 @@ export function MusicTab() {
     load()
   }, [load])
 
-  const handleDelete = async (item: MusicItem) => {
-    if (!confirm(`确定删除「${item.title}」？`)) return
+  const refreshSource = async () => {
+    setRefreshing(true)
     try {
-      await deleteMusicItem(item.id)
-      load()
+      await generateDailySong()
+      await load()
+      toast.success('本地音源已读取')
     } catch (e: any) {
-      toast.error('删除失败: ' + e.message)
+      await load()
+      toast.error(e.message || '未检测到本地音源')
+    } finally {
+      setRefreshing(false)
     }
   }
 
-  const handleToggleActive = async (item: MusicItem) => {
+  const selectFile = async (fileName: string) => {
+    setSelecting(fileName)
     try {
-      await updateMusicItem(item.id, { is_active: !item.is_active })
-      load()
+      await updateLocalMusicSelection(fileName)
+      await load()
+      toast.success('当前音源已更新')
     } catch (e: any) {
-      toast.error('更新失败: ' + e.message)
+      toast.error(e.message || '音源选择失败')
+    } finally {
+      setSelecting(null)
     }
   }
 
-  const handleSortChange = async (item: MusicItem, value: string) => {
-    const num = parseInt(value)
-    if (isNaN(num)) return
-    try {
-      await updateMusicItem(item.id, { sort_order: num })
-      load()
-    } catch (e: any) {
-      toast.error('更新失败: ' + e.message)
-    }
+  if (loading) {
+    return <div className='py-10 text-center text-gray-400'>加载中...</div>
   }
 
-  const openAdd = () => {
-    setEditing(null)
-    setModalOpen(true)
-  }
-
-  const openEdit = (item: MusicItem) => {
-    setEditing(item)
-    setModalOpen(true)
-  }
+  const warnings = diag?.warnings || []
+  const files = diag?.files || []
+  const isReady = Boolean(track?.preview_url)
 
   return (
-    <div>
-      <div className='mb-4 flex items-center justify-between'>
-        <p className='text-secondary text-sm'>管理首页音乐卡片的曲目列表</p>
-        <button
-          onClick={openAdd}
-          className='rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'
-        >
-          添加音乐
-        </button>
+    <div className='space-y-5'>
+      <div className='rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+          <div>
+            <h3 className='font-medium'>本地单曲音源</h3>
+            <div className='mt-1 flex items-center gap-1.5 text-xs text-gray-500'>
+              <Folder className='h-3.5 w-3.5' />
+              <span>{diag?.source_dir || 'public/mymusic'}</span>
+            </div>
+          </div>
+          <button
+            onClick={refreshSource}
+            disabled={refreshing}
+            className='inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)] px-3 py-1.5 text-sm text-white disabled:opacity-50'
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? '读取中...' : '重新读取'}
+          </button>
+        </div>
+
+        <div className='grid gap-3 text-sm md:grid-cols-3'>
+          <StatusItem label='音源状态' value={isReady ? '可播放' : '未检测到'} ok={isReady} />
+          <StatusItem label='可部署文件' value={`${diag?.deployable_file_count ?? 0}/${diag?.local_file_count ?? 0}`} ok={(diag?.deployable_file_count ?? 0) > 0} />
+          <StatusItem label='当前文件' value={diag?.selected_file || '-'} ok={isReady} />
+        </div>
+
+        {warnings.length > 0 && (
+          <div className='mt-4 space-y-2'>
+            {warnings.map((warning, index) => (
+              <div key={`${warning}-${index}`} className='flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-700'>
+                <AlertCircle className='mt-0.5 h-4 w-4 shrink-0' />
+                <span>{warning}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div className='py-20 text-center text-gray-400'>加载中...</div>
-      ) : items.length === 0 ? (
-        <div className='py-20'><EmptyState variant='no-content' title='暂无音乐' description='点击"添加音乐"开始添加' /></div>
-      ) : (
-        <div className='overflow-x-auto rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm'>
-          <table className='w-full text-sm'>
-            <thead>
-              <tr className='border-b border-white/20 text-left text-xs text-gray-500'>
-                <th className='p-3'>封面</th>
-                <th className='p-3'>标题</th>
-                <th className='p-3'>艺术家</th>
-                <th className='p-3'>链接</th>
-                <th className='p-3'>排序</th>
-                <th className='p-3'>状态</th>
-                <th className='p-3'>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} className='border-b border-white/10 hover:bg-white/40'>
-                  <td className='p-3'>
-                    <div className='h-10 w-10 overflow-hidden rounded-lg bg-white/60'>
-                      {item.artwork ? (
-                        <img src={item.artwork} alt={item.title} className='h-full w-full object-cover' />
-                      ) : (
-                        <div className='flex h-full w-full items-center justify-center text-xs text-gray-400'>♪</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className='max-w-[200px] truncate p-3 font-medium'>{item.title}</td>
-                  <td className='max-w-[150px] truncate p-3 text-gray-500'>{item.artist || '-'}</td>
-                  <td className='p-3'>
-                    <a
-                      href={item.apple_music_url}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='inline-flex items-center gap-1 text-[var(--color-brand)] hover:underline'
-                    >
-                      <ExternalLink className='h-3.5 w-3.5' />
-                    </a>
-                  </td>
-                  <td className='p-3'>
-                    <input
-                      type='number'
-                      value={item.sort_order}
-                      onChange={(e) => handleSortChange(item, e.target.value)}
-                      className='w-16 rounded-lg border border-white/40 bg-white/60 px-2 py-1 text-xs backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
-                    />
-                  </td>
-                  <td className='p-3'>
-                    <button
-                      onClick={() => handleToggleActive(item)}
-                      className={`relative h-5 w-9 rounded-full transition-colors ${
-                        item.is_active ? 'bg-[var(--color-brand)]' : 'bg-gray-300'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                          item.is_active ? 'left-[18px]' : 'left-0.5'
-                        }`}
-                      />
-                    </button>
-                  </td>
-                  <td className='p-3'>
-                    <div className='flex gap-2'>
-                      <button
-                        onClick={() => openEdit(item)}
-                        className='rounded bg-white/60 px-2 py-1 text-xs hover:bg-white/80'
-                      >
-                        编辑
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className='rounded bg-red-500/10 px-2 py-1 text-xs text-red-500 hover:bg-red-500/20'
-                      >
-                        删除
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className='rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+        <div className='mb-4 flex items-center justify-between gap-3'>
+          <h3 className='font-medium'>选择播放文件</h3>
+          <span className='text-xs text-gray-400'>单文件需小于 25 MiB</span>
         </div>
-      )}
 
-      <MusicFormModal open={modalOpen} onClose={() => setModalOpen(false)} onSuccess={load} editingItem={editing} />
+        {files.length > 0 ? (
+          <div className='space-y-2'>
+            {files.map((file) => (
+              <div key={file.name} className='flex flex-col gap-3 rounded-lg bg-white/45 p-3 text-sm md:flex-row md:items-center md:justify-between'>
+                <div className='min-w-0'>
+                  <div className='flex items-center gap-2'>
+                    {file.selected ? (
+                      <CheckCircle2 className='h-4 w-4 shrink-0 text-green-600' />
+                    ) : (
+                      <Music className='h-4 w-4 shrink-0 text-gray-400' />
+                    )}
+                    <span className='truncate font-medium'>{file.name}</span>
+                  </div>
+                  <div className='mt-1 text-xs text-gray-500'>
+                    {formatBytes(file.size_bytes)}
+                    {!file.deployable && file.reason ? ` · ${file.reason}` : ''}
+                  </div>
+                </div>
+                <button
+                  onClick={() => selectFile(file.name)}
+                  disabled={!file.deployable || file.selected || selecting === file.name}
+                  className='inline-flex shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] px-3 py-1.5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-45'
+                >
+                  {file.selected ? '当前使用' : selecting === file.name ? '设置中...' : '设为当前'}
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className='rounded-lg bg-white/40 py-8 text-center text-sm text-gray-400'>未检测到本地音频文件</div>
+        )}
+      </div>
+
+      <div className='rounded-xl border border-white/40 bg-white/60 p-5 backdrop-blur-sm'>
+        {track ? (
+          <div className='flex flex-col gap-4 md:flex-row md:items-center'>
+            <div className='flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-white/70 text-gray-400'>
+              {track.artwork_url ? (
+                <img src={track.artwork_url} alt={track.title} className='h-full w-full rounded-lg object-cover' />
+              ) : (
+                <Music className='h-8 w-8' />
+              )}
+            </div>
+            <div className='min-w-0 flex-1'>
+              <div className='truncate font-medium'>{track.title}</div>
+              <div className='text-sm text-gray-500'>{track.artist || '本地音源'}</div>
+              {track.preview_url && (
+                <audio className='mt-3 w-full' src={track.preview_url} controls preload='metadata' />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className='py-10 text-center'>
+            <Music className='mx-auto mb-3 h-12 w-12 text-gray-300' />
+            <p className='text-sm text-gray-400'>未检测到本地音乐文件</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+  const units = ['B', 'KiB', 'MiB', 'GiB']
+  let value = bytes
+  let index = 0
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024
+    index += 1
+  }
+  return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`
+}
+
+function StatusItem({ label, value, ok }: { label: string; value: string; ok: boolean }) {
+  return (
+    <div className='rounded-lg bg-white/40 p-3'>
+      <div className='flex items-center gap-1.5 text-xs text-gray-500'>
+        {ok ? <CheckCircle2 className='h-3.5 w-3.5 text-green-600' /> : <AlertCircle className='h-3.5 w-3.5 text-amber-600' />}
+        <span>{label}</span>
+      </div>
+      <div className={`mt-1 truncate font-medium ${ok ? 'text-green-600' : 'text-amber-700'}`}>{value}</div>
     </div>
   )
 }

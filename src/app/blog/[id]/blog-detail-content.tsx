@@ -9,6 +9,8 @@ import { getNote } from '@/lib/api/notes'
 import type { BlogConfig } from '@/app/blog/types'
 import { useReadArticles } from '@/hooks/use-read-articles'
 import LiquidGrass from '@/components/liquid-grass'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
+import Link from 'next/link'
 
 type BlogData = { config: BlogConfig; markdown: string; cover?: string }
 
@@ -34,6 +36,7 @@ export default function BlogDetailContent() {
 	const slug = Array.isArray(params?.id) ? params.id[0] : params?.id || ''
 	const router = useRouter()
 	const { markAsRead } = useReadArticles()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 
 	const [blog, setBlog] = useState<BlogData | null>(null)
 	const [error, setError] = useState<string | null>(null)
@@ -69,7 +72,7 @@ export default function BlogDetailContent() {
 	const tags = blog?.config.tags || []
 
 	const handleEdit = () => {
-		router.push(`/write/${slug}`)
+		router.push('/manage/dashboard')
 	}
 
 	if (!slug) {
@@ -89,7 +92,7 @@ export default function BlogDetailContent() {
 	}
 
 	return (
-		<>
+		<div>
 			<BlogPreview
 				markdown={blog.markdown}
 				title={title}
@@ -100,17 +103,33 @@ export default function BlogDetailContent() {
 				slug={slug}
 			/>
 
-			<motion.button
-				initial={{ opacity: 0, scale: 0.6 }}
-				animate={{ opacity: 1, scale: 1 }}
-				whileHover={{ scale: 1.05 }}
-				whileTap={{ scale: 0.95 }}
-				onClick={handleEdit}
-				className='absolute top-4 right-6 rounded-xl border bg-white/60 px-6 py-2 text-sm backdrop-blur-sm transition-colors hover:bg-white/80 max-sm:hidden'>
-				编辑
-			</motion.button>
+			{isAdmin && (
+				<motion.button
+					initial={{ opacity: 0, scale: 0.6 }}
+					animate={{ opacity: 1, scale: 1 }}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					onClick={handleEdit}
+					className='absolute top-4 right-6 rounded-xl border bg-white/60 px-6 py-2 text-sm backdrop-blur-sm transition-colors hover:bg-white/80 max-sm:hidden'>
+					编辑
+				</motion.button>
+			)}
+
+			{!isAdmin && (
+				<div className='mx-auto max-w-3xl px-4 pb-8'>
+					<div className='flex flex-wrap justify-center gap-3 border-t border-white/20 pt-6'>
+						<Link href='/discover' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>发现更多</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/guestbook' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>留言</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/blog' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>更多博客</Link>
+						<span className='text-gray-300'>·</span>
+						<Link href='/' className='text-sm text-gray-500 hover:text-[var(--color-brand)]'>回到首页</Link>
+					</div>
+				</div>
+			)}
 
 			{slug === 'liquid-grass' && <LiquidGrass />}
-		</>
+		</div>
 	)
 }

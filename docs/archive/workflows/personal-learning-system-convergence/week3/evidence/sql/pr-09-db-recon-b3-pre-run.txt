@@ -1,0 +1,12 @@
+ mapping_version |      state      | count 
+-----------------+-----------------+-------
+ v1-manual-026   | migrated_active |     2
+(1 row)
+
+ mapping_version |          target_mistake_id           | visibility 
+-----------------+--------------------------------------+------------
+ v1-manual-026   | 466dcf5d-2479-516f-9748-350ee73ebc66 | private
+ v1-manual-026   | f7f4d3a8-b935-5b8a-aff1-23a7a8763253 | private
+(2 rows)
+
+PASS: db_name='astra_week3_pr09_db5' source=explicit:--db-name; executing ['psql', '-h', 'localhost', '-U', 'limengyang', '-d', 'astra_week3_pr09_db5', '-c', '\n    SELECT mapping_version, state, count(*) FROM public.legacy_note_migrations GROUP BY 1,2 ORDER BY 1;\n    SELECT l.mapping_version, l.target_mistake_id, m.visibility\n    FROM public.legacy_note_migrations l JOIN public.mistakes m ON m.id=l.target_mistake_id\n    ORDER BY l.mapping_version;\n  ']

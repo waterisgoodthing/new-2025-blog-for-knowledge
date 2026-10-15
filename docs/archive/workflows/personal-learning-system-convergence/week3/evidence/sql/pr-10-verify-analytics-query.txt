@@ -1,0 +1,18 @@
+STALE — superseded by pr-10-rework-analytics-query.txt (PFV-02 fixed)
+N=1 active KP  -> analytics statements = 1
+N=6 active KPs -> analytics statements = 1
+--- captured statement (N=1) ---
+SELECT anon_1.knowledge_point_id, coalesce(anon_2.attempt_count, $1::INTEGER) AS attempt_count, coalesce(anon_2.wrong_count, $2::INTEGER) AS wrong_count, coalesce(anon_3.review_count, $3::INTEGER) AS review_count, coalesce(anon_4.due_count, $4::INTEGER) AS due_count, coalesce(anon_3.lapse_count, $5::INTEGER) AS lapse_count 
+FROM (SELECT knowledge_points.id AS knowledge_point_id 
+FROM knowledge_points 
+WHERE knowledge_points.status = $6::VARCHAR) AS anon_1 LEFT OUTER JOIN (SELECT question_knowledge_points.knowledge_point_id AS knowledge_point_id, count(attempts.id) AS attempt_count, count(*) FILTER (WHERE attempts.is_correct IS false) AS wrong_count 
+FROM question_knowledge_points JOIN attempts ON attempts.question_id = question_knowledge_points.question_id JOIN questions ON questions.id = question_knowledge_points.question_id 
+WHERE attempts.context_type = $7::VARCHAR AND questions.status = $8::VARCHAR GROUP BY question_knowledge_points.knowledge_point_id) AS anon_2 ON anon_2.knowledge_point_id = anon_1.knowledge_point_id LEFT OUTER JOIN (SELECT anon_5.knowledge_point_id AS knowledge_point_id, count(anon_5.review_record_id) AS review_count, count(*) FILTER (WHERE anon_5.review_record_id IS NOT NULL AND anon_5.rating <= $9::INTEGER) AS lapse_count 
+FROM (SELECT knowledge_point_links.knowledge_point_id AS knowledge_point_id, review_items.id AS review_item_id, review_items.state AS review_item_state, review_items.next_review_at AS next_review_at, review_records.id AS review_record_id, review_records.rating AS rating 
+FROM knowledge_point_links JOIN mistakes ON knowledge_point_links.target_type = $10::VARCHAR AND knowledge_point_links.target_id = CAST(mistakes.id AS VARCHAR) JOIN review_items ON review_items.mistake_id = mistakes.id LEFT OUTER JOIN review_records ON review_records.review_item_id = review_items.id 
+WHERE mistakes.status = $11::VARCHAR) AS anon_5 GROUP BY anon_5.knowledge_point_id) AS anon_3 ON anon_3.knowledge_point_id = anon_1.knowledge_point_id LEFT OUTER JOIN (SELECT anon_5.knowledge_point_id AS knowledge_point_id, count(distinct(anon_5.review_item_id)) AS due_count 
+FROM (SELECT knowledge_point_links.knowledge_point_id AS knowledge_point_id, review_items.id AS review_item_id, review_items.state AS review_item_state, review_items.next_review_at AS next_review_at, review_records.id AS review_record_id, review_records.rating AS rating 
+FROM knowledge_point_links JOIN mistakes ON knowledge_point_links.target_type = $10::VARCHAR AND knowledge_point_links.target_id = CAST(mistakes.id AS VARCHAR) JOIN review_items ON review_items.mistake_id = mistakes.id LEFT OUTER JOIN review_records ON review_records.review_item_id = review_items.id 
+WHERE mistakes.status = $11::VARCHAR) AS anon_5 
+WHERE anon_5.review_item_state = $12::VARCHAR AND anon_5.next_review_at <= $13::TIMESTAMP WITH TIME ZONE GROUP BY anon_5.knowledge_point_id) AS anon_4 ON anon_4.knowledge_point_id = anon_1.knowledge_point_id
+PASS: db_name='astra_week3_pr10_verify' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', 'docs/workflows/personal-learning-system-convergence/week3/evidence/sql/pr-10-verify-analytics-query.py']

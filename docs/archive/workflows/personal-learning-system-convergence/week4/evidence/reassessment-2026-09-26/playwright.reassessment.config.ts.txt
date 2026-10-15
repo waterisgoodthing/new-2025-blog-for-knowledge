@@ -1,0 +1,3 @@
+import { defineConfig } from '@playwright/test'
+import base from './playwright.config'
+export default defineConfig({ ...base, outputDir: '/tmp/week4-reassessment/e2e-results', use: { ...base.use, baseURL: 'http://app.ci.test:18787', launchOptions: { args: ['--host-resolver-rules=MAP app.ci.test 127.0.0.1, MAP api.ci.test 127.0.0.1', '--no-proxy-server'] } } })

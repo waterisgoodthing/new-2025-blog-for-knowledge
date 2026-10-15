@@ -1,0 +1,17 @@
+# PR-11 frontend — three-question data provenance (no legacy Note source)
+agent_id: PR-11-impl-frontend
+date: 2026-09-25 19:19:55
+
+## Target source trees: dashboard + practice (the only UI that renders the three questions)
+$ grep -rn "useNoteIndex|lib/api/notes|from '@/lib/api/notes'|Note" src/app/manage/(workspace)/dashboard src/app/manage/(workspace)/practice
+(no matches: three-question UI has no legacy Note query)
+
+## Canonical data clients used by the three-question UI
+src/app/manage/(workspace)/dashboard/dashboard-content.tsx:7:import { getDashboardSummary } from '@/lib/api/dashboard'
+src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx:4:import type { DashboardSummary } from '@/lib/api/dashboard'
+src/app/manage/(workspace)/dashboard/dashboard-overview.tsx:10:} from '@/lib/api/dashboard'
+src/app/manage/(workspace)/practice/practice-today.test.tsx:4:import type { PracticeTodayResponse } from '@/lib/api/practice'
+src/app/manage/(workspace)/practice/practice-today.tsx:8:import { getTodayPractice, type PracticeTodayResponse } from '@/lib/api/practice'
+
+## Backend authority (for cross-reference): dashboard_service has no Note dependency
+(no matches: dashboard_service is canonical-only)

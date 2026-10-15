@@ -79,7 +79,7 @@ SUGGESTION_TEMPLATES = {
     "tag": "「{title}」没有标签，建议添加标签便于检索。",
     "folder": "「{title}」未归档到文件夹，建议归入合适的文件夹。",
     "weakness": "「{subject}」累计 {count} 道错题，建议重点复习。",
-    "recent": "本周新增了 {count} 篇内容，主要集中在 {types}。",
+    "recent": "本周新增了 {count} 篇内容，建议整理到文件夹以保持有序。",
 }
 
 
@@ -110,7 +110,7 @@ async def generate_suggestions(db: AsyncSession) -> list[dict[str, Any]]:
 
     weaknesses = await aggregate_weaknesses(db, limit=3)
     for w in weaknesses:
-        if w["count"] >= 2:
+        if w["count"] >= 3:
             suggestions.append({
                 "type": "review",
                 "title": f"「{w['name']}」薄弱点",
@@ -122,16 +122,13 @@ async def generate_suggestions(db: AsyncSession) -> list[dict[str, Any]]:
 
     recent = await query_recent_notes(db, days=7)
     if recent:
-        types = set(r["type"] for r in recent)
-        type_labels = {"note": "笔记", "blog": "博客", "mistake": "错题"}
-        types_str = "、".join(type_labels.get(t, t) for t in types)
         suggestions.append({
-            "type": "summary",
+            "type": "activity",
             "title": f"本周新增 {len(recent)} 篇内容",
-            "description": SUGGESTION_TEMPLATES["recent"].format(count=len(recent), types=types_str),
+            "description": SUGGESTION_TEMPLATES["recent"].format(count=len(recent)),
             "targets": [r["slug"] for r in recent],
-            "action": "view",
-            "reason": "定期回顾有助于巩固记忆",
+            "action": "organize",
+            "reason": "定期整理有助于保持知识库有序",
         })
 
     return suggestions

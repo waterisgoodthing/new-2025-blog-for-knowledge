@@ -1,14 +1,14 @@
 import json
 from datetime import date, timedelta
 
-import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.config import get_settings
 from app.models.note import Note
 from app.models.recommendation import DailyRecommendation
+from app.services.ai_prompt_registry import build_text_messages
+from app.services.ai_task_types import AiTaskType
 
 
 async def collect_context(db: AsyncSession) -> str:
@@ -80,58 +80,17 @@ async def collect_context(db: AsyncSession) -> str:
     return "\n\n".join(sections) if sections else "暂无足够上下文，建议推荐写一篇新笔记。"
 
 
-SYSTEM_PROMPT = """你是一个个人学习助手。根据用户的学习上下文，推荐今天最值得关注的一项内容。
-
-请严格返回 JSON，不要包含其他内容：
-{
-  "title": "推荐标题",
-  "type": "note|mistake|review|resource",
-  "reason": "推荐理由（一句话）",
-  "target": "跳转路径（如有，如 /notes/xxx）",
-  "actionLabel": "操作按钮文字"
-}
-
-规则：
-- 只返回一条推荐
-- 优先推荐需要复习的错题（review 类型）
-- 其次推荐最近编辑的笔记
-- 如果上下文中有分享资源，也可以推荐
-- 不要编造不存在的链接
-- 如果上下文不足，推荐"写一篇新笔记"，type 为 note，target 为 null"""
-
-
 async def call_llm(context: str) -> dict | None:
-    settings = get_settings()
-    if not settings.AI_API_KEY:
-        return None
+    from app.services.ai_gateway import call_general
 
     user_prompt = f"用户学习上下文：\n\n{context}\n\n请推荐今天最值得关注的一项内容。"
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                f"{settings.AI_BASE_URL}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.AI_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": settings.AI_MODEL,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "max_tokens": 500,
-                    "response_format": {"type": "json_object"},
-                },
-            )
-
-        if response.status_code != 200:
+        messages = build_text_messages(AiTaskType.RECOMMENDATION, user_prompt)
+        gw = await call_general(AiTaskType.RECOMMENDATION, messages)
+        if not gw.success or not isinstance(gw.data, dict):
             return None
-
-        data = response.json()
-        content = data["choices"][0]["message"]["content"]
-        return json.loads(content)
+        return gw.data
     except Exception:
         return None
 
@@ -153,6 +112,26 @@ def _normalize(raw: dict, today: date) -> dict:
     }
 
 
+def _public_recommendation(rec: DailyRecommendation) -> dict:
+    return {
+        "date": rec.date,
+        "title": rec.title,
+        "type": rec.type,
+        "reason": rec.reason,
+        "target": rec.target,
+        "action_label": rec.action_label,
+        "source": rec.source,
+    }
+
+
+async def get_today_recommendation(db: AsyncSession) -> dict | None:
+    result = await db.execute(
+        select(DailyRecommendation).where(DailyRecommendation.date == date.today())
+    )
+    existing = result.scalar_one_or_none()
+    return _public_recommendation(existing) if existing else None
+
+
 async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     today = date.today()
 
@@ -161,15 +140,7 @@ async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     )
     existing = result.scalar_one_or_none()
     if existing:
-        return {
-            "date": existing.date,
-            "title": existing.title,
-            "type": existing.type,
-            "reason": existing.reason,
-            "target": existing.target,
-            "action_label": existing.action_label,
-            "source": existing.source,
-        }
+        return _public_recommendation(existing)
 
     context = await collect_context(db)
     raw = await call_llm(context)
@@ -213,12 +184,4 @@ async def get_or_create_today_recommendation(db: AsyncSession) -> dict:
     db.add(rec)
     await db.flush()
 
-    return {
-        "date": rec.date,
-        "title": rec.title,
-        "type": rec.type,
-        "reason": rec.reason,
-        "target": rec.target,
-        "action_label": rec.action_label,
-        "source": rec.source,
-    }
+    return _public_recommendation(rec)

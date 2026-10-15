@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-08-01T06:41:55.684572+00:00",
+  "verification_method": "independent-psql-row-md5-plus-python-sha256",
+  "source": {
+    "database": "blog_db",
+    "role": "limengyang",
+    "server_addr": "local",
+    "server_port": 0,
+    "default_transaction_read_only": true,
+    "revision": "025",
+    "row_count": 123,
+    "row_hash_aggregate_sha256": "68478ef76396bffd42a2d79f134dd646dd6e5c5dd488fd211c716f449be7592c",
+    "table_counts": {
+      "notes": 13,
+      "questions": 3,
+      "mistakes": 3,
+      "review_items": 3,
+      "review_records": 4,
+      "attachments": 1,
+      "attachment_links": 1,
+      "capture_items": 0,
+      "draft_items": 6,
+      "ai_runs": 32,
+      "ai_call_logs": 47,
+      "users": 10
+    },
+    "duplicate_primary_key_count": 0,
+    "canonical_owner_present": true,
+    "temporary_identity_count": 0,
+    "relationship_orphans": {
+      "mistake_question": 0,
+      "mistake_draft": 0,
+      "review_item_target": 0,
+      "review_record_item": 0,
+      "attachment_link_attachment": 0,
+      "attachment_link_target": 0,
+      "capture_attachment": 0
+    }
+  },
+  "target": {
+    "database": "blog_v2",
+    "role": "limengyang",
+    "server_addr": "local",
+    "server_port": 0,
+    "default_transaction_read_only": false,
+    "revision": "025",
+    "row_count": 123,
+    "row_hash_aggregate_sha256": "68478ef76396bffd42a2d79f134dd646dd6e5c5dd488fd211c716f449be7592c",
+    "table_counts": {
+      "notes": 13,
+      "questions": 3,
+      "mistakes": 3,
+      "review_items": 3,
+      "review_records": 4,
+      "attachments": 1,
+      "attachment_links": 1,
+      "capture_items": 0,
+      "draft_items": 6,
+      "ai_runs": 32,
+      "ai_call_logs": 47,
+      "users": 10
+    },
+    "duplicate_primary_key_count": 0,
+    "canonical_owner_present": true,
+    "temporary_identity_count": 0,
+    "relationship_orphans": {
+      "mistake_question": 0,
+      "mistake_draft": 0,
+      "review_item_target": 0,
+      "review_record_item": 0,
+      "attachment_link_attachment": 0,
+      "attachment_link_target": 0,
+      "capture_attachment": 0
+    }
+  },
+  "source_target_hash_match": true,
+  "legacy_attachments": {
+    "root": "/Users/limengyang/2025-blog-public/backend/uploads",
+    "mode": "0o555",
+    "file_count": 2,
+    "files": [
+      {
+        "path": ".gitkeep",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "readable": true
+      },
+      {
+        "path": "a4/a49cd14b-4fc1-41de-a983-82afb2610083.txt",
+        "sha256": "966a92f1c159f69552021aebfeecbdeb7260109586f59a51d7d92c2597ee68ab",
+        "readable": true
+      }
+    ]
+  },
+  "target_attachments": {
+    "root": "/Users/limengyang/.local/share/personal-learning-system-v2/uploads",
+    "mode": "0o755",
+    "file_count": 2,
+    "files": [
+      {
+        "path": ".gitkeep",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "readable": true
+      },
+      {
+        "path": "a4/a49cd14b-4fc1-41de-a983-82afb2610083.txt",
+        "sha256": "966a92f1c159f69552021aebfeecbdeb7260109586f59a51d7d92c2597ee68ab",
+        "readable": true
+      }
+    ]
+  },
+  "attachment_tree_match": true,
+  "manifest": {
+    "v1_sha256": "a2d91fd48c96f4dfde15346c33b66e6ee58e581fb25dfa3258725dcd49dbbe4e",
+    "v1_expected": "a2d91fd48c96f4dfde15346c33b66e6ee58e581fb25dfa3258725dcd49dbbe4e",
+    "v1_count": 121,
+    "delta_count": 2,
+    "combined_count": 123,
+    "duplicate_source_key_count": 0,
+    "canonical_owner_id": "4c503215-b158-4162-b472-79df8289ed0a"
+  },
+  "runtime": {
+    "database": "blog_v2",
+    "upload_root": "/Users/limengyang/.local/share/personal-learning-system-v2/uploads",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "active_database_connections": [
+    "blog_v2|blog_user|"
+  ],
+  "passed": true
+}

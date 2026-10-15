@@ -1,0 +1,33 @@
+# PR-11 frontend — write-scope check
+agent_id: PR-11-impl-frontend
+date: 2026-09-25 19:19:59
+declared write scope: src/app/manage/**, src/components/**, src/lib/api/**, src/hooks/**, src/**/*.test.*, week3/evidence/**
+forbidden: backend/**, package.json, git writes
+
+## Files this agent created/edited (all inside declared scope)
+src/lib/api/dashboard.ts                                        (edited: DTO delta types)
+src/lib/api/dashboard.test.ts                                   (new: client contract test)
+src/app/manage/(workspace)/dashboard/dashboard-overview.tsx     (edited: three-question render)
+src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx(edited: component tests)
+src/app/manage/(workspace)/dashboard/dashboard-content.tsx      (edited: onSummaryRetry wiring)
+src/app/manage/(workspace)/practice/page.tsx                    (new: practice route)
+src/app/manage/(workspace)/practice/practice-today.tsx          (new: practice client UI)
+src/app/manage/(workspace)/practice/practice-today.test.tsx     (new: practice tests)
+week3/evidence/tests/pr-11-frontend-tsc.txt                     (new: evidence)
+week3/evidence/tests/pr-11-frontend-vitest.txt                  (new: evidence)
+week3/evidence/api/pr-11-frontend-source-provenance.txt         (new: evidence)
+week3/evidence/api/pr-11-frontend-write-scope.txt               (new: evidence)
+
+## git status --short for the touched paths (pre-existing worktree dirt is expected; none of it touched here)
+ M src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+ M src/lib/api/dashboard.ts
+?? src/app/manage/(workspace)/dashboard/error.tsx
+?? src/app/manage/(workspace)/dashboard/loading.tsx
+?? src/app/manage/(workspace)/practice/
+?? src/lib/api/dashboard.test.ts
+?? week3/evidence/
+
+## Out-of-scope guard: no backend/ or package.json changes from this agent
+(this agent ran no edit on backend/** or package.json; those entries in git status are pre-existing in-flight work)

@@ -1,0 +1,34 @@
+=== D. Source search: dashboard/practice UI chain (no legacy Note) ===
+date: 2026-09-25T12:12:49Z
+
+--- [D1] forbidden legacy sources in dashboard/practice UI + client ---
+NO MATCHES
+
+--- [D2] API import chain from UI components ---
+src/app/manage/(workspace)/dashboard/dashboard-content-verify.test.tsx:10:import type { DashboardSummary } from '@/lib/api/dashboard'
+src/app/manage/(workspace)/practice/practice-today.tsx:8:import { getTodayPractice, type PracticeTodayResponse } from '@/lib/api/practice'
+src/app/manage/(workspace)/practice/practice-today.test.tsx:4:import type { PracticeTodayResponse } from '@/lib/api/practice'
+src/app/manage/(workspace)/dashboard/dashboard-overview.tsx:10:} from '@/lib/api/dashboard'
+src/app/manage/(workspace)/dashboard/dashboard-verify.test.tsx:12:import type { DashboardSummary } from '@/lib/api/dashboard'
+src/app/manage/(workspace)/dashboard/dashboard-content.tsx:7:import { getDashboardSummary } from '@/lib/api/dashboard'
+src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx:4:import type { DashboardSummary } from '@/lib/api/dashboard'
+
+--- [D3] dashboard client endpoint ---
+1:import { apiFetch } from './client'
+87:  return apiFetch<DashboardSummary>('/api/admin/dashboard/summary')
+
+--- [D4] practice client endpoint ---
+1:import { apiFetch } from './client'
+26:  return apiFetch<PracticeTodayResponse>('/api/admin/practice/today')
+
+--- [D5] backend dashboard_service legacy-note references ---
+NO MATCHES
+
+--- [D6] backend dashboard_service imports (canonical only) ---
+8:from app.models.attachment import Attachment
+9:from app.models.mistake import Mistake
+10:from app.models.question import Question
+11:from app.models.review_item import ReviewItem, ReviewRecord
+12:from app.models.taxonomy import KnowledgePoint
+13:from app.schemas.dashboard import (
+27:from app.services import kp_analytics_service, practice_service

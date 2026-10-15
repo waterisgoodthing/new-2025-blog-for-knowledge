@@ -48,7 +48,7 @@ export default function HiCard() {
 					</>
 				)}
 				<Link href='/live2d'>
-					<img src='/images/avatar.png' alt='avatar' className='mx-auto rounded-full' style={{ width: 120, height: 120, boxShadow: ' 0 16px 32px -5px #E2D9CE' }} />
+					<img src={siteContent.avatarUrl || '/images/avatar.png'} alt='avatar' className='mx-auto rounded-full' style={{ width: 120, height: 120, boxShadow: ' 0 16px 32px -5px #E2D9CE' }} />
 				</Link>
 			<h1 className='font-averia mt-3 text-2xl'>
 				{greeting} <br /> I'm <span className='text-linear inline-block max-w-full truncate align-bottom text-[32px]'>{username}</span> , Nice to <br /> meet you!

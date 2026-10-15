@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-07-24",
+  "source_root": "public/blogs",
+  "source_kind": "postgresql-readonly-plus-static-legacy-files",
+  "objects": [],
+  "files": [
+    {"path": "public/blogs/categories.json", "bytes": 23, "sha256": "9a88878a8ef9046d3e889eaafb299e6a213529266b1f8618856698c2e253079b"},
+    {"path": "public/blogs/index.json", "bytes": 3, "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"}
+  ],
+  "source_database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "blog_db",
+    "role": "blog_user",
+    "revision": "020",
+    "read_only_transaction_verified": true,
+    "tables": {
+      "notes": {"count": 13, "sha256": "534662c5942ed445fc61a4c374c9b3cf71d416e55c557486d7d91f4729763b44"},
+      "mistakes": {"count": 3, "sha256": "961025ae77526b298c0eb0dab1d789355e50f2cfd3e6733d4feb0979b13a676e"},
+      "questions": {"count": 3, "sha256": "20e3a1662c0248f0c01759eb3a928047ee39cf7d31e0903248c87c8f69f6ca15"},
+      "attachments": {"count": 1, "sha256": "44f14baab254a3f53d8e04f33fc83ee9561cef2eae46d5813cd85833e69aff55"},
+      "ai_runs": {"count": 32, "sha256": "d20a3f95b6f08f27eb2c2aee8a3c3738861bde893a2701ed553280a51747d465"},
+      "ai_call_logs": {"count": 47, "sha256": "381760a69a71e9a318d825f9e3466b8b6115c606f4ccbd7e6faf33fd65527f93"},
+      "audit_logs": {"count": 105, "sha256": "2a1fd491ec38b98287e7eb63d3e7b3551f0a81fb23055bcf218558096f033909"},
+      "review_items": {"count": 3, "sha256": "027ae6a184b2d7bb8aee0aadc6e7f9043339c6d775abf24eadb5f50d6c08d252"}
+    }
+  }
+}

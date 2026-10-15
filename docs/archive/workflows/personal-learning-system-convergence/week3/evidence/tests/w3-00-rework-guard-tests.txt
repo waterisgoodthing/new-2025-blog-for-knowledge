@@ -1,0 +1,83 @@
+test_empty_name_fails (__main__.TestCheckSubcommand.test_empty_name_fails) ... ok
+test_env_database_url_with_legal_scratch_name_passes (__main__.TestCheckSubcommand.test_env_database_url_with_legal_scratch_name_passes) ... ok
+test_env_database_url_with_prod_db_fails (__main__.TestCheckSubcommand.test_env_database_url_with_prod_db_fails) ... ok
+test_illegal_names_fail (__main__.TestCheckSubcommand.test_illegal_names_fail) ... ok
+test_legal_names_pass (__main__.TestCheckSubcommand.test_legal_names_pass) ... ok
+test_legal_url_passes (__main__.TestCheckSubcommand.test_legal_url_passes) ... ok
+test_no_args_without_env_fails (__main__.TestCheckSubcommand.test_no_args_without_env_fails) ... ok
+test_prod_urls_fail (__main__.TestCheckSubcommand.test_prod_urls_fail) ... ok
+test_matching_db_name_and_url_passes_with_url_name (__main__.TestDualArgPrecedence.test_matching_db_name_and_url_passes_with_url_name) ... ok
+test_mismatched_db_name_and_prod_url_fails (__main__.TestDualArgPrecedence.test_mismatched_db_name_and_prod_url_fails) ... ok
+test_mismatched_db_name_and_url_fails (__main__.TestDualArgPrecedence.test_mismatched_db_name_and_url_fails) ... ok
+test_run_does_not_execute_child_on_mismatch (__main__.TestDualArgPrecedence.test_run_does_not_execute_child_on_mismatch) ... ok
+test_run_does_not_execute_child_on_prod_url (__main__.TestDualArgPrecedence.test_run_does_not_execute_child_on_prod_url) ... ok
+test_run_injects_only_the_validated_url (__main__.TestDualArgPrecedence.test_run_injects_only_the_validated_url) ... ok
+test_url_blog_db_with_legal_db_name_fails (__main__.TestDualArgPrecedence.test_url_blog_db_with_legal_db_name_fails) ... ok
+test_url_blog_v2_with_legal_db_name_fails (__main__.TestDualArgPrecedence.test_url_blog_v2_with_legal_db_name_fails) ... ok
+test_url_name_is_authoritative_when_db_name_absent (__main__.TestDualArgPrecedence.test_url_name_is_authoritative_when_db_name_absent) ... ok
+test_url_production_db_with_legal_db_name_fails (__main__.TestDualArgPrecedence.test_url_production_db_with_legal_db_name_fails) ... ok
+test_db_name_only_stays_local_and_passes (__main__.TestHostAllowlist.test_db_name_only_stays_local_and_passes) ... ok
+test_ipv6_loopback_passes_without_flag (__main__.TestHostAllowlist.test_ipv6_loopback_passes_without_flag) ... ok
+test_local_hosts_pass_without_flag (__main__.TestHostAllowlist.test_local_hosts_pass_without_flag) ... ok
+test_remote_host_with_flag_passes_when_name_legal (__main__.TestHostAllowlist.test_remote_host_with_flag_passes_when_name_legal) ... WARNING: --allow-remote-host permits non-local host 'db.internal' (source=explicit:--url)
+ok
+test_remote_host_with_flag_still_rejects_illegal_name (__main__.TestHostAllowlist.test_remote_host_with_flag_still_rejects_illegal_name) ... ok
+test_remote_host_with_flag_warns_on_stderr (__main__.TestHostAllowlist.test_remote_host_with_flag_warns_on_stderr) ... ok
+test_remote_host_without_flag_fails (__main__.TestHostAllowlist.test_remote_host_without_flag_fails) ... ok
+test_run_does_not_execute_child_on_remote_host_without_flag (__main__.TestHostAllowlist.test_run_does_not_execute_child_on_remote_host_without_flag) ... ok
+test_run_does_not_execute_child_on_fail (__main__.TestRunSubcommand.test_run_does_not_execute_child_on_fail) ... ok
+test_run_executes_child_on_pass (__main__.TestRunSubcommand.test_run_executes_child_on_pass) ... ok
+test_run_without_child_command_fails (__main__.TestRunSubcommand.test_run_without_child_command_fails) ... ok
+test_validate_target_accepts_matching_pair (__main__.TestValidateTargetUnit.test_validate_target_accepts_matching_pair) ... ok
+test_validate_target_accepts_remote_host_with_flag (__main__.TestValidateTargetUnit.test_validate_target_accepts_remote_host_with_flag) ... WARNING: --allow-remote-host permits non-local host 'db.internal' (source=explicit:--url)
+ok
+test_validate_target_prefers_url_name_over_db_name (__main__.TestValidateTargetUnit.test_validate_target_prefers_url_name_over_db_name) ... ok
+test_validate_target_raises_guard_error_on_blog_db (__main__.TestValidateTargetUnit.test_validate_target_raises_guard_error_on_blog_db) ... ok
+test_validate_target_raises_on_url_substring (__main__.TestValidateTargetUnit.test_validate_target_raises_on_url_substring) ... ok
+test_validate_target_rejects_remote_host_by_default (__main__.TestValidateTargetUnit.test_validate_target_rejects_remote_host_by_default) ... ok
+test_validate_target_requires_url_name_match (__main__.TestValidateTargetUnit.test_validate_target_requires_url_name_match) ... ok
+
+----------------------------------------------------------------------
+Ran 36 tests in 0.219s
+
+OK
+FAIL: empty database name (source=explicit:--db-name)
+PASS: db_name='astra_week3_env_ok' source=env:DATABASE_URL
+FAIL: URL contains forbidden substring 'blog_v2' (source=env:DATABASE_URL)
+FAIL: database name contains forbidden substring 'blog_db' (source=explicit:--db-name)
+FAIL: database name contains forbidden substring 'blog_v2' (source=explicit:--db-name)
+FAIL: database name 'astra_week2_x' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'astra_week3_bad-name' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'astra_week3_bad.name' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'astra_week3_bad!' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'astra_week3_UPPER' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'ASTRA_WEEK3_X' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'astra_week3' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'week3_demo' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+FAIL: database name 'production_db' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--db-name)
+PASS: db_name='astra_week3_demo' source=explicit:--db-name
+PASS: db_name='astra_week3_x' source=explicit:--db-name
+PASS: db_name='astra_week3_pr09' source=explicit:--db-name
+PASS: db_name='astra_week3_ok_01' source=explicit:--db-name
+PASS: db_name='astra_week3_demo' source=explicit:--url
+FAIL: no --db-name/--url given and environment DATABASE_URL is unset
+FAIL: URL contains forbidden substring 'blog_v2' (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+FAIL: database name 'production_db' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+PASS: db_name='astra_week3_other' source=explicit:--url
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'production_db' parsed from the connection URL (source=explicit:--url)
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'astra_week3_other' parsed from the connection URL (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+FAIL: URL contains forbidden substring 'blog_v2' (source=explicit:--url)
+PASS: db_name='astra_week3_other' source=explicit:--url
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'production_db' parsed from the connection URL (source=explicit:--url)
+PASS: db_name='astra_week3_demo' source=explicit:--db-name
+PASS: db_name='astra_week3_demo' source=explicit:--url
+PASS: db_name='astra_week3_demo' source=explicit:--url
+PASS: db_name='astra_week3_demo' source=explicit:--url
+PASS: db_name='astra_week3_demo' source=explicit:--url
+FAIL: database name 'production_db' does not match allowlist ^astra_week3_[a-z0-9_]+$ (source=explicit:--url)
+PASS: db_name='astra_week3_demo' source=explicit:--url
+FAIL: host 'db.internal' is not in the local allowlist ['127.0.0.1', '::1', 'localhost']; pass --allow-remote-host to override (source=explicit:--url)
+FAIL: run requires a child command after --

@@ -1,0 +1,2 @@
+archived-question / active-mistake review path -> review_count=0 due_count=0 lapse_count=0 attempt_count=0
+PASS: db_name='astra_week3_pr10_rw' source=explicit:--db-name; executing ['backend/.venv/bin/python', 'docs/workflows/personal-learning-system-convergence/week3/evidence/tests/pr-10-verify-archived-question-review-path.py']

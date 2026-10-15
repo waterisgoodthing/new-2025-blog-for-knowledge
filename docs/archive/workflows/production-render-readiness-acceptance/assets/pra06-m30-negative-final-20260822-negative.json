@@ -1,0 +1,41 @@
+{
+  "run_id": "pra06-m30-negative-final-20260822-negative",
+  "probe": "no-cookie-and-logout-invalid-session-boundary",
+  "environment_mode": "production-build-local-isolated",
+  "frontend_base": "http://api.localhost:3110",
+  "api_base": "http://api.localhost:8110",
+  "browser_temperature": "cold",
+  "server_temperature": "warm",
+  "authenticated_before_logout": true,
+  "no_cookie_boundary": {
+    "auth_me": 401,
+    "strict_management": 401,
+    "valid": true
+  },
+  "logout_boundary": {
+    "auth_me_before_logout_status": 200,
+    "logout_status": 200,
+    "auth_me_after_logout_status": 401,
+    "strict_management_after_logout_status": 401,
+    "admin_session_present_after_logout": false,
+    "valid": true
+  },
+  "password_token_cookie_values_persisted": false,
+  "started_at": "2026-08-22T14:30:33.818Z",
+  "navigation_status": 200,
+  "fixture": {
+    "total": 30,
+    "public_visible": 20,
+    "published_hidden": 5,
+    "drafts": 5,
+    "d1_public": true,
+    "types": {
+      "note": 10,
+      "blog": 10,
+      "mistake": 10
+    }
+  },
+  "valid": true,
+  "failure_reason": null,
+  "recorded_at": "2026-08-22T14:30:37.301Z"
+}

@@ -17,7 +17,7 @@ async function getMermaid(): Promise<any> {
 					startOnLoad: false,
 					theme: 'default',
 					securityLevel: 'strict',
-					logLevel: 5,
+					logLevel: 0,
 				})
 				return m
 			} catch (err) {
@@ -31,6 +31,18 @@ async function getMermaid(): Promise<any> {
 	return mermaidPromise
 }
 
+function isLikelyMermaid(code: string): boolean {
+	if (!code || code.trim().length < 3) return false
+	const trimmed = code.trim()
+	const prefixes = [
+		'graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram',
+		'stateDiagram', 'erDiagram', 'gantt', 'pie', 'timeline',
+		'journey', 'quadrantChart', 'requirementDiagram', 'gitgraph',
+		'block-beta', 'mindmap', 'sankey', 'xychart',
+	]
+	return prefixes.some(p => trimmed.startsWith(p))
+}
+
 export function MermaidBlock({ code }: { code: string }) {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [svg, setSvg] = useState('')
@@ -40,16 +52,28 @@ export function MermaidBlock({ code }: { code: string }) {
 		let cancelled = false
 
 		async function render() {
+			if (!isLikelyMermaid(code)) {
+				if (!cancelled) setError(true)
+				return
+			}
+
 			try {
 				const mermaid = await getMermaid()
 				const id = `mermaid-${Math.random().toString(36).slice(2, 10)}`
 				const normalizedCode = code.replace(/\t/g, '    ')
+
+				const container = containerRef.current
+				if (container) {
+					const errEl = container.querySelector('.error-icon, .error-text, [id^="d-"]')
+					if (errEl) errEl.remove()
+				}
+
 				const { svg: rendered } = await mermaid.render(id, normalizedCode)
 				if (!cancelled) {
 					setSvg(rendered)
 				}
 			} catch (err) {
-				console.warn('[MermaidBlock] render error:', err, 'Code:', code.substring(0, 100))
+				console.warn('[MermaidBlock] render error (suppressed):', code.substring(0, 60))
 				if (!cancelled) {
 					setError(true)
 				}
@@ -61,15 +85,11 @@ export function MermaidBlock({ code }: { code: string }) {
 	}, [code])
 
 	if (error) {
-		return (
-			<pre className='mermaid-fallback'>
-				<code>{code}</code>
-			</pre>
-		)
+		return null
 	}
 
 	if (!svg) {
-		return <div className='mermaid-loading animate-pulse bg-gray-100/50 rounded-lg h-20' />
+		return <div ref={containerRef} className='mermaid-loading animate-pulse bg-gray-100/50 rounded-lg h-20' />
 	}
 
 	return <div ref={containerRef}><DiagramViewer kind='svg' svg={svg} title='Mermaid 图谱' /></div>

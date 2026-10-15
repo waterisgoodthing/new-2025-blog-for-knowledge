@@ -1,0 +1,5 @@
+WARNING: Cache entry deserialization failed, entry ignored
+WARNING: Cache entry deserialization failed, entry ignored
+
+[notice] A new release of pip is available: 26.1.2 -> 26.2.1
+[notice] To update, run: /private/tmp/pls-audit-pdf-env/bin/python3.14 -m pip install --upgrade pip

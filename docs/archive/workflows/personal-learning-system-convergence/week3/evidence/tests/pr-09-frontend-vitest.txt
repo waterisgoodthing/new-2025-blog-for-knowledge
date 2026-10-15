@@ -1,0 +1,30 @@
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+ DEPRECATED  'basic' reporter is deprecated and will be removed in Vitest v3.
+Remove 'basic' from 'reporters' option. To match 'basic' reporter 100%, use configuration:
+{
+  "test": {
+    "reporters": [
+      [
+        "default",
+        {
+          "summary": false
+        }
+      ]
+    ]
+  }
+}
+(node:30156) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ src/lib/api/mistakes.test.ts (5 tests) 12ms
+ ✓ src/app/write-note/legacy-mistake-write-freeze.test.tsx (3 tests) 141ms
+ ✓ src/app/mistakes/page.test.tsx (5 tests) 142ms
+ ✓ src/app/write-mistake/components/legacy-mistake-write-freeze.test.tsx (2 tests) 264ms
+
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  21:03:57
+   Duration  1.68s (transform 426ms, setup 354ms, collect 1.19s, tests 559ms, environment 1.80s, prepare 273ms)
+

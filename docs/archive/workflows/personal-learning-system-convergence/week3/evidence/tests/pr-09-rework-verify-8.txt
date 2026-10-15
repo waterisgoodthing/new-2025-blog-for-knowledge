@@ -1,0 +1,212 @@
+================================================================================
+RESULTS TABLE (isolated clean scratch DB, alembic 031, via week3-scratch-guard)
+================================================================================
+| # | test | verdict | root cause |
+|---|------|---------|------------|
+| 1 | Wk3ReworkDbTest::test_next_due_maps_from_source | FAIL | assertions PASS (next_review_at=2026-12-15Z, from_source=1); cleanup DELETE notes FK legacy_note_migrations |
+| 2 | Wk3ReworkDbTest::test_dry_run_reports_planned_values | PASS | true green (dry_run rollback leaves no ledger, cleanup OK) |
+| 3 | Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch | FAIL | assertions PASS (visibility_matrix_match True then False); cleanup DELETE notes FK legacy_note_migrations |
+| 4 | Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten | FAIL | assertions PASS (source_drift+provenance_match=False+title unchanged); cleanup DELETE notes FK legacy_note_migrations |
+| 5 | test_put_mistake_success_200 | FAIL | _seed_public_mistake gen_random_uuid() -> mistakes_source_draft_item_id_fkey (never reaches assertion) |
+| 6 | test_delete_mistake_success_200 | FAIL | same seed FK |
+| 7 | test_put_mistake_wrong_version_409 | FAIL | same seed FK |
+| 8 | test_delete_mistake_wrong_version_409 | FAIL | same seed FK |
+
+summary: 1 PASS / 7 FAIL (no skips in isolated runs)
+Run A (all 8 one session): 5F/3S — cascade via KP unique violation in _setup_infra after
+test_next_due cleanup failure. Isolated runs above are the authoritative green/red.
+
+repro command (per test, from backend/):
+  psql -h 127.0.0.1 -p 51469 -U limengyang -d postgres -c "DROP DATABASE IF EXISTS astra_week3_pr09_rw_verify" -c "CREATE DATABASE astra_week3_pr09_rw_verify"
+  PYTHONPATH=. python3 ../scripts/week3-scratch-guard.py run --db-name astra_week3_pr09_rw_verify \
+    --url postgresql+asyncpg://limengyang@127.0.0.1:51469/astra_week3_pr09_rw_verify \
+    -- .venv/bin/alembic upgrade head
+  PYTHONPATH=. python3 ../scripts/week3-scratch-guard.py run --db-name astra_week3_pr09_rw_verify \
+    --url postgresql+asyncpg://limengyang@127.0.0.1:51469/astra_week3_pr09_rw_verify \
+    -- .venv/bin/python -m pytest tests/test_pr09_rework.py::Wk3ReworkDbTest::<name> -v --tb=line -rs
+  (HTTP: pytest tests/test_pr09_verify_http.py::test_put_mistake_success_200 -v --tb=line -rs)
+================================================================================
+
+===== PR-09 rework verify: 8 items (verifier PR-09-verify-rework) =====
+date: 2026-09-24T10:43:34Z
+scratch cluster: /tmp/astra-week3-pr09-rw port=51469 db=astra_week3_pr09_rw_verify alembic=031
+
+NOTE Run A (all 8 one session) already captured: 5F/3S — cascade: test_next_due FAILED at
+cleanup DELETE notes (FK legacy_note_migrations); _setup_infra KP INSERT then unique-violated,
+causing the other 3 DB tests to skipTest. Run B/C below = isolated true green/red.
+
+----- Run B: 4 DB tests, each on a freshly migrated clean database -----
+
+===== test_next_due_maps_from_source (isolated clean DB) =====
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source FAILED [100%]
+
+=================================== FAILURES ===================================
+E   asyncpg.exceptions.ForeignKeyViolationError: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(ffa60f93-5492-47c7-8d28-78cdb33bded6) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(ffa60f93-5492-47c7-8d28-78cdb33bded6) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(ffa60f93-5492-47c7-8d28-78cdb33bded6) is still referenced from table "legacy_note_migrations".
+    [SQL: DELETE FROM public.notes WHERE id=$1]
+    [parameters: (UUID('ffa60f93-5492-47c7-8d28-78cdb33bded6'),)]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+============================== 1 failed in 0.19s ===============================
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source', '-v', '--tb=line', '-rs']
+
+===== test_dry_run_reports_planned_values (isolated clean DB) =====
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_dry_run_reports_planned_values PASSED [100%]
+
+============================== 1 passed in 0.17s ===============================
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_dry_run_reports_planned_values', '-v', '--tb=line', '-rs']
+
+===== test_checks_reflect_visibility_mismatch (isolated clean DB) =====
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch FAILED [100%]
+
+=================================== FAILURES ===================================
+E   asyncpg.exceptions.ForeignKeyViolationError: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(f21a3b0a-8c96-4bff-b761-5e6e9192e823) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(f21a3b0a-8c96-4bff-b761-5e6e9192e823) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(f21a3b0a-8c96-4bff-b761-5e6e9192e823) is still referenced from table "legacy_note_migrations".
+    [SQL: DELETE FROM public.notes WHERE id=$1]
+    [parameters: (UUID('f21a3b0a-8c96-4bff-b761-5e6e9192e823'),)]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+============================== 1 failed in 0.19s ===============================
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch', '-v', '--tb=line', '-rs']
+
+===== test_source_drift_detected_and_target_not_overwritten (isolated clean DB) =====
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten FAILED [100%]
+
+=================================== FAILURES ===================================
+E   asyncpg.exceptions.ForeignKeyViolationError: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(a4aa381d-526e-4aec-89a9-ef21b77a0b0c) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(a4aa381d-526e-4aec-89a9-ef21b77a0b0c) is still referenced from table "legacy_note_migrations".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+    DETAIL:  Key (id)=(a4aa381d-526e-4aec-89a9-ef21b77a0b0c) is still referenced from table "legacy_note_migrations".
+    [SQL: DELETE FROM public.notes WHERE id=$1]
+    [parameters: (UUID('a4aa381d-526e-4aec-89a9-ef21b77a0b0c'),)]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: update or delete on table "notes" violates foreign key constraint "legacy_note_migrations_source_note_id_fkey" on table "legacy_note_migrations"
+============================== 1 failed in 0.20s ===============================
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten', '-v', '--tb=line', '-rs']
+
+----- Run C: 4 HTTP tests on clean migrated DB -----
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(d1f937ad-485d-4b70-ab00-47772246a2cd) is not present in table "draft_items".
+    [SQL: INSERT INTO public.mistakes (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,analysis,reason_category,mistake_reason,difficulty,status,visibility,version) VALUES ($1, gen_random_uuid(), gen_random_uuid(), 1, 'Public Title', $2,$3, 'CA-VALUE', 'AN-VALUE', 'concept', 'reason', 'easy', $4, $5, 1)]
+    [parameters: (UUID('4aded685-fe63-48ed-8fb7-5a73b6bd0fe8'), 'Public question text', 'PR09LEAK_http_my_answer_4d1e', 'active', 'private')]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+E   asyncpg.exceptions.ForeignKeyViolationError: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(3a676ac3-bdb9-4601-a8fd-969e06ad58bf) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(3a676ac3-bdb9-4601-a8fd-969e06ad58bf) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(3a676ac3-bdb9-4601-a8fd-969e06ad58bf) is not present in table "draft_items".
+    [SQL: INSERT INTO public.mistakes (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,analysis,reason_category,mistake_reason,difficulty,status,visibility,version) VALUES ($1, gen_random_uuid(), gen_random_uuid(), 1, 'Public Title', $2,$3, 'CA-VALUE', 'AN-VALUE', 'concept', 'reason', 'easy', $4, $5, 1)]
+    [parameters: (UUID('45dc7c41-bea9-4a1b-8d44-59131b7f42d3'), 'Public question text', 'PR09LEAK_http_my_answer_4d1e', 'active', 'private')]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+E   asyncpg.exceptions.ForeignKeyViolationError: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(d7efd318-1477-4904-bb09-2557f0c1db94) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(d7efd318-1477-4904-bb09-2557f0c1db94) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(d7efd318-1477-4904-bb09-2557f0c1db94) is not present in table "draft_items".
+    [SQL: INSERT INTO public.mistakes (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,analysis,reason_category,mistake_reason,difficulty,status,visibility,version) VALUES ($1, gen_random_uuid(), gen_random_uuid(), 1, 'Public Title', $2,$3, 'CA-VALUE', 'AN-VALUE', 'concept', 'reason', 'easy', $4, $5, 1)]
+    [parameters: (UUID('816b56df-f906-4848-af39-dca9824b6a63'), 'Public question text', 'PR09LEAK_http_my_answer_4d1e', 'active', 'private')]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+E   asyncpg.exceptions.ForeignKeyViolationError: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(111d1c5d-3036-4d62-bf9f-f858a4b962a2) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(111d1c5d-3036-4d62-bf9f-f858a4b962a2) is not present in table "draft_items".
+
+The above exception was the direct cause of the following exception:
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+    DETAIL:  Key (source_draft_item_id)=(111d1c5d-3036-4d62-bf9f-f858a4b962a2) is not present in table "draft_items".
+    [SQL: INSERT INTO public.mistakes (id,source_draft_item_id,question_id,subject_id,title,question_text,my_answer,correct_answer,analysis,reason_category,mistake_reason,difficulty,status,visibility,version) VALUES ($1, gen_random_uuid(), gen_random_uuid(), 1, 'Public Title', $2,$3, 'CA-VALUE', 'AN-VALUE', 'concept', 'reason', 'easy', $4, $5, 1)]
+    [parameters: (UUID('9c5873fd-8789-4507-9782-33c181ca88fb'), 'Public question text', 'PR09LEAK_http_my_answer_4d1e', 'active', 'private')]
+    (Background on this error at: https://sqlalche.me/e/20/gkpj)
+/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py:792: sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "mistakes" violates foreign key constraint "mistakes_source_draft_item_id_fkey"
+============================== 4 failed in 0.76s ===============================
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_verify_http.py::test_put_mistake_success_200', 'tests/test_pr09_verify_http.py::test_delete_mistake_success_200', 'tests/test_pr09_verify_http.py::test_put_mistake_wrong_version_409', 'tests/test_pr09_verify_http.py::test_delete_mistake_wrong_version_409', '-v', '--tb=line', '-rs']

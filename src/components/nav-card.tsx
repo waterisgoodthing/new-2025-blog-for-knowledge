@@ -13,56 +13,28 @@ import ProjectsFilledSVG from '@/svgs/projects-filled.svg'
 import ProjectsOutlineSVG from '@/svgs/projects-outline.svg'
 import AboutFilledSVG from '@/svgs/about-filled.svg'
 import AboutOutlineSVG from '@/svgs/about-outline.svg'
-import ShareFilledSVG from '@/svgs/share-filled.svg'
-import ShareOutlineSVG from '@/svgs/share-outline.svg'
-import WebsiteFilledSVG from '@/svgs/website-filled.svg'
-import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { HomeDraggableLayer } from '@/app/(home)/home-draggable-layer'
-import { Home, PenLine, Settings } from 'lucide-react'
+import { Home, PenLine, Compass, MessageSquare } from 'lucide-react'
 
-const list = [
-	{
-		icon: ScrollOutlineSVG,
-		iconActive: ScrollFilledSVG,
-		label: '近期文章',
-		href: '/blog'
-	},
-	{
-		icon: PenLine,
-		iconActive: PenLine,
-		label: '笔记',
-		href: '/notes'
-	},
-	{
-		icon: ProjectsOutlineSVG,
-		iconActive: ProjectsFilledSVG,
-		label: '错题集',
-		href: '/mistakes'
-	},
-	{
-		icon: AboutOutlineSVG,
-		iconActive: AboutFilledSVG,
-		label: '关于网站',
-		href: '/about'
-	},
-	{
-		icon: ShareOutlineSVG,
-		iconActive: ShareFilledSVG,
-		label: '推荐分享',
-		href: '/share'
-	},
-	{
-		icon: WebsiteOutlineSVG,
-		iconActive: WebsiteFilledSVG,
-		label: '优秀博客',
-		href: '/bloggers'
-	}
+type NavItem = { icon: React.ElementType; iconActive: React.ElementType; label: string; href: string }
+
+const publicContentItems: NavItem[] = [
+	{ icon: ScrollOutlineSVG, iconActive: ScrollFilledSVG, label: '博客', href: '/blog' },
+	{ icon: PenLine, iconActive: PenLine, label: '笔记', href: '/notes' },
 ]
+
+const interactionItems: NavItem[] = [
+	{ icon: Compass, iconActive: Compass, label: '发现', href: '/discover' },
+	{ icon: MessageSquare, iconActive: MessageSquare, label: '留言', href: '/guestbook' },
+	{ icon: AboutOutlineSVG, iconActive: AboutFilledSVG, label: '关于', href: '/about' },
+]
+
+const allNavItems = [...publicContentItems, ...interactionItems]
 
 const extraSize = 8
 
@@ -72,12 +44,12 @@ export default function NavCard() {
 	const [show, setShow] = useState(false)
 	const { maxSM } = useSize()
 	const [hoveredIndex, setHoveredIndex] = useState<number>(0)
-	const { siteContent, cardStyles, setConfigDialogOpen } = useConfigStore()
+	const { siteContent, cardStyles } = useConfigStore()
 	const styles = cardStyles.navCard
 	const hiCardStyles = cardStyles.hiCard
 
 	const activeIndex = useMemo(() => {
-		const index = list.findIndex(item => pathname.startsWith(item.href))
+		const index = allNavItems.findIndex(item => pathname.startsWith(item.href))
 		return index >= 0 ? index : undefined
 	}, [pathname])
 
@@ -148,8 +120,12 @@ export default function NavCard() {
 					)}
 
 					{form === 'mini' && (
-						<Link className='flex h-full items-center justify-center gap-2 rounded-3xl px-2 transition-colors hover:bg-white/45' href='/' aria-label='返回首页' title='返回首页'>
-							<Image src='/images/avatar.png' alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+						<Link
+							className='flex h-full items-center justify-center gap-2 rounded-3xl px-2 transition-colors hover:bg-white/45'
+							href='/'
+							aria-label='返回首页'
+							title='返回首页'>
+							<Image src={siteContent.avatarUrl || '/images/avatar.png'} alt='avatar' width={40} height={40} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
 							<span className='flex items-center gap-1 text-sm font-medium text-gray-600'>
 								<Home className='h-4 w-4' />
 								首页
@@ -159,28 +135,24 @@ export default function NavCard() {
 
 					{form === 'full' && (
 						<div className='relative z-10 flex h-full min-h-0 flex-col'>
-							<Link className='flex shrink-0 items-center gap-3 rounded-2xl px-1 py-0.5 transition-colors hover:bg-white/40' href='/' aria-label='返回首页' title='返回首页'>
-								<Image src='/images/avatar.png' alt='avatar' width={36} height={36} style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='shrink-0 rounded-full' />
+							<Link
+								className='flex shrink-0 items-center gap-3 rounded-2xl px-1 py-0.5 transition-colors hover:bg-white/40'
+								href='/'
+								aria-label='返回首页'
+								title='返回首页'>
+								<Image
+									src={siteContent.avatarUrl || '/images/avatar.png'}
+									alt='avatar'
+									width={36}
+									height={36}
+									style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }}
+									className='shrink-0 rounded-full'
+								/>
 								<span className='font-averia mt-1 min-w-0 truncate text-xl leading-none font-medium'>{siteContent.meta.title}</span>
 								<span className='text-brand mt-1.5 shrink-0 text-xs font-medium'>(开发中)</span>
 							</Link>
 
-							<div className='mt-2 shrink-0 border-t border-white/30 pt-1.5'>
-								<button
-									type='button'
-									onClick={() => setConfigDialogOpen(true)}
-									aria-label='网站设置'
-									title='网站设置'
-									className='text-secondary flex w-full items-center gap-3 rounded-full px-4 py-1.5 text-sm transition-colors hover:bg-white/55 hover:text-primary'
-								>
-									<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
-										<Settings className='h-5 w-5' />
-									</div>
-									<span className='font-medium'>网站设置</span>
-								</button>
-							</div>
-
-							<div className='text-secondary mt-2 shrink-0 text-xs uppercase'>General</div>
+							<div className='text-secondary mt-3 shrink-0 text-xs uppercase'>公开内容</div>
 
 							<div className='relative mt-1.5 min-h-0 flex-1 overflow-hidden pr-1'>
 								<div className='relative space-y-1 pb-1'>
@@ -197,7 +169,7 @@ export default function NavCard() {
 										style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
 									/>
 
-									{list.map((item, index) => (
+									{publicContentItems.map((item, index) => (
 										<Link
 											key={item.href}
 											href={item.href}
@@ -211,6 +183,26 @@ export default function NavCard() {
 											<span className={clsx(index == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>
 										</Link>
 									))}
+
+									<div className='text-secondary px-4 pt-2 pb-1 text-xs uppercase'>互动探索</div>
+
+									{interactionItems.map((item, index) => {
+										const flatIndex = publicContentItems.length + index
+										return (
+											<Link
+												key={item.href}
+												href={item.href}
+												aria-label={item.label}
+												title={item.label}
+												className='text-secondary relative z-10 flex items-center gap-3 rounded-full px-4 py-1.5 text-sm'
+												onMouseEnter={() => setHoveredIndex(flatIndex)}>
+												<div className='flex h-6 w-6 shrink-0 items-center justify-center'>
+													{hoveredIndex == flatIndex ? <item.iconActive className='text-brand absolute h-6 w-6' /> : <item.icon className='absolute h-6 w-6' />}
+												</div>
+												<span className={clsx(flatIndex == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>
+											</Link>
+										)
+									})}
 								</div>
 							</div>
 						</div>

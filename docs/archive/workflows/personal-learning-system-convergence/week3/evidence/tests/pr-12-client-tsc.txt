@@ -1,0 +1,4 @@
+PR-12 client typecheck
+command: npx tsc --noEmit
+exit: 0
+result: PASS (no output)

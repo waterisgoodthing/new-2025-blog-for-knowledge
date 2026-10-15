@@ -6,28 +6,44 @@ import { toast } from 'sonner'
 import { EmptyState } from '@/components/empty-state'
 import { Plus, X } from 'lucide-react'
 import { DialogModal } from '@/components/dialog-modal'
-import { useAuthStore } from '@/hooks/use-auth'
+import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
-import initialList from './list.json'
+import { getSnippets } from '@/lib/api/content'
 import { pushSnippets } from './services/push-snippets'
 
 const getRandomSnippet = (list: string[]) => (list.length === 0 ? '' : list[Math.floor(Math.random() * list.length)])
 
 export default function Page() {
-	const [snippets, setSnippets] = useState<string[]>(initialList as string[])
-	const [originalSnippets, setOriginalSnippets] = useState<string[]>(initialList as string[])
-	const [currentSnippet, setCurrentSnippet] = useState<string>(getRandomSnippet(initialList as string[]))
+	const [snippets, setSnippets] = useState<string[]>([])
+	const [originalSnippets, setOriginalSnippets] = useState<string[]>([])
+	const [currentSnippet, setCurrentSnippet] = useState<string>('')
 	const [isEditMode, setIsEditMode] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [isManageOpen, setIsManageOpen] = useState(false)
 	const [draftSnippets, setDraftSnippets] = useState<string[]>([])
 	const [newSnippet, setNewSnippet] = useState('')
+	const [isLoading, setIsLoading] = useState(true)
 	const { siteContent } = useConfigStore()
+	const { isAdmin } = useAdminAuth({ mode: 'optional' })
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	useEffect(() => {
+		getSnippets()
+			.then(data => {
+				setSnippets(data)
+				setOriginalSnippets(data)
+				setCurrentSnippet(getRandomSnippet(data))
+			})
+			.catch(err => {
+				console.error('Failed to load snippets:', err)
+				toast.error('加载句子列表失败')
+			})
+			.finally(() => setIsLoading(false))
+	}, [])
+
+	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (!isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
+			if (isAdmin && !isEditMode && (e.ctrlKey || e.metaKey) && e.key === ',') {
 				e.preventDefault()
 				setIsEditMode(true)
 			}
@@ -37,7 +53,7 @@ export default function Page() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [isEditMode])
+	}, [isAdmin, isEditMode])
 
 	const handleSave = async () => {
 		setIsSaving(true)
@@ -104,6 +120,14 @@ export default function Page() {
 
 	const buttonText = '保存'
 
+	if (isLoading) {
+		return (
+			<div className='flex min-h-[70vh] flex-col items-center justify-center px-6 py-24'>
+				<div className='text-secondary text-center text-sm'>加载中...</div>
+			</div>
+		)
+	}
+
 	return (
 		<>
 
@@ -137,7 +161,7 @@ export default function Page() {
 						</motion.button>
 					</>
 				) : (
-					!hideEditButton && (
+					isAdmin && !hideEditButton && (
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}

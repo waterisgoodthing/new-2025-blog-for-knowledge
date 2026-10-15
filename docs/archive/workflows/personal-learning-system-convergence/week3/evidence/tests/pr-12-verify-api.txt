@@ -1,0 +1,29 @@
+### PR-12 verify API suite (auth/idempotency/404/service concurrency/direct IntegrityError)
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+rootdir: /Users/limengyang/2025-blog-public
+plugins: anyio-4.13.0
+collecting ... collected 5 items
+
+backend/tests/test_pr12_verify_api.py::test_anonymous_all_routes_rejected PASSED [ 20%]
+backend/tests/test_pr12_verify_api.py::test_admin_link_idempotent_unlink_idempotent_and_lists PASSED [ 40%]
+backend/tests/test_pr12_verify_api.py::test_missing_note_and_kp_are_404 PASSED [ 60%]
+backend/tests/test_pr12_verify_api.py::test_concurrent_duplicate_link_no_500 PASSED [ 80%]
+backend/tests/test_pr12_verify_api.py::test_integrity_error_branch_is_idempotent PASSED [100%]
+
+============================== 5 passed in 1.56s ===============================
+PASS: db_name='astra_week3_pr12_verify' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', '-m', 'pytest', 'backend/tests/test_pr12_verify_api.py', '-v', '-p', 'no:cacheprovider']
+api_exit=0
+
+### PR-12 verify HTTP concurrency probe (isolated process)
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+rootdir: /Users/limengyang/2025-blog-public
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+backend/tests/test_pr12_verify_concurrency.py::test_concurrent_http_duplicate_link_never_500 PASSED [100%]
+
+============================== 1 passed in 0.95s ===============================
+PASS: db_name='astra_week3_pr12_verify' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', '-m', 'pytest', 'backend/tests/test_pr12_verify_concurrency.py', '-v', '-p', 'no:cacheprovider']
+concurrency_exit=0

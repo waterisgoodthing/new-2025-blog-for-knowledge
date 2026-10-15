@@ -1,0 +1,69 @@
+{
+  "run_id": "pra06-same-hostname-corrected-20260822",
+  "status": "BLOCKED_BEFORE_BROWSER_LOGIN",
+  "purpose": "corrected same-hostname production runtime probe; harness failure retained without retry",
+  "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "runtime": {
+    "frontend": "http://api.localhost:3105",
+    "api_url": "http://api.localhost:8105",
+    "api_bind": "127.0.0.1:8105",
+    "postgres": "127.0.0.1:55437/pra06_same_hostname_corrected",
+    "next_public_api_url": "http://api.localhost:8105",
+    "allowed_origins": "http://api.localhost:3105",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "build": {
+    "snapshot_worktree": "/private/tmp/pra06-same-hostname-corrected-20260822-js4Dgq/worktree",
+    "cwd_verified": true,
+    "npm_ci": "PASS; 907 packages",
+    "next_executable": true,
+    "which_next": "/private/tmp/pra06-same-hostname-corrected-20260822-js4Dgq/worktree/node_modules/.bin/next",
+    "command": "cd <snapshot_worktree> && npm run build",
+    "result": "PASS; Next.js 16.2.12 Turbopack",
+    "artifact": "pra06-same-hostname-corrected-20260822.build.log"
+  },
+  "preflight": {
+    "api_health_status": 200,
+    "frontend_status": 200,
+    "cors_preflight_status": 200,
+    "cors_allow_origin": "http://api.localhost:3105",
+    "cors_allow_credentials": true,
+    "m30_fixture_created": false,
+    "temporary_admin_created": false,
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 0,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "browser_started": false,
+    "login_submitted": false
+  },
+  "evidence": {
+    "login_status": null,
+    "set_cookie_attribute_presence": null,
+    "cdp_blocked_cookie_reasons": null,
+    "browser_cookie_jar": null,
+    "cookie_header_presence": null,
+    "auth_me_status": null,
+    "strict_management_status": null,
+    "readiness_dom": null,
+    "readiness_marks": null,
+    "failure_reason": "harness-startup:git-rev-parse-failed:not-a-git-repository; login-not-submitted",
+    "failure_artifact": "pra06-same-hostname-corrected-20260822.browser.log"
+  },
+  "cleanup": {
+    "status": "PASS",
+    "postgres_stop": "PASS; exact cluster; PID 4596 was stopped before final recheck",
+    "ports_3105_8105_55437": "FREE",
+    "worktree_registration": "ABSENT",
+    "recoverable_roots": [
+      "/Users/limengyang/.Trash/pra06-same-hostname-corrected-20260822-js4Dgq",
+      "/Users/limengyang/.Trash/pra06-same-hostname-corrected-git-20260822-m7ZoqL"
+    ],
+    "artifact": "pra06-same-hostname-corrected-20260822.cleanup.log"
+  },
+  "password_token_cookie_values_persisted": false
+}

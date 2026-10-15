@@ -1,0 +1,16 @@
+--- public DTO keys ---
+178:export interface PublicMistake {
+179-  id: string
+180-  title: string | null
+181-  question_text: string
+182-  correct_answer: string | null
+183-  analysis: string | null
+184-  reason_category: MistakeReason
+185-  mistake_reason: string | null
+186-  difficulty: Exclude<Difficulty, 'unspecified'> | null
+187-  knowledge_point_ids: number[]
+188-  created_at: string
+189-  updated_at: string
+190-}
+191-
+--- (empty first two sections = no useNoteIndex/listNotes, no my_answer in page.tsx) ---

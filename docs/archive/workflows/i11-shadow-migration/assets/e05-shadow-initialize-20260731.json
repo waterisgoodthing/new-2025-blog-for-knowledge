@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-07-31T08:56:29.598247+00:00",
+  "target_database": "i11_shadow_e05_20260731",
+  "target_revision": "025",
+  "source_snapshot_count": 123,
+  "source_snapshot_aggregate_sha256": "8a7773453f560d626583495d67730ce2cb6d6a4b22b00fad4d7a3abd90802d9d",
+  "v1_count": 121,
+  "delta_count": 2,
+  "ledger_count": 123,
+  "canonical_owner_id": "4c503215-b158-4162-b472-79df8289ed0a",
+  "owner_conflict_count": 0,
+  "owner_fk_orphan_count": 0,
+  "relationship_orphans": {
+    "mistake_question": 0,
+    "mistake_draft": 0,
+    "review_item_target": 0,
+    "review_record_item": 0,
+    "attachment_link_attachment": 0,
+    "attachment_link_target": 0,
+    "capture_attachment": 0
+  },
+  "tombstone_count": 0,
+  "business_hash_match": true,
+  "passed": true
+}

@@ -1,0 +1,53 @@
+{
+  "test_date": "2026-07-29",
+  "environment": "isolated restored revision-024 database",
+  "states": [
+    {
+      "state": "404",
+      "request": "GET /api/notes/c10-this-note-does-not-exist",
+      "expected_status": 404,
+      "actual_status": 404,
+      "detail": "Note not found",
+      "passed": true
+    },
+    {
+      "state": "401 anonymous",
+      "request": "GET /api/admin/dashboard/summary",
+      "expected_status": 401,
+      "actual_status": 401,
+      "detail": "Not authenticated",
+      "passed": true
+    },
+    {
+      "state": "401 invalid session",
+      "request": "GET /api/admin/dashboard/summary with invalid admin_session cookie",
+      "expected_status": 401,
+      "actual_status": 401,
+      "detail": "Not authenticated",
+      "passed": true
+    },
+    {
+      "state": "403 non-admin",
+      "request": "GET /api/admin/dashboard/summary with valid non-admin session",
+      "expected_status": 403,
+      "actual_status": 403,
+      "detail": "Admin privileges required",
+      "passed": true
+    },
+    {
+      "state": "403 disabled registration",
+      "request": "POST /api/auth/register",
+      "expected_status": 403,
+      "actual_status": 403,
+      "detail": "Registration is disabled",
+      "passed": true
+    },
+    {
+      "state": "500",
+      "status": "SKIPPED",
+      "reason": "No controlled 500 trigger exists. Deliberately corrupting the restored database or disrupting the local service would not validate a stable product contract and was not performed."
+    }
+  ],
+  "passed": true,
+  "conclusion": "PASS WITH DOCUMENTED 500 SKIP"
+}

@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 14 items
+
+tests/test_login_throttling.py::test_parse_delays_returns_floats_in_order PASSED [  7%]
+tests/test_login_throttling.py::test_parse_delays_ignores_blank_invalid_and_negative PASSED [ 14%]
+tests/test_login_throttling.py::test_delay_schedule_graduated_and_capped PASSED [ 21%]
+tests/test_login_throttling.py::test_no_failures_means_no_delay PASSED   [ 28%]
+tests/test_login_throttling.py::test_account_counter_resets_on_success PASSED [ 35%]
+tests/test_login_throttling.py::test_ip_counter_decays_after_ttl PASSED  [ 42%]
+tests/test_login_throttling.py::test_failure_after_ttl_restarts_ip_count PASSED [ 50%]
+tests/test_login_throttling.py::test_expired_ip_entries_are_evicted PASSED [ 57%]
+tests/test_login_throttling.py::test_account_counters_do_not_decay_with_ip_ttl PASSED [ 64%]
+tests/test_login_throttling.py::test_disabled_throttle_never_delays PASSED [ 71%]
+tests/test_login_throttling.py::test_account_dimension_persists_across_ips PASSED [ 78%]
+tests/test_login_throttling.py::test_ip_dimension_triggers_for_a_different_account PASSED [ 85%]
+tests/test_login_throttling.py::test_failure_count_reports_stricter_dimension PASSED [ 92%]
+tests/test_login_throttling.py::test_failure_count_grows_past_alert_threshold PASSED [100%]
+
+============================== 14 passed in 0.05s ==============================
+PASS: db_name='astra_week4_pr16' source=explicit:--url; executing ['bash', '-c', 'cd backend && .venv/bin/python -m pytest tests/test_login_throttling.py -v']
+
+-------------------------------------------------------------------------------
+F1 rework reproduction (clock frozen via login_throttle._now; no DB)
+-------------------------------------------------------------------------------
+immediately after 3 fails: delay= 2.0 count= 3
+after TTL expiry (read): delay= 0.0 count= 0
+after ONE new failure post-TTL: delay= 0.0 count= 1     <-- was 5.0 / 4 before fix
+ips dict holds: ['1.1.1.1']                              <-- read evicted; write re-added fresh

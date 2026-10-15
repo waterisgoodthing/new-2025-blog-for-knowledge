@@ -1,0 +1,17 @@
+(node:74262) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+ ✓ src/lib/api/notes.test.ts > Note <-> KnowledgePoint DTOs (PR-12) > NoteKnowledgePointLink has exactly the backend schema fields 2ms
+ ✓ src/lib/api/notes.test.ts > Note <-> KnowledgePoint DTOs (PR-12) > KnowledgePointNoteItem has exactly the backend schema fields 0ms
+ ✓ src/lib/api/notes.test.ts > linkNoteKnowledgePoint > POSTs the admin link path with session credentials 9ms
+ ✓ src/lib/api/notes.test.ts > unlinkNoteKnowledgePoint > DELETEs the admin link path and resolves undefined on 204 0ms
+ ✓ src/lib/api/notes.test.ts > listNoteKnowledgePoints > GETs the note -> knowledge-points admin path 0ms
+ ✓ src/lib/api/notes.test.ts > listKnowledgePointNotes > GETs the knowledge-point -> notes admin path 0ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  18:02:54
+   Duration  941ms (transform 64ms, setup 109ms, collect 35ms, tests 16ms, environment 301ms, prepare 42ms)
+

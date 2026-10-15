@@ -1,0 +1,8 @@
+anonymous GET /api/admin/knowledge-points/analytics -> 401
+admin login (wrong password) -> 401
+admin login -> 200
+admin GET /api/admin/knowledge-points/analytics -> 200
+payload rows = 8
+sample row keys = ['accuracy', 'attempt_count', 'due_count', 'knowledge_point_id', 'lapse_count', 'review_count', 'wrong_count', 'wrong_rate']
+sample row = {"accuracy": 0.0, "attempt_count": 0, "due_count": 1, "knowledge_point_id": 37, "lapse_count": 2, "review_count": 3, "wrong_count": 0, "wrong_rate": 0.0}
+PASS: db_name='astra_week3_pr10_verify' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', 'docs/workflows/personal-learning-system-convergence/week3/evidence/api/pr-10-verify-analytics-httpprobe.py']

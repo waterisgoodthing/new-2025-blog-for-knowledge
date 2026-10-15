@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 16 items
+
+tests/test_pr09_rework.py::test_map_next_review_date_to_utc_midnight PASSED [  6%]
+tests/test_pr09_rework.py::test_map_next_review_none_returns_default PASSED [ 12%]
+tests/test_pr09_rework.py::test_map_next_review_naive_datetime_assumes_utc PASSED [ 18%]
+tests/test_pr09_rework.py::test_map_next_review_aware_datetime_converts_to_utc PASSED [ 25%]
+tests/test_pr09_rework.py::test_map_next_review_invalid_returns_default PASSED [ 31%]
+tests/test_pr09_rework.py::test_first_dry_run_replay_noop_is_true PASSED [ 37%]
+tests/test_pr09_rework.py::test_real_run_can_report_replay_noop_false PASSED [ 43%]
+tests/test_pr09_rework.py::test_dry_run_report_has_would_fields_and_zero_created PASSED [ 50%]
+tests/test_pr09_rework.py::test_real_run_report_created_fields_have_values PASSED [ 56%]
+tests/test_pr09_rework.py::test_report_checks_use_instance_fields PASSED [ 62%]
+tests/test_pr09_rework.py::test_report_rejected_count_includes_source_drift PASSED [ 68%]
+tests/test_pr09_rework.py::test_report_retained_public_only_maps_to_rejected_reason PASSED [ 75%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch SKIPPED [ 81%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_dry_run_reports_planned_values SKIPPED [ 87%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source SKIPPED [ 93%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten SKIPPED [100%]
+
+======================== 12 passed, 4 skipped in 0.22s =========================

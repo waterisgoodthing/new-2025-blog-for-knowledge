@@ -1,0 +1,39 @@
+# F4 前总工作夹执行 Goal
+
+Status: `READY — INVOCATION APPROVES THE CURRENT PARENT AND SPECIAL-ADAPTER TASK LISTS`
+
+## 推荐执行版（中文，可直接复制）
+
+```text
+/goal 在 `/Users/limengyang/2025-blog-public` 中完成 `frontend-foundation-and-quality` 的 F4 前总工作夹：严格按用户已选择的 D1 方案 B，先让 Mermaid、Markmap、Chart 三类隔离安全适配器全部达到 `ENABLED_ISOLATED` 并关闭 G2，再完成 F2B/G3、F3 的 E1～E4，暂停取得 D2 用户决策后完成 E5/G4，最后形成完整 F4 输入包并停止；不执行 F4 或前端视觉改造。本 Goal 的实际调用构成对当前 `docs/workflows/frontend-foundation-and-quality/tasks.md` 与 `docs/workflows/markdown-special-adapter-enablement/tasks.md` 的明确批准，但不授权其中保留为单独审批门的事项。
+
+验证：开始前完整读取根 `AGENTS.md`、`git status --short`、父工作夹，以及进入阶段所对应的 `markdown-rendering-security-poc`、`markdown-special-adapter-enablement`、`public-session-state-optimization`、`editor-convergence` 工作夹；以当前源码和当前依赖为准。特殊适配器阶段必须按任务清单保留 failing-first 证据，运行 `env PATH="/opt/homebrew/opt/node@24/bin:$PATH" npx vitest run src/lib/markdown-poc/__tests__/`、`env PATH="/opt/homebrew/opt/node@24/bin:$PATH" npx playwright test --config=src/lib/markdown-poc/browser-tests/playwright.config.ts --reporter=line`、`env PATH="/opt/homebrew/opt/node@24/bin:$PATH" npx tsc --noEmit`、受影响文件 Prettier、`src/app/batch7-compatibility.test.ts`，并检查生产代码零引用、本地 Markdown 链接和行尾空白。每个适配器必须分别覆盖 SSR、hydration、安全到恶意更新、重复渲染/卸载、最终 DOM/SVG/Canvas、script sentinel、事件、page/console error、dialog、request、navigation、download、局部/全局 fallback，并把首个相关失败和最终通过 artifacts 保存在 `docs/workflows/markdown-special-adapter-enablement/assets/`。F2B 按其任务清单验证匿名 200、管理员态、失效会话、基础设施失败、strict `/api/auth/me` 不变、公开页面无管理员 API 噪音和后端权限不变。F3 只形成有源码证据的字段/保存/预览/权限/复用矩阵与后续实现清单。每个 Gate 必须在父子 `tasks.md`、`audit.md`、`validation.md` 中记录 PASS、BLOCKED 或 PARTIAL 以及精确命令、计数、warnings、artifacts 和残余风险。
+
+约束：不要重做已完成的 F0/G0、F1/G1、Markdown M1～M6.9；D1 已固定为方案 B，不得降级为“Code + Math、其余 inert”的 scoped PASS。Mermaid、Markmap、Chart 任一未达到 `ENABLED_ISOLATED`，G2 必须 BLOCKED / NOT GO，F3 不得开始。不要弱化公开/管理员权限边界、`get_current_admin`、AuthGate、strict 会话、写入、AI、上传或复习保护；F2B 只优化当前 HttpOnly `admin_session` Cookie 的 optional display state，不实施 JWT/Bearer 迁移。保留 note/blog/mistake 字段和数据合同，mistake 一等字段不得降级为 Markdown。不得把旧生产 Markdown 渲染链作为 fallback，不得使用真实个人内容、生产 API、凭据或 `AUTH_BYPASS`。
+
+边界：只允许修改 `src/lib/markdown-poc/`、本 Goal 直接关联的父子 workflow 文档，以及在获批 PSS 项目中由其任务清单明确识别的 auth schema/router、typed API、hook、消费者和测试文件。进入 F3 时只允许只读清点和文档产出，不实现 UnifiedEditor、移动路由或改 schema。禁止执行生产 Markdown 消费者切换、M7、路由删除/重定向、视觉 Token/导航/弹层/Context Action 改造、统一创作面板、F4 instrumentation/构建/采样、真实数据迁移、Git 暂存/提交/推送、部署和无关重构。保留当前脏工作树和用户所有的未跟踪文件。
+
+迭代策略：严格按 `SA-01 -> SA-02 -> Mermaid-01..03 -> Markmap-01..03 -> Chart-01..03 -> SA-03 -> SA-04 -> G2 -> PSS-01..06 -> G3 -> E1..04 -> D2 -> E5/G4 -> F4 输入包 -> STOP` 执行，一次只处理一个任务项；每完成一项立即更新该项及父子 validation 后才进入下一项。每个适配器先失败测试、再做最小隔离实现、再完成聚焦与全量验证。每次失败先读取日志并改变单一变量；同一适配器最多进行 3 轮有新证据的聚焦修正，不能通过时不得弱化合同或伪造 GO。
+
+完成条件：Mermaid、Markmap、Chart 全部 `ENABLED_ISOLATED`，G2 有完整可复现结构与浏览器证据；F2B/G3 证明公开匿名访问无预期认证噪音且严格权限不变；E1～E4 形成完整编辑器证据并已取得 D2，随后 E5/G4 与 F4 输入包完成；父子工作夹状态一致，所有临时服务和合成资源已清理。最终只交付 F4 READY/BLOCKED 输入结论，不执行 F4、视觉改造、生产迁移、Git 或部署。
+
+暂停条件：SA-01 发现必须新增、升级或删除依赖、修改 `package-lock.json`、下载新的持久浏览器二进制，或扩大已冻结的产品交互能力；需要生产消费者、真实数据/凭据、JWT/Bearer、CORS、`AUTH_BYPASS`、路由/视觉/F4/Git/部署动作；当前脏工作树与目标文件发生无法安全保留的冲突；任一特殊适配器三轮后仍不满足合同；或 E1～E4 完成而 D2 尚未由用户选择。暂停时必须说明首个阻塞证据、已尝试的不同修正、当前安全状态和用户只需判断的最小事项。
+```
+
+## Goal Draft (English-compatible)
+
+```text
+/goal Complete the pre-F4 `frontend-foundation-and-quality` workspace in `/Users/limengyang/2025-blog-public`: follow the user's fixed D1 option B, first bring the isolated Mermaid, Markmap, and Chart security adapters to `ENABLED_ISOLATED` and close G2, then complete F2B/G3, perform F3 E1–E4, pause for the user's D2 decision, complete E5/G4 after that decision, and finish the F4 input package without executing F4 or any frontend visual redesign. Invoking this Goal is explicit approval of the current `docs/workflows/frontend-foundation-and-quality/tasks.md` and `docs/workflows/markdown-special-adapter-enablement/tasks.md`, but it does not approve items that those documents keep behind separate approval gates.
+
+Verification: before changes, read the root `AGENTS.md`, `git status --short`, the parent workspace, and the stage-specific Markdown PoC, special-adapter, public-session, and editor-convergence workspaces; use current source and dependency evidence. Preserve failing-first evidence for every special adapter; run the focused Markdown PoC Vitest suite, the config-qualified Playwright suite, TypeScript, scoped Prettier, Batch 7 compatibility, production-isolation, local-link, and trailing-whitespace checks. Independently prove SSR, hydration, safe-to-hostile updates, repeat render/unmount, final DOM/SVG/Canvas, script sentinel, events, page/console errors, dialogs, requests, navigation, downloads, local/global fallback, and retained artifacts for Mermaid, Markmap, and Chart. Validate F2B's anonymous/admin/expired/infrastructure-failure and strict-auth contracts. For F3, produce source-backed field/save/preview/permission/reuse evidence only. Record exact commands, versions, counts, warnings, artifacts, residual risks, and Gate results in parent and child workflow files.
+
+Constraints: do not redo F0/G0, F1/G1, or Markdown M1–M6.9. D1 is fixed to option B and must not be weakened to a scoped Code+Math pass. If any of Mermaid, Markmap, or Chart is not `ENABLED_ISOLATED`, G2 remains BLOCKED / NOT GO and F3 must not start. Preserve public/admin boundaries, backend authorization, strict session behavior, note/blog/mistake fields, and exact inert fallback. F2B may optimize only optional display state for the current HttpOnly `admin_session` Cookie and must not perform JWT/Bearer migration. Do not use production content, credentials, APIs, or `AUTH_BYPASS`.
+
+Boundaries: writes are limited to `src/lib/markdown-poc/`, directly related workflow documents, and PSS files explicitly identified by its approved task list. F3 is read-only source inspection plus documentation; do not implement UnifiedEditor, move routes, or change schemas. Do not switch production Markdown consumers, execute M7, delete or redirect routes, change the visual system, implement F4, migrate real data, stage/commit/push Git changes, deploy, or refactor unrelated code. Preserve the dirty worktree and user-owned untracked files.
+
+Iteration policy: execute exactly one item at a time in this order: `SA-01 -> SA-02 -> Mermaid-01..03 -> Markmap-01..03 -> Chart-01..03 -> SA-03 -> SA-04 -> G2 -> PSS-01..06 -> G3 -> E1..04 -> D2 -> E5/G4 -> F4 input package -> STOP`. Immediately update the exact parent and child task/validation entries after each item. For each adapter, add a failing test, make the smallest isolated implementation, and rerun focused plus full checks. Inspect logs and change one variable per retry; allow at most three evidence-changing correction rounds per adapter and never weaken the contract to obtain a pass.
+
+Stop when: all three special adapters are `ENABLED_ISOLATED` with reproducible structural and browser evidence; G2 is PASS; F2B/G3 proves quiet anonymous public access with strict privileges unchanged; E1–E4 evidence has produced and received the D2 decision; E5/G4 and the F4 input package are complete; parent/child status is consistent and temporary resources are cleaned. Deliver only the F4 READY/BLOCKED input conclusion; do not execute F4, visual changes, production migration, Git publication, or deployment.
+
+Pause if: SA-01 requires a dependency add/upgrade/removal, `package-lock.json` mutation, new persistent browser download, or broader product interaction; production consumers, real data/credentials, JWT/Bearer, CORS, `AUTH_BYPASS`, route/visual/F4/Git/deployment work is required; dirty-worktree conflicts cannot be preserved safely; an adapter still fails after three evidence-changing rounds; or E1–E4 is complete and D2 has not been chosen. Report the first blocking evidence, distinct attempted corrections, current safe state, and the smallest user decision required.
+```
