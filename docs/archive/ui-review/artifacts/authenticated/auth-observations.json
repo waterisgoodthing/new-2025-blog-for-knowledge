@@ -1,0 +1,105 @@
+{
+  "assetsBefore": {
+    "title": "My Blog",
+    "text": "My Blog\n\n登录后即可管理内容、策展发现和审核留言\n\n使用 Passkey 登录\n\nPasskey 登录拥有最高权限，可执行密码更改等敏感操作\n\n或使用密码\n用户名\n密码\n密码登录\n\n浏览公开内容\n\n博客\n笔记\n错题\n发现\n留言\n关于",
+    "hasUser": true,
+    "hasPass": true
+  },
+  "afterLogin": {
+    "url": "http://localhost:3000/manage",
+    "title": "My Blog",
+    "text": "新学习空间已上线，题目 / 错题 / 复习 / 图片采集请使用工作区。旧管理面板仅保留历史内容维护。\n进入工作区\n管理面板\n管理员\n退出\n总览\n内容管理\n文件夹与标签\n音乐管理\nAI 管理\n留言审核\n页面设置\n安全设置\n操作记录\n全部内容\n收件箱\n笔记\n博客\n错题\n文件夹\n计算机网络\n2\n标签\n交换机\n以太网交换\n加法\n动态规划\n周度总结\n子网划分\n导数\n广播地址\n思维导图\n数学\n测试\n直通交换\n更多 (22)\nAI 整理建议 (5 条)\n全部\n笔记\n博客\n错题\n\t标题\t类型\t标签\t日期\t操作\n\tTCP流量控制与发送窗口计算\t错题\t\n计算机网络\nTCP协议\n窗口机制\n\t06-23 18:01\t\n编辑\n删除\n\n\t计算机网络体系结构\t笔记\t\n\t06-16 16:37\t\n编辑\n删除\n\n\t1.3 计算机网络性能指标\t笔记\t\n\t06-16 16:24\t\n编辑\n删除\n\n\t1.2 三种交换方式\t笔记\t\n\t06-15 20:18\t\n编辑\n删除\n\n\t1.1 计算机网络与因特网\t笔记\t\n计算机网络\n\t06-15 20:16\t\n编辑\n删除\n\n\t计算机网络思维导图（自顶而下）\t笔记\t\n思维导图\n\t06-15 19:29\t\n编辑\n删除\n\n\tOSPF路由中TTL最小值计算\t错题\t\n计算机网络\nIP路由\nTTL\n\t06-15 13:53\t\n编辑\n删除\n\n\t第一章计算机网络概述：总览\t笔记\t\n\t06-15 12:02\t\n编辑\n删除\n\n\tIP数据报转发与设备选择\t错题\t\n计算机网络\n子网划分\n以太网交换\n\t06-14 16:33\t\n编辑\n删除\n\n\t计算机网络思维导图（从下至上）\t笔记\t\n\t06-14 14:46\t\n编辑\n删除\n\n\t夏夜追凉\t博客\t\n\t06-14 12:38\t\n编辑\n删除\n\n\tIPv4子网广播地址计算\t错题\t\n计算机网络\n子网划分\n广播地址\n\t06-13 04:57\t\n编辑\n删除\n\n\t以太网交换机直通交换转发延迟\t错题\t\n计算机网络\n转发延迟\n以太网交换\n\t06-13 04:56\t\n编辑\n删除",
+    "scrollWidth": 1440,
+    "clientWidth": 1440
+  },
+  "stateBeforeLogout": {
+    "url": "http://localhost:3000/manage/ai/runs",
+    "text": "学习空间\n\n概览\n\n内容管理\n\n草稿\n题目\n错题\n\n知识体系\n\n科目\n知识点\n\n学习计划\n\n复习\n\n资料管理\n\n附件\n\n工具\n\n采集\n后续\nAI\n后续\n\n系统\n\n设置\n\n后续能力\n\n任务\n后续\n搜索\n后续\n分析\n后续\n\n个人学习\n\n学习管理空间\n\n工具 · 后续能力\n\nAI 运行记录\n\n当前版本未开放 AI 运行记录产品页面。\n\n后续能力\n\n当前版本未启用\n\n已有 ai_runs 与 ai_call_logs 数据合同保持不变；本页面不读取、不重试，也不提交人工决定。"
+  },
+  "consoleEntries": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464953984&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616986~115938466~115938468~118012009~118395334~118897920~118897930~119724322~119773332~119793972&sid=1784464954&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1107",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464953984&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616986~115938466~115938468~118012009~118395334~118897920~118897930~119724322~119773332~119793972&sid=1784464954&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=4&tfd=2094",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464953984&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=4&tag_exp=115616986~115938466~115938468~118012009~118395334~118897920~118897930~119724322~119773332~119793972&sid=1784464954&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=user_engagement&_et=2043&tfd=4138",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/mymusic/%E5%AD%99%E7%87%95%E5%A7%BF-180%E5%BA%A6.mp3",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464953984&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115616986~115938466~115938468~118012009~118395334~118897920~118897930~119724322~119773332~119793972&sid=1784464954&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=form_start&ep.form_id=&ep.form_destination=http%3A%2F%2Flocalhost%3A3000%2Fmanage&epn.form_length=3&ep.first_field_id=username&ep.first_field_type=text&epn.first_field_position=1&_et=982&tfd=4138",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464957395&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=8&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938466~115938469~118897920~118897930~119259605~119724322~119896803&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fdashboard&dt=My%20Blog&en=page_view&_ee=1&tfd=283",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464957395&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=8&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115616985~115938466~115938469~118897920~118897930~119259605~119724322~119896803&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fdashboard&dt=My%20Blog&en=user_engagement&_et=1038&tfd=1322",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464957395&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=8&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616985~115938466~115938469~118897920~118897930~119259605~119724322~119896803&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fdashboard&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=2&tfd=1322",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464958643&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=12&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938465~115938468~118897920~118897930~119527020&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fquestions&dt=My%20Blog&en=page_view&_ee=1&tfd=225",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464958643&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=12&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115938465~115938468~118897920~118897930~119527020&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fquestions&dt=My%20Blog&en=user_engagement&_et=1027&tfd=1253",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464958643&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=12&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938465~115938468~118897920~118897930~119527020&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fquestions&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=1&tfd=1253",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464959871&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=9&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938466~115938468~118897920~118897930~119724320~119996999&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fmistakes&dt=My%20Blog&en=page_view&_ee=1&tfd=226",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464959871&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=9&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115938466~115938468~118897920~118897930~119724320~119996999&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fmistakes&dt=My%20Blog&en=user_engagement&_et=1062&tfd=1289",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464959871&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=9&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938466~115938468~118897920~118897930~119724320~119996999&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fmistakes&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=2&tfd=1289",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464961127&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=19&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938465~115938468~118395335~118897920~118897930~119773331&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Freview&dt=My%20Blog&en=page_view&_ee=1&tfd=244",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464961127&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=19&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938465~115938468~118395335~118897920~118897930~119773331&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Freview&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=1&tfd=1281",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464961127&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=19&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115938465~115938468~118395335~118897920~118897930~119773331&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Freview&dt=My%20Blog&en=user_engagement&_et=1036&tfd=1281",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784464962343&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=226344672.1784464954&frm=0&ngs=1&pscdl=noapi&rcb=14&sr=1440x900&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616986~115938465~115938468~118897920~118897930~119709549&sid=1784464954&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fai%2Fruns&dt=My%20Blog&en=page_view&_ee=1&tfd=246",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "errors": [
+    {
+      "status": 401,
+      "url": "http://localhost:8000/api/auth/me"
+    }
+  ]
+}
