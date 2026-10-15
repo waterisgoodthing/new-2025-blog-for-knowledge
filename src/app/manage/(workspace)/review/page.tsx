@@ -1,15 +1,8 @@
-import { ManagePageHeader } from '../../components/manage-page-header'
-import { ReviewQueue } from './review-queue'
+'use client'
+
+import { Uiv2ReviewSection, useReviewQueueModel } from '@/features/ui-v2/review'
 
 export default function ManageReviewPage() {
-  return (
-    <div className='space-y-8'>
-      <ManagePageHeader
-        eyebrow='学习计划'
-        title='复习'
-        description='处理已确认错题的到期复习与不可变复习记录。'
-      />
-      <ReviewQueue />
-    </div>
-  )
+	const { model, refresh } = useReviewQueueModel()
+	return <Uiv2ReviewSection model={model} onRetry={refresh} />
 }

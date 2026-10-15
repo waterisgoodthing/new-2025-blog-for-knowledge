@@ -1,5 +1,8 @@
-import { DashboardContent } from './dashboard-content'
+'use client'
+
+import { Uiv2DashboardSection, useDashboardModel } from '@/features/ui-v2/dashboard'
 
 export default function ManageDashboardPage() {
-  return <DashboardContent />
+	const { model, refresh } = useDashboardModel()
+	return <Uiv2DashboardSection model={model} onRetry={refresh} />
 }
