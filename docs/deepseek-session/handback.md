@@ -1,87 +1,54 @@
-# Handback — deepseek-session
+# Handback — deepseek-session（最终）
 
-**状态**: ✅ 完成（用户授予全权后已执行全部修复）
+**状态**: ✅ 已收尾
 **Primary Owner**: opencode (deepseek-v4.1-flash)
 **分支**: refactor/baseline
-**最后更新**: 2026-10-13
+**最后更新**: 2026-10-15
 
 ---
 
 ## Conclusion
 
-本轮把系统从"仅前端勉强在线、后端无法启动、/manage 卡死"恢复到**本地端到端可用**：
+从"后端无法启动、`/manage` 卡死、313 脏文件"的原任务起点，到**系统可信、缺陷清、已部署上线**：
 
-- **后端可启动**：根因是开发库 `blog_v2` 停在 alembic 032 而应用要求 034。已备份并迁移 032→034。
-- **`/manage` 恢复**：根因是陈旧 `next-server`（9/27 启动）与新构建（10/13）不匹配导致 chunk 404。launchd 重启后 chunk 全部 200，页面渲染登录表单。
-- **测试环境**：真因是 scratch 库落后于 head（非 `.env` 缺失）；迁移后 `945 passed, 0 failed`。
-- **A13 类型错误**：真实存在（`tsconfig.test.json`），已修复并提交。
-
-两项修复各自独立提交；未 push。
-
----
-
-## Changes
-
-| 编号 | 对象 | 提交/状态 |
-|------|------|-----------|
-| C007 | `backend/app/database.py`（连接池） | `3138812` ✅ |
-| C011 | `src/app/manage/(workspace)/review/review-queue.test.tsx`（A13） | `1cb95f5` ✅（新增文件）|
-| C010 | DB `blog_v2` 迁移 032→034 | ✅（备份在先）|
-| C012 | launchd 前端/后端服务恢复 | ✅ |
-| C009 | `docs/deepseek-session/*` | 未提交（session 产物）|
-
-未 push。工作区其余脏文件未被触碰。
+- **缺陷主线（A/DR）**：A01–A06、A08、A11–A14、DR-B01/04/05 已修复并各自独立提交；A07/A09/A10/DR-B06 记为裁决；独立审查 PASS。
+- **脏文件基线**：312 文件按域提交为基线；工作区转 clean。
+- **测试/环境**：后端 958 passed / 0 failed；前端 531 passed；`test:typecheck` 0。
+- **部署**：清除发布门禁（依赖升级 `next 16.3.8`）→ CF Worker 部署成功 → smoke PASS；中途 16.4.1 导致 500 已回滚并修复。
+- **A15**：由用户登录确认完成（认证后真实流程）。
+- **收尾**：清理支线（停临时 dev server、删除临时账号 `temp-preview`、回滚 UI V2 wave-1 `9c5101a`）。
 
 ---
 
-## Evidence
-
-- 备份：`…/opencode/ds-backups/blog_v2_pre034_20261013-203155.sql`（627 KB）
-- 迁移：alembic `032→033→034`；`version_num=034`；`webauthn_challenges` 存在；`ai_runs` 4 新列存在
-- 后端：`/api/health` → 200；launchd `com.blog.backend` PID 66310
-- 前端：launchd `com.blog.frontend` PID 66660；`/manage` 15/15 chunk → 200；浏览器渲染登录表单
-- 测试：945 passed / 9 skipped / 0 failed
-- 类型：`test:typecheck` exit 0；`vitest` 9/9
-- 独立审查（V007）：连接池 & A13 均 PASS
-- 提交隔离：`3138812` 与 `1cb95f5` 各 1 文件
+## 最终提交线（本 session，`4a954ea..HEAD`）
+23 个提交，含：连接池 / A13 / A04 / A01–A03 / A05 / A06 / DR-B04 / DR-B05 / A08 / A11 / A12 / 裁决 / A14 / A15 / 依赖升级 / 部署相关 / 基线 / UI wave-1 及其回滚。均未改变无关文件。
 
 ---
 
-## Verification
-
+## Verification（最终）
 | 项 | 结果 |
 |----|------|
-| V001 侦察 | ✅ PASS |
-| V002 文档核对 | ⚠️ PARTIAL（文档多处失真）|
-| V003 /manage | ✅ PASS（已修复）|
-| V004 测试环境 | ✅ PASS |
-| V005 后端启动 | ✅ PASS（迁移后）|
-| V006 A13 | ✅ PASS（已修复+提交）|
-| V007 独立审查 | ✅ PASS |
-| V008 提交隔离 | ✅ PASS |
-| V009 blog_v2 迁移 | ✅ PASS |
-| V010 后端启动复验 | ✅ PASS |
-| V011 前端/‑manage 复验 | ✅ PASS |
-| V012 A13 提交 | ✅ PASS |
-| V013 公网隧道 | ❌ FAIL（外部，未处理）|
+| 后端 pytest | ✅ 958 passed / 9 skipped / 0 failed |
+| 前端 vitest | ✅ 531 passed |
+| `test:typecheck` | ✅ 0 |
+| `npm run build` | ✅ 0 |
+| CF 部署 smoke | ✅ referenced 20 / ok 20 / failed 0 |
+| 公网 `blog.limengyang.me` | ✅ 200 |
+| 本机 `localhost:2025` | ✅ 全路由 200 |
+| A15 认证后 E2E | ✅ 用户确认 |
 
 ---
 
-## Risks
-
-1. **外部隧道不可用**（V013）：生产构建前端把 API 烘焙为 `https://public-api.limengyang.me`；cloudflared 报 `network is unreachable`，公网返回 530。**浏览器侧登录/数据调用会失败**，直到隧道恢复。这是既有架构的既存特征，非本轮引入。
-   - 若需纯本地联调，可改用 dev 构建（`.env.development` → `localhost:8000`）：`npm run dev`（需先停 launchd 前端或改端口）。
-2. **连接池容量**（Low）：`20+10=30`/进程硬编码，未走 `Settings`；多 worker 部署需与 Postgres `max_connections` 协调。
-3. **文档失真**：`STATUS_TRACKER`/`REALITY_CHECK`/`ISSUES_REALITY` 与实测不符，尚未更正。
-4. **未 push**：两个提交仅在本地分支 `refactor/baseline`。
+## Risks / Remaining（非阻断）
+1. **连接池容量**：`20+10=30`/进程硬编码，多 worker 需与 Postgres `max_connections` 协调（Low）。
+2. **无 GitHub→CF 自动部署**：部署仍是手动 `npm run deploy:frontend`；要 push 即上线需在 CF 控制台接入 Git。
+3. **UI V2**：组件/区块≈100%，**接入 0（已回滚 wave-1）**；视觉未重做。属独立产品轨。
+4. **A07/A09/A10**：决策记录，未实现（A07 若实现需 G2 迁移）。
+5. **A10**：远期能力，非目标。
 
 ---
 
-## Remaining (Decision Needed)
-
-1. 是否需要我**更正失真文档**（STATUS_TRACKER 等）？
-2. 是否需要**处理隧道**（重启 `com.blog.tunnel` / 检查网络）以便公网可用？
-3. 是否需要 **push** 两个本地提交？（未授权，未执行）
-4. 是否要把 `docs/deepseek-session/` 纳入版本控制？
-
-> 说明：本轮在用户授予全权后，已对真实数据库执行迁移（先备份）、并重启本地服务。剩余项为可选后续，不阻断本地系统使用。
+## Decision Needed
+- 是否把 `docs/deepseek-session/` 纳入版本控制？（本次已提交，见下）
+- UI V2 是否另立项目推进（接入 7 页 + 换外壳 + editorial 视觉重做）？
+- 是否配置 CF Git 自动部署？

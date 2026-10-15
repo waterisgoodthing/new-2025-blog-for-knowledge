@@ -98,3 +98,23 @@ src/app/manage/(workspace)/review/review-queue.test.tsx → 存在
 
 **证据**: 见 verification.md V009–V012。
 
+---
+
+## [2026-10-15] 回归原主线 → 收尾
+
+**状态**: 完成
+**输入**: 用户"先回归到原主线 / 从这个对话起的原任务文档开始 / A15 已完成，你来进行收尾"。
+
+**处置**（清理本对话后段支线，回到原任务范围）:
+1. 停止临时 dev server（`localhost:3000`）。
+2. 删除临时管理员 `temp-preview`（`blog_v2`）。
+3. 回滚 UI V2 wave-1 提交 → `9c5101a`（`revert 4f5aa31`）；`tsc 0` / `vitest 531 passed` / `build 0` 复核通过。
+4. 重启 launchd 前端（`:2025`）→ 全路由 200。
+5. A15 由**用户登录确认完成**。
+6. 更新本 session 文档（handback/verification/session-log）并入库。
+
+**说明**: 部署（CF）、UI V2、临时凭证等属本对话后段支线，一并剥离或标注为独立轨。
+
+**最终**: 原任务主线（系统可信 + 缺陷清 + 部署上线）收尾完成；UI V2 接入为独立产品轨。
+
+
