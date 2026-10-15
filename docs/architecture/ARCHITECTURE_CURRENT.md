@@ -2,6 +2,13 @@
 
 日期：2026-10-09。工作区基线与范围见 [概览](../PROJECT_OVERVIEW.md)。本文描述当前源码，不把目标设计或历史测试当作当前运行事实。重要缺陷见 [审查](../audits/ARCHITECTURE_AUDIT.md)，静态目录/API全表见 [源码地图](../audits/CURRENT_SOURCE_MAP.md)。
 
+> **2026-10-15 运行事实回写**
+> - 数据库：开发库 `blog_v2` 已迁移至 **alembic 034**（`EXPECTED_ALEMBIC_REVISION="034"` 满足）；本文 §8 的 `NOT_VERIFIED` 现已有本地证据。
+> - 测试：后端 `pytest` **958 passed / 9 skipped / 0 failed**（经 scratch 守卫）；前端 `test:typecheck` 0、`vitest` **531 passed**；`npm run build` 成功。
+> - 运行：后端 `/api/health` 200；前端 `/manage` 正常（此前"加载中"已定位为陈旧运行产物并修复）。
+> - 部署：前端 CF Worker 已部署且 post-deploy smoke PASS（`blog.limengyang.me` 200）。
+> - 相关缺陷 A01–A06/A08/A11–A13 已在本轮修复（见 [审查](../audits/ARCHITECTURE_AUDIT.md) 与 `docs/domain-decisions-a07-a10.md`）。
+
 ## 1. 技术与交付边界
 
 |层|当前实现|证据|
