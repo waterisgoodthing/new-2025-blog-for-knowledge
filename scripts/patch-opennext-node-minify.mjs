@@ -9,7 +9,7 @@ const root =
 const packageDir = join(root, 'node_modules', '@opennextjs', 'aws')
 const packageJsonPath = join(packageDir, 'package.json')
 const targetPath = join(packageDir, 'dist', 'minimize-js.js')
-const expectedVersion = '4.1.0'
+const expectedVersion = '4.1.10'
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 if (packageJson.version !== expectedVersion) {
