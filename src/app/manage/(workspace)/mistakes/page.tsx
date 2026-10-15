@@ -1,26 +1,15 @@
-'use client'
-
-import { useState } from 'react'
-
-import type { MistakeFilterModel } from '@/contracts/ui-v2/mistake'
-import { Uiv2MistakesSection, useMistakesModel } from '@/features/ui-v2/mistakes'
-
-const DEFAULT_FILTER: MistakeFilterModel = {
-	status: 'all',
-	reason: 'all',
-	knowledgePointId: null,
-	query: '',
-}
+import { ManagePageHeader } from '../../components/manage-page-header'
+import { MistakeWorkspace } from './components/mistake-workspace'
 
 export default function ManageMistakesPage() {
-	const { model, refresh } = useMistakesModel()
-	const [filter, setFilter] = useState<MistakeFilterModel>(DEFAULT_FILTER)
-	return (
-		<Uiv2MistakesSection
-			model={model}
-			filter={filter}
-			onFilterChange={setFilter}
-			onRetry={refresh}
-		/>
-	)
+  return (
+    <div className='space-y-8'>
+      <ManagePageHeader
+        eyebrow='内容管理'
+        title='错题'
+        description='查看已确认的私有错题与复盘入口。'
+      />
+      <MistakeWorkspace />
+    </div>
+  )
 }
