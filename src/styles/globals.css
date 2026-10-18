@@ -1,8 +1,7 @@
 @import 'tailwindcss';
 @import 'katex/dist/katex.min.css';
-@import './theme.css';
-@import './article.css';
 @import '../components/ui-v2/tokens.css';
+@import './article.css';
 
 @plugin 'tailwindcss-animate';
 
@@ -17,13 +16,36 @@
 	html {
 		@apply text-primary bg-bg h-full leading-tight;
 		scroll-behavior: smooth;
+		cursor: url(/images/cursor-precise.svg) 0 0, auto;
 	}
 
 	body {
 		@apply h-full bg-none;
 	}
+
 	* {
 		@apply border-border;
+	}
+
+	/* 非输入元素继承自定义鼠标；输入框、文本域、可编辑区保留系统文本光标 */
+	*:not(input, textarea, select, [contenteditable='true'], [contenteditable='true'] *) {
+		cursor: inherit !important;
+	}
+
+	/* 保留交互状态的视觉反馈（pointer 和 not-allowed 用系统默认） */
+	button:not(:disabled),
+	a,
+	[role="button"],
+	[onclick],
+	input[type="checkbox"],
+	input[type="radio"],
+	select {
+		cursor: pointer !important;
+	}
+
+	:disabled,
+	[aria-disabled="true"] {
+		cursor: not-allowed !important;
 	}
 
 	input:focus,
@@ -32,10 +54,6 @@
 	}
 	input:placeholder-shown {
 		text-overflow: ellipsis;
-	}
-
-	button {
-		@apply cursor-pointer;
 	}
 
 	.range-track {

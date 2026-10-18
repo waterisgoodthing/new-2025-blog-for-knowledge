@@ -16,6 +16,8 @@
 |[CURRENT_REVIEW_EVIDENCE](audits/CURRENT_REVIEW_EVIDENCE.md)|实际命令/结果、审查分工、保护与链接验证|
 |[CURRENT_SOURCE_MAP](audits/CURRENT_SOURCE_MAP.md)|42表声明/197router decorators/53page文件静态地图|
 |[DOCUMENTATION_INVENTORY](audits/DOCUMENTATION_INVENTORY.md)|全部技术Markdown逐文件分类、所有workflow目录和重复文本组|
+|[UI技术规格](ui-technical-specification/04-execution/refactoring-roadmap.md)|UI重构现状/目标/差距/路线；Phase 1视觉路线已确认（2026-10-17），后续Phase需单独授权|
+|[光标修复记录](cursor-hotspot-fix.md)|自定义光标与导航hover偏移修复及遗留项|
 |[AI governance](architecture/ai-governance.md)|现行candidate/confirm合同、退役loose绑定与未闭合事项|
 |[AGENTS](../AGENTS.md)、[agents](../agents/README.md)|现行工作规则与授权边界；本轮未改Agent规则|
 |[README](../README.md)、[CONTRIBUTING](../CONTRIBUTING.md)、[SECURITY](../SECURITY.md)|项目使用/贡献/安全入口；操作前验证环境/目标|

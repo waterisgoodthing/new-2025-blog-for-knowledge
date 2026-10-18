@@ -160,7 +160,12 @@ export default function NavCard() {
 										className='pointer-events-none absolute max-w-[230px] rounded-full border'
 										layoutId='nav-hover'
 										initial={false}
-										animate={{ top: hoveredIndex * (itemHeight + 4), left: 0, width: '100%', height: itemHeight }}
+										animate={{
+											top: hoveredIndex * (itemHeight + 4) + (hoveredIndex >= publicContentItems.length + 1 ? 28 : 0),
+											left: 0,
+											width: '100%',
+											height: itemHeight
+										}}
 										transition={{
 											type: 'spring',
 											stiffness: 400,
@@ -187,7 +192,8 @@ export default function NavCard() {
 									<div className='text-secondary px-4 pt-2 pb-1 text-xs uppercase'>互动探索</div>
 
 									{interactionItems.map((item, index) => {
-										const flatIndex = publicContentItems.length + index
+										// 标题占了一个虚拟行位置，所以 +1
+										const flatIndex = publicContentItems.length + 1 + index
 										return (
 											<Link
 												key={item.href}

@@ -46,7 +46,7 @@ const COLOR_PRESETS: ColorPreset[] = [
 	{
 		name: '晴空',
 		theme: {
-			colorBrand: '#2fcbe7',
+			colorBrand: '#3db8a8',
 			colorPrimary: '#5B423F',
 			colorSecondary: '#8b7667',
 			colorBrandSecondary: '#eec25e',
