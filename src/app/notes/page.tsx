@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Suspense, useState, useMemo, useRef, useEffect } from 'react'
-import { motion } from 'motion/react'
 import { MoreHorizontal, GripVertical, ExternalLink, Pencil, Trash2, Copy, ChevronRight, X } from 'lucide-react'
 import { useNoteIndex } from '@/hooks/use-note-index'
 import { cn } from '@/lib/utils'
@@ -14,6 +13,7 @@ import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
 import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
 import { EmptyState } from '@/components/empty-state'
 import { AsyncStatePanel } from '@/components/async-state-panel'
+import { Uiv2Badge, Uiv2Button, Uiv2PageHeader } from '@/components/ui-v2'
 import { moveNoteToFolder, listFolders, findFolderPath, type FolderNode } from '@/lib/api/folders'
 import { deleteNote } from '@/lib/api/notes'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -23,12 +23,11 @@ import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { markRenderReady } from '@/lib/render-readiness'
 
 const typeLabels = { note: '笔记', blog: '博客', mistake: '错题' }
-const typeColors = { note: 'bg-blue-500/20 text-blue-600', blog: 'bg-green-500/20 text-green-600', mistake: 'bg-red-500/20 text-red-600' }
 const diffColors = { easy: 'bg-emerald-500/20 text-emerald-600', medium: 'bg-yellow-500/20 text-yellow-600', hard: 'bg-red-500/20 text-red-600' }
 
 export default function NotesPage() {
 	return (
-		<Suspense fallback={<div className='py-20 text-center text-gray-400'>加载中...</div>}>
+		<Suspense fallback={<div className='py-20 text-center' style={{ color: 'var(--editorial-text-tertiary)' }}>加载中...</div>}>
 			<NotesPageContent />
 		</Suspense>
 	)
@@ -196,10 +195,14 @@ function NotesPageContent() {
 	}
 
 	return (
-		<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
-			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
-				笔记
-			</motion.h1>
+		<main
+			className='mx-auto max-w-6xl rounded-[16px] px-4 py-8 sm:px-6'
+			data-render-state={renderState}
+			data-surface='editorial'
+			style={{ background: 'var(--editorial-bg)', color: 'var(--editorial-text-primary)' }}>
+			<div className='mb-6'>
+				<Uiv2PageHeader title='笔记' />
+			</div>
 
 			<div className='flex gap-6'>
 				<KnowledgeSidebar
@@ -227,7 +230,9 @@ function NotesPageContent() {
 								setPage(1)
 							}}
 							placeholder='搜索...'
-							className='rounded-xl border border-white/40 bg-white/60 px-4 py-2 backdrop-blur-sm outline-none focus:border-[var(--color-brand)]'
+							aria-label='搜索笔记'
+							className='rounded-xl border px-4 py-2 outline-none focus:border-[var(--brand)]'
+							style={{ background: 'var(--editorial-surface)', borderColor: 'var(--editorial-border)', color: 'var(--editorial-text-primary)' }}
 						/>
 						<div className='flex gap-2'>
 							{['', 'note', 'blog', 'mistake'].map(t => (
@@ -240,10 +245,12 @@ function NotesPageContent() {
 										handleFolderChange(null)
 										setActiveTag(null)
 									}}
-									className={cn(
-										'rounded-full px-3 py-1 text-sm transition-colors',
-										type === t ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 hover:bg-white/80'
-									)}>
+									className={cn('rounded-full border px-3 py-1 text-sm transition-colors', type === t && 'font-medium')}
+									style={{
+										background: type === t ? 'var(--brand, #3db8a8)' : 'var(--editorial-surface)',
+										borderColor: 'var(--editorial-border)',
+										color: type === t ? '#ffffff' : 'var(--editorial-text-secondary)'
+									}}>
 									{t ? typeLabels[t as keyof typeof typeLabels] : '全部'}
 								</button>
 							))}
@@ -252,11 +259,9 @@ function NotesPageContent() {
 							(() => {
 								const createAction = getCreateAction()
 								return (
-									<Link
-										href={createAction.href}
-										className='ml-auto rounded-xl bg-[var(--color-brand)] px-4 py-2 text-sm text-white transition-transform hover:scale-105 active:scale-95'>
+									<Uiv2Button href={createAction.href} className='ml-auto px-4 py-2 text-sm'>
 										{createAction.label}
-									</Link>
+									</Uiv2Button>
 								)
 							})()}
 					</div>
@@ -265,25 +270,25 @@ function NotesPageContent() {
 					{isAdmin && showDashboard && <WeeklySummaryCard />}
 
 					{folderPath && (
-						<div className='mb-4 flex items-center gap-1 text-sm text-gray-500'>
+						<div className='mb-4 flex items-center gap-1 text-sm' style={{ color: 'var(--editorial-text-secondary)' }}>
 							<button
 								type='button'
 								onClick={() => handleFolderChange(null)}
-								className='rounded px-1 transition-colors hover:bg-white/60 hover:text-gray-700'>
+								className='rounded px-1 transition-colors hover:bg-[var(--editorial-surface)] hover:text-[var(--editorial-text-primary)]'>
 								全部
 							</button>
 							{folderPath.map((node, i) => (
 								<span key={node.id} className='flex items-center gap-1'>
-									<ChevronRight size={12} className='text-gray-300' />
+									<ChevronRight size={12} className='text-[var(--editorial-text-tertiary)]' />
 									{i < folderPath.length - 1 ? (
 										<button
 											type='button'
 											onClick={() => handleFolderChange(node.id)}
-											className='rounded px-1 transition-colors hover:bg-white/60 hover:text-gray-700'>
+											className='rounded px-1 transition-colors hover:bg-[var(--editorial-surface)] hover:text-[var(--editorial-text-primary)]'>
 											{node.name}
 										</button>
 									) : (
-										<span className='font-medium text-gray-700'>{node.name}</span>
+										<span className='font-medium text-[var(--editorial-text-primary)]'>{node.name}</span>
 									)}
 								</span>
 							))}
@@ -291,7 +296,7 @@ function NotesPageContent() {
 								type='button'
 								onClick={() => handleFolderChange(null)}
 								aria-label='清除文件夹筛选'
-								className='ml-1 rounded p-0.5 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'>
+								className='ml-1 rounded p-0.5 text-[var(--editorial-text-tertiary)] transition-colors hover:bg-[var(--editorial-surface)] hover:text-[var(--editorial-text-secondary)]'>
 								<X size={12} />
 							</button>
 						</div>
@@ -314,7 +319,7 @@ function NotesPageContent() {
 							}
 						/>
 					) : (
-						<div role='region' aria-label='笔记结果' className='space-y-3'>
+						<div role='region' aria-label='笔记结果' className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 							{data?.items.map(item => (
 								<div
 									key={item.id}
@@ -335,9 +340,16 @@ function NotesPageContent() {
 									className={cn(draggingSlug === item.slug && 'opacity-50')}>
 									<Link
 										href={getContentDetailHref(item.type, item.slug) + (activeFolderId ? `?folder_id=${encodeURIComponent(activeFolderId)}` : '')}
-										className='block rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm transition-all hover:bg-white/80 hover:shadow-sm'>
+										className='block h-full rounded-xl border p-4 transition-shadow hover:shadow-md'
+										style={{
+											background: 'var(--editorial-surface)',
+											borderColor: 'var(--editorial-border)',
+											boxShadow: 'var(--ui-shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.04))'
+										}}>
 										<div className='mb-2 flex items-center gap-2'>
-											<span className={cn('rounded-full px-2 py-0.5 text-xs', typeColors[item.type])}>{typeLabels[item.type]}</span>
+											<span className='shrink-0'>
+												<Uiv2Badge text={typeLabels[item.type]} tone={item.type} />
+											</span>
 											{item.difficulty && <span className={cn('rounded-full px-2 py-0.5 text-xs', diffColors[item.difficulty])}>{item.difficulty}</span>}
 											{item.subject && (
 												<span className='max-w-[120px] truncate rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>{item.subject}</span>
@@ -350,19 +362,30 @@ function NotesPageContent() {
 														e.stopPropagation()
 														setMoveTarget({ slug: item.slug, title: item.title })
 													}}
-													className='ml-auto shrink-0 rounded-md p-1 text-gray-400 transition-colors hover:bg-white/60 hover:text-gray-600'
+													className='ml-auto shrink-0 rounded-md p-1 text-[var(--editorial-text-tertiary)] transition-colors hover:bg-[var(--editorial-surface-elevated)] hover:text-[var(--editorial-text-secondary)]'
 													aria-label='移动到文件夹'>
 													<MoreHorizontal size={14} />
 												</button>
 											)}
-											<span className='shrink-0 text-xs text-gray-400'>{dayjs(item.updated_at).format('YYYY-MM-DD')}</span>
+											<span className='shrink-0 text-xs' style={{ color: 'var(--editorial-text-tertiary)' }}>
+												{dayjs(item.updated_at).format('YYYY-MM-DD')}
+											</span>
 										</div>
-										<h3 className='truncate font-medium'>{item.title}</h3>
-										{item.summary && <p className='mt-1 line-clamp-2 text-sm text-gray-500'>{item.summary}</p>}
+										<h3 className='truncate font-medium' style={{ color: 'var(--editorial-text-primary)' }}>
+											{item.title}
+										</h3>
+										{item.summary && (
+											<p className='mt-1 line-clamp-2 text-sm' style={{ color: 'var(--editorial-text-secondary)' }}>
+												{item.summary}
+											</p>
+										)}
 										{item.tags.length > 0 && (
 											<div className='mt-2 flex flex-wrap gap-1'>
 												{item.tags.map(tag => (
-													<span key={tag.id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
+													<span
+														key={tag.id}
+														className='rounded px-1.5 py-0.5 text-xs'
+														style={{ background: 'var(--editorial-surface-elevated)', color: 'var(--editorial-text-secondary)', border: '1px solid var(--editorial-divider)' }}>
 														{tag.name}
 													</span>
 												))}
@@ -380,18 +403,25 @@ function NotesPageContent() {
 
 					{data && data.total > 20 && (
 						<div className='mt-6 flex justify-center gap-2'>
-							<button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>
+							<Uiv2Button
+								variant='ghost'
+								disabled={page <= 1}
+								onClick={() => setPage(p => p - 1)}
+								className='text-sm'
+								style={{ minHeight: 32, paddingLeft: 12, paddingRight: 12 }}>
 								上一页
-							</button>
-							<span className='px-3 py-1 text-sm text-gray-500'>
+							</Uiv2Button>
+							<span className='px-3 py-1 text-sm' style={{ color: 'var(--editorial-text-secondary)' }}>
 								{page} / {Math.ceil(data.total / 20)}
 							</span>
-							<button
+							<Uiv2Button
+								variant='ghost'
 								disabled={page >= Math.ceil(data.total / 20)}
 								onClick={() => setPage(p => p + 1)}
-								className='rounded-lg bg-white/60 px-3 py-1 text-sm disabled:opacity-40'>
+								className='text-sm'
+								style={{ minHeight: 32, paddingLeft: 12, paddingRight: 12 }}>
 								下一页
-							</button>
+							</Uiv2Button>
 						</div>
 					)}
 				</div>

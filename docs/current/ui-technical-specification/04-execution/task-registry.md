@@ -12,11 +12,11 @@
 | VSC-02-B | 创建 Demo 页 | 1 | 3h | P0 | VSC-02-A | ✅ 已完成 |
 | VSC-02-C | 更新全局样式 | 1 | 1h | P0 | VSC-02-A | ✅ 已完成 |
 | VSC-02-D | 废弃 theme.css | 1 | 0.5h | P0 | VSC-02-C | ✅ 已完成 |
-| VSC-03 | 实现 useOverlay Hook | 2 | 4h | P0 | - | 📋 待执行 |
-| VSC-04 | 重构 Modal/Drawer | 2 | 6h | P0 | VSC-03 | 📋 待执行 |
-| VSC-05 | 重构 ContextMenu | 2 | 4h | P0 | VSC-03 | 📋 待执行 |
-| VSC-06 | 试点接入 — Dashboard | 2 | 8h | P0 | VSC-04 | 📋 待执行 |
-| VSC-07 | 试点接入 — Notes | 2 | 6h | P0 | VSC-04 | 📋 待执行 |
+| VSC-03 | 实现 useOverlay Hook | 2 | 4h | P0 | - | ✅ 已完成 |
+| VSC-04 | 重构 Modal/Drawer | 2 | 6h | P0 | VSC-03 | ✅ 已完成 |
+| VSC-05 | 重构 ContextMenu | 2 | 4h | P0 | VSC-03 | ✅ 已完成 |
+| VSC-06 | 试点接入 — Dashboard | 2 | 8h | P0 | VSC-04 | ✅ 已完成 |
+| VSC-07 | 试点接入 — Notes | 2 | 6h | P0 | VSC-04 | ✅ 已完成 |
 | VSC-09 | 实现 PublicTopNav | 3 | 8h | P0 | VSC-02-D | 📋 待执行 |
 | VSC-10 | 实现 AdminSidebar | 3 | 8h | P0 | VSC-02-D | 📋 待执行 |
 | VSC-11 | 实现 MobileDrawer | 3 | 6h | P0 | VSC-04 | 📋 待执行 |
@@ -203,8 +203,13 @@
    - 组合 useFocusTrap + useZIndex
 
 **验证**：
-- [ ] 单元测试覆盖
-- [ ] TypeScript 类型完整
+- [x] 单元测试覆盖（`src/hooks/use-overlay.test.tsx`，17 passed）
+- [x] TypeScript 类型完整（无 `any`）
+
+**实现备注**：
+- 文件名按仓库 kebab-case 落地为 `src/hooks/use-overlay.ts`（单文件导出 `useOverlay` / `useFocusTrap` / `useZIndex` / `usePrefersReducedMotion`），与 prompt 一致，未按本文档早期写法拆成三个 camelCase 文件
+- z-index 按嵌套深度递增（base 1300 / step 10），深度优先于类型，保证 Drawer 内打开的 Modal 位于其上层
+- 已知未实现项：背景 `inert` 隔离（需要 portal 容器识别，留待 Phase 4）
 
 **工时**：4h
 
@@ -240,9 +245,9 @@
 5. Backdrop 点击关闭（可配置）
 
 **验证**：
-- [ ] axe-core 检测通过
-- [ ] 键盘导航测试
-- [ ] 组件测试
+- [x] 可访问性断言通过（以 Vitest role/aria/键盘断言替代 axe-core，未引入依赖）
+- [x] 键盘导航测试（`src/components/ui-v2/overlays.test.tsx`，21 passed）
+- [x] 组件测试
 
 **工时**：6h
 
@@ -268,9 +273,9 @@
    - 自动翻转方向
 
 **验证**：
-- [ ] axe-core 检测通过
-- [ ] 键盘导航测试
-- [ ] 边界位置测试
+- [x] 可访问性断言通过（role=menu/menuitem + 键盘断言替代 axe-core）
+- [x] 键盘导航测试（`src/components/ui-v2/context-menu.test.tsx`，28 passed）
+- [x] 边界位置测试（`computeMenuPlacement` 纯函数：右/下翻转与双轴 clamp）
 
 **工时**：4h
 
@@ -278,7 +283,7 @@
 
 ### VSC-06：试点接入 — Dashboard
 
-**文件**：`src/app/dashboard/page.tsx`
+**文件**：`src/app/manage/(workspace)/dashboard/page.tsx`（实际路径；本文档早期写作 `src/app/dashboard/page.tsx` 有误）
 
 **任务**：
 1. 替换组件：
@@ -297,10 +302,12 @@
 3. 保持现有功能（数据不变）
 
 **验证**：
-- [ ] 功能回归测试
-- [ ] 视觉验证（截图对比）
-- [ ] 响应式验证
-- [ ] TypeScript 0 errors
+- [x] 功能回归测试（dashboard 目录 4 files / 22 tests passed）
+- [x] 视觉验证（`assets/phase2-dashboard-desktop.png` / `phase2-dashboard-mobile.png`）
+- [x] 响应式验证
+- [x] TypeScript 0 errors
+
+**实现备注**：页面内不存在弹窗，故「Modal 替换」项无对象；改用 `Uiv2PageHeader` / `Uiv2Card`×4 / `Uiv2Badge`×3 / `Uiv2Button`（新增 `href` 支持）+ `--admin-*` token。
 
 **工时**：8h
 
@@ -326,13 +333,55 @@
    - Mobile：1 列
 
 **验证**：
-- [ ] 功能回归测试
-- [ ] 视觉验证
-- [ ] 响应式验证
+- [x] 功能回归测试（`src/app/notes/page.test.tsx` 3 passed）
+- [x] 视觉验证（`assets/phase2-notes-desktop.png` / `phase2-notes-mobile.png`）
+- [x] 响应式验证（浏览器实测 1440→3 列 / 800→2 列 / 390→1 列）
 
 **工时**：6h
 
 ---
+
+---
+
+## Phase 2 完成记录（2026-10-18）
+
+**状态**：PASS
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| 类型 | `npx tsc --noEmit` | 0 errors |
+| 测试 | `npx vitest run` | 74 files / **606 passed**（基线 531 + 新增 75） |
+| 构建 | `npm run build` | 成功，44 静态页 |
+| 空白 | `git diff --check` | clean |
+
+**浏览器实测**（生产构建 + Playwright，API 打桩）：
+
+| 页面 | 视口 | 结果 |
+|------|------|------|
+| `/notes` | 1440 | 3 列，editorial bg `rgb(245,241,235)`、卡片 `rgb(255,254,248)` |
+| `/notes` | 800 | 2 列 |
+| `/notes` | 390 | 1 列 |
+| `/manage/dashboard` | 1440 | admin 渐变 `#f0fffe→#f5fbfb`，文字 `rgb(45,62,60)`，4 Card / 3 Badge / 1 Button |
+
+**独立审查（只读子代理）后的修复**：
+- Tab 陷阱可逃逸：焦点候选现在过滤 `inert` / `hidden` / `aria-hidden` / CSS 不可见 / `tabindex="-1"`（Tab 用 `tabbableOnly`，ARIA 菜单roving仍可编程聚焦）
+- `initialFocusRef` 被 `getInitialFocus` 覆盖：改为显式 ref 优先
+- 非 LIFO 关闭时抢焦点：仅当焦点仍属于本 overlay 才归还
+- 拖拽释放到遮罩会误关（可能丢表单输入）：按 pointerdown 起点武装遮罩关闭
+- 首帧 z-index 错层（backdrop 1299 < Drawer 1300）：栈提交改为 `useLayoutEffect`（SSR 安全回退）
+- ContextMenu：`variant:'danger'` 未分组会被排到首位 → 按 variant 归入 danger 组；`querySelector` id 转义；移除永不执行的 exit 动画；长菜单 `max-height + overflow`
+- `.uiv2-*` 为非分层 CSS，会压过 Tailwind 工具类 → `Uiv2Button` 新增 `style` 覆盖，Dashboard CTA 实测 44px、分页 32px
+- Notes 搜索框补 `aria-label='搜索笔记'`
+
+**偏离与说明**：
+1. axe-core 未引入（依赖需批准），可访问性以 role/aria/键盘断言替代。
+2. `useOverlay` 为单文件（kebab-case），未按本文档拆成 `useOverlay.ts`/`useFocusTrap.ts`/`useZIndex.ts`。
+3. 嵌套 Tab 陷阱只由最上层 overlay 持有（portal 为兄弟节点，互不包含，否则会互相抢焦点）；已加回归测试。
+4. Notes 页仍使用旧 `context-menu.tsx`（VSC-05 明确不迁移消费者，Phase 4 处理）。
+5. 旧 `dialog-modal.tsx` / `drawer.tsx` 的 18 处消费者未动。
+6. 浏览器验证时仓库常驻 dev 服务（:2025）因 `.next/dev` 缓存被并发写入返回 500，改用生产构建在 :3026 验证；非代码缺陷。
+7. Notes 列表 API 数据在验证脚本中来自本地后端真实响应后打桩（dev server 源不在后端 CORS 白名单）。
+
 
 ## Phase 3：Navigation 重构（36h）
 

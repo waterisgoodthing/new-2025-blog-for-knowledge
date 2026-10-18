@@ -17,6 +17,19 @@ export type { Uiv2PageHeaderProps } from './PageHeader'
 export { Uiv2PageStateView } from './PageStateView'
 export type { Uiv2PageStateViewProps } from './PageStateView'
 export { Uiv2DueBadge, Uiv2DifficultyBadge, Uiv2SubjectBadge, Uiv2SourceBadge } from './DomainBadges'
+export { Uiv2Modal } from './Modal'
+export type { Uiv2ModalProps, Uiv2ModalSize } from './Modal'
+export { Uiv2Drawer } from './Drawer'
+export type { Uiv2DrawerProps, Uiv2DrawerSide } from './Drawer'
+export { Uiv2ContextMenu, useContextMenuTrigger, computeMenuPlacement, shouldUseNativeContextMenu } from './ContextMenu'
+export type {
+	Uiv2ContextMenuProps,
+	Uiv2ContextAction,
+	MenuPlacement,
+	MenuAnchorPoint,
+	UseContextMenuTriggerOptions,
+	UseContextMenuTriggerResult
+} from './ContextMenu'
 export {
 	Uiv2AppShell,
 	Uiv2AppSidebar,
