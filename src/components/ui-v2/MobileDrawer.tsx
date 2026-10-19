@@ -54,7 +54,7 @@ export function MobileDrawer({ groups, currentPath, title, drawerLabel = '导航
 	const currentLabel = title ?? groups.flatMap(group => group.items).find(item => item.match(currentPath))?.label ?? ''
 
 	return (
-		<div className={cn('md:hidden', className)}>
+		<div className={cn('sticky top-0 z-20 md:hidden', className)}>
 			<header
 				className='sticky top-0 z-10 flex items-center justify-between gap-3 rounded-b-xl border-b px-3'
 				style={{

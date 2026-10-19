@@ -21,7 +21,8 @@ const optionalConsumers = [
 	'src/app/projects/page.tsx',
 	'src/app/share/page.tsx',
 	'src/app/snippets/page.tsx',
-	'src/components/mobile-nav.tsx'
+	'src/components/mobile-nav.tsx',
+	'src/layout/index.tsx'
 ]
 
 describe('public optional session-state consumer contract', () => {

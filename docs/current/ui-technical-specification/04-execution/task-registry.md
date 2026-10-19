@@ -373,6 +373,19 @@
 - `.uiv2-*` 为非分层 CSS，会压过 Tailwind 工具类 → `Uiv2Button` 新增 `style` 覆盖，Dashboard CTA 实测 44px、分页 32px
 - Notes 搜索框补 `aria-label='搜索笔记'`
 
+**独立审查（只读子代理 `c64b1a9a-da5a-4af7-949f-b9a36f0ca77d`）后修复的 3 个 blocking**：
+1. **sticky 在一个视口后失效**：`html`/`body` 是 `h-full`，body 盒恰好 100vh 成为 sticky 的包含块，内容溢出后导航条不再粘住（实测滚动到 1200 时 navTop = -296）。修复：把导航条与 `<main>` 一起包进 `<div className='relative min-h-dvh'>`，使包含块随内容增长。修复后实测 docH 4389 / 滚动到 3473 时 navTop 仍为 0。
+2. **移动端汉堡按钮滚出视口后不可达**：`MobileDrawer` 外层是 `relative z-20` 且高度等于 56px 顶栏，内部 `sticky` 无法固定（实测 scrollY 400 时 headerTop = -56）。修复：外层改为 `sticky top-0 z-20 md:hidden`；修复后 scrollY 1380 时按钮 top=10 且 `elementFromPoint` 命中按钮。
+3. **`/manage*` 被当作公开内页**：会把 72px 公开导航条叠在 admin shell 上，并在 <640 出现两个汉堡按钮。修复：`isInnerPage` 增加 `isManageRoute` 排除；实测 `/manage/dashboard` 700px 无公开顶栏、汉堡数量为 1。
+
+同时按审查意见加固测试：`/write` 断言改为检查真实导航不存在、新增 `/manage*` 不叠加公开导航的用例、移动端管理员入口改为点开 Drawer 后断言、`PublicTopNav` 新增 `position`（fixed/sticky）断言、把 `src/layout/index.tsx` 加入 `public-session-state-consumers` 扫描清单；并把 floating 态背景从 `color-mix(..., 88%)`（实际 alpha 0.704）改为玻璃 token 原值（0.8），避免比 stuck 态更透。
+
+**已知限制**：
+- 桌面端 72px→56px 的状态切换会让内容整体上移 16px（设计文档允许的几何变化，但与 fixed 叠层观感不同）。
+- 首帧（hydration 前）`maxSM` 未知，窄视口会先渲染桌面导航条再切换；`init` 已用于 ScrollTopButton，但导航条未 gate。
+- 导航条在 640–767px 区间按桌面形态渲染（`maxSM` 阈值 640，`md` 断点 768），实测无横向溢出。
+- 路由首次进入会多一次 `GET /api/auth/session-state`（layout 级 optional 探测），换来匿名零 401。
+
 **偏离与说明**：
 1. axe-core 未引入（依赖需批准），可访问性以 role/aria/键盘断言替代。
 2. `useOverlay` 为单文件（kebab-case），未按本文档拆成 `useOverlay.ts`/`useFocusTrap.ts`/`useZIndex.ts`。
@@ -593,6 +606,19 @@
 - `ContextMenu` 显式 `isolateBackground: false`（非模态菜单不应把整个 app 置为 inert）。
 - `Uiv2Drawer` 新增 `id` prop（供 `aria-controls`）。
 
+**独立审查（只读子代理 `c64b1a9a-da5a-4af7-949f-b9a36f0ca77d`）后修复的 3 个 blocking**：
+1. **sticky 在一个视口后失效**：`html`/`body` 是 `h-full`，body 盒恰好 100vh 成为 sticky 的包含块，内容溢出后导航条不再粘住（实测滚动到 1200 时 navTop = -296）。修复：把导航条与 `<main>` 一起包进 `<div className='relative min-h-dvh'>`，使包含块随内容增长。修复后实测 docH 4389 / 滚动到 3473 时 navTop 仍为 0。
+2. **移动端汉堡按钮滚出视口后不可达**：`MobileDrawer` 外层是 `relative z-20` 且高度等于 56px 顶栏，内部 `sticky` 无法固定（实测 scrollY 400 时 headerTop = -56）。修复：外层改为 `sticky top-0 z-20 md:hidden`；修复后 scrollY 1380 时按钮 top=10 且 `elementFromPoint` 命中按钮。
+3. **`/manage*` 被当作公开内页**：会把 72px 公开导航条叠在 admin shell 上，并在 <640 出现两个汉堡按钮。修复：`isInnerPage` 增加 `isManageRoute` 排除；实测 `/manage/dashboard` 700px 无公开顶栏、汉堡数量为 1。
+
+同时按审查意见加固测试：`/write` 断言改为检查真实导航不存在、新增 `/manage*` 不叠加公开导航的用例、移动端管理员入口改为点开 Drawer 后断言、`PublicTopNav` 新增 `position`（fixed/sticky）断言、把 `src/layout/index.tsx` 加入 `public-session-state-consumers` 扫描清单；并把 floating 态背景从 `color-mix(..., 88%)`（实际 alpha 0.704）改为玻璃 token 原值（0.8），避免比 stuck 态更透。
+
+**已知限制**：
+- 桌面端 72px→56px 的状态切换会让内容整体上移 16px（设计文档允许的几何变化，但与 fixed 叠层观感不同）。
+- 首帧（hydration 前）`maxSM` 未知，窄视口会先渲染桌面导航条再切换；`init` 已用于 ScrollTopButton，但导航条未 gate。
+- 导航条在 640–767px 区间按桌面形态渲染（`maxSM` 阈值 640，`md` 断点 768），实测无横向溢出。
+- 路由首次进入会多一次 `GET /api/auth/session-state`（layout 级 optional 探测），换来匿名零 401。
+
 **偏离与说明**：
 1. VSC-13 按 prompt 收窄为仅 manage layout；公开端导航切换需单独批准。
 2. VSC-10/11 组件落在 `src/components/ui-v2/`（prompt 指定），legacy `manage-sidebar.tsx`/`manage-mobile-nav.tsx` 文件与测试保留，仅不再被 layout 渲染。
@@ -759,6 +785,61 @@
 - 底部 Drawer 使用固定 `height`（80vh）而非旧的 `max-height`，内容少时留白偏多。
 
 **DEFERRED**：见 VSC-14 / VSC-15 条目内的页面与消费者清单。
+
+
+---
+
+## Phase 5：公开端导航切换 + F4 会话状态优化（2026-10-19）
+
+**状态**：PASS（1 项 NOT_VERIFIED：iOS/Android 真机）
+
+### F4-PSS 会话状态核查（纯核查，无代码改动）
+
+- 全量清单（`grep useAdminAuth | grep -v manage | grep -v test | grep -v ui-v2`）逐一核对：**13 个公开消费者全部已是 `mode: 'optional'`**，`auth-gate.tsx` 保持 `mode: 'strict'`；**未发现默认 strict 的公开消费者，因此零改动**。
+- `vertical-nav.tsx` / `nav-card.tsx` 中没有 `useAdminAuth` 调用（已核查）。
+- 浏览器实测：匿名访问 `/blog`、`/notes`、`/mistakes` 只产生 `GET /api/auth/session-state`（200），**没有任何 `GET /api/auth/me`**。
+
+### PUB-NAV 公开端导航切换
+
+| 文件 | 变更 |
+|------|------|
+| `src/layout/index.tsx` | 不再渲染 `VerticalNav` / `MobileNav`；内页（桌面）渲染 `PublicTopNav`（`position='sticky'`），移动端渲染 `MobileDrawer`；移除 main 的 `pb-14`；`useAdminAuth({mode:'optional'})` 决定是否追加「管理后台」入口 |
+| `src/components/ui-v2/PublicTopNav.tsx` | 新增 `position?: 'fixed' \| 'sticky'`；sticky 顶部态用近不透明玻璃底，避免与页面表面拼出接缝 |
+| `src/components/ui-v2/MobileDrawer.tsx` | 根容器 `relative z-20`，保证移动顶栏在 `main.relative.z-10` 之上 |
+| `src/layout/layout.test.tsx` | 新增 7 个挂载规则测试（内页有顶栏、首页只有 NavCard、移动端 Drawer、管理员入口、`/write` 排除） |
+
+**验证**：
+
+| 检查 | 结果 |
+|------|------|
+| `npx tsc --noEmit` | 0 errors |
+| `npx vitest run` | 79 files / **668 passed**（基线 657 + 11） |
+| `npm run build` | 成功，路由表与基线一致 |
+| `git diff --check` | clean |
+| 浏览器 | `/blog`、`/notes` 顶部玻璃条（72px→滚动 56px + blur）；首页无顶栏；390px 汉堡 → 右侧 Drawer（320px）；管理员登录出现「管理后台」（`/manage`），匿名无 |
+| 网络 | 匿名三页仅 `auth/session-state`，**无 `auth/me`** |
+
+**截图**：`assets/phase5-blog-topnav.png`、`phase5-blog-sticky.png`、`phase5-notes-topnav.png`、`phase5-home-nonav.png`、`phase5-blog-admin-entry.png`、`phase5-mobile-closed.png`、`phase5-mobile-drawer.png`
+
+**独立审查（只读子代理 `c64b1a9a-da5a-4af7-949f-b9a36f0ca77d`）后修复的 3 个 blocking**：
+1. **sticky 在一个视口后失效**：`html`/`body` 是 `h-full`，body 盒恰好 100vh 成为 sticky 的包含块，内容溢出后导航条不再粘住（实测滚动到 1200 时 navTop = -296）。修复：把导航条与 `<main>` 一起包进 `<div className='relative min-h-dvh'>`，使包含块随内容增长。修复后实测 docH 4389 / 滚动到 3473 时 navTop 仍为 0。
+2. **移动端汉堡按钮滚出视口后不可达**：`MobileDrawer` 外层是 `relative z-20` 且高度等于 56px 顶栏，内部 `sticky` 无法固定（实测 scrollY 400 时 headerTop = -56）。修复：外层改为 `sticky top-0 z-20 md:hidden`；修复后 scrollY 1380 时按钮 top=10 且 `elementFromPoint` 命中按钮。
+3. **`/manage*` 被当作公开内页**：会把 72px 公开导航条叠在 admin shell 上，并在 <640 出现两个汉堡按钮。修复：`isInnerPage` 增加 `isManageRoute` 排除；实测 `/manage/dashboard` 700px 无公开顶栏、汉堡数量为 1。
+
+同时按审查意见加固测试：`/write` 断言改为检查真实导航不存在、新增 `/manage*` 不叠加公开导航的用例、移动端管理员入口改为点开 Drawer 后断言、`PublicTopNav` 新增 `position`（fixed/sticky）断言、把 `src/layout/index.tsx` 加入 `public-session-state-consumers` 扫描清单；并把 floating 态背景从 `color-mix(..., 88%)`（实际 alpha 0.704）改为玻璃 token 原值（0.8），避免比 stuck 态更透。
+
+**已知限制**：
+- 桌面端 72px→56px 的状态切换会让内容整体上移 16px（设计文档允许的几何变化，但与 fixed 叠层观感不同）。
+- 首帧（hydration 前）`maxSM` 未知，窄视口会先渲染桌面导航条再切换；`init` 已用于 ScrollTopButton，但导航条未 gate。
+- 导航条在 640–767px 区间按桌面形态渲染（`maxSM` 阈值 640，`md` 断点 768），实测无横向溢出。
+- 路由首次进入会多一次 `GET /api/auth/session-state`（layout 级 optional 探测），换来匿名零 401。
+
+**偏离与说明**：
+1. `PublicTopNav` 用 `position='sticky'` 而非 `fixed`：约 50 个内页的顶部留白差异很大（`py-2` 到 `pt-24`），sticky 让导航条占据自身高度，避免逐页改 padding；`fixed` 仍是 `PublicTopNav` 的默认值，`/dev/nav` 预览行为不变。
+2. 首页不渲染顶栏（按 prompt 只做内页切换），NavCard 继续负责首页导航。
+3. 移动端 Drawer 的入口在 `maxSM && !isWrite` 时渲染，与旧 `MobileNav` 的显示条件一致。
+4. 「管理后台」入口只在 `isAdmin === true` 时追加；移动端同时追加「管理」分组。
+5. 旧 `vertical-nav.tsx` / `mobile-nav.tsx` / `nav-card.tsx` 文件与测试保留，仅前两者不再被 layout 渲染。
 
 ## 下一步
 

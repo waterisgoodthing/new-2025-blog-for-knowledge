@@ -61,6 +61,20 @@ describe('PublicTopNav — structure', () => {
 	})
 })
 
+describe('PublicTopNav — positioning', () => {
+	it('defaults to fixed (preview behaviour)', () => {
+		render(<PublicTopNav entries={ENTRIES} currentPath='/' />)
+		expect(screen.getByRole('navigation', { name: '主导航' })).toHaveStyle({ position: 'fixed' })
+	})
+
+	it('supports an in-flow sticky mode for app pages', () => {
+		render(<PublicTopNav entries={ENTRIES} currentPath='/' position='sticky' />)
+		const nav = screen.getByRole('navigation', { name: '主导航' })
+		expect(nav).toHaveStyle({ position: 'sticky' })
+		expect(nav.className).toContain('sticky')
+	})
+})
+
 describe('PublicTopNav — floating to sticky', () => {
 	it('starts in the floating state', () => {
 		render(<PublicTopNav entries={ENTRIES} currentPath='/' />)

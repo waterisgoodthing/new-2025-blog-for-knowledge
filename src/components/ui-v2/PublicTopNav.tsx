@@ -18,6 +18,12 @@ export interface PublicTopNavProps {
 	entries?: Uiv2TopNavEntry[]
 	currentPath?: string
 	brandLabel?: string
+	/**
+	 * `fixed` (default) floats the bar over content, matching the Phase 3
+	 * preview. `sticky` keeps the same visual states but participates in layout
+	 * so app pages do not need per-page top padding.
+	 */
+	position?: 'fixed' | 'sticky'
 }
 
 /**
@@ -26,7 +32,7 @@ export interface PublicTopNavProps {
  * Three states per the spec: floating at the top, compact sticky glass after
  * ~48px of scroll (with hysteresis), and an explicitly opened dropdown.
  */
-export function PublicTopNav({ entries = PUBLIC_TOP_NAV, currentPath = '/', brandLabel = 'My Blog' }: PublicTopNavProps) {
+export function PublicTopNav({ entries = PUBLIC_TOP_NAV, currentPath = '/', brandLabel = 'My Blog', position = 'fixed' }: PublicTopNavProps) {
 	const [stuck, setStuck] = useState(false)
 	const [openKey, setOpenKey] = useState<string | null>(null)
 	const prefersReducedMotion = usePrefersReducedMotion()
@@ -139,12 +145,28 @@ export function PublicTopNav({ entries = PUBLIC_TOP_NAV, currentPath = '/', bran
 			data-state={stuck ? 'stuck' : 'top'}
 			data-reduced-motion={String(prefersReducedMotion)}
 			className={cn(
-				'fixed inset-x-0 top-0 z-40 border-b',
+				position === 'fixed' ? 'fixed inset-x-0 top-0' : 'sticky top-0',
+				'z-40 border-b',
 				styles.bar,
 				stuck ? styles.stuck : styles.top,
 				prefersReducedMotion && styles.reducedMotion
 			)}
-			style={{ height: stuck ? 56 : 72 }}>
+			style={{
+				height: stuck ? 56 : 72,
+				position,
+				// In-flow mode sits above heterogeneous page surfaces (animated site
+				// background, editorial panels). The glass token keeps the bar neutral
+				// on every page instead of showing a tinted seam.
+				...(position === 'sticky' && !stuck
+					? {
+							// Exactly the glass token (alpha 0.8), so the floating state is
+							// never *less* opaque than the stuck state.
+							background: 'var(--nav-glass-bg, rgba(255, 255, 255, 0.8))',
+							backdropFilter: 'var(--nav-blur, blur(20px))',
+							WebkitBackdropFilter: 'var(--nav-blur, blur(20px))'
+						}
+					: {})
+			}}>
 			<div className='mx-auto flex h-full max-w-[1120px] items-center justify-between gap-6 px-4 sm:px-6'>
 				<Link
 					href='/'
