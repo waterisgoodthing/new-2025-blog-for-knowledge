@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { getOverlayPortalRoot } from './portal-root'
 import { getFocusableElements, useOverlay } from '@/hooks/use-overlay'
 
 export type Uiv2ModalSize = 'confirm' | 'form' | 'preview'
@@ -158,6 +159,6 @@ export function Uiv2Modal({
 				</motion.div>
 			)}
 		</AnimatePresence>,
-		document.body
+		getOverlayPortalRoot()
 	)
 }

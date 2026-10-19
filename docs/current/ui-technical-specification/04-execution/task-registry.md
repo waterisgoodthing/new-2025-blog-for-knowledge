@@ -17,11 +17,11 @@
 | VSC-05 | 重构 ContextMenu | 2 | 4h | P0 | VSC-03 | ✅ 已完成 |
 | VSC-06 | 试点接入 — Dashboard | 2 | 8h | P0 | VSC-04 | ✅ 已完成 |
 | VSC-07 | 试点接入 — Notes | 2 | 6h | P0 | VSC-04 | ✅ 已完成 |
-| VSC-09 | 实现 PublicTopNav | 3 | 8h | P0 | VSC-02-D | 📋 待执行 |
-| VSC-10 | 实现 AdminSidebar | 3 | 8h | P0 | VSC-02-D | 📋 待执行 |
-| VSC-11 | 实现 MobileDrawer | 3 | 6h | P0 | VSC-04 | 📋 待执行 |
-| VSC-12 | 更新 AppShell | 3 | 4h | P0 | VSC-09,10,11 | 📋 待执行 |
-| VSC-13 | 迁移路由 | 3 | 10h | P0 | VSC-12 | 📋 待执行 |
+| VSC-09 | 实现 PublicTopNav | 3 | 8h | P0 | VSC-02-D | ✅ 已完成 |
+| VSC-10 | 实现 AdminSidebar | 3 | 8h | P0 | VSC-02-D | ✅ 已完成 |
+| VSC-11 | 实现 MobileDrawer | 3 | 6h | P0 | VSC-04 | ✅ 已完成 |
+| VSC-12 | 更新 AppShell | 3 | 4h | P0 | VSC-09,10,11 | ✅ 已完成 |
+| VSC-13 | 迁移路由 | 3 | 10h | P0 | VSC-12 | ✅ 已完成 |
 | VSC-14 | 扩展接入（管理页面） | 4 | 15h | P1 | VSC-13 | 📋 待执行 |
 | VSC-15 | 扩展接入（公开页面） | 4 | 10h | P1 | VSC-13 | 📋 待执行 |
 | VSC-16 | Dark Mode 实现 | 4 | 8h | P1 | VSC-02-D | 📋 待执行 |
@@ -413,10 +413,12 @@
    ```
 
 **验证**：
-- [ ] 滚动行为测试
-- [ ] 浏览器兼容（Chrome/Safari/Firefox）
-- [ ] 键盘导航
-- [ ] axe-core 检测
+- [x] 滚动行为测试（悬浮→sticky + 40/48px 迟滞，6 个用例）
+- [x] 浏览器兼容（Chromium 实测；`@supports` 降级规则在 `public-top-nav.module.css`，Firefox 旧版未实测）
+- [x] 键盘导航（Enter/Space/↑↓/Home/End/Esc + 焦点归还）
+- [x] 可访问性断言（role/aria/键盘替代 axe-core；未引入依赖）
+
+**实现备注**：`aria-expanded` + `aria-controls` + `aria-current="page"`；无管理员入口；reduced-motion 关闭过渡。预览页 `/dev/nav`。
 
 **工时**：8h
 
@@ -449,9 +451,11 @@
    - Mobile：隐藏（用 Drawer 代替）
 
 **验证**：
-- [ ] 展开/收缩动画流畅
-- [ ] 键盘导航
-- [ ] axe-core 检测
+- [x] 展开/收缩（232px ↔ 64px，浏览器实测；动画 300ms，reduced-motion 关闭）
+- [x] 键盘导航（折叠按钮 Enter 切换；折叠后链接保留 aria-label/title）
+- [x] 可访问性断言（`aria-expanded`/`aria-controls`/`aria-current`，替代 axe-core）
+
+**实现备注**：`localStorage` 读写均 try/catch；折叠不依赖 hover。**已接入** `manage/(workspace)/layout.tsx`。
 
 **工时**：8h
 
@@ -478,9 +482,12 @@
    - Teal active state
 
 **验证**：
-- [ ] 真机测试（iOS/Android）
-- [ ] 焦点管理
-- [ ] axe-core 检测
+- [x] 焦点管理（复用 `Uiv2Drawer`；浏览器实测初始焦点进入 drawer、Esc 后回到汉堡按钮）
+- [x] 路由变化自动关闭
+- [ ] 真机测试（iOS/Android）——**NOT_VERIFIED**：仅 Chromium 390px 模拟
+- [x] 可访问性断言（替代 axe-core）
+
+**实现备注**：右侧 `min(320px, 86vw)`；为 `Uiv2Drawer` 增加 `id` prop 供 `aria-controls`，未复制焦点/滚动锁逻辑。**已接入** manage 移动端。
 
 **工时**：6h
 
@@ -509,8 +516,10 @@
    ```
 
 **验证**：
-- [ ] 路由切换测试
-- [ ] 响应式测试
+- [x] variant 显式传入（`'public' | 'admin'`，不做 pathname 权限推断）
+- [x] 统一 portal 根（`[data-uiv2-portal-root]`，位于 `[data-overlay-background-root]` 之外）
+- [x] overlay 打开时背景 `inert`，嵌套计数，全部关闭后才移除
+- [x] 响应式（浏览器 1440 / 390 实测）
 
 **工时**：4h
 
@@ -518,7 +527,9 @@
 
 ### VSC-13：迁移路由
 
-**文件**：所有 `src/app/**/layout.tsx`
+> **范围收窄（Phase 3 prompt §2 覆盖本节）**：路由归属结论为"兼容共存/不切换"，本阶段只迁移 `src/app/manage/(workspace)/layout.tsx` 一个 layout。公开端 `src/layout/index.tsx` 与 `VerticalNav`/`MobileNav` 保持不动，留待单独批准。
+
+**文件**：`src/app/manage/(workspace)/layout.tsx`（仅此一个）
 
 **任务**：
 1. 使用新 AppShell：
@@ -537,13 +548,57 @@
 3. 逐页迁移（53 页）
 
 **验证**：
-- [ ] 全量功能回归测试
-- [ ] 视觉验证
-- [ ] 响应式验证
+- [x] manage 路由回归（布局改为 `Uiv2AppShell variant='admin'` + `AdminSidebar` + `MobileDrawer`；`AuthGate` 仍在最外层）
+- [x] 视觉验证（`assets/phase3-sidebar-*.png`、`phase3-mobile-drawer.png`）
+- [x] 公开端未改动（`src/layout/index.tsx`、`vertical-nav.tsx`、`mobile-nav.tsx`、`nav-card.tsx` 零 diff）
+- [x] 旧组件与测试保留（`manage-sidebar.*`、`manage-mobile-nav.*` 仍在且通过）
 
 **工时**：10h
 
 ---
+
+
+---
+
+## Phase 3 完成记录（2026-10-18）
+
+**状态**：PASS（1 项 NOT_VERIFIED：iOS/Android 真机）
+
+| 检查 | 命令 | 结果 |
+|------|------|------|
+| 类型 | `npx tsc --noEmit` | 0 errors |
+| 测试 | `npx vitest run` | 77 files / **646 passed**（基线 606 + 新增 40） |
+| 构建 | `npm run build` | 成功；路由表新增 `/dev/nav`，其余与基线一致 |
+| 空白 | `git diff --check` | clean |
+
+**浏览器实测**（生产构建 + Playwright，仅拦截鉴权与 admin 接口）：
+
+| 场景 | 结果 |
+|------|------|
+| `/dev/nav` 顶部态 | `data-state="top"` |
+| `/dev/nav` 滚动 200px | `data-state="stuck"`，height 56px、`backdrop-filter: blur(20px)`、bg `rgba(255,255,255,0.8)` |
+| `/dev/nav` Dropdown | `aria-expanded="true"`，3 项（博客/笔记/错题） |
+| 键盘 | 内容 → 博客 →(↓) 笔记 →(End) 错题 →(Esc) 内容 →(Tab) 探索 |
+| `/manage/dashboard` 侧栏 | 232px ↔ 64px；折叠后 `aria-label`/`title` 保留；localStorage 跨刷新记忆 |
+| 390px Drawer | 右侧打开；焦点进入 drawer；背景 `inert=true`；Esc 后焦点回汉堡按钮 |
+
+**发现并修复的缺陷**（独立审查 + 浏览器实测）：
+1. **overlay 被祖先 stacking context 困住（P0）**：`Uiv2AppShell` 原先把 `[data-uiv2-portal-root]` 渲染在页面树内，而公开端根布局用 `<main className='relative z-10'>` 包裹所有页面；position+z-index 形成层叠上下文，overlay 的 `z-index:1300` 无法超越兄弟节点的 legacy 导航（`z-40`/`z-50`）。表现为移动端 Drawer 的「关闭导航」页脚被底部导航遮住、不可点击。修复：`src/components/ui-v2/portal-root.ts` 把 portal host 挂到 `<body>` 下的单例节点（AppShell 挂载时确保存在，永不销毁以免 orphan），并加断言「host 必须是 body 子节点且不在 shell 子树内」。
+2. **`variant` 默认 admin 属 fail-open（P0）**：省略 prop 会默认渲染管理员导航。已改为**必填**，且新增 public 变体不渲染管理员 chrome 的测试。
+3. **`inert` 与焦点恢复顺序**：overlay 关闭时若先还焦点再移除背景 `inert`，`focus()` 落在 inert 子树内静默失败，焦点掉到 `<body>`。已把滚动锁/inert 副作用声明在焦点陷阱之前，并加集成回归测试。
+4. 审查提出的其它非阻塞项一并修复：PublicTopNav 的 Tab 关闭导致焦点掉到 body（改为 focusout 关闭 + 链接激活即关闭）、去掉不适用的 `aria-haspopup`、品牌链接与「首页」重复 `aria-current`、AdminSidebar 折叠时的挂载动画闪烁与分组标题从 DOM 消失（改为 `sr-only`）、MobileDrawer 视口放大到桌面后不关闭。
+
+**对 Phase 2 组件的连带改动**：
+- `Modal.tsx` / `Drawer.tsx` / `ContextMenu.tsx` 的 portal 目标改为 `portal-root.ts`（无 AppShell 时回退 `document.body`，行为不变）。
+- `ContextMenu` 显式 `isolateBackground: false`（非模态菜单不应把整个 app 置为 inert）。
+- `Uiv2Drawer` 新增 `id` prop（供 `aria-controls`）。
+
+**偏离与说明**：
+1. VSC-13 按 prompt 收窄为仅 manage layout；公开端导航切换需单独批准。
+2. VSC-10/11 组件落在 `src/components/ui-v2/`（prompt 指定），legacy `manage-sidebar.tsx`/`manage-mobile-nav.tsx` 文件与测试保留，仅不再被 layout 渲染。
+3. `Uiv2Drawer` 新增 `id` prop（供 `aria-controls`），未复制 Phase 2 的焦点/滚动锁逻辑。
+4. `Uiv2AppShell` 默认 slot 带了 `Uiv2Breadcrumb`，因此 manage 页面新增面包屑层级（设计文档要求管理员端有面包屑）。
+5. `/dev/nav` 预览页位于 root layout 内，因此公开端 legacy `VerticalNav` 仍会出现在页面左侧。
 
 ## Phase 4：扩展接入 + 收尾（41h）
 

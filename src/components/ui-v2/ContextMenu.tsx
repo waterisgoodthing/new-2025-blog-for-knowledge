@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { motion } from 'motion/react'
 
 import { cn } from '@/lib/utils'
+import { getOverlayPortalRoot } from './portal-root'
 import { getFocusableElements, useOverlay } from '@/hooks/use-overlay'
 
 /** Domain-neutral command description (navigation-overlay §6.8). */
@@ -119,6 +120,7 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 		open: open && mounted,
 		onClose,
 		lockScroll: false,
+		isolateBackground: false,
 		// WAI-ARIA menu pattern: focus lands on the first enabled item.
 		getInitialFocus: () => getFocusableElements(menuRef.current)[0] ?? menuRef.current
 	})
@@ -308,7 +310,7 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 				</>
 			)}
 		</>,
-		document.body
+		getOverlayPortalRoot()
 	)
 }
 

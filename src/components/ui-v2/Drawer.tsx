@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { getOverlayPortalRoot } from './portal-root'
 import { getFocusableElements, useOverlay } from '@/hooks/use-overlay'
 
 export type Uiv2DrawerSide = 'left' | 'right' | 'bottom'
@@ -23,6 +24,8 @@ export interface Uiv2DrawerProps {
 	side?: Uiv2DrawerSide
 	/** Width for left/right, height for bottom. Defaults to 440px / 70vh. */
 	size?: string
+	/** DOM id for the dialog surface (lets a trigger use aria-controls). */
+	id?: string
 	closeOnBackdropClick?: boolean
 	closeOnEscape?: boolean
 	initialFocusRef?: RefObject<HTMLElement | null>
@@ -57,7 +60,8 @@ export function Uiv2Drawer({
 	closeOnBackdropClick = true,
 	closeOnEscape = true,
 	initialFocusRef,
-	className
+	className,
+	id
 }: Uiv2DrawerProps) {
 	const [mounted, setMounted] = useState(false)
 	useEffect(() => setMounted(true), [])
@@ -105,6 +109,7 @@ export function Uiv2Drawer({
 					}}>
 					<motion.div
 						ref={overlay.containerRef}
+						id={id}
 						role='dialog'
 						aria-modal='true'
 						aria-labelledby={overlay.titleId}
@@ -171,6 +176,6 @@ export function Uiv2Drawer({
 				</motion.div>
 			)}
 		</AnimatePresence>,
-		document.body
+		getOverlayPortalRoot()
 	)
 }

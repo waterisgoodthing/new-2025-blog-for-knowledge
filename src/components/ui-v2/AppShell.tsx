@@ -1,5 +1,8 @@
-import type { ReactNode } from 'react'
+'use client'
+
+import { useEffect, type ReactNode } from 'react'
 import { UIV2_NAV_SECTIONS } from './navigation'
+import { ensureOverlayPortalHost } from './portal-root'
 
 export interface Uiv2AppSidebarProps {
 	/** Current path used to mark the active entry (aria-current="page"). */
@@ -191,27 +194,73 @@ export function Uiv2PageLayout({ children, width = 'wide' }: Uiv2PageLayoutProps
 
 export interface Uiv2AppShellProps {
 	currentPath: string
+	/**
+	 * Layout family. Required on purpose: permission-bearing navigation must
+	 * never be inferred from the pathname, and an omitted prop must not
+	 * fail open to the administrator chrome.
+	 */
+	variant: 'public' | 'admin'
 	headerAction?: ReactNode
+	/** Replaces the default sidebar (admin variant only). */
+	sidebar?: ReactNode
+	/** Replaces the default mobile navigation. */
+	mobileNav?: ReactNode
+	/** Replaces the default header (admin variant only). */
+	header?: ReactNode
 	children: ReactNode
 }
 
-/** Presentational app shell (U1): sidebar + header + breadcrumb + main + mobile nav. */
-export function Uiv2AppShell({ currentPath, headerAction, children }: Uiv2AppShellProps) {
+/**
+ * Presentational app shell (U1/VSC-12): navigation slots + header + breadcrumb +
+ * main, plus the two things overlays need:
+ *
+ * - `<div data-uiv2-portal-root>`: the portal target, a *sibling* of the app
+ *   content so overlays are never trapped inside their own `inert` subtree.
+ * - `<div data-overlay-background-root>`: the subtree that `useOverlay` marks
+ *   `inert` while a modal surface is open.
+ */
+export function Uiv2AppShell({
+	currentPath,
+	variant,
+	headerAction,
+	sidebar,
+	mobileNav,
+	header,
+	children
+}: Uiv2AppShellProps) {
+	// The portal host lives under <body>, outside this shell's stacking context
+	// and outside the subtree that overlays mark `inert`.
+	useEffect(() => {
+		ensureOverlayPortalHost()
+	}, [])
+
+	const rootClassName =
+		variant === 'admin'
+			? 'min-h-screen min-w-0 overflow-x-hidden bg-[var(--uiv2-surface)] px-4 py-6 sm:px-6 md:py-8 md:pl-20 lg:pr-10 lg:pl-24'
+			: 'min-h-screen min-w-0 bg-[var(--uiv2-surface)] px-4 py-6 sm:px-6 md:py-8'
+
+	const panelClassName =
+		variant === 'admin'
+			? 'w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border border-white/45 bg-white/48 p-5 shadow-[0_24px_90px_-46px_rgba(66,107,113,0.5)] backdrop-blur-xl sm:p-7 lg:p-9'
+			: 'w-full min-w-0 flex-1 overflow-hidden rounded-[var(--uiv2-radius-lg)] border border-[var(--uiv2-border)] bg-white/70 p-5 shadow-[var(--uiv2-shadow-md)] sm:p-7'
+
 	return (
-		<div className="min-h-screen min-w-0 bg-[var(--uiv2-surface)] px-4 py-6 sm:px-6 md:py-8">
-			<Uiv2PageLayout>
-				<div className="flex flex-col gap-4 md:flex-row md:gap-6">
-					<Uiv2AppSidebar currentPath={currentPath} />
-					<section className="w-full min-w-0 flex-1 overflow-hidden rounded-[var(--uiv2-radius-lg)] border border-[var(--uiv2-border)] bg-white/70 p-5 shadow-[var(--uiv2-shadow-md)] sm:p-7">
-						<Uiv2MobileNav currentPath={currentPath} />
-						<Uiv2AppHeader currentPath={currentPath} action={headerAction} />
-						<div className="pt-3">
-							<Uiv2Breadcrumb currentPath={currentPath} />
-						</div>
-						<main className="min-w-0 pt-4">{children}</main>
-					</section>
-				</div>
-			</Uiv2PageLayout>
+		<div data-app-shell={variant}>
+			<div data-overlay-background-root className={rootClassName}>
+				<Uiv2PageLayout>
+					<div className={variant === 'admin' ? 'flex flex-col gap-4 md:flex-row md:gap-6' : 'flex flex-col'}>
+						{variant === 'admin' ? sidebar ?? <Uiv2AppSidebar currentPath={currentPath} /> : null}
+						<section className={panelClassName}>
+							{mobileNav ?? <Uiv2MobileNav currentPath={currentPath} />}
+							{variant === 'admin' ? header ?? <Uiv2AppHeader currentPath={currentPath} action={headerAction} /> : null}
+							<div className="pt-3">
+								<Uiv2Breadcrumb currentPath={currentPath} />
+							</div>
+							<main className="min-w-0 pt-4">{children}</main>
+						</section>
+					</div>
+				</Uiv2PageLayout>
+			</div>
 		</div>
 	)
 }

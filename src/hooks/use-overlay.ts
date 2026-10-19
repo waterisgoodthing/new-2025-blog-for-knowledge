@@ -72,6 +72,9 @@ export function resetOverlayState(): void {
 	openStack = []
 	scrollLockCount = 0
 	savedBodyOverflow = ''
+	inertCount = 0
+	for (const root of inertedRoots) root.removeAttribute('inert')
+	inertedRoots.clear()
 	if (typeof document !== 'undefined') document.body.style.overflow = ''
 }
 
@@ -81,6 +84,35 @@ export function resetOverlayState(): void {
 
 let scrollLockCount = 0
 let savedBodyOverflow = ''
+
+/* -------------------------------------------------------------------------- */
+/* Portal root + background isolation                                          */
+/* -------------------------------------------------------------------------- */
+
+const BACKGROUND_ROOT_SELECTOR = '[data-overlay-background-root]'
+
+let inertCount = 0
+const inertedRoots = new Set<HTMLElement>()
+
+function applyBackgroundInert() {
+	if (typeof document === 'undefined') return
+	inertCount += 1
+	// Re-scan on every open: a background root that mounted while another
+	// overlay was already open must still be isolated.
+	for (const root of Array.from(document.querySelectorAll<HTMLElement>(BACKGROUND_ROOT_SELECTOR))) {
+		if (inertedRoots.has(root)) continue
+		root.setAttribute('inert', '')
+		inertedRoots.add(root)
+	}
+}
+
+function releaseBackgroundInert() {
+	if (typeof document === 'undefined') return
+	inertCount = Math.max(0, inertCount - 1)
+	if (inertCount > 0) return
+	for (const root of inertedRoots) root.removeAttribute('inert')
+	inertedRoots.clear()
+}
 
 function lockBodyScroll() {
 	if (typeof document === 'undefined') return
@@ -334,6 +366,11 @@ export interface UseOverlayOptions {
 	closeOnBackdropClick?: boolean
 	/** Body scroll locking. Defaults to true. */
 	lockScroll?: boolean
+	/**
+	 * Mark the AppShell background root `inert` while open. Defaults to true;
+	 * non-modal surfaces such as a context menu pass false.
+	 */
+	isolateBackground?: boolean
 	restoreFocus?: boolean
 	initialFocusRef?: RefObject<HTMLElement | null>
 	getInitialFocus?: () => HTMLElement | null
@@ -363,6 +400,7 @@ export function useOverlay({
 	closeOnEscape = true,
 	closeOnBackdropClick = true,
 	lockScroll = true,
+	isolateBackground = true,
 	restoreFocus = true,
 	initialFocusRef,
 	getInitialFocus
@@ -372,16 +410,27 @@ export function useOverlay({
 	const containerRef = useRef<HTMLDivElement | null>(null)
 
 	const { zIndex, backdropZIndex, depth, isTopmost } = useZIndex(overlayId, open)
-	// Only the innermost overlay owns Tab containment (see `trapTab`); focus
-	// restoration guards against non-LIFO closes inside `useFocusTrap`.
-	useFocusTrap({ active: open, containerRef, initialFocusRef, getInitialFocus, restoreFocus, trapTab: isTopmost })
 	const prefersReducedMotion = usePrefersReducedMotion()
 
+	// Declared BEFORE the focus trap on purpose: on close, effect cleanups run in
+	// declaration order, so the background `inert` must be released before focus
+	// is restored. Otherwise `previous.focus()` is a no-op inside an inert
+	// subtree and focus falls back to <body>.
 	useEffect(() => {
 		if (!open || !lockScroll) return
 		lockBodyScroll()
 		return () => unlockBodyScroll()
 	}, [open, lockScroll])
+
+	useEffect(() => {
+		if (!open || !isolateBackground) return
+		applyBackgroundInert()
+		return () => releaseBackgroundInert()
+	}, [open, isolateBackground])
+
+	// Only the innermost overlay owns Tab containment (see `trapTab`); focus
+	// restoration guards against non-LIFO closes inside `useFocusTrap`.
+	useFocusTrap({ active: open, containerRef, initialFocusRef, getInitialFocus, restoreFocus, trapTab: isTopmost })
 
 	const requestClose = useCallback(() => onClose(), [onClose])
 
