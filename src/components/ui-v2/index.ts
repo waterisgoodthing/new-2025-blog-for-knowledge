@@ -56,3 +56,6 @@ export type { MobileDrawerProps } from './MobileDrawer'
 export { PUBLIC_NAV_CONTENT, PUBLIC_NAV_EXPLORE, PUBLIC_NAV_GROUPS, PUBLIC_NAV_HOME, PUBLIC_TOP_NAV } from './nav-model'
 export type { Uiv2NavGroup, Uiv2NavItem, Uiv2TopNavEntry } from './nav-model'
 export { APP_PORTAL_ROOT_ID } from './portal-root'
+
+export { ThemeToggle, applyTheme, resolveInitialTheme, DARK_MEDIA_QUERY, THEME_STORAGE_KEY } from './ThemeToggle'
+export type { ThemeMode, ThemeToggleProps } from './ThemeToggle'

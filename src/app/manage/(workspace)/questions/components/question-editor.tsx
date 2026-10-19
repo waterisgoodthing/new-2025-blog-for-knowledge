@@ -58,16 +58,16 @@ export function QuestionEditor({ questionId }: { questionId: string }) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : '保存失败') } finally { setBusy(false) }
   }
 
-  if (!question) return <p className='text-sm text-slate-500'>{error || '正在加载题目…'}</p>
+  if (!question) return <p className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>{error || '正在加载题目…'}</p>
   const active = question.status === 'active'
 
   return (
     <div className='max-w-3xl space-y-7'>
-      <Link href='/manage/questions' className='inline-flex items-center gap-2 text-sm text-slate-500'><ArrowLeft className='h-4 w-4' />返回题库</Link>
+      <Link href='/manage/questions' className='inline-flex items-center gap-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'><ArrowLeft className='h-4 w-4' />返回题库</Link>
       <div>
         <p className='text-xs tracking-wider text-[var(--color-brand)]'>{questionStatusLabel(question.status)} · {attachmentVisibilityLabel(question.visibility)} · 版本 {question.version}</p>
-        <h1 className='mt-2 text-2xl font-semibold text-slate-900'>编辑正式题目</h1>
-        <p className='mt-2 text-sm text-slate-500'>来源：{question.sources[0]?.source_name || '手工录入'}</p>
+        <h1 className='mt-2 text-2xl font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>编辑正式题目</h1>
+        <p className='mt-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>来源：{question.sources[0]?.source_name || '手工录入'}</p>
       </div>
       <ManageFormPanel
         onSubmit={save}
@@ -93,43 +93,43 @@ export function QuestionEditor({ questionId }: { questionId: string }) {
         ) : undefined}
       >
         <div className='grid gap-4 sm:grid-cols-2'>
-          <label className='text-sm text-slate-600'>科目
-            <select disabled={!active} value={question.subject_id} onChange={(event) => setQuestion({ ...question, subject_id: Number(event.target.value), knowledge_point_ids: [] })} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'>
+          <label className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>科目
+            <select disabled={!active} value={question.subject_id} onChange={(event) => setQuestion({ ...question, subject_id: Number(event.target.value), knowledge_point_ids: [] })} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'>
               {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
             </select>
           </label>
-          <label className='text-sm text-slate-600'>题型
-            <select disabled={!active} value={question.question_type} onChange={(event) => setQuestion({ ...question, question_type: event.target.value as QuestionType })} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'>
+          <label className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>题型
+            <select disabled={!active} value={question.question_type} onChange={(event) => setQuestion({ ...question, question_type: event.target.value as QuestionType })} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'>
               <option value='short_answer'>简答题</option><option value='single_choice'>单选题</option><option value='multiple_choice'>多选题</option><option value='true_false'>判断题</option><option value='essay'>论述题</option>
             </select>
           </label>
         </div>
-        <label className='block text-sm text-slate-600'>标题（可选）
-          <input disabled={!active} value={question.title ?? ''} onChange={(event) => setQuestion({ ...question, title: event.target.value || null })} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+        <label className='block text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>标题（可选）
+          <input disabled={!active} value={question.title ?? ''} onChange={(event) => setQuestion({ ...question, title: event.target.value || null })} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' />
         </label>
-        <label className='block text-sm text-slate-600'>题干
-          <textarea disabled={!active} value={question.question_text} onChange={(event) => setQuestion({ ...question, question_text: event.target.value })} rows={6} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+        <label className='block text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>题干
+          <textarea disabled={!active} value={question.question_text} onChange={(event) => setQuestion({ ...question, question_text: event.target.value })} rows={6} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' />
         </label>
-        {question.question_type === 'single_choice' || question.question_type === 'multiple_choice' ? <label className='block text-sm text-slate-600'>选项（每行一项）<textarea disabled={!active} value={optionsText} onChange={(event) => setOptionsText(event.target.value)} rows={5} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' /></label> : null}
+        {question.question_type === 'single_choice' || question.question_type === 'multiple_choice' ? <label className='block text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>选项（每行一项）<textarea disabled={!active} value={optionsText} onChange={(event) => setOptionsText(event.target.value)} rows={5} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' /></label> : null}
         <div className='grid gap-4 sm:grid-cols-2'>
-          <label className='text-sm text-slate-600'>正确答案<textarea disabled={!active} value={question.correct_answer ?? ''} onChange={(event) => setQuestion({ ...question, correct_answer: event.target.value || null })} rows={3} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' /></label>
-          <label className='text-sm text-slate-600'>解析<textarea disabled={!active} value={question.explanation ?? ''} onChange={(event) => setQuestion({ ...question, explanation: event.target.value || null })} rows={3} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' /></label>
+          <label className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>正确答案<textarea disabled={!active} value={question.correct_answer ?? ''} onChange={(event) => setQuestion({ ...question, correct_answer: event.target.value || null })} rows={3} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' /></label>
+          <label className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>解析<textarea disabled={!active} value={question.explanation ?? ''} onChange={(event) => setQuestion({ ...question, explanation: event.target.value || null })} rows={3} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' /></label>
         </div>
-        <label className='block text-sm text-slate-600'>难度
-          <select disabled={!active} value={question.difficulty} onChange={(event) => setQuestion({ ...question, difficulty: event.target.value as Difficulty })} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'>
+        <label className='block text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>难度
+          <select disabled={!active} value={question.difficulty} onChange={(event) => setQuestion({ ...question, difficulty: event.target.value as Difficulty })} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'>
             <option value='unspecified'>未设置</option><option value='easy'>简单</option><option value='medium'>中等</option><option value='hard'>困难</option>
           </select>
         </label>
         <KnowledgePointMultiSelect disabled={!active} subjectId={question.subject_id} values={question.knowledge_point_ids} onChange={(values) => setQuestion({ ...question, knowledge_point_ids: values })} />
       </ManageFormPanel>
       {active ? (
-        <section className='rounded-lg border border-slate-200/70 bg-white/60 p-5'>
-          <h2 className='text-lg font-semibold text-slate-900'>作答验证</h2>
-          <p className='mt-1 text-sm text-slate-500'>提交后会记录一次私有 Attempt；错误作答只生成待确认错题草稿。</p>
-          <label className='mt-4 block text-sm text-slate-600'>你的答案
-            <textarea value={attemptAnswer} onChange={(event) => setAttemptAnswer(event.target.value)} rows={3} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+        <section className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-5'>
+          <h2 className='text-lg font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>作答验证</h2>
+          <p className='mt-1 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>提交后会记录一次私有 Attempt；错误作答只生成待确认错题草稿。</p>
+          <label className='mt-4 block text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>你的答案
+            <textarea value={attemptAnswer} onChange={(event) => setAttemptAnswer(event.target.value)} rows={3} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' />
           </label>
-          {attemptMessage ? <p role='status' className='mt-3 text-sm text-slate-600'>{attemptMessage}</p> : null}
+          {attemptMessage ? <p role='status' className='mt-3 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>{attemptMessage}</p> : null}
           <button
             type='button'
             disabled={busy || !attemptAnswer.trim()}

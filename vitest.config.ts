@@ -9,6 +9,12 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json'],
+      include: ['src/components/ui-v2/**/*.tsx', 'src/hooks/use-overlay.ts'],
+      exclude: ['src/components/ui-v2/**/*.test.tsx'],
+    },
   },
   resolve: {
     alias: {

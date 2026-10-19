@@ -10,7 +10,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { AuthGate } from '@/components/auth-gate'
-import { Sun, Moon, Mail, Lock, Eye, EyeOff, Sparkles, ChevronRight, ShieldCheck, ArrowUpRight } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui-v2'
+import { Mail, Lock, Eye, EyeOff, Sparkles, ChevronRight, ShieldCheck, ArrowUpRight } from 'lucide-react'
 
 export default function TokensDemoPage() {
 	return (
@@ -35,17 +36,19 @@ function TokensDemoContent() {
 		return () => window.removeEventListener('scroll', handleScroll)
 	}, [])
 
-	// Theme toggle. Scope the attribute to this page's own subtree instead of
-	// <html>: writing `data-theme` onto documentElement would leak dark tokens
-	// into the app shell and persist across client-side navigation.
-	const toggleTheme = () => {
-		setIsDark(prev => !prev)
-	}
+	// The shared ThemeToggle owns the global `data-theme` attribute; this page
+	// mirrors it so the demo surfaces and the toolbar stay in sync.
+	useEffect(() => {
+		const sync = () => setIsDark(document.documentElement.dataset.theme === 'dark')
+		sync()
+		const observer = new MutationObserver(sync)
+		observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+		return () => observer.disconnect()
+	}, [])
 
 	return (
 		<div
 			className='min-h-screen transition-colors duration-300'
-			data-theme={isDark ? 'dark' : 'light'}
 			style={{
 				background: isDark ? 'var(--editorial-bg, #1a1311)' : 'var(--editorial-bg, #f5f1eb)'
 			}}
@@ -144,30 +147,9 @@ function TokensDemoContent() {
 						</button>
 					</div>
 
-					{/* Action Buttons: Dark/Light Mode toggle & Indicator */}
+					{/* Action Buttons: shared ThemeToggle & Indicator */}
 					<div className='flex items-center gap-2'>
-						<button
-							onClick={toggleTheme}
-							className='flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all hover:shadow-sm'
-							style={{
-								borderColor: 'var(--editorial-border, rgba(74, 56, 50, 0.12))',
-								background: 'var(--nav-hover-bg, rgba(255, 255, 255, 0.6))',
-								color: 'inherit'
-							}}
-							title='切换深色/浅色模式'
-						>
-							{isDark ? (
-								<>
-									<Sun className='h-3.5 w-3.5 text-amber-400' />
-									<span>Light</span>
-								</>
-							) : (
-								<>
-									<Moon className='h-3.5 w-3.5 text-slate-700' />
-									<span>Dark</span>
-								</>
-							)}
-						</button>
+						<ThemeToggle />
 
 						<div
 							className='flex items-center gap-1 rounded-full px-2.5 py-1 text-xs'

@@ -340,3 +340,29 @@ describe('usePrefersReducedMotion', () => {
 		vi.unstubAllGlobals()
 	})
 })
+
+describe('useOverlay — background isolation without an AppShell', () => {
+	it('inerts unrelated body children but never the portal host or the toast region', async () => {
+		const portalHost = document.createElement('div')
+		portalHost.setAttribute('data-uiv2-portal-root', '')
+		const toaster = document.createElement('section')
+		toaster.setAttribute('data-sonner-toaster', '')
+		const chrome = document.createElement('div')
+		chrome.setAttribute('data-testid', 'page-chrome')
+		document.body.append(portalHost, toaster, chrome)
+
+		try {
+			render(<OverlayHarness open onClose={vi.fn()} />)
+
+			await waitFor(() => expect(chrome).toHaveAttribute('inert'))
+			expect(portalHost).not.toHaveAttribute('inert')
+			expect(toaster).not.toHaveAttribute('inert')
+			// The subtree that contains the overlay must stay reachable.
+			expect(screen.getByTestId('Overlay-dialog').closest('[inert]')).toBeNull()
+		} finally {
+			portalHost.remove()
+			toaster.remove()
+			chrome.remove()
+		}
+	})
+})

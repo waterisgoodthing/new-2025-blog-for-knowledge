@@ -295,9 +295,10 @@ export default function BlogPage() {
 	}, [isAdmin, editMode, toggleEditMode])
 
 	return (
-		<>
-
-
+		<div
+			className='min-h-screen'
+			data-surface='editorial'
+			style={{ background: 'var(--editorial-bg)', color: 'var(--editorial-text-primary)' }}>
 			<div className='flex flex-col items-center justify-center gap-6 px-6 pt-24 max-sm:pt-24'>
 				{items.length > 0 && (
 					<motion.div
@@ -512,6 +513,6 @@ export default function BlogPage() {
 				editableItems={editableItems}
 				onAssignCategory={handleAssignCategory}
 			/>
-		</>
+		</div>
 	)
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Home } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui-v2'
 
 export function ManageTopbar() {
   return (
@@ -12,6 +13,7 @@ export function ManageTopbar() {
       </div>
 
       <div className='flex items-center gap-2 text-sm'>
+        <ThemeToggle />
         <Link
           href='/'
           aria-label='返回公开首页'

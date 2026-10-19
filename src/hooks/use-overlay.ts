@@ -94,16 +94,42 @@ const BACKGROUND_ROOT_SELECTOR = '[data-overlay-background-root]'
 let inertCount = 0
 const inertedRoots = new Set<HTMLElement>()
 
-function applyBackgroundInert() {
+function applyBackgroundInert(overlayContainer: HTMLElement | null) {
 	if (typeof document === 'undefined') return
 	inertCount += 1
+
 	// Re-scan on every open: a background root that mounted while another
 	// overlay was already open must still be isolated.
-	for (const root of Array.from(document.querySelectorAll<HTMLElement>(BACKGROUND_ROOT_SELECTOR))) {
+	for (const root of collectBackgroundRoots(overlayContainer)) {
 		if (inertedRoots.has(root)) continue
 		root.setAttribute('inert', '')
 		inertedRoots.add(root)
 	}
+}
+
+/**
+ * Pages rendered without an AppShell (the public routes during this phase) have
+ * no `[data-overlay-background-root]`. Fall back to isolating the body children,
+ * always excluding the portal host so the overlay itself stays interactive.
+ */
+function isIsolatable(node: HTMLElement, overlayContainer: HTMLElement | null): boolean {
+	// The portal host and the toast region must stay interactive/announced.
+	if (node.hasAttribute('data-uiv2-portal-root')) return false
+	if (node.hasAttribute('data-sonner-toaster') || node.querySelector('[data-sonner-toaster]')) return false
+	// Never inert a subtree that contains the overlay itself (inline-rendered
+	// overlays, as in tests, would otherwise become unreachable).
+	if (overlayContainer && node.contains(overlayContainer)) return false
+	return true
+}
+
+function collectBackgroundRoots(overlayContainer: HTMLElement | null): HTMLElement[] {
+	const explicit = Array.from(document.querySelectorAll<HTMLElement>(BACKGROUND_ROOT_SELECTOR)).filter(node =>
+		isIsolatable(node, overlayContainer)
+	)
+	if (explicit.length > 0) return explicit
+	return Array.from(document.body.children).filter(
+		(node): node is HTMLElement => node instanceof HTMLElement && isIsolatable(node, overlayContainer)
+	)
 }
 
 function releaseBackgroundInert() {
@@ -424,7 +450,7 @@ export function useOverlay({
 
 	useEffect(() => {
 		if (!open || !isolateBackground) return
-		applyBackgroundInert()
+		applyBackgroundInert(containerRef.current)
 		return () => releaseBackgroundInert()
 	}, [open, isolateBackground])
 

@@ -8,7 +8,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-gray-400">
+      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-[var(--editorial-text-tertiary)]">
         加载薄弱点数据…
       </div>
     );
@@ -16,7 +16,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-gray-400">
+      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-[var(--editorial-text-tertiary)]">
         薄弱点数据暂时不可用
       </div>
     );
@@ -24,7 +24,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
 
   if (!data || !data.weak_points || data.weak_points.length === 0) {
     return (
-      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-gray-400">
+      <div className="rounded-xl border border-white/40 bg-white/60 p-4 text-sm text-[var(--editorial-text-tertiary)]">
         暂无薄弱点数据
       </div>
     );
@@ -34,7 +34,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
 
   return (
     <div className="rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm">
-      <h2 className="text-sm font-semibold text-gray-800">
+      <h2 className="text-sm font-semibold text-[var(--editorial-text-primary)]">
         结构化薄弱点 (近{data.days}天)
       </h2>
       <div className="mt-3 space-y-2">
@@ -44,7 +44,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
             className="rounded-lg bg-white/45 px-3 py-2 text-xs"
           >
             <div className="flex items-center gap-2">
-              <span className="truncate font-medium text-gray-800">
+              <span className="truncate font-medium text-[var(--editorial-text-primary)]">
                 {wp.knowledge_point}
               </span>
               {wp.subject && (
@@ -73,7 +73,7 @@ export function WeakPointsPanel({ enabled = true }: { enabled?: boolean }) {
                 {wp.top_error_reasons.map((reason, j) => (
                   <span
                     key={j}
-                    className="rounded-full bg-gray-200/60 px-2 py-0.5 text-[11px] text-gray-600"
+                    className="rounded-full bg-gray-200/60 px-2 py-0.5 text-[11px] text-[var(--editorial-text-secondary)]"
                   >
                     {reason}
                   </span>

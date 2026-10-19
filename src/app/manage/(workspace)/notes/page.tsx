@@ -6,7 +6,7 @@ import { useNoteIndex } from '@/hooks/use-note-index'
 import { deleteNote } from '@/lib/api/notes'
 import { getContentDetailHref } from '@/lib/content-routes'
 import { FeatureState } from '../../components/feature-state'
-import { ManagePageHeader } from '../../components/manage-page-header'
+import { Uiv2PageHeader } from '@/components/ui-v2'
 import { useEffect, useState } from 'react'
 
 export default function NotesPage() {
@@ -52,9 +52,9 @@ export default function NotesPage() {
 			}}
 		/>
 	) : items.length ? (
-		<div className='overflow-x-auto border border-slate-200/70 bg-white/45'>
+		<div className='overflow-x-auto border border-[var(--admin-border)] bg-white/45'>
 			<table className='w-full min-w-[620px] text-left text-sm'>
-				<thead className='border-b border-slate-200/70 text-xs text-slate-500'>
+				<thead className='border-b border-[var(--admin-border)] text-xs text-[var(--admin-text-[var(--admin-text-secondary)])]'>
 					<tr>
 						<th className='p-3'>标题</th>
 						<th className='p-3'>类型</th>
@@ -65,16 +65,16 @@ export default function NotesPage() {
 				</thead>
 				<tbody>
 					{items.map(item => (
-						<tr key={item.slug} className='border-b border-slate-200/60 last:border-0'>
+						<tr key={item.slug} className='border-b border-[var(--admin-border)] last:border-0'>
 							<td className='p-3 font-medium'>{item.title || '无标题'}</td>
 							<td className='p-3'>{item.type === 'blog' ? '博客' : '笔记'}</td>
 							<td className='p-3'>{item.status === 'published' ? '已发布' : '草稿'}</td>
-							<td className='p-3 text-slate-500'>{new Date(item.updated_at).toLocaleString('zh-CN')}</td>
+							<td className='p-3 text-[var(--admin-text-[var(--admin-text-secondary)])]'>{new Date(item.updated_at).toLocaleString('zh-CN')}</td>
 							<td className='flex gap-3 p-3'>
 								<Link className='text-[var(--color-brand)]' href={`/manage/notes/${item.slug}`}>
 									编辑
 								</Link>
-								<Link className='text-slate-500' href={getContentDetailHref(item.type, item.slug)}>
+								<Link className='text-[var(--admin-text-[var(--admin-text-secondary)])]' href={getContentDetailHref(item.type, item.slug)}>
 									查看
 								</Link>
 								<button type='button' className='text-red-700' onClick={() => void remove(item.slug)}>
@@ -103,12 +103,12 @@ export default function NotesPage() {
 	)
 	return (
 		<div className='space-y-8'>
-			<ManagePageHeader eyebrow='内容管理' title='笔记写作' description='统一管理笔记与博客的草稿、发布状态和属性。' />
+			<Uiv2PageHeader eyebrow='内容管理' title='笔记写作' subtitle='统一管理笔记与博客的草稿、发布状态和属性。' />
 			<div className='flex flex-wrap gap-2'>
 				<Link href='/manage/notes/new?type=note' className='brand-btn'>
 					新建笔记
 				</Link>
-				<Link href='/manage/notes/new?type=blog' className='rounded-lg border border-slate-200 px-4 py-2 text-sm'>
+				<Link href='/manage/notes/new?type=blog' className='rounded-lg border border-[var(--admin-border)] px-4 py-2 text-sm'>
 					新建博客
 				</Link>
 			</div>
@@ -124,18 +124,18 @@ export default function NotesPage() {
 						type='button'
 						disabled={page <= 1}
 						onClick={() => setPage(current => Math.max(1, current - 1))}
-						className='rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40'
+						className='rounded-lg border border-[var(--admin-border)] px-3 py-1 disabled:opacity-40'
 					>
 						上一页
 					</button>
-					<span className='text-slate-500'>
+					<span className='text-[var(--admin-text-[var(--admin-text-secondary)])]'>
 						{page} / {totalPages}
 					</span>
 					<button
 						type='button'
 						disabled={page >= totalPages}
 						onClick={() => setPage(current => Math.min(totalPages, current + 1))}
-						className='rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40'
+						className='rounded-lg border border-[var(--admin-border)] px-3 py-1 disabled:opacity-40'
 					>
 						下一页
 					</button>

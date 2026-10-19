@@ -217,8 +217,8 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 			aria-label='内容属性'
 			className={
 				attributesInDrawer
-					? 'fixed inset-x-0 bottom-0 z-40 max-h-[70svh] space-y-4 overflow-y-auto border border-slate-200/80 bg-white/95 p-4 shadow-[0_-20px_60px_-35px_rgba(15,23,42,0.55)]'
-					: 'max-w-xl space-y-4 border border-slate-200/80 bg-white/55 p-4'
+					? 'fixed inset-x-0 bottom-0 z-40 max-h-[70svh] space-y-4 overflow-y-auto border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4 shadow-[0_-20px_60px_-35px_rgba(15,23,42,0.55)]'
+					: 'max-w-xl space-y-4 border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-4'
 			}>
 			<TagInput
 				tags={tags}
@@ -238,7 +238,7 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 							setSaveState('editing')
 						}}
 						placeholder='摘要'
-						className='min-h-20 w-full border border-slate-200 bg-white/60 p-2 text-sm outline-none'
+						className='min-h-20 w-full border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-2 text-sm outline-none'
 					/>
 					<Select
 						value={category}
@@ -252,7 +252,7 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 					/>
 				</>
 			) : null}
-			<label className='flex items-center gap-2 text-sm text-slate-600'>
+			<label className='flex items-center gap-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>
 				<input
 					type='checkbox'
 					checked={hidden}
@@ -284,11 +284,11 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 								setSaveState('editing')
 							}}
 							placeholder={`${typeLabel}标题`}
-							className='w-full border-b border-slate-200 bg-transparent px-0 py-2 text-2xl font-semibold outline-none focus:border-[var(--color-brand)]'
+							className='w-full border-b border-[var(--admin-border)] bg-transparent px-0 py-2 text-2xl font-semibold outline-none focus:border-[var(--color-brand)]'
 						/>
 					</div>
 					<div
-						className={`border border-slate-200/80 bg-white/55 px-3 py-2 text-xs text-slate-500 ${saveState === 'saving' ? 'animate-pulse motion-reduce:animate-none' : ''}`}
+						className={`border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] px-3 py-2 text-xs text-[var(--admin-text-[var(--admin-text-secondary)])] ${saveState === 'saving' ? 'animate-pulse motion-reduce:animate-none' : ''}`}
 						aria-live='polite'>
 						{saveState === 'editing' ? (
 							'编辑中'
@@ -316,7 +316,7 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 					}}
 					onPaste={editor.handlePaste}
 					placeholder='从这里开始写作...'
-					className='min-h-[52svh] w-full resize-y border border-slate-200/80 bg-white/40 p-4 font-mono text-sm leading-7 outline-none focus:border-[var(--color-brand)] sm:min-h-[60svh]'
+					className='min-h-[52svh] w-full resize-y border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-4 font-mono text-sm leading-7 outline-none focus:border-[var(--color-brand)] sm:min-h-[60svh]'
 				/>
 				{error ? (
 					<p role='alert' className='flex items-center justify-between gap-3 border-l-2 border-red-400 bg-red-50/70 px-3 py-2 text-sm text-red-700'>
@@ -333,7 +333,7 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 						ref={attributesButtonRef}
 						type='button'
 						onClick={() => setAttributesOpen(value => !value)}
-						className='border border-slate-200/80 bg-white/55 px-3 py-2 text-left text-sm text-slate-600'>
+						className='border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] px-3 py-2 text-left text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>
 						属性 · {tags.length} 个标签 · {hidden ? '隐藏' : '可见'}
 						{type === 'blog' && category ? ` · ${category}` : ''}
 					</button>
@@ -360,11 +360,11 @@ export function ContentEditor({ mode, type, initial }: ContentEditorProps) {
 						role='dialog'
 						aria-modal='true'
 						aria-labelledby='publish-title'
-						className='w-full max-w-sm border border-white/60 bg-white p-5 shadow-xl'>
-						<h2 id='publish-title' className='text-lg font-semibold text-slate-900'>
+						className='w-full max-w-sm border border-white/60 bg-[var(--admin-surface)] p-5 shadow-xl'>
+						<h2 id='publish-title' className='text-lg font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>
 							确认发布？
 						</h2>
-						<p className='mt-2 text-sm text-slate-500'>发布后内容会按当前可见性设置展示。</p>
+						<p className='mt-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>发布后内容会按当前可见性设置展示。</p>
 						<div className='mt-5 flex justify-end gap-2'>
 							<button type='button' onClick={() => setPublishOpen(false)} className='rounded-lg border px-3 py-2 text-sm'>
 								取消

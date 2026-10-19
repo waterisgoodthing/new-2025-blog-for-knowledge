@@ -97,8 +97,8 @@ export function AdminSidebar({
 					aria-controls={navId}
 					aria-label={collapsed ? '展开导航' : '折叠导航'}
 					title={collapsed ? '展开导航' : '折叠导航'}
-					className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]'
-					style={{ color: 'var(--admin-text-secondary, #6b7b79)' }}>
+					className='inline-flex shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]'
+					style={{ minHeight: 44, minWidth: 44, color: 'var(--admin-text-secondary, #6b7b79)' }}>
 					{collapsed ? <PanelLeftOpen size={16} aria-hidden='true' /> : <PanelLeftClose size={16} aria-hidden='true' />}
 				</button>
 			</div>
@@ -129,6 +129,7 @@ export function AdminSidebar({
 										collapsed ? 'justify-center px-0' : 'px-2'
 									)}
 									style={{
+										minHeight: 44,
 										background: active ? 'var(--nav-active-bg, rgba(61, 184, 168, 0.12))' : 'transparent',
 										color: active ? 'var(--brand-ink, #1f7a6e)' : 'var(--admin-text-secondary, #6b7b79)',
 										borderLeft: active ? '4px solid var(--brand, #3db8a8)' : '4px solid transparent'

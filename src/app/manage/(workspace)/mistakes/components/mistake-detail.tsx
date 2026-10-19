@@ -65,7 +65,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
     return (
       <div className='max-w-3xl space-y-5'>
         <BackLink />
-        <p className='text-sm text-slate-500'>{error || '正在加载错题…'}</p>
+        <p className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>{error || '正在加载错题…'}</p>
       </div>
     )
   }
@@ -116,10 +116,10 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
             ? `错题草稿 · ${draft?.status === 'pending' ? '待确认' : draft?.status === 'needs_fix' ? '需修正' : draft?.status === 'rejected' ? '已拒绝' : '已入库'}`
             : `正式错题 · ${questionStatusLabel(mistake?.status ?? '')}`} · {kind === 'mistake' ? (visibilityLabels[mistake?.visibility ?? 'private'] ?? '私有') : '私有'} · 版本 {record.version}
         </p>
-        <h1 className='mt-2 text-2xl font-semibold text-slate-900'>
+        <h1 className='mt-2 text-2xl font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>
           {record.title || '未命名错题'}
         </h1>
-        <p className='mt-2 text-sm text-slate-500'>
+        <p className='mt-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>
           {kind === 'draft' ? '草稿确认后会原子创建正式错题与复习项。' : `复习项：${mistake?.review_item_id}`}
         </p>
       </header>
@@ -231,13 +231,13 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
           </>
         ) : undefined}
       >
-        <section className='rounded-lg bg-slate-50 p-4'>
-          <h2 className='text-sm font-semibold text-slate-800'>题干快照</h2>
-          <p className='mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600'>{record.question_text}</p>
+        <section className='rounded-lg bg-[var(--admin-surface-subtle)] p-4'>
+          <h2 className='text-sm font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>题干快照</h2>
+          <p className='mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--admin-text-[var(--admin-text-secondary)])]'>{record.question_text}</p>
         </section>
 
         <div className='grid gap-4 md:grid-cols-2'>
-          <label className='block text-sm font-medium text-slate-700'>
+          <label className='block text-sm font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>
             我的答案
             <textarea
               disabled={!active || busy}
@@ -247,10 +247,10 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                 if (kind === 'mistake' && mistake) setMistake({ ...mistake, my_answer: event.target.value || null })
               }}
               rows={4}
-              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm'
             />
           </label>
-          <label className='block text-sm font-medium text-slate-700'>
+          <label className='block text-sm font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>
             {kind === 'draft' ? '解析快照' : '解析'}
             <textarea
               disabled={kind === 'draft' || !active || busy}
@@ -259,13 +259,13 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                 if (mistake) setMistake({ ...mistake, analysis: event.target.value || null })
               }}
               rows={4}
-              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm disabled:bg-slate-50'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm disabled:bg-[var(--admin-surface-subtle)]'
             />
           </label>
         </div>
 
         <div className='grid gap-4 md:grid-cols-2'>
-          <label className='block text-sm font-medium text-slate-700'>
+          <label className='block text-sm font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>
             错因类型
             <select
               disabled={!active || busy}
@@ -275,14 +275,14 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                 if (draft) setDraft({ ...draft, reason_category: next })
                 if (mistake) setMistake({ ...mistake, reason_category: next })
               }}
-              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
             >
               {Object.entries(reasonLabels).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </label>
-          <label className='block text-sm font-medium text-slate-700'>
+          <label className='block text-sm font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>
             难度
             <select
               disabled={!active || busy}
@@ -292,7 +292,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
                 if (draft) setDraft({ ...draft, difficulty: next })
                 if (mistake) setMistake({ ...mistake, difficulty: next })
               }}
-              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
             >
               <option value=''>未设置</option>
               <option value='easy'>简单</option>
@@ -302,7 +302,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
           </label>
         </div>
 
-        <label className='block text-sm font-medium text-slate-700'>
+        <label className='block text-sm font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>
           错因说明
           <textarea
             disabled={!active || busy}
@@ -313,7 +313,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
               if (mistake) setMistake({ ...mistake, mistake_reason: next })
             }}
             rows={4}
-            className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm'
           />
         </label>
 
@@ -333,7 +333,7 @@ export function MistakeDetail({ id, kind }: { id: string; kind: 'draft' | 'mista
 
 function BackLink() {
   return (
-    <Link href='/manage/mistakes' className='inline-flex items-center gap-2 text-sm text-slate-500'>
+    <Link href='/manage/mistakes' className='inline-flex items-center gap-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>
       <ArrowLeft className='h-4 w-4' />
       返回错题
     </Link>

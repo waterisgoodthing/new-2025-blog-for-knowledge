@@ -76,7 +76,11 @@ export default function MistakesPage() {
 	const totalPages = data ? Math.max(1, Math.ceil(data.total / (data.size || PAGE_SIZE))) : 1
 
 	return (
-		<div className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
+		<div
+			className='mx-auto max-w-6xl rounded-[16px] px-4 py-8 sm:px-6'
+			data-render-state={renderState}
+			data-surface='editorial'
+			style={{ background: 'var(--editorial-bg)', color: 'var(--editorial-text-primary)' }}>
 			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
 				错题集
 			</motion.h1>
@@ -84,14 +88,14 @@ export default function MistakesPage() {
 			{isAdmin && stats && (
 				<div className='mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4'>
 					{[
-						{ label: '总题数', value: stats.total_mistakes, color: 'text-gray-700' },
+						{ label: '总题数', value: stats.total_mistakes, color: 'text-[var(--editorial-text-primary)]' },
 						{ label: '待复习', value: stats.pending_review, color: 'text-orange-500' },
 						{ label: '今日到期', value: stats.due_today, color: 'text-red-500' },
 						{ label: '已掌握', value: stats.mastered, color: 'text-green-500' },
 					].map(s => (
 						<div key={s.label} className='rounded-xl border border-white/40 bg-white/60 p-3 text-center backdrop-blur-sm'>
 							<div className={cn('text-2xl font-bold', s.color)}>{s.value}</div>
-							<div className='text-xs text-gray-500'>{s.label}</div>
+							<div className='text-xs text-[var(--editorial-text-secondary)]'>{s.label}</div>
 						</div>
 					))}
 				</div>
@@ -102,8 +106,8 @@ export default function MistakesPage() {
 					<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
 						<div className='mb-3 flex items-center justify-between gap-3'>
 							<div>
-								<h2 className='text-sm font-semibold text-gray-800'>今日复习规划</h2>
-								<p className='mt-0.5 text-xs text-gray-500'>
+								<h2 className='text-sm font-semibold text-[var(--editorial-text-primary)]'>今日复习规划</h2>
+								<p className='mt-0.5 text-xs text-[var(--editorial-text-secondary)]'>
 									{plan.today_count > 0 ? `今天有 ${plan.today_count} 道错题到期` : '今天没有到期错题'}
 									{plan.overdue_count > 0 && `，其中 ${plan.overdue_count} 道已逾期`}
 								</p>
@@ -118,21 +122,21 @@ export default function MistakesPage() {
 						<div className='grid grid-cols-3 gap-2 text-center'>
 							<div className='rounded-lg bg-white/50 px-2 py-2'>
 								<div className='text-lg font-semibold text-red-500'>{plan.today_count}</div>
-								<div className='text-[11px] text-gray-500'>今日</div>
+								<div className='text-[11px] text-[var(--editorial-text-secondary)]'>今日</div>
 							</div>
 							<div className='rounded-lg bg-white/50 px-2 py-2'>
 								<div className='text-lg font-semibold text-orange-500'>{plan.week_count}</div>
-								<div className='text-[11px] text-gray-500'>本周</div>
+								<div className='text-[11px] text-[var(--editorial-text-secondary)]'>本周</div>
 							</div>
 							<div className='rounded-lg bg-white/50 px-2 py-2'>
-								<div className='text-lg font-semibold text-gray-700'>{plan.next_review_date ? dayjs(plan.next_review_date).format('MM-DD') : '-'}</div>
-								<div className='text-[11px] text-gray-500'>下次</div>
+								<div className='text-lg font-semibold text-[var(--editorial-text-primary)]'>{plan.next_review_date ? dayjs(plan.next_review_date).format('MM-DD') : '-'}</div>
+								<div className='text-[11px] text-[var(--editorial-text-secondary)]'>下次</div>
 							</div>
 						</div>
 						{plan.recommendations.length > 0 && (
 							<div className='mt-3 space-y-1.5'>
 								{plan.recommendations.map(item => (
-									<div key={item} className='rounded-lg bg-white/40 px-3 py-2 text-xs leading-5 text-gray-600'>
+									<div key={item} className='rounded-lg bg-white/40 px-3 py-2 text-xs leading-5 text-[var(--editorial-text-secondary)]'>
 										{item}
 									</div>
 								))}
@@ -141,24 +145,24 @@ export default function MistakesPage() {
 					</div>
 
 					<div className='rounded-xl border border-white/40 bg-white/60 p-4 backdrop-blur-sm'>
-						<h2 className='text-sm font-semibold text-gray-800'>薄弱点归总</h2>
+						<h2 className='text-sm font-semibold text-[var(--editorial-text-primary)]'>薄弱点归总</h2>
 						{plan.weaknesses.length > 0 ? (
 							<div className='mt-3 space-y-2'>
 								{plan.weaknesses.slice(0, 4).map(item => (
 									<div key={item.name} className='flex items-center gap-2 rounded-lg bg-white/45 px-3 py-2 text-xs'>
-										<span className='min-w-0 flex-1 truncate text-gray-700'>{item.name}</span>
+										<span className='min-w-0 flex-1 truncate text-[var(--editorial-text-primary)]'>{item.name}</span>
 										<span className='rounded-full bg-purple-500/15 px-2 py-0.5 text-purple-600'>{item.count} 次</span>
 										{item.due_today > 0 && <span className='rounded-full bg-red-500/15 px-2 py-0.5 text-red-600'>到期 {item.due_today}</span>}
 									</div>
 								))}
 							</div>
 						) : (
-							<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-gray-500'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
+							<p className='mt-3 rounded-lg bg-white/45 px-3 py-2 text-xs text-[var(--editorial-text-secondary)]'>暂无可归总的知识点，后续错题补充知识点后会自动聚合。</p>
 						)}
 						{plan.subject_summaries.length > 0 && (
 							<div className='mt-3 flex flex-wrap gap-1.5'>
 								{plan.subject_summaries.slice(0, 4).map(item => (
-									<span key={item.subject} className='rounded-full bg-gray-200/60 px-2 py-1 text-[11px] text-gray-600'>
+									<span key={item.subject} className='rounded-full bg-gray-200/60 px-2 py-1 text-[11px] text-[var(--editorial-text-secondary)]'>
 										{item.subject}: {item.total} 题
 									</span>
 								))}
@@ -184,7 +188,7 @@ export default function MistakesPage() {
 					</Link>
 				)}
 				{data && !data.empty && (
-					<span className='text-sm text-gray-500'>共 {data.total} 道公开错题</span>
+					<span className='text-sm text-[var(--editorial-text-secondary)]'>共 {data.total} 道公开错题</span>
 				)}
 				{isAdmin && (
 					<Link
@@ -222,7 +226,7 @@ export default function MistakesPage() {
 					>
 						上一页
 					</button>
-					<span className='px-3 py-1 text-sm text-gray-500'>{page} / {totalPages}</span>
+					<span className='px-3 py-1 text-sm text-[var(--editorial-text-secondary)]'>{page} / {totalPages}</span>
 					<button
 						type='button'
 						disabled={page >= totalPages}
@@ -254,46 +258,46 @@ function PublicMistakeCard({ item, index }: { item: PublicMistake; index: number
 				<span className='rounded-full bg-purple-500/20 px-2 py-0.5 text-xs text-purple-600'>
 					{reasonLabels[item.reason_category] ?? item.reason_category}
 				</span>
-				<span className='ml-auto text-xs text-gray-400'>
+				<span className='ml-auto text-xs text-[var(--editorial-text-tertiary)]'>
 					{dayjs(item.created_at).format('YYYY-MM-DD')}
 					{item.updated_at !== item.created_at && ` · 更新 ${dayjs(item.updated_at).format('YYYY-MM-DD')}`}
 				</span>
 			</div>
 
-			<h2 className='text-base font-medium text-gray-900'>{item.title || '未命名错题'}</h2>
+			<h2 className='text-base font-medium text-[var(--editorial-text-primary)]'>{item.title || '未命名错题'}</h2>
 
 			{item.question_text && (
 				<section className='mt-3'>
-					<h3 className='text-xs font-semibold text-gray-500'>题目</h3>
-					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.question_text}</p>
+					<h3 className='text-xs font-semibold text-[var(--editorial-text-secondary)]'>题目</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--editorial-text-primary)]'>{item.question_text}</p>
 				</section>
 			)}
 
 			{item.correct_answer && (
 				<section className='mt-3'>
-					<h3 className='text-xs font-semibold text-gray-500'>正确答案</h3>
-					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.correct_answer}</p>
+					<h3 className='text-xs font-semibold text-[var(--editorial-text-secondary)]'>正确答案</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--editorial-text-primary)]'>{item.correct_answer}</p>
 				</section>
 			)}
 
 			{item.analysis && (
 				<section className='mt-3'>
-					<h3 className='text-xs font-semibold text-gray-500'>解析</h3>
-					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.analysis}</p>
+					<h3 className='text-xs font-semibold text-[var(--editorial-text-secondary)]'>解析</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--editorial-text-primary)]'>{item.analysis}</p>
 				</section>
 			)}
 
 			{item.mistake_reason && (
 				<section className='mt-3'>
-					<h3 className='text-xs font-semibold text-gray-500'>错因说明</h3>
-					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-700'>{item.mistake_reason}</p>
+					<h3 className='text-xs font-semibold text-[var(--editorial-text-secondary)]'>错因说明</h3>
+					<p className='mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--editorial-text-primary)]'>{item.mistake_reason}</p>
 				</section>
 			)}
 
 			{item.knowledge_point_ids.length > 0 && (
 				<div className='mt-3 flex flex-wrap gap-1'>
 					{item.knowledge_point_ids.map((id) => (
-						<span key={id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-gray-500'>
+						<span key={id} className='rounded bg-gray-200/60 px-1.5 py-0.5 text-xs text-[var(--editorial-text-secondary)]'>
 							KP #{id}
 						</span>
 					))}

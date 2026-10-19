@@ -178,12 +178,12 @@ export function DraftWorkspace() {
         count={loading ? undefined : filtered.length}
         header={
           <>
-            <h2 className='font-medium text-slate-800'>审核队列</h2>
+            <h2 className='font-medium text-[var(--admin-text-[var(--admin-text-primary)])]'>审核队列</h2>
             <select
               aria-label='草稿类型'
               value={kind}
               onChange={(event) => setKind(event.target.value as '' | DraftKind)}
-              className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm'
+              className='rounded-lg border border-[var(--admin-border)] bg-white px-3 py-2 text-sm'
             >
               {kindFilters.map((item) => (
                 <option key={item.value} value={item.value}>{item.label}</option>

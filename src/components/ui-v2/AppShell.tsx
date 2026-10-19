@@ -241,8 +241,21 @@ export function Uiv2AppShell({
 
 	const panelClassName =
 		variant === 'admin'
-			? 'w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border border-white/45 bg-white/48 p-5 shadow-[0_24px_90px_-46px_rgba(66,107,113,0.5)] backdrop-blur-xl sm:p-7 lg:p-9'
-			: 'w-full min-w-0 flex-1 overflow-hidden rounded-[var(--uiv2-radius-lg)] border border-[var(--uiv2-border)] bg-white/70 p-5 shadow-[var(--uiv2-shadow-md)] sm:p-7'
+			? 'w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border p-5 shadow-[0_24px_90px_-46px_rgba(66,107,113,0.5)] backdrop-blur-xl sm:p-7 lg:p-9'
+			: 'w-full min-w-0 flex-1 overflow-hidden rounded-[var(--uiv2-radius-lg)] border p-5 shadow-[var(--uiv2-shadow-md)] sm:p-7'
+
+	// Translucent surfaces, but derived from the dual-surface tokens so the
+	// `[data-theme='dark']` palette actually reaches the shell.
+	const panelStyle =
+		variant === 'admin'
+			? {
+					background: 'color-mix(in srgb, var(--admin-surface, #ffffff) 60%, transparent)',
+					borderColor: 'var(--admin-border, rgba(45, 62, 60, 0.12))'
+				}
+			: {
+					background: 'color-mix(in srgb, var(--editorial-surface, #fffef8) 70%, transparent)',
+					borderColor: 'var(--editorial-border, rgba(74, 56, 50, 0.12))'
+				}
 
 	return (
 		<div data-app-shell={variant}>
@@ -250,7 +263,7 @@ export function Uiv2AppShell({
 				<Uiv2PageLayout>
 					<div className={variant === 'admin' ? 'flex flex-col gap-4 md:flex-row md:gap-6' : 'flex flex-col'}>
 						{variant === 'admin' ? sidebar ?? <Uiv2AppSidebar currentPath={currentPath} /> : null}
-						<section className={panelClassName}>
+						<section className={panelClassName} style={panelStyle}>
 							{mobileNav ?? <Uiv2MobileNav currentPath={currentPath} />}
 							{variant === 'admin' ? header ?? <Uiv2AppHeader currentPath={currentPath} action={headerAction} /> : null}
 							<div className="pt-3">

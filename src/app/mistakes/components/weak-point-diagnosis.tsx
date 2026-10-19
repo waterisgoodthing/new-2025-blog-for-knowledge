@@ -7,7 +7,7 @@ import { useWeakPoints } from '@/hooks/use-knowledge'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { generateVariant, generateKnowledgeCard } from '@/lib/api/ai'
-import { Drawer } from '@/components/drawer'
+import { Uiv2Drawer } from '@/components/ui-v2'
 
 type TimeRange = 7 | 30
 
@@ -144,7 +144,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
           <div className='flex items-center gap-2'>
             <Brain className='h-5 w-5 text-[var(--color-brand)]' />
             <h2 className='font-medium'>薄弱点诊断</h2>
-            {data && <span className='text-xs text-gray-400'>近{days}天 · {clusters.length}个</span>}
+            {data && <span className='text-xs text-[var(--editorial-text-tertiary)]'>近{days}天 · {clusters.length}个</span>}
           </div>
           <div className='flex gap-1'>
             {([7, 30] as TimeRange[]).map(d => (
@@ -153,7 +153,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                 onClick={() => { setDays(d); setDrawerOpen(false) }}
                 className={cn(
                   'rounded-lg px-3 py-1 text-xs transition-colors',
-                  days === d ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 text-gray-500 hover:bg-white/80'
+                  days === d ? 'bg-[var(--color-brand)] text-white' : 'bg-white/60 text-[var(--editorial-text-secondary)] hover:bg-white/80'
                 )}
               >
                 {d}天
@@ -164,13 +164,13 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
 
         <div className='p-5'>
           {isLoading ? (
-            <div className='py-6 text-center text-sm text-gray-400'>诊断中...</div>
+            <div className='py-6 text-center text-sm text-[var(--editorial-text-tertiary)]'>诊断中...</div>
           ) : error ? (
-            <div className='py-6 text-center text-sm text-gray-400'>诊断数据暂时不可用</div>
+            <div className='py-6 text-center text-sm text-[var(--editorial-text-tertiary)]'>诊断数据暂时不可用</div>
           ) : clusters.length === 0 ? (
             <div className='py-6 text-center'>
-              <Target className='mx-auto mb-2 h-8 w-8 text-gray-300' />
-              <p className='text-sm text-gray-400'>暂无薄弱点数据</p>
+              <Target className='mx-auto mb-2 h-8 w-8 text-[var(--editorial-text-tertiary)]' />
+              <p className='text-sm text-[var(--editorial-text-tertiary)]'>暂无薄弱点数据</p>
             </div>
           ) : (
             <div className='space-y-2'>
@@ -195,13 +195,13 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                       {cluster.due_review_count > 0 && <span className='text-orange-600'>· {cluster.due_review_count} 待复习</span>}
                     </div>
                   </div>
-                  <ChevronRight size={16} className='shrink-0 text-gray-400' />
+                  <ChevronRight size={16} className='shrink-0 text-[var(--editorial-text-tertiary)]' />
                 </button>
               ))}
               {clusters.length > 3 && (
                 <button
                   onClick={() => { setSelectedCluster(null); setDrawerOpen(true) }}
-                  className='w-full rounded-lg py-2 text-center text-xs text-gray-400 hover:text-gray-600'
+                  className='w-full rounded-lg py-2 text-center text-xs text-[var(--editorial-text-tertiary)] hover:text-[var(--editorial-text-secondary)]'
                 >
                   查看全部 {clusters.length} 个薄弱点
                 </button>
@@ -211,13 +211,14 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
         </div>
       </div>
 
-      <Drawer
+      <Uiv2Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         title={selectedCluster ? (selectedCluster.canonical_name || selectedCluster.knowledge_point) : '薄弱点诊断'}
         side={isMobile ? 'bottom' : 'right'}
+        size={isMobile ? '80vh' : '480px'}
       >
-        <div className='p-5'>
+        <div>
           {selectedCluster ? (
             <div className='space-y-4'>
               <div className={cn('rounded-xl border p-3', SEVERITY_COLORS[selectedCluster.severity])}>
@@ -228,7 +229,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                 {selectedCluster.aliases && selectedCluster.aliases.length > 0 && (
                   <div className='mt-1.5 flex flex-wrap gap-1'>
                     {selectedCluster.aliases.map((alias, i) => (
-                      <span key={i} className='rounded-full bg-white/40 px-2 py-0.5 text-[10px] text-gray-500'>{alias}</span>
+                      <span key={i} className='rounded-full bg-white/40 px-2 py-0.5 text-[10px] text-[var(--editorial-text-secondary)]'>{alias}</span>
                     ))}
                   </div>
                 )}
@@ -245,7 +246,7 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
 
               {selectedCluster.evidence_sources.length > 0 && (
                 <div>
-                  <div className='mb-2 text-xs font-medium text-gray-500'>相关错题</div>
+                  <div className='mb-2 text-xs font-medium text-[var(--editorial-text-secondary)]'>相关错题</div>
                   <div className='flex flex-wrap gap-1.5'>
                     {selectedCluster.evidence_sources.map((src, j) => (
                       src.slug ? (
@@ -267,10 +268,10 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
 
               {selectedCluster.top_error_reasons.length > 0 && (
                 <div className='rounded-lg bg-white/40 p-3'>
-                  <div className='mb-1.5 text-xs font-medium text-gray-500'>高频错误模式</div>
+                  <div className='mb-1.5 text-xs font-medium text-[var(--editorial-text-secondary)]'>高频错误模式</div>
                   <div className='space-y-1'>
                     {selectedCluster.top_error_reasons.map((reason, j) => (
-                      <div key={j} className='flex items-start gap-2 text-xs text-gray-600'>
+                      <div key={j} className='flex items-start gap-2 text-xs text-[var(--editorial-text-secondary)]'>
                         <span className='mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400' />
                         {reason}
                       </div>
@@ -284,17 +285,17 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                   <div className='mb-2 flex items-center justify-between'>
                     <span className='text-xs font-medium text-purple-600'>AI 生成的变式题</span>
                     <div className='flex gap-1'>
-                      <button onClick={() => handleCopy(`题目: ${variantResult.question}\n答案: ${variantResult.correct_answer}`, 'variant')} className='rounded p-1 text-gray-400 hover:text-purple-600' aria-label='复制变式题'>
+                      <button onClick={() => handleCopy(`题目: ${variantResult.question}\n答案: ${variantResult.correct_answer}`, 'variant')} className='rounded p-1 text-[var(--editorial-text-tertiary)] hover:text-purple-600' aria-label='复制变式题'>
                         {copiedField === 'variant' ? <Check size={14} /> : <Copy size={14} />}
                       </button>
-                      <button onClick={() => handleNavigateWithVariant(variantResult)} className='rounded p-1 text-gray-400 hover:text-purple-600' aria-label='创建为错题'>
+                      <button onClick={() => handleNavigateWithVariant(variantResult)} className='rounded p-1 text-[var(--editorial-text-tertiary)] hover:text-purple-600' aria-label='创建为错题'>
                         <FileText size={14} />
                       </button>
                     </div>
                   </div>
                   <div className='space-y-2 text-sm'>
-                    <div><span className='font-medium text-gray-700'>题目:</span><p className='mt-0.5 text-gray-600 whitespace-pre-wrap'>{variantResult.question}</p></div>
-                    <div><span className='font-medium text-gray-700'>答案:</span><p className='mt-0.5 text-gray-600 whitespace-pre-wrap'>{variantResult.correct_answer}</p></div>
+                    <div><span className='font-medium text-[var(--editorial-text-primary)]'>题目:</span><p className='mt-0.5 text-[var(--editorial-text-secondary)] whitespace-pre-wrap'>{variantResult.question}</p></div>
+                    <div><span className='font-medium text-[var(--editorial-text-primary)]'>答案:</span><p className='mt-0.5 text-[var(--editorial-text-secondary)] whitespace-pre-wrap'>{variantResult.correct_answer}</p></div>
                   </div>
                   <button onClick={() => handleNavigateWithVariant(variantResult)} className='mt-2 w-full rounded-lg bg-purple-500/10 px-3 py-1.5 text-xs text-purple-600 hover:bg-purple-500/20'>
                     保存为错题记录
@@ -307,16 +308,16 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                   <div className='mb-2 flex items-center justify-between'>
                     <span className='text-xs font-medium text-blue-600'>AI 生成的知识卡片</span>
                     <div className='flex gap-1'>
-                      <button onClick={() => handleCopy(`# ${cardResult.title}\n\n${cardResult.content}`, 'card')} className='rounded p-1 text-gray-400 hover:text-blue-600' aria-label='复制知识卡片'>
+                      <button onClick={() => handleCopy(`# ${cardResult.title}\n\n${cardResult.content}`, 'card')} className='rounded p-1 text-[var(--editorial-text-tertiary)] hover:text-blue-600' aria-label='复制知识卡片'>
                         {copiedField === 'card' ? <Check size={14} /> : <Copy size={14} />}
                       </button>
-                      <button onClick={() => handleNavigateWithCard(cardResult)} className='rounded p-1 text-gray-400 hover:text-blue-600' aria-label='创建为笔记'>
+                      <button onClick={() => handleNavigateWithCard(cardResult)} className='rounded p-1 text-[var(--editorial-text-tertiary)] hover:text-blue-600' aria-label='创建为笔记'>
                         <FileText size={14} />
                       </button>
                     </div>
                   </div>
-                  <div className='text-sm font-medium text-gray-700'>{cardResult.title}</div>
-                  <p className='mt-1 text-sm text-gray-600 whitespace-pre-wrap'>{cardResult.content}</p>
+                  <div className='text-sm font-medium text-[var(--editorial-text-primary)]'>{cardResult.title}</div>
+                  <p className='mt-1 text-sm text-[var(--editorial-text-secondary)] whitespace-pre-wrap'>{cardResult.content}</p>
                   <button onClick={() => handleNavigateWithCard(cardResult)} className='mt-2 w-full rounded-lg bg-blue-500/10 px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-500/20'>
                     保存为知识笔记
                   </button>
@@ -370,13 +371,13 @@ export function WeakPointDiagnosis({ enabled = true }: { enabled?: boolean }) {
                       {cluster.due_review_count > 0 && <span className='text-orange-600'>· {cluster.due_review_count} 待复习</span>}
                     </div>
                   </div>
-                  <ChevronRight size={16} className='shrink-0 text-gray-400' />
+                  <ChevronRight size={16} className='shrink-0 text-[var(--editorial-text-tertiary)]' />
                 </button>
               ))}
             </div>
           )}
         </div>
-      </Drawer>
+      </Uiv2Drawer>
     </>
   )
 }

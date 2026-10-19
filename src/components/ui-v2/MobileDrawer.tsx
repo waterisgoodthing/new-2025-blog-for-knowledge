@@ -116,6 +116,7 @@ export function MobileDrawer({ groups, currentPath, title, drawerLabel = '导航
 										aria-current={active ? 'page' : undefined}
 										className='flex items-center gap-2 rounded-xl px-2 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--brand)]'
 										style={{
+											minHeight: 44,
 											background: active ? 'var(--nav-active-bg, rgba(61, 184, 168, 0.12))' : 'transparent',
 											color: active ? 'var(--brand-ink, #1f7a6e)' : 'var(--admin-text-secondary, #6b7b79)'
 										}}>
