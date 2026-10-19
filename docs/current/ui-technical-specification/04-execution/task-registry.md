@@ -841,6 +841,54 @@
 4. 「管理后台」入口只在 `isAdmin === true` 时追加；移动端同时追加「管理」分组。
 5. 旧 `vertical-nav.tsx` / `mobile-nav.tsx` / `nav-card.tsx` 文件与测试保留，仅前两者不再被 layout 渲染。
 
+
+---
+
+## Phase 6：首页顶部导航接入（2026-10-19）
+
+**状态**：PASS
+
+| 文件 | 变更 |
+|------|------|
+| `src/layout/index.tsx` | `showTopNav` 扩展到首页（`!isWrite && !isManageRoute`）；首页 `position='fixed'`、内页 `position='sticky'`；首页 `<main>` 在矮视口按需下移，避免卡片被导航条遮挡 |
+| `src/app/(home)/page.tsx` | 布局编辑工具条 `top-0` → `top-14 md:top-[72px]`，不再被导航条覆盖 |
+| `src/layout/layout.test.tsx` | 首页断言「顶栏（fixed）+ NavCard 并存」；内页仍断言 sticky；新增移动端首页用例 |
+
+**为什么首页用 `fixed`（覆盖 prompt 的两种建议）**：实测 `sticky` 会把整屏卡片场景整体下移 72px，导致 1440×900 下文档高 918px、底部爱心卡片被裁 18px（场景中心偏离视口中心 113px）。改回 `fixed` 后文档高度回到 900px，再用 `<main>` 的按需下移（测量所有 `main .card` 的最上边，缺多少补多少，最少保证距顶 80px）解决矮视口遮挡。
+
+| 视口 | 导航 | 最顶卡 top | 最低卡 bottom | 文档高 | 遮挡 |
+|------|------|-----------|--------------|--------|------|
+| 1440×900 | fixed 72 | 136 | 846 | 900（=视口） | 无 |
+| 1440×700 | fixed 72 | 80 | 790 | 790 | 无 |
+| 1280×650 | fixed 72 | 80 | 790 | 790 | 无 |
+| 1024×768 | fixed 72 | 80 | 790 | 790 | 无 |
+| 800×700 | fixed 72 | 80 | 790 | 790 | 无 |
+| 390×844 | Drawer 56 | 168 | — | 844 | 无 |
+
+> 矮视口（<768 高）场景本身比视口高，底部仍有既有溢出（改动前 746 > 700），非本阶段引入。
+
+**滚动状态**：1440×900 首页文档 = 视口高，无法滚动；1280×650 可滚 140px，滚到 120px 时导航条进入 `stuck`（56px）——首页同样具备状态切换能力。
+
+**NavCard 处理（保留并存）**：按 prompt 的首选方案先试并存。视觉上是「顶部全局条 + 左侧身份卡片」两层，不冲突，且 NavCard 保留了头像/站名/图标交互标识，因此未隐藏其链接区。代价是同一目的地出现两处（顶栏「内容/探索」与卡片列表，且卡片列表不是 landmark），已记录在 Deviations。
+
+**独立审查（只读子代理 `1f13341a-8979-40cc-afef-59f5c622baa3`）后修复的 2 个 blocking**：
+1. **整屏场景被下移 72px**：`sticky` 使 1440×900 文档变 918px、底部爱心卡片被裁 18px（截图可见）。改为首页 `fixed` + `<main>` 按需下移，文档高度回到 900px、最低卡 846px。
+2. **首页布局编辑工具条被导航条盖住**：工具条 `fixed top-0 z-50` 位于 `main`（z-10）内，而导航条 z-40 在根上下文，`elementFromPoint` 命中导航条 → 保存/取消不可点。已把工具条下移到 `top-14 md:top-[72px]`。
+
+**审查提出的其余非阻塞项**：已修布局/测试里的过期注释与常量间接层；未修（记录）——NavCard 与顶栏目的地重复且卡片列表非 landmark、NavCard 在 tab 顺序末尾（Phase 5 前既有）、`isInnerPage` 现在只用于 Toast 定位、缺少首页几何的 e2e 规格（仓库虽有 playwright 配置，但本阶段未新增 e2e）。
+
+**验证**：
+
+| 检查 | 结果 |
+|------|------|
+| `npx tsc --noEmit` | 0 errors |
+| `npx vitest run` | 79 files / **669 passed**（基线 668 + 1） |
+| `npm run build` | 成功，路由表与基线一致 |
+| `git diff --check` | clean |
+| 浏览器 | 首页玻璃条；1440×900 无裁剪无遮挡；矮视口滚到 120px 进入 stuck(56px)；点「内容→博客」内页仍为同高导航条，无跳变；管理员首页有「管理后台」，匿名无；390px 仅汉堡顶栏 |
+
+**截图**：`assets/phase6-home-topnav.png`、`phase6-home-scrolled.png`、`phase6-home-stuck.png`、`phase6-inner-after-home.png`、`phase6-home-admin-entry.png`、`phase6-home-mobile.png`
+
 ## 下一步
 
 阅读 `acceptance-criteria.md`（详细验收标准）

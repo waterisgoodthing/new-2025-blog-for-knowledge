@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  *
  * The layout is the single place where the public desktop/mobile navigation is
  * chosen, so these tests pin the mount rules:
- * - inner pages (desktop) get the glass top navigation,
- * - the home page keeps NavCard only (no top bar, no overlap),
+ * - inner pages (desktop) get the in-flow glass top navigation,
+ * - the home page gets the same bar as an overlay next to NavCard,
  * - mobile gets the hamburger drawer instead of the bottom tab bar,
  * - the administrator entry is only added when the optional session says so.
  */
@@ -67,19 +67,24 @@ const renderLayout = () =>
 	)
 
 describe('public layout — desktop navigation', () => {
-	it('mounts the glass top navigation on inner pages', () => {
+	it('mounts the glass top navigation on inner pages with the in-flow position', () => {
 		renderLayout()
 
-		expect(screen.getByRole('navigation', { name: '主导航' })).toBeInTheDocument()
+		expect(screen.getByRole('navigation', { name: '主导航' })).toHaveStyle({ position: 'sticky' })
+		expect(screen.queryByTestId('vertical-nav')).not.toBeInTheDocument()
 		expect(screen.queryByTestId('vertical-nav')).not.toBeInTheDocument()
 		expect(screen.getByText('page body')).toBeInTheDocument()
 	})
 
-	it('keeps NavCard and skips the top bar on the home page', () => {
+	it('renders the glass bar together with NavCard on the home page', () => {
 		state.pathname = '/'
 		renderLayout()
 
-		expect(screen.queryByRole('navigation', { name: '主导航' })).not.toBeInTheDocument()
+		const nav = screen.getByRole('navigation', { name: '主导航' })
+		expect(nav).toBeInTheDocument()
+		// The home scene is viewport-sized, so the bar overlays it instead of
+		// reserving flow height (which would clip the bottom card).
+		expect(nav).toHaveStyle({ position: 'fixed' })
 		expect(screen.getByTestId('nav-card')).toBeInTheDocument()
 	})
 
@@ -146,5 +151,16 @@ describe('public layout — mobile navigation', () => {
 
 		// The drawer only mounts its groups once open.
 		expect(await screen.findByRole('link', { name: '管理后台' })).toHaveAttribute('href', '/manage')
+	})
+})
+
+describe('public layout — home page chrome', () => {
+	it('leaves the mobile home page to the drawer topbar instead of stacking the desktop bar', () => {
+		state.pathname = '/'
+		state.maxSM = true
+		renderLayout()
+
+		expect(screen.queryByRole('navigation', { name: '主导航' })).not.toBeInTheDocument()
+		expect(screen.getByRole('button', { name: '打开导航菜单' })).toBeInTheDocument()
 	})
 })

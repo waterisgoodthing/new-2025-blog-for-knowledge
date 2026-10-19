@@ -1,5 +1,5 @@
 'use client'
-import { PropsWithChildren, useEffect, useMemo } from 'react'
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 import { useCenterInit } from '@/hooks/use-center'
 import BlurredBubblesBackground from './backgrounds/blurred-bubbles'
 import NavCard from '@/components/nav-card'
@@ -51,10 +51,41 @@ export default function Layout({ children }: PropsWithChildren) {
 	// /manage* renders its own AppShell (admin sidebar + mobile drawer); stacking
 	// the public bar on top would duplicate chrome and hamburgers.
 	const isManageRoute = pathname === '/manage' || pathname.startsWith('/manage/')
+	// Phase 6: the home page now carries the same glass navigation as inner pages.
 	const isInnerPage = !isHome && !isWrite && !isManageRoute
+	const showPublicChrome = !isWrite && !isManageRoute
 
-	// Desktop inner pages only; the home page keeps NavCard (Phase 5 scope).
-	const showTopNav = !maxSM && isInnerPage
+	// Phase 6: every public route (home + inner pages) carries the glass bar.
+	const showTopNav = !maxSM && showPublicChrome
+
+	// The home scene is a viewport-sized composition and the bar overlays it, so
+	// its original document height is preserved. On short viewports the topmost
+	// card would sit under the bar; nudge <main> down by the missing amount. The
+	// shift lives on <main> (not the page) so every home card — including the
+	// layout-owned NavCard — moves together.
+	const [homeShift, setHomeShift] = useState(0)
+	useEffect(() => {
+		if (!isHome || maxSM) {
+			setHomeShift(0)
+			return
+		}
+		const measure = () => {
+			setHomeShift(previous => {
+				const cards = Array.from(document.querySelectorAll('main .card'))
+				if (cards.length === 0) return 0
+				const rawMin = Math.min(...cards.map(card => card.getBoundingClientRect().top)) - previous
+				return Math.max(0, Math.round(80 - rawMin))
+			})
+		}
+		const frame = requestAnimationFrame(measure)
+		const timer = window.setTimeout(measure, 700)
+		window.addEventListener('resize', measure)
+		return () => {
+			cancelAnimationFrame(frame)
+			window.clearTimeout(timer)
+			window.removeEventListener('resize', measure)
+		}
+	}, [isHome, maxSM])
 	const showMobileNav = maxSM && !isWrite
 
 	const topNavEntries = useMemo(() => (isAdmin ? [...PUBLIC_TOP_NAV, ADMIN_TOP_ENTRY] : PUBLIC_TOP_NAV), [isAdmin])
@@ -114,15 +145,16 @@ export default function Layout({ children }: PropsWithChildren) {
 					entries={topNavEntries}
 					currentPath={pathname}
 					brandLabel={siteContent.meta?.title ?? 'My Blog'}
-					// Sticky keeps the glass states but reserves its own height, so the
-					// ~50 existing inner pages do not need per-page top padding.
-					position='sticky'
+					// Inner pages are in flow. The home scene is a viewport-sized composition:
+					// an overlay bar keeps its document height unchanged (no clipped bottom
+					// card); <main> is nudged down only when a card would sit under it.
+					position={isHome ? 'fixed' : 'sticky'}
 				/>
 			)}
 
 			{showMobileNav && <MobileDrawer groups={mobileGroups} currentPath={pathname} />}
 
-			<main className='relative z-10 h-full'>
+			<main className='relative z-10 h-full' style={isHome ? { top: homeShift } : undefined}>
 				{children}
 				<NavCard />
 
