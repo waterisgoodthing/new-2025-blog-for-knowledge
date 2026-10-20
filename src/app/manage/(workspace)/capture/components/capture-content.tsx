@@ -56,8 +56,8 @@ export function CaptureContent() {
             className={cn(
               'inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
               mode === value
-                ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5 text-[var(--color-brand)]'
-                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+                ? 'border-[var(--brand)] bg-[var(--brand)]/5 text-[var(--brand)]'
+                : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-secondary)] hover:bg-[var(--admin-surface-subtle)]',
             )}
           >
             <Icon className='h-4 w-4' aria-hidden='true' />

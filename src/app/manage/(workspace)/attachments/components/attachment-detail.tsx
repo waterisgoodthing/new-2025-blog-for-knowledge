@@ -65,7 +65,7 @@ export function AttachmentDetail({ id }: { id: string }) {
     return (
       <div className='max-w-4xl space-y-5'>
         <BackLink />
-        <p className='text-sm text-slate-500'>{error || '正在加载附件…'}</p>
+        <p className='text-sm text-[var(--admin-text-secondary)]'>{error || '正在加载附件…'}</p>
       </div>
     )
   }
@@ -95,24 +95,24 @@ export function AttachmentDetail({ id }: { id: string }) {
     <div className='max-w-5xl space-y-7'>
       <BackLink />
       <header>
-        <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75 uppercase'>
+        <p className='text-xs font-medium tracking-[0.16em] text-[var(--brand)]/75 uppercase'>
           {attachmentStatusLabel(attachment.status)} · {attachmentVisibilityLabel(attachment.visibility)} · {attachment.storage_provider === 'local' ? '本地存储' : attachment.storage_provider}
         </p>
-        <h1 className='mt-2 break-words text-2xl font-semibold text-slate-900'>{attachment.original_name}</h1>
-        <p className='mt-2 text-sm text-slate-500'>{attachment.mime_type} · {formatBytes(attachment.size_bytes)}</p>
+        <h1 className='mt-2 break-words text-2xl font-semibold text-[var(--admin-text-primary)]'>{attachment.original_name}</h1>
+        <p className='mt-2 text-sm text-[var(--admin-text-secondary)]'>{attachment.mime_type} · {formatBytes(attachment.size_bytes)}</p>
       </header>
 
       <section className='grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]'>
-        <div className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
-          <h2 className='font-semibold text-slate-900'>预览</h2>
-          <div className='mt-4 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50'>
+        <div className='rounded-3xl border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm'>
+          <h2 className='font-semibold text-[var(--admin-text-primary)]'>预览</h2>
+          <div className='mt-4 overflow-hidden rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)]'>
             <AttachmentPreview attachment={attachment} contentUrl={contentUrl} />
           </div>
         </div>
 
-        <aside className='space-y-5 rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
+        <aside className='space-y-5 rounded-3xl border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm'>
           <div>
-            <h2 className='font-semibold text-slate-900'>元数据</h2>
+            <h2 className='font-semibold text-[var(--admin-text-primary)]'>元数据</h2>
             <dl className='mt-4 space-y-3 text-sm'>
               <Meta label='ID' value={attachment.id} />
               <Meta label='MIME' value={attachment.mime_type} />
@@ -125,7 +125,7 @@ export function AttachmentDetail({ id }: { id: string }) {
             href={downloadUrl}
             target='_blank'
             rel='noreferrer'
-            className='inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700'
+            className='inline-flex items-center gap-2 rounded-lg border border-[var(--admin-border)] px-4 py-2 text-sm text-[var(--admin-text-primary)]'
           >
             <ExternalLink className='h-4 w-4' />
             下载附件
@@ -156,42 +156,42 @@ export function AttachmentDetail({ id }: { id: string }) {
         </aside>
       </section>
 
-      <section className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
-        <h2 className='font-semibold text-slate-900'>业务关联</h2>
-        <p className='mt-1 text-sm text-slate-500'>
+      <section className='rounded-3xl border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm'>
+        <h2 className='font-semibold text-[var(--admin-text-primary)]'>业务关联</h2>
+        <p className='mt-1 text-sm text-[var(--admin-text-secondary)]'>
           第一版通过附件关联记录连接草稿、题目或错题；附件表本身不保存所有者字段。
         </p>
         <form onSubmit={addLink} className='mt-5 grid gap-3 md:grid-cols-[160px_minmax(0,1fr)_160px_auto]'>
-          <label className='text-sm font-medium text-slate-700'>
+          <label className='text-sm font-medium text-[var(--admin-text-primary)]'>
             目标类型
             <select
               value={targetType}
               disabled={busy || attachment.status !== 'active'}
               onChange={(event) => setTargetType(event.target.value as AttachmentTargetType)}
-              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
             >
               <option value='question_draft'>题目草稿</option>
               <option value='question'>题目</option>
               <option value='mistake'>错题</option>
             </select>
           </label>
-          <label className='text-sm font-medium text-slate-700'>
+          <label className='text-sm font-medium text-[var(--admin-text-primary)]'>
             目标 ID
             <input
               value={targetId}
               disabled={busy || attachment.status !== 'active'}
               onChange={(event) => setTargetId(event.target.value)}
               placeholder='UUID'
-              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm'
             />
           </label>
-          <label className='text-sm font-medium text-slate-700'>
+          <label className='text-sm font-medium text-[var(--admin-text-primary)]'>
             用途
             <select
               value={purpose}
               disabled={busy || attachment.status !== 'active'}
               onChange={(event) => setPurpose(event.target.value as AttachmentCreatePurpose)}
-              className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
             >
               <option value='source'>学习资料</option>
               <option value='question'>题目附件</option>
@@ -201,19 +201,19 @@ export function AttachmentDetail({ id }: { id: string }) {
           </label>
           <button
             disabled={busy || attachment.status !== 'active' || !targetId.trim()}
-            className='self-end rounded-lg bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+            className='self-end rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
           >
             关联
           </button>
         </form>
 
-        <div className='mt-5 divide-y divide-slate-100'>
-          {links.length === 0 ? <p className='py-4 text-sm text-slate-500'>暂无业务关联。</p> : null}
+        <div className='mt-5 divide-y divide-[var(--admin-border)]'>
+          {links.length === 0 ? <p className='py-4 text-sm text-[var(--admin-text-secondary)]'>暂无业务关联。</p> : null}
           {links.map((link) => (
             <div key={link.id} className='flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between'>
               <div className='min-w-0 text-sm'>
-                <p className='font-medium text-slate-800'>{attachmentTargetLabel(link.target_type)} · {attachmentPurposeLabel(link.purpose)}</p>
-                <p className='mt-1 break-all text-xs text-slate-400'>{link.target_id}</p>
+                <p className='font-medium text-[var(--admin-text-primary)]'>{attachmentTargetLabel(link.target_type)} · {attachmentPurposeLabel(link.purpose)}</p>
+                <p className='mt-1 break-all text-xs text-[var(--admin-text-tertiary)]'>{link.target_id}</p>
               </div>
               <button
                 type='button'
@@ -230,7 +230,7 @@ export function AttachmentDetail({ id }: { id: string }) {
                     setBusy(false)
                   }
                 }}
-                className='rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 disabled:opacity-45'
+                className='rounded-lg border border-[var(--admin-border)] px-3 py-2 text-sm text-[var(--admin-text-secondary)] disabled:opacity-45'
               >
                 解除关联
               </button>
@@ -239,16 +239,16 @@ export function AttachmentDetail({ id }: { id: string }) {
         </div>
       </section>
 
-      <section className='rounded-3xl border border-dashed border-slate-300 bg-slate-50/80 p-5'>
-        <h2 className='font-semibold text-slate-900'>OCR 还没有开启</h2>
-        <p className='mt-2 text-sm leading-6 text-slate-500'>
+      <section className='rounded-3xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-surface-subtle)]/80 p-5'>
+        <h2 className='font-semibold text-[var(--admin-text-primary)]'>OCR 还没有开启</h2>
+        <p className='mt-2 text-sm leading-6 text-[var(--admin-text-secondary)]'>
           这个附件可以作为未来 OCR / Capture Router 的输入来源，但当前版本不会自动识别、
           不会拆分 PDF，也不会把识别结果写入草稿或正式题库。
         </p>
-        <div className='mt-4 flex flex-wrap gap-2 text-xs text-slate-500'>
-          <span className='rounded-full bg-white px-3 py-1.5'>无 OCR 请求</span>
-          <span className='rounded-full bg-white px-3 py-1.5'>无后台任务</span>
-          <span className='rounded-full bg-white px-3 py-1.5'>无自动写入</span>
+        <div className='mt-4 flex flex-wrap gap-2 text-xs text-[var(--admin-text-secondary)]'>
+          <span className='rounded-full bg-[var(--admin-surface)] px-3 py-1.5'>无 OCR 请求</span>
+          <span className='rounded-full bg-[var(--admin-surface)] px-3 py-1.5'>无后台任务</span>
+          <span className='rounded-full bg-[var(--admin-surface)] px-3 py-1.5'>无自动写入</span>
         </div>
       </section>
     </div>
@@ -263,7 +263,7 @@ function AttachmentPreview({
   contentUrl: string
 }) {
   if (attachment.status !== 'active') {
-    return <p className='p-6 text-sm text-slate-500'>附件状态为“{attachmentStatusLabel(attachment.status)}”，无法预览。</p>
+    return <p className='p-6 text-sm text-[var(--admin-text-secondary)]'>附件状态为“{attachmentStatusLabel(attachment.status)}”，无法预览。</p>
   }
   if (attachment.mime_type.startsWith('image/')) {
     return <img src={contentUrl} alt={attachment.original_name} className='max-h-[560px] w-full object-contain' />
@@ -272,23 +272,23 @@ function AttachmentPreview({
     return <iframe src={contentUrl} title={attachment.original_name} className='h-[560px] w-full' />
   }
   if (attachment.mime_type === 'text/plain') {
-    return <iframe src={contentUrl} title={attachment.original_name} className='h-96 w-full bg-white' />
+    return <iframe src={contentUrl} title={attachment.original_name} className='h-96 w-full bg-[var(--admin-surface)]' />
   }
-  return <p className='p-6 text-sm text-slate-500'>该类型暂不支持内嵌预览，请使用“新窗口打开”。</p>
+  return <p className='p-6 text-sm text-[var(--admin-text-secondary)]'>该类型暂不支持内嵌预览，请使用“新窗口打开”。</p>
 }
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className='text-xs text-slate-400'>{label}</dt>
-      <dd className='mt-1 break-all text-slate-700'>{value}</dd>
+      <dt className='text-xs text-[var(--admin-text-tertiary)]'>{label}</dt>
+      <dd className='mt-1 break-all text-[var(--admin-text-primary)]'>{value}</dd>
     </div>
   )
 }
 
 function BackLink() {
   return (
-    <Link href='/manage/attachments' className='inline-flex items-center gap-2 text-sm text-slate-500'>
+    <Link href='/manage/attachments' className='inline-flex items-center gap-2 text-sm text-[var(--admin-text-secondary)]'>
       <ArrowLeft className='h-4 w-4' />
       返回附件
     </Link>

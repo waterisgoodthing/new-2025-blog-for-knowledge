@@ -254,7 +254,7 @@ export function ReviewQueue() {
                   )
                 }}
                 aria-pressed={pressed}
-                className='min-h-11 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-sm text-[var(--admin-text-[var(--admin-text-primary)])] disabled:opacity-45'
+                className='min-h-11 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-sm text-[var(--admin-text-primary)] disabled:opacity-45'
               >
                 {option.key}. {option.text}
               </button>
@@ -264,14 +264,14 @@ export function ReviewQueue() {
       )
     }
     return (
-      <label className='flex flex-col gap-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>
+      <label className='flex flex-col gap-2 text-sm text-[var(--admin-text-secondary)]'>
         你的答案
         <input
           value={panel.answer}
           disabled={panel.busy}
           onChange={(event) => setAnswer(item.id, event.target.value)}
           placeholder='输入本次重做答案'
-          className='min-h-11 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-[var(--admin-text-[var(--admin-text-primary)])] disabled:opacity-45'
+          className='min-h-11 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-[var(--admin-text-primary)] disabled:opacity-45'
         />
       </label>
     )
@@ -284,7 +284,7 @@ export function ReviewQueue() {
         <button
           disabled={busyId === item.id}
           onClick={() => void openReanswer(item)}
-          className='inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])] disabled:opacity-45'
+          className='inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-text-secondary)] disabled:opacity-45'
         >
           <PenLine className='h-4 w-4' />
           再答
@@ -294,20 +294,20 @@ export function ReviewQueue() {
     return (
       <div className='mt-4 space-y-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-4'>
         <div className='flex items-center justify-between'>
-          <p className='text-sm font-semibold text-[var(--admin-text-[var(--admin-text-primary)])]'>再答</p>
+          <p className='text-sm font-semibold text-[var(--admin-text-primary)]'>再答</p>
           <button
             onClick={() => closeReanswer(item.id)}
-            className='min-h-11 px-2 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'
+            className='min-h-11 px-2 text-sm text-[var(--admin-text-secondary)]'
           >
             收起
           </button>
         </div>
         {panel.busy && !panel.question && !panel.questionMissing ? (
-          <p className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>正在加载题目…</p>
+          <p className='text-sm text-[var(--admin-text-secondary)]'>正在加载题目…</p>
         ) : null}
         {panel.error ? <p className='text-sm text-red-600'>{panel.error}</p> : null}
         {panel.questionMissing ? (
-          <p className='text-sm text-[var(--admin-text-[var(--admin-text-secondary)])]'>该错题无关联题目，仅支持人工评分（下方六档）。</p>
+          <p className='text-sm text-[var(--admin-text-secondary)]'>该错题无关联题目，仅支持人工评分（下方六档）。</p>
         ) : null}
         {panel.question ? (
           <div className='space-y-3'>
@@ -321,19 +321,19 @@ export function ReviewQueue() {
                 {panel.busy ? '判分中…' : '提交作答'}
               </button>
             ) : (
-              <p className='text-xs text-[var(--admin-text-[var(--admin-text-secondary)])]'>修改答案后将重新判分。</p>
+              <p className='text-xs text-[var(--admin-text-secondary)]'>修改答案后将重新判分。</p>
             )}
           </div>
         ) : null}
         {panel.phase === 'evaluated' && panel.evaluation ? (
           <div className='space-y-2'>
-            <p className='text-sm text-[var(--admin-text-[var(--admin-text-primary)])]'>
+            <p className='text-sm text-[var(--admin-text-primary)]'>
               判定：{verdictText[panel.evaluation.verdict]}
               {panel.evaluation.recommendation !== null
                 ? `，建议评分 ${panel.evaluation.recommendation} 分（已预选，可更改）`
                 : '，请人工确认评分'}
             </p>
-            <p className='text-xs text-[var(--admin-text-[var(--admin-text-secondary)])]'>在下方六档中确认或修正评分后提交，本次提交将关联此次再答记录。</p>
+            <p className='text-xs text-[var(--admin-text-secondary)]'>在下方六档中确认或修正评分后提交，本次提交将关联此次再答记录。</p>
           </div>
         ) : null}
       </div>
@@ -363,7 +363,7 @@ export function ReviewQueue() {
             className={`h-11 w-11 rounded-lg border text-sm font-semibold disabled:opacity-45 ${
               recommended === rating
                 ? 'border-[var(--color-brand)] bg-[var(--color-brand)] text-white'
-                : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-[var(--admin-text-primary)])] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]'
+                : 'border-[var(--admin-border)] bg-[var(--admin-surface)] text-[var(--admin-text-primary)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]'
             }`}
           >
             {rating}
@@ -409,9 +409,9 @@ export function ReviewQueue() {
               <p className='text-xs tracking-wider text-[var(--color-brand)] uppercase'>
                 {item.algorithm} · 第 {item.repetitions + 1} 次 · 当前间隔 {item.interval_days} 天
               </p>
-              <h3 className='mt-2 whitespace-pre-wrap text-base font-semibold leading-7 text-[var(--admin-text-[var(--admin-text-primary)])]'>{item.question_text}</h3>
+              <h3 className='mt-2 whitespace-pre-wrap text-base font-semibold leading-7 text-[var(--admin-text-primary)]'>{item.question_text}</h3>
               {item.mistake_reason ? <p className='mt-3 rounded-lg bg-amber-50 p-3 text-sm leading-6 text-amber-800'>错因：{item.mistake_reason}</p> : null}
-              <p className='mt-3 text-xs text-[var(--admin-text-[var(--admin-text-tertiary)])]'>到期时间：{formatChineseDateTime(item.next_review_at)}</p>
+              <p className='mt-3 text-xs text-[var(--admin-text-tertiary)]'>到期时间：{formatChineseDateTime(item.next_review_at)}</p>
             </div>
             <div className='flex flex-col gap-3'>
               {renderRatings(item)}
@@ -420,7 +420,7 @@ export function ReviewQueue() {
                 <button
                   disabled={busyId === item.id}
                   onClick={() => void toggleRecords(item.id)}
-                  className='inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])] disabled:opacity-45'
+                  className='inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--admin-border)] px-3 text-sm text-[var(--admin-text-secondary)] disabled:opacity-45'
                 >
                   <History className='h-4 w-4' />
                   记录
@@ -430,9 +430,9 @@ export function ReviewQueue() {
           </div>
           {records[item.id] ? (
             <div className='mt-5 border-t border-[var(--admin-divider)] pt-4'>
-              {records[item.id].length === 0 ? <p className='text-sm text-[var(--admin-text-[var(--admin-text-tertiary)])]'>暂无历史记录。</p> : null}
+              {records[item.id].length === 0 ? <p className='text-sm text-[var(--admin-text-tertiary)]'>暂无历史记录。</p> : null}
               {records[item.id].map((record) => (
-                <div key={record.id} className='grid gap-2 border-b border-[var(--admin-divider)] py-3 text-sm text-[var(--admin-text-[var(--admin-text-secondary)])] last:border-b-0 sm:grid-cols-4'>
+                <div key={record.id} className='grid gap-2 border-b border-[var(--admin-divider)] py-3 text-sm text-[var(--admin-text-secondary)] last:border-b-0 sm:grid-cols-4'>
                   <span>评分 {record.rating}{record.attempt_id ? ' · 含再答' : ''}</span>
                   <span>{record.previous_interval_days} → {record.next_interval_days} 天</span>
                   <span className='sm:col-span-2'>{formatChineseDateTime(record.reviewed_at)}</span>

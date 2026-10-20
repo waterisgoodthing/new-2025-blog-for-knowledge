@@ -37,5 +37,5 @@ export function DashboardContent() {
     return <AsyncStatePanel status='error' title='学习概览加载失败' error='请检查服务状态后重试。' onRetry={retrySummary} retryLabel='重新尝试' />
   }
 
-	return <div ref={resultRegionRef} role='region' aria-label='学习概览结果' tabIndex={-1} className='outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'><DashboardOverview summary={data} profile={profileState.data} profileError={profileState.error} profileLoading={profileState.isLoading} onProfileRetry={profileState.mutate} onSummaryRetry={retrySummary} /></div>
+	return <div ref={resultRegionRef} role='region' aria-label='学习概览结果' tabIndex={-1} className='outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45'><DashboardOverview summary={data} profile={profileState.data} profileError={profileState.error} profileLoading={profileState.isLoading} onProfileRetry={profileState.mutate} onSummaryRetry={retrySummary} /></div>
 }

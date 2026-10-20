@@ -116,7 +116,7 @@ function QuickActionsSection() {
 						key={href}
 						href={href}
 						aria-label={label}
-						className={`group rounded-2xl border p-4 transition-[border-color,background-color,box-shadow] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none motion-reduce:transition-none ${tone}`}>
+						className={`group rounded-2xl border p-4 transition-[border-color,background-color,box-shadow] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45 focus-visible:outline-none motion-reduce:transition-none ${tone}`}>
 						<span className='flex items-center justify-between gap-3'>
 							<span className='font-medium'>{label}</span>
 							<Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
@@ -143,7 +143,7 @@ export function TodayFirstActionBanner({
 	if (unavailable) {
 		return (
 			<section aria-labelledby='today-first-action-title' className='border-y border-[var(--admin-border)] py-5'>
-				<p className='text-sm font-medium text-[var(--color-brand)]'>今日先做</p>
+				<p className='text-sm font-medium text-[var(--brand)]'>今日先做</p>
 				<AsyncStatePanel
 					status='error'
 					title='今日安排暂不可用'
@@ -161,7 +161,7 @@ export function TodayFirstActionBanner({
 	if (action.kind === 'none' || !action.target_route) {
 		return (
 			<section aria-labelledby='today-first-action-title' className='border-y border-[var(--admin-border)] py-5'>
-				<p className='text-sm font-medium text-[var(--color-brand)]'>今日先做</p>
+				<p className='text-sm font-medium text-[var(--brand)]'>今日先做</p>
 				<AsyncStatePanel status='empty' title='今天没有安排' emptyHint='当前没有到期复习，也没有可练习题目；可以从题库自由学习。' />
 				<h2 id='today-first-action-title' className='sr-only'>
 					今日先做
@@ -171,8 +171,8 @@ export function TodayFirstActionBanner({
 	}
 
 	return (
-		<section aria-labelledby='today-first-action-title' className='rounded-2xl border border-[var(--color-brand)]/20 bg-[var(--color-brand)]/5 px-5 py-6'>
-			<p className='text-xs font-medium tracking-[0.12em] text-[var(--color-brand)] uppercase'>今日先做</p>
+		<section aria-labelledby='today-first-action-title' className='rounded-2xl border border-[var(--brand)]/20 bg-[var(--brand)]/5 px-5 py-6'>
+			<p className='text-xs font-medium tracking-[0.12em] text-[var(--brand)] uppercase'>今日先做</p>
 			<div className='mt-3 flex flex-wrap items-end justify-between gap-4'>
 				<div>
 					<h2 id='today-first-action-title' className='text-xl font-semibold text-[var(--admin-text-primary)]'>
@@ -214,12 +214,12 @@ function ReviewTodayPanel({
 		<Uiv2Card>
 			<div className='flex items-center justify-between gap-3'>
 				<p className='text-sm font-medium text-[var(--admin-text-secondary)]'>今日复习</p>
-				<Clock3 className='h-4 w-4 text-[var(--color-brand)]' aria-hidden='true' />
+				<Clock3 className='h-4 w-4 text-[var(--brand)]' aria-hidden='true' />
 			</div>
 			<p className='mt-2 text-3xl font-semibold tracking-tight text-[var(--admin-text-primary)]'>{count}</p>
 			<Link
 				href={action.target_route}
-				className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none'>
+				className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--brand)] focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45 focus-visible:outline-none'>
 				进入复习
 				<ArrowUpRight className='h-4 w-4' aria-hidden='true' />
 			</Link>
@@ -248,12 +248,12 @@ function PracticeTodayPanel({
 		<Uiv2Card>
 			<div className='flex items-center justify-between gap-3'>
 				<p className='text-sm font-medium text-[var(--admin-text-secondary)]'>今日练习</p>
-				<PencilLine className='h-4 w-4 text-[var(--color-brand)]' aria-hidden='true' />
+				<PencilLine className='h-4 w-4 text-[var(--brand)]' aria-hidden='true' />
 			</div>
 			<p className='mt-2 text-3xl font-semibold tracking-tight text-[var(--admin-text-primary)]'>{count}</p>
 			<Link
 				href={action.target_route}
-				className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none'>
+				className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--brand)] focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45 focus-visible:outline-none'>
 				进入练习
 				<ArrowUpRight className='h-4 w-4' aria-hidden='true' />
 			</Link>
@@ -290,7 +290,7 @@ function WeakTop3Panel({
 						<li key={item.knowledge_point_id}>
 							<Link href={`/manage/knowledge-points/${item.knowledge_point_id}`} className='group flex items-center justify-between gap-4 py-3'>
 								<span className='min-w-0'>
-									<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--color-brand)]'>{item.name || `知识点 #${item.knowledge_point_id}`}</span>
+									<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--brand)]'>{item.name || `知识点 #${item.knowledge_point_id}`}</span>
 									<span className='mt-0.5 block text-xs text-[var(--admin-text-tertiary)]'>
 										错误率 {formatWrongRate(item.wrong_rate)} · 作答 {item.attempt_count} · 遗忘 {item.lapse_count} · 到期 {item.due_count}
 									</span>
@@ -330,7 +330,7 @@ function RecentlyMasteredPanel({
 						<li key={item.review_item_id}>
 							<Link href={`/manage/mistakes/${item.mistake_id}`} className='group flex items-center justify-between gap-4 py-3'>
 								<span className='min-w-0'>
-									<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--color-brand)]'>{item.question_text}</span>
+									<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--brand)]'>{item.question_text}</span>
 									<span className='mt-0.5 block text-xs text-[var(--admin-text-tertiary)]'>{formatChineseDateTime(item.mastered_at)}</span>
 								</span>
 								<ArrowUpRight className='h-4 w-4 shrink-0 text-[var(--admin-text-tertiary)]' aria-hidden='true' />
@@ -411,7 +411,7 @@ function ActivitySection({ summary }: DashboardSectionProps) {
 								summary.recent_questions.map(question => (
 									<Link key={question.id} href={`/manage/questions/${question.id}`} className='group flex items-center justify-between gap-4 py-3'>
 										<span className='min-w-0'>
-											<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--color-brand)]'>
+											<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--brand)]'>
 												{displayTitle(question.title, question.question_text)}
 											</span>
 											<span className='mt-0.5 block text-xs text-[var(--admin-text-tertiary)]'>{formatChineseDateTime(question.updated_at)}</span>
@@ -431,7 +431,7 @@ function ActivitySection({ summary }: DashboardSectionProps) {
 								summary.recent_reviews.map(review => (
 									<Link key={review.id} href='/manage/review' className='group flex items-center justify-between gap-4 py-3'>
 										<span className='min-w-0'>
-											<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--color-brand)]'>{review.question_text}</span>
+											<span className='block truncate text-sm font-medium text-[var(--admin-text-primary)] group-hover:text-[var(--brand)]'>{review.question_text}</span>
 											<span className='mt-0.5 block text-xs text-[var(--admin-text-tertiary)]'>
 												评分 {review.rating} · {formatChineseDateTime(review.reviewed_at)}
 											</span>
@@ -504,8 +504,8 @@ export function DashboardOverview({ summary, profile, profileError, profileLoadi
 				<AsyncStatePanel status='error' title={profileUnavailable && !profileError ? '个人资料暂不可用' : '个人资料加载失败'} error={profileError ?? '学习摘要仍可使用；稍后可重试加载私有欢迎区域。'} onRetry={onProfileRetry} retryLabel='重新加载个人资料' />
 			) : profile ? (
 				profile.home_preferences.show_welcome ? (
-					<section aria-labelledby='private-welcome-title' className='rounded-2xl border border-[var(--color-brand)]/15 bg-[var(--color-brand)]/5 px-5 py-4'>
-						<p className='text-xs font-medium tracking-[0.12em] text-[var(--color-brand)] uppercase'>个人学习</p>
+					<section aria-labelledby='private-welcome-title' className='rounded-2xl border border-[var(--brand)]/15 bg-[var(--brand)]/5 px-5 py-4'>
+						<p className='text-xs font-medium tracking-[0.12em] text-[var(--brand)] uppercase'>个人学习</p>
 						<h2 id='private-welcome-title' className='mt-2 text-xl font-semibold text-[var(--admin-text-primary)]'>
 							{getWelcomeGreeting(profile)}
 						</h2>

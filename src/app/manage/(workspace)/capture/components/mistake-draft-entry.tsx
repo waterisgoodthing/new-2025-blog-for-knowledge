@@ -145,7 +145,7 @@ export function MistakeDraftEntry() {
       actions={
         <button
           disabled={busy || !questionId}
-          className='inline-flex items-center gap-2 rounded-lg bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+          className='inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
         >
           <PlusCircle className='h-4 w-4' />
           {busy ? '创建中…' : '创建草稿'}
@@ -157,7 +157,7 @@ export function MistakeDraftEntry() {
           题库中还没有已确认的正式题目。请先到&ldquo;待确认&rdquo;审核题目入库，再来记录错题。
         </p>
       ) : null}
-      <label className='block text-sm font-medium text-slate-700'>
+      <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
         来源题目
         <select
           value={questionId}
@@ -167,7 +167,7 @@ export function MistakeDraftEntry() {
             setKnowledgePointIds([])
             setCandidate(null)
           }}
-          className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+          className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
         >
           {questions.map((question) => (
             <option key={question.id} value={question.id}>
@@ -177,12 +177,12 @@ export function MistakeDraftEntry() {
         </select>
       </label>
       {selectedQuestion ? (
-        <div className='rounded-lg bg-slate-50 p-4 text-sm leading-6 text-slate-600'>
-          <p className='font-medium text-slate-800'>{selectedQuestion.title || '未命名题目'}</p>
+        <div className='rounded-lg bg-[var(--admin-surface-subtle)] p-4 text-sm leading-6 text-[var(--admin-text-secondary)]'>
+          <p className='font-medium text-[var(--admin-text-primary)]'>{selectedQuestion.title || '未命名题目'}</p>
           <p className='mt-1 line-clamp-4 whitespace-pre-wrap'>{selectedQuestion.question_text}</p>
         </div>
       ) : null}
-      <label className='block text-sm font-medium text-slate-700'>
+      <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
         我的答案
         <textarea
           value={myAnswer}
@@ -192,31 +192,31 @@ export function MistakeDraftEntry() {
             setCandidate(null)
           }}
           rows={3}
-          className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+          className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm'
           placeholder='记录当时的错误答案或思路'
         />
       </label>
       <div className='grid gap-4 sm:grid-cols-2'>
-        <label className='block text-sm font-medium text-slate-700'>
+        <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
           错因类型
           <select
             value={reasonCategory}
             disabled={busy}
             onChange={(event) => setReasonCategory(event.target.value as MistakeReason)}
-            className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
           >
             {Object.entries(reasonLabels).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
         </label>
-        <label className='block text-sm font-medium text-slate-700'>
+        <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
           难度
           <select
             value={difficulty}
             disabled={busy}
             onChange={(event) => setDifficulty(event.target.value as Difficulty | '')}
-            className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm'
           >
             <option value=''>未设置</option>
             <option value='easy'>简单</option>
@@ -225,7 +225,7 @@ export function MistakeDraftEntry() {
           </select>
         </label>
       </div>
-      <label className='block text-sm font-medium text-slate-700'>
+      <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
         错因说明
         <textarea
           value={mistakeReason}
@@ -235,18 +235,18 @@ export function MistakeDraftEntry() {
             setCandidate(null)
           }}
           rows={3}
-          className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm'
+          className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5 text-sm'
           placeholder='这一步为什么错？'
         />
       </label>
-      <div className='rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600'>
+      <div className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subtle)] p-4 text-sm leading-6 text-[var(--admin-text-secondary)]'>
         <div className='flex flex-wrap items-center justify-between gap-3'>
-          <p className='text-slate-700'>AI 错因候选（可选，生成后仍需人工确认）</p>
+          <p className='text-[var(--admin-text-primary)]'>AI 错因候选（可选，生成后仍需人工确认）</p>
           <button
             type='button'
             disabled={aiBusy || busy || !questionId || !mistakeReason.trim()}
             onClick={() => void generateCandidate()}
-            className='inline-flex min-h-10 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 disabled:opacity-45'
+            className='inline-flex min-h-10 items-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 text-sm text-[var(--admin-text-primary)] disabled:opacity-45'
           >
             {aiBusy ? '生成中…' : candidate ? '重新生成候选' : '生成AI错因候选'}
           </button>
@@ -254,14 +254,14 @@ export function MistakeDraftEntry() {
         {aiError ? <p className='mt-2 text-sm text-red-600'>{aiError}</p> : null}
         {candidate ? (
           <div className='mt-3 space-y-2'>
-            <p className='rounded bg-white p-2 text-slate-700'>
+            <p className='rounded bg-[var(--admin-surface)] p-2 text-[var(--admin-text-primary)]'>
               AI候选：{String((candidate.candidate as { summary?: string }).summary ?? '（无摘要）')}
             </p>
             <button
               type='button'
               disabled={busy || aiBusy}
               onClick={() => void confirmCandidate()}
-              className='inline-flex min-h-10 items-center rounded-lg bg-[var(--color-brand)] px-3 text-sm font-medium text-white disabled:opacity-45'
+              className='inline-flex min-h-10 items-center rounded-lg bg-[var(--brand)] px-3 text-sm font-medium text-white disabled:opacity-45'
             >
               {busy ? '确认中…' : '按AI候选创建草稿'}
             </button>

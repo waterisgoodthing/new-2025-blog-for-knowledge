@@ -14,8 +14,8 @@ type ManageFormPanelProps = {
 }
 
 const variantStyles: Record<FormVariant, string> = {
-  light: 'rounded-lg border border-slate-200/70 bg-white/55 p-5',
-  heavy: 'rounded-lg border border-slate-200/70 bg-white/80 p-5 shadow-sm',
+  light: 'rounded-lg border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/55 p-5',
+  heavy: 'rounded-lg border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm',
 }
 
 /**
@@ -46,10 +46,10 @@ export function ManageFormPanel({
       {(title || description) && (
         <div>
           {title && (
-            <h2 className='font-medium text-slate-800'>{title}</h2>
+            <h2 className='font-medium text-[var(--admin-text-primary)]'>{title}</h2>
           )}
           {description && (
-            <p className='mt-1 text-sm text-slate-500'>{description}</p>
+            <p className='mt-1 text-sm text-[var(--admin-text-secondary)]'>{description}</p>
           )}
         </div>
       )}

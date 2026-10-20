@@ -30,7 +30,7 @@ export function FeatureState({ state }: FeatureStateProps) {
   const isDeferred = state.kind === 'deferred'
   if (isDeferred) {
     return (
-      <div className='flex min-h-44 items-center border-y border-slate-200/60 py-8'>
+      <div className='flex min-h-44 items-center border-y border-[var(--admin-border)]/60 py-8'>
         <div className='max-w-lg'>
           <p className='mb-2 text-xs font-medium tracking-[0.12em] text-amber-700 uppercase'>后续能力</p>
           <div className='flex items-start gap-3'>
@@ -38,8 +38,8 @@ export function FeatureState({ state }: FeatureStateProps) {
               <Clock3 className='h-4 w-4' aria-hidden='true' />
             </span>
             <div>
-              <h2 className='font-semibold text-slate-900'>{state.title}</h2>
-              <p className='mt-1 text-sm leading-6 text-slate-500'>{state.description}</p>
+              <h2 className='font-semibold text-[var(--admin-text-primary)]'>{state.title}</h2>
+              <p className='mt-1 text-sm leading-6 text-[var(--admin-text-secondary)]'>{state.description}</p>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@ export function FeatureState({ state }: FeatureStateProps) {
   }
 
   if (state.kind === 'empty') {
-    return <AsyncStatePanel status='empty' title={state.title} emptyHint={<>{state.description ? <p>{state.description}</p> : null}{state.action ? <button type='button' onClick={state.action.onClick} className='mt-4 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white'>{state.action.label}</button> : null}</>} />
+    return <AsyncStatePanel status='empty' title={state.title} emptyHint={<>{state.description ? <p>{state.description}</p> : null}{state.action ? <button type='button' onClick={state.action.onClick} className='mt-4 rounded-lg bg-[var(--brand)] px-4 py-2 text-sm font-medium text-white'>{state.action.label}</button> : null}</>} />
   }
 
   return <AsyncStatePanel status='error' title={state.title} error={state.description} onRetry={state.retry} retryLabel='重新尝试' />

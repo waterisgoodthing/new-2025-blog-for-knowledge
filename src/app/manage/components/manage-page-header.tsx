@@ -11,13 +11,13 @@ export function ManagePageHeader({
 }: ManagePageHeaderProps) {
   return (
     <div className='max-w-2xl'>
-      <p className='text-xs font-medium tracking-[0.16em] text-[var(--color-brand)]/75 uppercase'>
+      <p className='text-xs font-medium tracking-[0.16em] text-[var(--brand)]/75 uppercase'>
         {eyebrow}
       </p>
-      <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl'>
+      <h1 className='mt-2 text-3xl font-semibold tracking-tight text-[var(--admin-text-primary)] md:text-4xl'>
         {title}
       </h1>
-      <p className='mt-3 text-sm leading-6 text-slate-500 md:text-base'>{description}</p>
+      <p className='mt-3 text-sm leading-6 text-[var(--admin-text-secondary)] md:text-base'>{description}</p>
     </div>
   )
 }

@@ -160,17 +160,17 @@ export function AiRunsPanel() {
 
   return (
     <section aria-labelledby='runs-title' className='space-y-4'>
-      <div className='flex flex-wrap items-end justify-between gap-4 border-b border-slate-200/70 pb-3'>
+      <div className='flex flex-wrap items-end justify-between gap-4 border-b border-[var(--admin-border)]/70 pb-3'>
         <div>
-          <h2 id='runs-title' className='font-medium text-slate-800'>全部记录</h2>
-          <p className='mt-1 text-xs text-slate-400'>人工接受只确认输出，不会直接写入正式题目、错题或复习项。</p>
+          <h2 id='runs-title' className='font-medium text-[var(--admin-text-primary)]'>全部记录</h2>
+          <p className='mt-1 text-xs text-[var(--admin-text-tertiary)]'>人工接受只确认输出，不会直接写入正式题目、错题或复习项。</p>
         </div>
         <div className='flex gap-2'>
           <select
             aria-label='处理状态'
             value={status}
             onChange={(event) => changeStatus(event.target.value as AiRunStatus | '')}
-            className='rounded-lg border border-slate-200 bg-white/60 px-2 py-1 text-xs'
+            className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 px-2 py-1 text-xs'
           >
             <option value=''>全部状态</option>
             <option value='running'>运行中</option>
@@ -181,7 +181,7 @@ export function AiRunsPanel() {
             aria-label='人工确认状态'
             value={reviewStatus}
             onChange={(event) => changeReviewStatus(event.target.value as AiRunReviewStatus | '')}
-            className='rounded-lg border border-slate-200 bg-white/60 px-2 py-1 text-xs'
+            className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)]/60 px-2 py-1 text-xs'
           >
             <option value=''>全部确认状态</option>
             <option value='pending'>待确认</option>
@@ -202,7 +202,7 @@ export function AiRunsPanel() {
           ) : null}
           {!loading && runs.length > 0 ? (
             <table className='w-full text-left text-sm' data-testid='ai-runs-table'>
-              <thead className='border-b border-slate-200/55 text-xs text-slate-400'>
+              <thead className='border-b border-[var(--admin-border)]/55 text-xs text-[var(--admin-text-tertiary)]'>
                 <tr>
                   <th className='py-2 pr-3 font-medium'>时间</th>
                   <th className='py-2 pr-3 font-medium'>任务</th>
@@ -218,7 +218,7 @@ export function AiRunsPanel() {
                     data-run-id={run.id}
                     tabIndex={0}
                     aria-label={`${run.task_type}，${statusLabel[run.status]}，${reviewStatusLabel[run.review_status]}，按 Enter 查看详情`}
-                    className='cursor-pointer border-b border-slate-200/40 hover:bg-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:ring-inset'
+                    className='cursor-pointer border-b border-[var(--admin-border)]/40 hover:bg-[var(--admin-surface-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45 focus-visible:ring-inset'
                     onClick={() => openRun(run.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -227,14 +227,14 @@ export function AiRunsPanel() {
                       }
                     }}
                   >
-                    <td className='py-2.5 pr-3 text-xs text-slate-500'>{new Date(run.created_at).toLocaleString('zh-CN', { hour12: false })}</td>
-                    <td className='py-2.5 pr-3 font-mono text-xs text-slate-700'>{run.task_type}</td>
+                    <td className='py-2.5 pr-3 text-xs text-[var(--admin-text-secondary)]'>{new Date(run.created_at).toLocaleString('zh-CN', { hour12: false })}</td>
+                    <td className='py-2.5 pr-3 font-mono text-xs text-[var(--admin-text-primary)]'>{run.task_type}</td>
                     <td className='py-2.5 pr-3'>
                       <ManageStatusBadge tone={statusTone[run.status]}>
                         {statusLabel[run.status]}
                       </ManageStatusBadge>
                     </td>
-                    <td className='py-2.5 pr-3 text-xs text-slate-500'>
+                    <td className='py-2.5 pr-3 text-xs text-[var(--admin-text-secondary)]'>
                       {validationStatusLabel[run.validation_status] ?? run.validation_status}
                     </td>
                     <td className='py-2.5 pr-3'>
@@ -247,14 +247,14 @@ export function AiRunsPanel() {
               </tbody>
             </table>
           ) : null}
-          <div className='mt-3 flex items-center justify-between border-t border-slate-200/45 pt-3 text-xs text-slate-500'>
+          <div className='mt-3 flex items-center justify-between border-t border-[var(--admin-border)]/45 pt-3 text-xs text-[var(--admin-text-secondary)]'>
             <span>{pageStart}–{pageEnd} / {total}</span>
             <div className='flex gap-2'>
               <button
                 type='button'
                 onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
                 disabled={loading || offset === 0}
-                className='rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40'
+                className='rounded-lg border border-[var(--admin-border)] px-3 py-1.5 hover:bg-[var(--admin-surface)] disabled:cursor-not-allowed disabled:opacity-40'
               >
                 上一页
               </button>
@@ -262,7 +262,7 @@ export function AiRunsPanel() {
                 type='button'
                 onClick={() => setOffset(offset + PAGE_SIZE)}
                 disabled={loading || offset + runs.length >= total}
-                className='rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40'
+                className='rounded-lg border border-[var(--admin-border)] px-3 py-1.5 hover:bg-[var(--admin-surface)] disabled:cursor-not-allowed disabled:opacity-40'
               >
                 下一页
               </button>
@@ -270,20 +270,20 @@ export function AiRunsPanel() {
           </div>
         </div>
 
-        <aside aria-label='记录详情' className='border-l border-slate-200/45 pl-5'>
+        <aside aria-label='记录详情' className='border-l border-[var(--admin-border)]/45 pl-5'>
           {!selected ? (
             <ManageEmptyState variant='empty' message='选择一条记录查看详情。' />
           ) : (
             <div className='space-y-4'>
               <div>
-                <p className='font-mono text-xs text-slate-400'>{selected.id}</p>
-                <h3 className='mt-1 font-medium text-slate-800'>{selected.task_type}</h3>
-                <p className='mt-1 text-xs text-slate-500'>
+                <p className='font-mono text-xs text-[var(--admin-text-tertiary)]'>{selected.id}</p>
+                <h3 className='mt-1 font-medium text-[var(--admin-text-primary)]'>{selected.task_type}</h3>
+                <p className='mt-1 text-xs text-[var(--admin-text-secondary)]'>
                   第 {selected.attempt} 次尝试 · {selected.provider_used || '未选择服务商'} · {selected.prompt_version || '无提示词版本'}
                 </p>
               </div>
               <div>
-                <h4 className='text-xs font-medium text-slate-500'>受控输出</h4>
+                <h4 className='text-xs font-medium text-[var(--admin-text-secondary)]'>受控输出</h4>
                 <pre className='mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-950/90 p-3 text-xs text-slate-100'>
                   {JSON.stringify(selected.output_data, null, 2)}
                 </pre>
@@ -293,21 +293,21 @@ export function AiRunsPanel() {
                   <button
                     onClick={retry}
                     disabled={acting !== null}
-                    className='rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-white disabled:opacity-50'
+                    className='rounded-lg border border-[var(--admin-border)] px-3 py-1.5 text-xs text-[var(--admin-text-secondary)] hover:bg-[var(--admin-surface)] disabled:opacity-50'
                   >
                     {acting === 'retry' ? '重试中…' : '重试'}
                   </button>
                 )}
                 {selected.review_status === 'pending' && (
                   <div className='w-full space-y-3'>
-                    <label className='block text-xs text-slate-500'>
+                    <label className='block text-xs text-[var(--admin-text-secondary)]'>
                       拒绝说明（可选）
                       <textarea
                         value={rejectNote}
                         onChange={(event) => setRejectNote(event.target.value)}
                         maxLength={1000}
                         rows={3}
-                        className='mt-1 w-full rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-700'
+                        className='mt-1 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)]/70 px-3 py-2 text-sm text-[var(--admin-text-primary)]'
                         placeholder='记录人工拒绝原因'
                       />
                     </label>
@@ -341,7 +341,7 @@ export function AiRunsPanel() {
                             type='button'
                             onClick={() => decide(pendingDecision)}
                             disabled={acting !== null}
-                            className='rounded-lg bg-slate-900 px-3 py-1.5 text-xs text-white disabled:opacity-50'
+                            className='rounded-lg bg-[var(--brand)] px-3 py-1.5 text-xs text-white disabled:opacity-50'
                           >
                             {acting === pendingDecision ? '提交中…' : '确认提交'}
                           </button>
@@ -349,7 +349,7 @@ export function AiRunsPanel() {
                             type='button'
                             onClick={() => setPendingDecision(null)}
                             disabled={acting !== null}
-                            className='rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 disabled:opacity-50'
+                            className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-1.5 text-xs text-[var(--admin-text-secondary)] disabled:opacity-50'
                           >
                             取消
                           </button>

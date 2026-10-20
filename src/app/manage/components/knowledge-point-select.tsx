@@ -61,7 +61,7 @@ export function KnowledgePointSelect({
 
   return (
     <label htmlFor={selectId} className='block'>
-      <span className='mb-2 block text-sm font-medium text-slate-700'>{label}</span>
+      <span className='mb-2 block text-sm font-medium text-[var(--admin-text-primary)]'>{label}</span>
       <select
         id={selectId}
         value={value ?? ''}
@@ -70,7 +70,7 @@ export function KnowledgePointSelect({
           const nextValue = event.target.value
           onChange(nextValue ? Number(nextValue) : null)
         }}
-        className='w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[var(--color-brand)] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
+        className='w-full rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm text-[var(--admin-text-primary)] outline-none transition focus:border-[var(--brand)] disabled:cursor-not-allowed disabled:bg-[var(--admin-surface-subtle)] disabled:text-[var(--admin-text-tertiary)]'
       >
         <option value=''>
           {loading ? '正在加载…' : options.length ? '请选择知识点' : '暂无可用知识点'}
@@ -118,14 +118,14 @@ export function KnowledgePointMultiSelect({
 
   return (
     <fieldset disabled={disabled || loading}>
-      <legend className='mb-2 text-sm font-medium text-slate-700'>{label}</legend>
+      <legend className='mb-2 text-sm font-medium text-[var(--admin-text-primary)]'>{label}</legend>
       <div className='flex flex-wrap gap-2'>
         {options.map((option) => {
           const checked = values.includes(option.id)
           return (
             <label
               key={option.id}
-              className='inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700'
+              className='inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2 text-sm text-[var(--admin-text-primary)]'
             >
               <input
                 type='checkbox'
@@ -143,10 +143,10 @@ export function KnowledgePointMultiSelect({
           )
         })}
         {!loading && options.length === 0 ? (
-          <span className='text-sm text-slate-400'>暂无可选知识点</span>
+          <span className='text-sm text-[var(--admin-text-tertiary)]'>暂无可选知识点</span>
         ) : null}
       </div>
-      {loading ? <p className='mt-2 text-xs text-slate-400'>正在加载知识点…</p> : null}
+      {loading ? <p className='mt-2 text-xs text-[var(--admin-text-tertiary)]'>正在加载知识点…</p> : null}
       {error ? <p className='mt-2 text-xs text-red-600'>{error}</p> : null}
     </fieldset>
   )

@@ -91,31 +91,31 @@ export function KnowledgePointEditor({ knowledgePointId }: { knowledgePointId: n
     }
   }
 
-  if (!point) return <p className='text-sm text-slate-500'>{error || '正在加载知识点…'}</p>
+  if (!point) return <p className='text-sm text-[var(--admin-text-secondary)]'>{error || '正在加载知识点…'}</p>
 
   return (
     <div className='max-w-2xl space-y-7'>
-      <Link href={`/manage/subjects/${point.subject_id}`} className='inline-flex items-center gap-2 text-sm text-slate-500'>
+      <Link href={`/manage/subjects/${point.subject_id}`} className='inline-flex items-center gap-2 text-sm text-[var(--admin-text-secondary)]'>
         <ArrowLeft className='h-4 w-4' aria-hidden='true' />
         返回所属科目
       </Link>
 
-      <form onSubmit={submit} className='space-y-5 rounded-lg border border-slate-200/70 bg-white/60 p-5'>
-        <h1 className='text-2xl font-semibold text-slate-900'>编辑知识点</h1>
-        <label className='block text-sm text-slate-600'>
+      <form onSubmit={submit} className='space-y-5 rounded-lg border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/60 p-5'>
+        <h1 className='text-2xl font-semibold text-[var(--admin-text-primary)]'>编辑知识点</h1>
+        <label className='block text-sm text-[var(--admin-text-secondary)]'>
           名称
           <input
             value={point.name}
             onChange={(event) => setPoint({ ...point, name: event.target.value })}
-            className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'
           />
         </label>
-        <label className='block text-sm text-slate-600'>
+        <label className='block text-sm text-[var(--admin-text-secondary)]'>
           父级知识点
           <select
             value={point.parent_id ?? ''}
             onChange={(event) => setPoint({ ...point, parent_id: event.target.value ? Number(event.target.value) : null })}
-            className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'
           >
             <option value=''>作为根节点</option>
             {parentOptions.map((option) => (
@@ -125,34 +125,34 @@ export function KnowledgePointEditor({ knowledgePointId }: { knowledgePointId: n
             ))}
           </select>
         </label>
-        <label className='block text-sm text-slate-600'>
+        <label className='block text-sm text-[var(--admin-text-secondary)]'>
           说明
           <textarea
             value={point.description ?? ''}
             onChange={(event) => setPoint({ ...point, description: event.target.value || null })}
             rows={4}
-            className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'
           />
         </label>
         <div className='grid gap-4 sm:grid-cols-2'>
-          <label className='text-sm text-slate-600'>
+          <label className='text-sm text-[var(--admin-text-secondary)]'>
             状态
             <select
               value={point.status}
               onChange={(event) => setPoint({ ...point, status: event.target.value as KnowledgePoint['status'] })}
-              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'
             >
               <option value='active'>启用</option>
               <option value='archived'>归档</option>
             </select>
           </label>
-          <label className='text-sm text-slate-600'>
+          <label className='text-sm text-[var(--admin-text-secondary)]'>
             排序
             <input
               type='number'
               value={point.sort_order}
               onChange={(event) => setPoint({ ...point, sort_order: Number(event.target.value) })}
-              className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'
+              className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'
             />
           </label>
         </div>
@@ -196,7 +196,7 @@ export function KnowledgePointEditor({ knowledgePointId }: { knowledgePointId: n
               <Archive className='h-4 w-4' aria-hidden='true' />
               归档子树
             </button>
-            <button disabled={busy || !point.name.trim()} className='rounded-lg bg-[var(--color-brand)] px-5 py-2 text-sm text-white disabled:opacity-45'>
+            <button disabled={busy || !point.name.trim()} className='rounded-lg bg-[var(--brand)] px-5 py-2 text-sm text-white disabled:opacity-45'>
               {busy ? '处理中…' : '保存'}
             </button>
           </div>

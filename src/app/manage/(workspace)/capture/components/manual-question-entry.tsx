@@ -78,13 +78,13 @@ export function ManualQuestionEntry() {
           还没有可用科目。请先到&ldquo;学科角&rdquo;创建并启用科目，再录入题目。
         </p>
       ) : null}
-      <label className='block text-sm text-slate-600'>科目
-        <select value={subjectId} onChange={(event) => setSubjectId(event.target.value)} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'>
+      <label className='block text-sm text-[var(--admin-text-secondary)]'>科目
+        <select value={subjectId} onChange={(event) => setSubjectId(event.target.value)} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'>
           {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
         </select>
       </label>
-      <label className='block text-sm text-slate-600'>题型
-        <select value={questionType} onChange={(event) => setQuestionType(event.target.value as QuestionType)} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5'>
+      <label className='block text-sm text-[var(--admin-text-secondary)]'>题型
+        <select value={questionType} onChange={(event) => setQuestionType(event.target.value as QuestionType)} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5'>
           <option value='short_answer'>简答题</option>
           <option value='single_choice'>单选题</option>
           <option value='multiple_choice'>多选题</option>
@@ -92,15 +92,15 @@ export function ManualQuestionEntry() {
           <option value='essay'>论述题</option>
         </select>
       </label>
-      <label className='block text-sm text-slate-600'>题干
-        <textarea value={questionText} onChange={(event) => setQuestionText(event.target.value)} rows={5} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+      <label className='block text-sm text-[var(--admin-text-secondary)]'>题干
+        <textarea value={questionText} onChange={(event) => setQuestionText(event.target.value)} rows={5} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' />
       </label>
       {questionType === 'single_choice' || questionType === 'multiple_choice' ? (
-        <label className='block text-sm text-slate-600'>选项（每行一项）
-          <textarea value={optionsText} onChange={(event) => setOptionsText(event.target.value)} rows={4} className='mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5' />
+        <label className='block text-sm text-[var(--admin-text-secondary)]'>选项（每行一项）
+          <textarea value={optionsText} onChange={(event) => setOptionsText(event.target.value)} rows={4} className='mt-2 w-full rounded-lg border border-[var(--admin-border)] px-3 py-2.5' />
         </label>
       ) : null}
-      <button disabled={saving || !subjectId || !questionText.trim()} className='inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2.5 text-sm text-white disabled:opacity-45'>
+      <button disabled={saving || !subjectId || !questionText.trim()} className='inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm text-white disabled:opacity-45'>
         <Plus className='h-4 w-4' />{saving ? '正在创建…' : '创建草稿'}
       </button>
     </ManageFormPanel>

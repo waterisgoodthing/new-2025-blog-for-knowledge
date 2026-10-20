@@ -68,16 +68,16 @@ export function AttachmentWorkspace() {
 
   return (
     <div className='grid gap-7 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]'>
-      <section className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
+      <section className='rounded-3xl border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm'>
         <div className='flex items-center gap-2'>
-          <FileUp className='h-5 w-5 text-[var(--color-brand)]' />
-          <h2 className='font-semibold text-slate-900'>上传私有附件</h2>
+          <FileUp className='h-5 w-5 text-[var(--brand)]' />
+          <h2 className='font-semibold text-[var(--admin-text-primary)]'>上传私有附件</h2>
         </div>
-        <p className='mt-2 text-sm leading-6 text-slate-500'>
+        <p className='mt-2 text-sm leading-6 text-[var(--admin-text-secondary)]'>
           第一版支持图片、PDF 与纯文本；文件保存在本地上传目录，数据库仅保存不透明存储标识。
         </p>
         <form onSubmit={submit} className='mt-5 space-y-4'>
-          <label className='block text-sm font-medium text-slate-700'>
+          <label className='block text-sm font-medium text-[var(--admin-text-primary)]'>
             选择文件
             <input
               id='attachment-file'
@@ -85,18 +85,18 @@ export function AttachmentWorkspace() {
               disabled={busy}
               accept='image/png,image/jpeg,image/webp,application/pdf,text/plain'
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className='mt-2 block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm'
+              className='mt-2 block w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--admin-surface-subtle)] file:px-3 file:py-1.5 file:text-sm'
             />
           </label>
           {file ? (
-            <div className='rounded-2xl bg-slate-50 p-3 text-sm text-slate-600'>
+            <div className='rounded-2xl bg-[var(--admin-surface-subtle)] p-3 text-sm text-[var(--admin-text-secondary)]'>
               {file.name} · {file.type || '未知类型'} · {formatBytes(file.size)}
             </div>
           ) : null}
           {error ? <p role='alert' className='text-sm text-red-600'>{error}</p> : null}
           <button
             disabled={busy || !file}
-            className='inline-flex items-center gap-2 rounded-lg bg-[var(--color-brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+            className='inline-flex items-center gap-2 rounded-lg bg-[var(--brand)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-45'
           >
             <FileUp className='h-4 w-4' />
             {busy ? '上传中…' : '上传附件'}
@@ -104,11 +104,11 @@ export function AttachmentWorkspace() {
         </form>
       </section>
 
-      <section className='rounded-3xl border border-slate-200/70 bg-white/80 p-5 shadow-sm'>
-        <div className='flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between'>
+      <section className='rounded-3xl border border-[var(--admin-border)]/70 bg-[var(--admin-surface)]/80 p-5 shadow-sm'>
+        <div className='flex flex-col gap-3 border-b border-[var(--admin-border)] pb-4 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <h2 className='font-semibold text-slate-900'>附件列表</h2>
-            <p className='mt-1 text-sm text-slate-500'>仅管理员可见；公开接口不返回附件。</p>
+            <h2 className='font-semibold text-[var(--admin-text-primary)]'>附件列表</h2>
+            <p className='mt-1 text-sm text-[var(--admin-text-secondary)]'>仅管理员可见；公开接口不返回附件。</p>
           </div>
           <div className='flex gap-2'>
             <select
@@ -119,7 +119,7 @@ export function AttachmentWorkspace() {
                 setStatus(next)
                 void load(next)
               }}
-              className='rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm'
+              className='rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2 text-sm'
             >
               <option value='active'>可用</option>
               <option value='missing'>文件缺失</option>
@@ -129,7 +129,7 @@ export function AttachmentWorkspace() {
             <button
               type='button'
               onClick={() => void load()}
-              className='inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600'
+              className='inline-flex items-center gap-2 rounded-lg border border-[var(--admin-border)] px-3 py-2 text-sm text-[var(--admin-text-secondary)]'
             >
               <RefreshCcw className='h-4 w-4' />
               刷新
@@ -140,14 +140,14 @@ export function AttachmentWorkspace() {
         {!loading && error && items.length === 0 ? <FeatureState state={{ kind: 'error', title: '附件加载失败', description: error, retry: () => void load() }} /> : null}
         {!loading && !error && items.length === 0 ? <FeatureState state={{ kind: 'empty', title: '暂无附件', description: '上传学习资料后，可将附件关联到题目或错题。' }} /> : null}
         {items.map((item) => (
-          <Link key={item.id} href={`/manage/attachments/${item.id}`} className='group flex items-center gap-4 border-b border-slate-100 py-4 last:border-b-0'>
+          <Link key={item.id} href={`/manage/attachments/${item.id}`} className='group flex items-center gap-4 border-b border-[var(--admin-border)] py-4 last:border-b-0'>
             <span className='min-w-0 flex-1'>
-              <span className='block truncate font-medium text-slate-800'>{item.original_name}</span>
-              <span className='mt-1 block text-xs text-slate-400'>
+              <span className='block truncate font-medium text-[var(--admin-text-primary)]'>{item.original_name}</span>
+              <span className='mt-1 block text-xs text-[var(--admin-text-tertiary)]'>
                 {item.mime_type} · {formatBytes(item.size_bytes)} · {attachmentStatusLabel(item.status)} · {attachmentVisibilityLabel(item.visibility)}
               </span>
             </span>
-            <ArrowRight className='h-4 w-4 text-slate-300 group-hover:text-[var(--color-brand)]' />
+            <ArrowRight className='h-4 w-4 text-[var(--admin-text-tertiary)] group-hover:text-[var(--brand)]' />
           </Link>
         ))}
       </section>

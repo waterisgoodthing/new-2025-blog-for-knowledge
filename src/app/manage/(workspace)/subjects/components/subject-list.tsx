@@ -68,7 +68,7 @@ export function SubjectList() {
       <section aria-labelledby='subject-list-title'>
         <ManageTableContainer
           header={
-            <h2 id='subject-list-title' className='font-medium text-slate-800'>
+            <h2 id='subject-list-title' className='font-medium text-[var(--admin-text-primary)]'>
               全部科目
             </h2>
           }
@@ -108,19 +108,19 @@ export function SubjectList() {
         onSubmit={submit}
         className='h-fit'
       >
-        <label className='block text-sm text-slate-600'>
+        <label className='block text-sm text-[var(--admin-text-secondary)]'>
           名称
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
             maxLength={100}
-            className='mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 outline-none focus:border-[var(--color-brand)]'
+            className='mt-2 w-full rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2.5 outline-none focus:border-[var(--brand)]'
           />
         </label>
         <button
           type='submit'
           disabled={saving || !name.trim()}
-          className='inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-45'
+          className='inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-45'
         >
           <Plus className='h-4 w-4' aria-hidden='true' />
           {saving ? '正在创建…' : '创建科目'}

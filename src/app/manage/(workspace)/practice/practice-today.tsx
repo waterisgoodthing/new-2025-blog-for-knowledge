@@ -69,19 +69,19 @@ export function PracticeToday() {
       role='region'
       aria-label='今日练习结果'
       tabIndex={-1}
-      className='space-y-3 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>
-      <p className='text-sm text-slate-500'>共 {data.items.length} 道练习，均来自薄弱知识点。</p>
+      className='space-y-3 outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45'>
+      <p className='text-sm text-[var(--admin-text-secondary)]'>共 {data.items.length} 道练习，均来自薄弱知识点。</p>
       <ol className='space-y-3'>
         {data.items.map(item => (
-          <li key={`${item.knowledge_point_id}-${item.question_id}`} className='rounded-2xl border border-slate-200/70 p-5'>
+          <li key={`${item.knowledge_point_id}-${item.question_id}`} className='rounded-2xl border border-[var(--admin-border)]/70 p-5'>
             <div className='flex items-center justify-between gap-3'>
-              <p className='text-sm font-medium text-slate-800'>知识点 #{item.knowledge_point_id}</p>
-              <PencilLine className='h-4 w-4 text-[var(--color-brand)]' aria-hidden='true' />
+              <p className='text-sm font-medium text-[var(--admin-text-primary)]'>知识点 #{item.knowledge_point_id}</p>
+              <PencilLine className='h-4 w-4 text-[var(--brand)]' aria-hidden='true' />
             </div>
-            <p className='mt-1 text-xs text-slate-400'>选题理由：{selectionReasonText(item.selection_reason)}</p>
+            <p className='mt-1 text-xs text-[var(--admin-text-tertiary)]'>选题理由：{selectionReasonText(item.selection_reason)}</p>
             <Link
               href={`/manage/questions/${item.question_id}`}
-              className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none'>
+              className='mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--brand)] focus-visible:ring-2 focus-visible:ring-[var(--brand)]/45 focus-visible:outline-none'>
               打开题目
               <ArrowUpRight className='h-4 w-4' aria-hidden='true' />
             </Link>

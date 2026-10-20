@@ -56,14 +56,14 @@ const STATUS_LABELS: Record<CaptureStatus, string> = {
 }
 
 const STATUS_COLORS: Record<CaptureStatus, string> = {
-  uploaded: 'text-slate-500',
+  uploaded: 'text-[var(--admin-text-secondary)]',
   recognizing: 'text-blue-500',
   recognized: 'text-blue-600',
   drafting: 'text-blue-500',
   ready: 'text-green-600',
   failed: 'text-red-500',
   converted: 'text-purple-600',
-  archived: 'text-slate-400',
+  archived: 'text-[var(--admin-text-tertiary)]',
 }
 
 function isBusy(status: CaptureStatus): boolean {
@@ -262,7 +262,7 @@ export function CaptureWorkspace() {
   if (loading) {
     return (
       <div className='flex items-center justify-center py-20'>
-        <Loader2 className='h-6 w-6 animate-spin text-slate-400' />
+        <Loader2 className='h-6 w-6 animate-spin text-[var(--admin-text-tertiary)]' />
       </div>
     )
   }
@@ -295,7 +295,7 @@ export function CaptureWorkspace() {
               onConvert={handleConvert}
             />
           ) : (
-            <div className='flex items-center justify-center rounded-2xl border border-white/45 bg-white/48 p-10 text-sm text-slate-400'>
+            <div className='flex items-center justify-center rounded-2xl border border-white/45 bg-[var(--admin-surface)]/48 p-10 text-sm text-[var(--admin-text-tertiary)]'>
               选择左侧的采集项查看详情
             </div>
           )}
@@ -318,7 +318,7 @@ const UploadArea = forwardRef<HTMLInputElement, UploadAreaProps>(
     return (
       <div
         className={cn(
-          'flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/50 bg-white/40 p-8 text-center transition-colors',
+          'flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/50 bg-[var(--admin-surface)]/40 p-8 text-center transition-colors',
           uploading && 'opacity-60',
         )}
         onDragOver={(e) => e.preventDefault()}
@@ -339,19 +339,19 @@ const UploadArea = forwardRef<HTMLInputElement, UploadAreaProps>(
             e.target.value = ''
           }}
         />
-        <Camera className='h-8 w-8 text-slate-400' />
+        <Camera className='h-8 w-8 text-[var(--admin-text-tertiary)]' />
         <div>
           <button
             type='button'
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className='text-sm font-medium text-[var(--color-brand)] hover:underline disabled:opacity-50'
+            className='text-sm font-medium text-[var(--brand)] hover:underline disabled:opacity-50'
           >
             {uploading ? '上传中...' : '点击上传图片'}
           </button>
-          <span className='text-sm text-slate-400'> 或拖拽到此处</span>
+          <span className='text-sm text-[var(--admin-text-tertiary)]'> 或拖拽到此处</span>
         </div>
-        <p className='text-xs text-slate-400'>支持 PNG / JPEG / WebP，最大 10MB</p>
+        <p className='text-xs text-[var(--admin-text-tertiary)]'>支持 PNG / JPEG / WebP，最大 10MB</p>
       </div>
     )
   },
@@ -359,9 +359,9 @@ const UploadArea = forwardRef<HTMLInputElement, UploadAreaProps>(
 
 function EmptyState() {
   return (
-    <div className='flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/45 bg-white/48 p-12 text-center'>
-      <FileText className='h-8 w-8 text-slate-300' />
-      <p className='text-sm text-slate-400'>还没有采集项，上传一张错题图片开始</p>
+    <div className='flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/45 bg-[var(--admin-surface)]/48 p-12 text-center'>
+      <FileText className='h-8 w-8 text-[var(--admin-text-tertiary)]' />
+      <p className='text-sm text-[var(--admin-text-tertiary)]'>还没有采集项，上传一张错题图片开始</p>
     </div>
   )
 }
@@ -374,7 +374,7 @@ interface CaptureListProps {
 
 function CaptureList({ captures, selectedId, onSelect }: CaptureListProps) {
   return (
-    <div className='max-h-[600px] space-y-1 overflow-y-auto rounded-2xl border border-white/45 bg-white/48 p-2'>
+    <div className='max-h-[600px] space-y-1 overflow-y-auto rounded-2xl border border-white/45 bg-[var(--admin-surface)]/48 p-2'>
       {captures.map((capture) => (
         <button
           key={capture.id}
@@ -382,8 +382,8 @@ function CaptureList({ captures, selectedId, onSelect }: CaptureListProps) {
           className={cn(
             'flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
             capture.id === selectedId
-              ? 'bg-[var(--color-brand)]/14 font-medium text-[var(--color-brand)]'
-              : 'text-slate-600 hover:bg-white/65',
+              ? 'bg-[var(--brand)]/14 font-medium text-[var(--brand)]'
+              : 'text-[var(--admin-text-secondary)] hover:bg-[var(--admin-surface-subtle)]',
           )}
         >
           <span className='truncate flex-1'>
@@ -428,7 +428,7 @@ function CaptureDetail({
     !draftStage &&
     capture.error_code === 'empty_result'
   return (
-    <div className='space-y-5 rounded-2xl border border-white/45 bg-white/48 p-5'>
+    <div className='space-y-5 rounded-2xl border border-white/45 bg-[var(--admin-surface)]/48 p-5'>
       <DetailHeader capture={capture} />
       <ImagePreview attachmentId={capture.source_attachment_id} />
       {capture.error_code === 'recognition_disabled' && (
@@ -482,18 +482,18 @@ function DetailHeader({ capture }: { capture: Capture }) {
   return (
     <div className='flex items-center justify-between border-b border-white/40 pb-3'>
       <div>
-        <p className='text-xs text-slate-400'>采集 ID</p>
-        <p className='font-mono text-sm text-slate-600'>{capture.id.slice(0, 8)}</p>
+        <p className='text-xs text-[var(--admin-text-tertiary)]'>采集 ID</p>
+        <p className='font-mono text-sm text-[var(--admin-text-secondary)]'>{capture.id.slice(0, 8)}</p>
       </div>
       <div className='text-right'>
-        <p className='text-xs text-slate-400'>状态</p>
+        <p className='text-xs text-[var(--admin-text-tertiary)]'>状态</p>
         <p className={cn('text-sm font-medium', STATUS_COLORS[capture.status])}>
           {isBusy(capture.status) && (
             <Loader2 className='mr-1 inline h-3.5 w-3.5 animate-spin' />
           )}
           {STATUS_LABELS[capture.status]}
           {capture.attempt_count > 0 && (
-            <span className='ml-1 text-xs text-slate-400'>
+            <span className='ml-1 text-xs text-[var(--admin-text-tertiary)]'>
               (第 {capture.attempt_count} 次)
             </span>
           )}
@@ -524,15 +524,15 @@ function ImagePreview({ attachmentId }: { attachmentId: string }) {
 
   if (error) {
     return (
-      <div className='flex items-center justify-center rounded-lg bg-slate-100 p-8 text-sm text-slate-400'>
+      <div className='flex items-center justify-center rounded-lg bg-[var(--admin-surface-subtle)] p-8 text-sm text-[var(--admin-text-tertiary)]'>
         图片加载失败
       </div>
     )
   }
   if (!url) {
     return (
-      <div className='flex items-center justify-center rounded-lg bg-slate-100 p-8'>
-        <Loader2 className='h-5 w-5 animate-spin text-slate-400' />
+      <div className='flex items-center justify-center rounded-lg bg-[var(--admin-surface-subtle)] p-8'>
+        <Loader2 className='h-5 w-5 animate-spin text-[var(--admin-text-tertiary)]' />
       </div>
     )
   }
@@ -607,12 +607,12 @@ function RecognizedTextSection({
   return (
     <section className='space-y-2'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-sm font-medium text-slate-700'>识别文字</h3>
+        <h3 className='text-sm font-medium text-[var(--admin-text-primary)]'>识别文字</h3>
         {dirty && (
           <button
             onClick={handleSave}
             disabled={saving}
-            className='text-xs text-[var(--color-brand)] hover:underline disabled:opacity-50'
+            className='text-xs text-[var(--brand)] hover:underline disabled:opacity-50'
           >
             {saving ? '保存中...' : '保存修改'}
           </button>
@@ -623,7 +623,7 @@ function RecognizedTextSection({
         onChange={(e) => setText(e.target.value)}
         rows={4}
         placeholder='识别文字将显示在这里，可手动修正'
-        className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+        className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/60 p-3 text-sm text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-tertiary)] focus:border-[var(--brand)]/40 focus:outline-none'
       />
     </section>
   )
@@ -654,12 +654,12 @@ function ErrorContextSection({
   return (
     <section className='space-y-2'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-sm font-medium text-slate-700'>我当时为什么错</h3>
+        <h3 className='text-sm font-medium text-[var(--admin-text-primary)]'>我当时为什么错</h3>
         {dirty && (
           <button
             onClick={handleSave}
             disabled={saving}
-            className='text-xs text-[var(--color-brand)] hover:underline disabled:opacity-50'
+            className='text-xs text-[var(--brand)] hover:underline disabled:opacity-50'
           >
             {saving ? '保存中...' : '保存修改'}
           </button>
@@ -670,7 +670,7 @@ function ErrorContextSection({
         onChange={(e) => setText(e.target.value)}
         rows={2}
         placeholder='补充你的错误思路或混淆点（可选，帮助 AI 生成更准确的草稿）'
-        className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+        className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/60 p-3 text-sm text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-tertiary)] focus:border-[var(--brand)]/40 focus:outline-none'
       />
     </section>
   )
@@ -731,19 +731,19 @@ function DraftFieldsSection({
   return (
     <section className='space-y-3'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-sm font-medium text-slate-700'>{heading}</h3>
+        <h3 className='text-sm font-medium text-[var(--admin-text-primary)]'>{heading}</h3>
         {dirty && (
           <button
             onClick={handleSave}
             disabled={saving}
-            className='text-xs text-[var(--color-brand)] hover:underline disabled:opacity-50'
+            className='text-xs text-[var(--brand)] hover:underline disabled:opacity-50'
           >
             {saving ? '保存中...' : '保存修改'}
           </button>
         )}
       </div>
       <div className='space-y-2'>
-        <label className='text-xs text-slate-400'>题面</label>
+        <label className='text-xs text-[var(--admin-text-tertiary)]'>题面</label>
         {capture.status === 'recognized' && !capture.question_draft_text ? (
           <p className='rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800'>
             识别文字已保存。请继续在下方填写题面并保存，保存后即可进入待确认并转换。
@@ -754,27 +754,27 @@ function DraftFieldsSection({
           onChange={(e) => setQuestion(e.target.value)}
           rows={3}
           placeholder='题面草稿'
-          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/60 p-3 text-sm text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-tertiary)] focus:border-[var(--brand)]/40 focus:outline-none'
         />
       </div>
       <div className='space-y-2'>
-        <label className='text-xs text-slate-400'>解析</label>
+        <label className='text-xs text-[var(--admin-text-tertiary)]'>解析</label>
         <textarea
           value={analysis}
           onChange={(e) => setAnalysis(e.target.value)}
           rows={3}
           placeholder='解析草稿'
-          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/60 p-3 text-sm text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-tertiary)] focus:border-[var(--brand)]/40 focus:outline-none'
         />
       </div>
       <div className='space-y-2'>
-        <label className='text-xs text-slate-400'>错因总结</label>
+        <label className='text-xs text-[var(--admin-text-tertiary)]'>错因总结</label>
         <textarea
           value={errorSummary}
           onChange={(e) => setErrorSummary(e.target.value)}
           rows={2}
           placeholder='错因总结草稿'
-          className='w-full resize-y rounded-lg border border-white/50 bg-white/60 p-3 text-sm text-slate-700 placeholder:text-slate-300 focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/60 p-3 text-sm text-[var(--admin-text-primary)] placeholder:text-[var(--admin-text-tertiary)] focus:border-[var(--brand)]/40 focus:outline-none'
         />
       </div>
       {capture.knowledge_point_suggestions.length > 0 && (
@@ -782,7 +782,7 @@ function DraftFieldsSection({
           {capture.knowledge_point_suggestions.map((kp, i) => (
             <span
               key={i}
-              className='rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-500'
+              className='rounded-full bg-[var(--admin-surface-subtle)] px-2.5 py-0.5 text-xs text-[var(--admin-text-secondary)]'
             >
               {kp.label}
               {kp.confidence != null && ` (${Math.round(kp.confidence * 100)}%)`}
@@ -818,7 +818,7 @@ function ActionButtons({
         <button
           onClick={onRecognize}
           disabled={busy}
-          className='flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
+          className='flex items-center gap-1.5 rounded-lg bg-[var(--brand)]/10 px-4 py-2 text-sm font-medium text-[var(--brand)] transition-colors hover:bg-[var(--brand)]/20 disabled:opacity-50'
         >
           <RefreshCw className='h-4 w-4' />
           {capture.status === 'uploaded' ? '开始识别' : '重新识别'}
@@ -828,14 +828,14 @@ function ActionButtons({
         <button
           onClick={onDraft}
           disabled={busy}
-          className='flex items-center gap-1.5 rounded-lg bg-[var(--color-brand)]/10 px-4 py-2 text-sm font-medium text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-50'
+          className='flex items-center gap-1.5 rounded-lg bg-[var(--brand)]/10 px-4 py-2 text-sm font-medium text-[var(--brand)] transition-colors hover:bg-[var(--brand)]/20 disabled:opacity-50'
         >
           <RefreshCw className='h-4 w-4' />
           {capture.question_draft_text ? '重新生成草稿' : '生成 AI 草稿'}
         </button>
       )}
       {!recognitionEnabled && capture.status !== 'converted' && capture.status !== 'archived' && (
-        <p className='w-full rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500'>
+        <p className='w-full rounded-lg bg-[var(--admin-surface-subtle)] px-3 py-2 text-xs text-[var(--admin-text-secondary)]'>
           自动识别当前已关闭。请在下方「识别文字」中手动录入题干后继续。
         </p>
       )}
@@ -912,19 +912,19 @@ function ConvertForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className='space-y-4 rounded-2xl border border-[var(--color-brand)]/20 bg-[var(--color-brand)]/5 p-4'
+      className='space-y-4 rounded-2xl border border-[var(--brand)]/20 bg-[var(--brand)]/5 p-4'
     >
-      <h3 className='flex items-center gap-2 text-sm font-medium text-slate-700'>
+      <h3 className='flex items-center gap-2 text-sm font-medium text-[var(--admin-text-primary)]'>
         <CheckCircle2 className='h-4 w-4 text-green-500' />
         确认并转为错题草稿
       </h3>
 
       <div className='space-y-2'>
-        <label className='text-xs text-slate-500'>学科 *</label>
+        <label className='text-xs text-[var(--admin-text-secondary)]'>学科 *</label>
         <select
           value={subjectId ?? ''}
           onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : null)}
-          className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-2.5 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
         >
           <option value=''>选择学科</option>
           {subjects.map((s) => (
@@ -936,26 +936,26 @@ function ConvertForm({
       </div>
 
       <div className='space-y-2'>
-        <label className='text-xs text-slate-500'>题面 *</label>
+        <label className='text-xs text-[var(--admin-text-secondary)]'>题面 *</label>
         <textarea
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
           rows={3}
-          className='w-full resize-y rounded-lg border border-white/50 bg-white/80 p-3 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+          className='w-full resize-y rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-3 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
         />
       </div>
 
       <div className='grid gap-3 sm:grid-cols-2'>
         <div className='space-y-2'>
-          <label className='text-xs text-slate-500'>我的答案</label>
+          <label className='text-xs text-[var(--admin-text-secondary)]'>我的答案</label>
           <input
             value={myAnswer}
             onChange={(e) => setMyAnswer(e.target.value)}
-            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-2.5 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
           />
         </div>
         <div className='space-y-2'>
-          <label className='text-xs text-slate-500'>难度</label>
+          <label className='text-xs text-[var(--admin-text-secondary)]'>难度</label>
           <select
             value={difficulty ?? ''}
             onChange={(e) =>
@@ -965,7 +965,7 @@ function ConvertForm({
                   : null,
               )
             }
-            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-2.5 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
           >
             <option value=''>不指定</option>
             <option value='easy'>简单</option>
@@ -977,7 +977,7 @@ function ConvertForm({
 
       <div className='grid gap-3 sm:grid-cols-2'>
         <div className='space-y-2'>
-          <label className='text-xs text-slate-500'>错误类型</label>
+          <label className='text-xs text-[var(--admin-text-secondary)]'>错误类型</label>
           <select
             value={reasonCategory}
             onChange={(e) =>
@@ -985,7 +985,7 @@ function ConvertForm({
                 e.target.value as CaptureConvert['reason_category'],
               )
             }
-            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-2.5 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
           >
             <option value='unknown'>未分类</option>
             <option value='concept'>概念错误</option>
@@ -995,18 +995,18 @@ function ConvertForm({
           </select>
         </div>
         <div className='space-y-2'>
-          <label className='text-xs text-slate-500'>错因说明</label>
+          <label className='text-xs text-[var(--admin-text-secondary)]'>错因说明</label>
           <input
             value={mistakeReason}
             onChange={(e) => setMistakeReason(e.target.value)}
-            className='w-full rounded-lg border border-white/50 bg-white/80 p-2.5 text-sm focus:border-[var(--color-brand)]/40 focus:outline-none'
+            className='w-full rounded-lg border border-white/50 bg-[var(--admin-surface)]/80 p-2.5 text-sm focus:border-[var(--brand)]/40 focus:outline-none'
           />
         </div>
       </div>
 
       {knowledgePoints.length > 0 && (
         <div className='space-y-2'>
-          <label className='text-xs text-slate-500'>知识点</label>
+          <label className='text-xs text-[var(--admin-text-secondary)]'>知识点</label>
           <div className='flex flex-wrap gap-1.5'>
             {knowledgePoints.map((kp) => (
               <button
@@ -1022,8 +1022,8 @@ function ConvertForm({
                 className={cn(
                   'rounded-full px-2.5 py-0.5 text-xs transition-colors',
                   selectedKpIds.includes(kp.id)
-                    ? 'bg-[var(--color-brand)]/20 text-[var(--color-brand)]'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200',
+                    ? 'bg-[var(--brand)]/20 text-[var(--brand)]'
+                    : 'bg-[var(--admin-surface-subtle)] text-[var(--admin-text-secondary)] hover:bg-[var(--admin-border)]',
                 )}
               >
                 {kp.name}
@@ -1036,7 +1036,7 @@ function ConvertForm({
       <button
         type='submit'
         disabled={!canConvert || converting}
-        className='flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand)]/90 disabled:opacity-50'
+        className='flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--brand)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--brand)]/90 disabled:opacity-50'
       >
         {converting ? (
           <Loader2 className='h-4 w-4 animate-spin' />
@@ -1045,7 +1045,7 @@ function ConvertForm({
         )}
         转为错题草稿
       </button>
-      <p className='text-center text-xs text-slate-400'>
+      <p className='text-center text-xs text-[var(--admin-text-tertiary)]'>
         转换后仍需在错题草稿页面人工确认，才会生成正式错题和复习项
       </p>
     </form>
