@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/empty-state'
 import { Plus, X } from 'lucide-react'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 import { useAdminAuth } from '@/hooks/use-admin-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { getSnippets } from '@/lib/api/content'
@@ -173,7 +173,7 @@ export default function Page() {
 				)}
 			</motion.div>
 
-			<DialogModal open={isManageOpen} onClose={cancelManageChanges} className='card static w-[520px] max-sm:w-full'>
+			<Modal bare ariaLabel='管理代码片段' open={isManageOpen} onClose={cancelManageChanges} className='card static w-[520px] max-sm:w-full'>
 				<div className='space-y-4'>
 					<div className='flex items-center gap-3'>
 						<input
@@ -212,7 +212,7 @@ export default function Page() {
 						</button>
 					</div>
 				</div>
-			</DialogModal>
+			</Modal>
 		</>
 	)
 }

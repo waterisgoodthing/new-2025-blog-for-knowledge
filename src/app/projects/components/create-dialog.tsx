@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
 import type { Project } from './project-card'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 interface CreateDialogProps {
 	project: Project | null
@@ -77,7 +77,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 	}
 
 	return (
-		<DialogModal open onClose={onClose} className='card static w-md max-sm:w-full'>
+		<Modal bare ariaLabel='新建项目' open onClose={onClose} className='card static w-md max-sm:w-full'>
 			<div>
 				<div className='mb-4 flex items-center gap-4'>
 					<div className='group relative cursor-pointer' onClick={() => setShowImageDialog(true)}>
@@ -174,6 +174,6 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 			</div>
 
 			{showImageDialog && <ImageUploadDialog currentImage={formData.image} onClose={() => setShowImageDialog(false)} onSubmit={handleImageSubmit} />}
-		</DialogModal>
+		</Modal>
 	)
 }

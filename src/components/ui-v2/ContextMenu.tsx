@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'motion/react'
 
@@ -12,6 +12,8 @@ import { getFocusableElements, useOverlay } from '@/hooks/use-overlay'
 export interface Uiv2ContextAction {
 	id: string
 	label: string
+	/** Optional leading icon (parity with the legacy context menu). */
+	icon?: ReactNode
 	/** Ordering/substitution group; a divider is drawn between groups. */
 	group?: 'open' | 'edit' | 'organize' | 'danger'
 	disabled?: boolean
@@ -125,12 +127,34 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 		getInitialFocus: () => getFocusableElements(menuRef.current)[0] ?? menuRef.current
 	})
 
-	// Reset the roving index whenever a new menu opens.
+	// Reset the roving index only when the menu opens. Callers build `actions`
+	// inline, so depending on the array identity would reset the highlight (and
+	// make Enter run the wrong item) on any unrelated parent re-render.
 	useEffect(() => {
 		if (!open) return
-		const firstEnabled = flatActions.findIndex(action => !action.disabled)
+		const flattened = groupActions(actions).flat()
+		const firstEnabled = flattened.findIndex(action => !action.disabled)
 		setActiveIndex(firstEnabled < 0 ? 0 : firstEnabled)
-	}, [open, flatActions])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [open])
+
+	// Outside dismissal mirrors the legacy document listeners: a left click still
+	// activates whatever is under the cursor, and a right click elsewhere closes
+	// this menu while letting the native/contextmenu flow proceed.
+	useEffect(() => {
+		if (!open) return
+		const handleDocumentClick = (event: MouseEvent) => {
+			if (menuRef.current?.contains(event.target as Node)) return
+			onClose()
+		}
+		const handleDocumentContextMenu = () => onClose()
+		document.addEventListener('click', handleDocumentClick)
+		document.addEventListener('contextmenu', handleDocumentContextMenu)
+		return () => {
+			document.removeEventListener('click', handleDocumentClick)
+			document.removeEventListener('contextmenu', handleDocumentContextMenu)
+		}
+	}, [open, onClose])
 
 	useIsomorphicLayoutEffect(() => {
 		if (!open || !mounted) return
@@ -188,8 +212,10 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 	const runAction = useCallback(
 		(action: Uiv2ContextAction) => {
 			if (action.disabled) return
-			onClose()
+			// Run first, then close: the legacy menu behaved this way and some
+			// actions open another surface.
 			action.run()
+			onClose()
 		},
 		[onClose]
 	)
@@ -231,19 +257,14 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 
 	if (!mounted) return null
 
+	if (flatActions.length === 0) return null
+
 	let cursor = -1
 
 	return createPortal(
 		<>
 			{open && (
 				<>
-					{/* Outside-click catcher. Never preventDefaults contextmenu, so the
-					    native menu still works on text/inputs/links/code/images. */}
-					<div
-						data-testid='uiv2-context-menu-backdrop'
-						onClick={onClose}
-						style={{ position: 'fixed', inset: 0, zIndex: overlay.backdropZIndex }}
-					/>
 					<motion.div
 						ref={node => {
 							menuRef.current = node
@@ -300,6 +321,7 @@ export function Uiv2ContextMenu({ open, onClose, actions, position, anchor, labe
 												color: isDanger ? '#c0392b' : 'var(--admin-text-primary, #2d3e3c)',
 												background: index === activeIndex ? 'var(--nav-active-bg, rgba(61, 184, 168, 0.12))' : 'transparent'
 											}}>
+											{action.icon ? <span className='shrink-0 opacity-70'>{action.icon}</span> : null}
 											{action.label}
 										</button>
 									)

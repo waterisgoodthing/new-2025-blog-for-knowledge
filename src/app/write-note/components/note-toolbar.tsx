@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useState, type RefObject, type ReactNode } from 'react'
-import { DelayedTooltip } from '@/components/delayed-tooltip'
+import { Uiv2Tooltip as Tooltip } from '@/components/ui-v2/Tooltip'
 import {
 	Bold,
 	Italic,
@@ -176,7 +176,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 				<div key={gi} className='flex items-center'>
 					{gi > 0 && <div className='mx-1 h-5 w-px bg-gray-300/50' />}
 					{group.actions.map((action, ai) => (
-						<DelayedTooltip key={ai} content={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}>
+						<Tooltip key={ai} content={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}>
 							<button
 								type='button'
 								onClick={() => handleClick(action)}
@@ -184,7 +184,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 								className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
 								{action.icon}
 							</button>
-						</DelayedTooltip>
+						</Tooltip>
 					))}
 				</div>
 			))}
@@ -196,7 +196,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 			)}
 			<div className='mx-1 h-5 w-px bg-gray-300/50' />
 			<div className='relative'>
-				<DelayedTooltip content='字体颜色'>
+				<Tooltip content='字体颜色'>
 					<button
 						type='button'
 						onClick={() => { setPaletteOpen(!paletteOpen); setInserterOpen(false) }}
@@ -204,7 +204,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 						className='flex h-7 w-7 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white/80 hover:text-gray-900'>
 						<Palette size={15} />
 					</button>
-				</DelayedTooltip>
+				</Tooltip>
 				{paletteOpen && (
 					<>
 						<div className='fixed inset-0 z-10' onClick={() => setPaletteOpen(false)} />
@@ -226,7 +226,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 			</div>
 			<div className='mx-1 h-5 w-px bg-gray-300/50' />
 			<div className='relative'>
-				<DelayedTooltip content='插入内容块'>
+				<Tooltip content='插入内容块'>
 					<button
 						type='button'
 						onClick={() => setInserterOpen(!inserterOpen)}
@@ -235,7 +235,7 @@ export const NoteToolbar = memo(function NoteToolbar({ textareaRef, insertText, 
 						<Plus size={15} />
 						<span className='text-xs'>插入</span>
 					</button>
-				</DelayedTooltip>
+				</Tooltip>
 				{inserterOpen && (
 					<>
 						<div className='fixed inset-0 z-10' onClick={() => setInserterOpen(false)} />

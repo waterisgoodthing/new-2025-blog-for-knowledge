@@ -59,3 +59,6 @@ export { APP_PORTAL_ROOT_ID } from './portal-root'
 
 export { ThemeToggle, applyTheme, resolveInitialTheme, DARK_MEDIA_QUERY, THEME_STORAGE_KEY } from './ThemeToggle'
 export type { ThemeMode, ThemeToggleProps } from './ThemeToggle'
+
+export { Uiv2Tooltip } from './Tooltip'
+export type { Uiv2TooltipProps } from './Tooltip'

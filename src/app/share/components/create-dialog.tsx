@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import LogoUploadDialog, { type LogoItem } from './logo-upload-dialog'
 import type { Share } from './share-card'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 interface CreateDialogProps {
 	share: Share | null
@@ -73,7 +73,7 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 	}
 
 	return (
-		<DialogModal open onClose={onClose} className='card max-h-[90vh] w-sm overflow-y-auto'>
+		<Modal bare ariaLabel='新建分享' open onClose={onClose} className='card max-h-[90vh] w-sm overflow-y-auto'>
 			{/* 卡片样式的内容 */}
 			<div>
 				<div className='mb-4 flex items-center gap-4'>
@@ -158,6 +158,6 @@ export default function CreateDialog({ share, onClose, onSave }: CreateDialogPro
 			</div>
 
 			{showLogoDialog && <LogoUploadDialog currentLogo={formData.logo} onClose={() => setShowLogoDialog(false)} onSubmit={handleLogoSubmit} />}
-		</DialogModal>
+		</Modal>
 	)
 }

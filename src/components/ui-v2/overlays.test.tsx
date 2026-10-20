@@ -277,3 +277,70 @@ describe('Uiv2Modal stacked above Uiv2Drawer', () => {
 		await waitFor(() => expect(Number(modal.style.zIndex)).toBeGreaterThan(Number(drawer.style.zIndex)))
 	})
 })
+
+describe('Uiv2Modal — bare mode (legacy DialogModal parity)', () => {
+	it('renders caller markup without a title header and names the dialog', () => {
+		render(
+			<Uiv2Modal open onClose={vi.fn()} bare ariaLabel='自定义对话框'>
+				<p>legacy body</p>
+			</Uiv2Modal>
+		)
+
+		const dialog = screen.getByRole('dialog', { name: '自定义对话框' })
+		expect(dialog).toHaveAttribute('aria-modal', 'true')
+		expect(screen.getByText('legacy body')).toBeInTheDocument()
+		// No built-in header/close chrome is injected in bare mode.
+		expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: '关闭' })).not.toBeInTheDocument()
+	})
+
+	it('keeps the overlay behaviours: Escape, backdrop policy and focus containment', async () => {
+		const onClosed = vi.fn()
+		render(
+			<Uiv2Modal open onClose={onClosed} bare ariaLabel='bare' closeOnBackdropClick={false}>
+				<button type='button'>inside</button>
+			</Uiv2Modal>
+		)
+
+		await waitFor(() => expect(screen.getByRole('button', { name: 'inside' })).toHaveFocus())
+
+		fireEvent.click(screen.getByTestId('uiv2-modal-backdrop'))
+		expect(onClosed).not.toHaveBeenCalled()
+
+		fireEvent.keyDown(document, { key: 'Escape' })
+		expect(onClosed).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe('Uiv2Modal — naming and bare focus fallback', () => {
+	it('falls back to aria-label when a non-bare dialog has no title', () => {
+		render(
+			<Uiv2Modal open onClose={vi.fn()} ariaLabel='无标题对话框'>
+				<p>body</p>
+			</Uiv2Modal>
+		)
+		const dialog = screen.getByRole('dialog', { name: '无标题对话框' })
+		expect(dialog).not.toHaveAttribute('aria-labelledby')
+		expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+	})
+
+	it('closes bare dialogs on a backdrop click by default', () => {
+		const onClosed = vi.fn()
+		render(
+			<Uiv2Modal open onClose={onClosed} bare ariaLabel='bare default'>
+				<button type='button'>inside</button>
+			</Uiv2Modal>
+		)
+		fireEvent.click(screen.getByTestId('uiv2-modal-backdrop'))
+		expect(onClosed).toHaveBeenCalledTimes(1)
+	})
+
+	it('focuses the bare container when the content has no focusable child', async () => {
+		render(
+			<Uiv2Modal open onClose={vi.fn()} bare ariaLabel='no focusable'>
+				<p>static comparison image</p>
+			</Uiv2Modal>
+		)
+		await waitFor(() => expect(screen.getByRole('dialog', { name: 'no focusable' })).toHaveFocus())
+	})
+})

@@ -1,6 +1,6 @@
 'use client'
 
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 import { SiteSettingsPanel } from './site-settings-panel'
 
 interface ConfigDialogProps {
@@ -10,8 +10,8 @@ interface ConfigDialogProps {
 
 export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 	return (
-		<DialogModal open={open} onClose={onClose} className='card scrollbar-none max-h-[90vh] min-h-[600px] w-[640px] overflow-y-auto'>
+		<Modal bare ariaLabel='站点配置' open={open} onClose={onClose} className='card scrollbar-none max-h-[90vh] min-h-[600px] w-[640px] overflow-y-auto'>
 			<SiteSettingsPanel onSaved={onClose} />
-		</DialogModal>
+		</Modal>
 	)
 }

@@ -7,7 +7,17 @@ import { FolderOpen, Folder, Inbox, FileText, Newspaper, AlertCircle, ChevronRig
 import { cn } from '@/lib/utils'
 import { listFolders, reorderFolders, createFolder, deleteFolder, renameFolder, type FolderNode } from '@/lib/api/folders'
 import { listTags, renameTag, deleteTag, type Tag as TagType } from '@/lib/api/meta'
-import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
+import { Uiv2ContextMenu } from '@/components/ui-v2'
+
+// 本地菜单项形状；渲染时映射为 Uiv2ContextAction。
+type ContextMenuItem = {
+	label: string
+	icon?: React.ReactNode
+	onClick: () => void
+	variant?: 'default' | 'danger'
+	disabled?: boolean
+}
+
 import { toast } from 'sonner'
 
 type SidebarItem = {
@@ -554,7 +564,21 @@ export function KnowledgeSidebar({
 				</AnimatePresence>
 			</div>
 
-			{ctxMenu && <ContextMenu open={!!ctxMenu} position={{ x: ctxMenu.x, y: ctxMenu.y }} items={getContextMenuItems()} onClose={() => setCtxMenu(null)} />}
+			{ctxMenu && (
+				<Uiv2ContextMenu
+					open={!!ctxMenu}
+					position={{ x: ctxMenu.x, y: ctxMenu.y }}
+					onClose={() => setCtxMenu(null)}
+					actions={getContextMenuItems().map((item, index) => ({
+						id: `sidebar-context-${index}`,
+						label: item.label,
+						icon: item.icon,
+						variant: item.variant,
+						disabled: item.disabled,
+						run: item.onClick
+					}))}
+				/>
+			)}
 		</>
 	)
 }

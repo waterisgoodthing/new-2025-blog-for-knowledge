@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import AvatarUploadDialog, { type AvatarItem } from './avatar-upload-dialog'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 interface Blogger {
 	name: string
@@ -61,7 +61,7 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 	}
 
 	return (
-		<DialogModal open onClose={onClose} className='card w-sm'>
+		<Modal bare ariaLabel='新增博主' open onClose={onClose} className='card w-sm'>
 			{/* 卡片样式的内容 */}
 			<div>
 				<div className='mb-4 flex items-center gap-4'>
@@ -128,6 +128,6 @@ export default function CreateDialog({ blogger, onClose, onSave }: CreateDialogP
 			</div>
 
 			{showAvatarDialog && <AvatarUploadDialog currentAvatar={formData.avatar} onClose={() => setShowAvatarDialog(false)} onSubmit={handleAvatarSubmit} />}
-		</DialogModal>
+		</Modal>
 	)
 }

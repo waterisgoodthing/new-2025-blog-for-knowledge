@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, type ReactNode, type RefObject } from 'rea
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { BookOpen, Lightbulb, FileSearch, RotateCcw, ListTodo, Layers, PencilLine, FolderKanban } from 'lucide-react'
-import { DelayedTooltip } from '@/components/delayed-tooltip'
+import { Uiv2Tooltip as Tooltip } from '@/components/ui-v2/Tooltip'
 import dayjs from 'dayjs'
 
 type NoteTemplate = {
@@ -295,7 +295,7 @@ export function NoteTemplatesDropdown({ onInsert, textareaRef }: NoteTemplatesDr
 
 	return (
 		<>
-			<DelayedTooltip content='插入模板到光标位置'>
+			<Tooltip content='插入模板到光标位置'>
 				<button
 					ref={btnRef}
 					type='button'
@@ -307,7 +307,7 @@ export function NoteTemplatesDropdown({ onInsert, textareaRef }: NoteTemplatesDr
 					<FolderKanban size={14} />
 					<span>模板</span>
 				</button>
-			</DelayedTooltip>
+			</Tooltip>
 
 			{mounted &&
 				createPortal(

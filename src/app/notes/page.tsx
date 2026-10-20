@@ -10,7 +10,17 @@ import { KnowledgeSidebar } from './components/knowledge-sidebar'
 import { SuggestionCard } from './components/suggestion-card'
 import { WeeklySummaryCard } from './components/weekly-summary-card'
 import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
-import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
+import { Uiv2ContextMenu } from '@/components/ui-v2'
+
+// 本地菜单项形状；渲染时映射为 Uiv2ContextAction。
+type ContextMenuItem = {
+	label: string
+	icon?: React.ReactNode
+	onClick: () => void
+	variant?: 'default' | 'danger'
+	disabled?: boolean
+}
+
 import { EmptyState } from '@/components/empty-state'
 import { AsyncStatePanel } from '@/components/async-state-panel'
 import { Uiv2Badge, Uiv2Button, Uiv2PageHeader } from '@/components/ui-v2'
@@ -427,7 +437,21 @@ function NotesPageContent() {
 				</div>
 			</div>
 
-			{ctxMenu && <ContextMenu open={!!ctxMenu} position={{ x: ctxMenu.x, y: ctxMenu.y }} items={getContextMenuItems()} onClose={() => setCtxMenu(null)} />}
+			{ctxMenu && (
+				<Uiv2ContextMenu
+					open={!!ctxMenu}
+					position={{ x: ctxMenu.x, y: ctxMenu.y }}
+					onClose={() => setCtxMenu(null)}
+					actions={getContextMenuItems().map((item, index) => ({
+						id: `note-context-${index}`,
+						label: item.label,
+						icon: item.icon,
+						variant: item.variant,
+						disabled: item.disabled,
+						run: item.onClick
+					}))}
+				/>
+			)}
 
 			{moveTarget && (
 				<MoveToFolderDialog

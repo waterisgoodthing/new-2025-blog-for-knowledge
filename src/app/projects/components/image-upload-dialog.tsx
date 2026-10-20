@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 export type ImageItem = { type: 'url'; url: string } | { type: 'file'; file: File; previewUrl: string; hash?: string }
 
@@ -66,7 +66,7 @@ export default function ImageUploadDialog({ currentImage, onClose, onSubmit }: I
 	}
 
 	return (
-		<DialogModal open onClose={handleClose} className='card w-md'>
+		<Modal bare ariaLabel='上传项目图片' open onClose={handleClose} className='card w-md'>
 			<h2 className='mb-4 text-xl font-bold'>选择图片</h2>
 			<form onSubmit={handleSubmit} className='space-y-4'>
 				<div>
@@ -124,6 +124,6 @@ export default function ImageUploadDialog({ currentImage, onClose, onSubmit }: I
 					</button>
 				</div>
 			</form>
-		</DialogModal>
+		</Modal>
 	)
 }

@@ -146,11 +146,37 @@ describe('Uiv2ContextMenu — keyboard', () => {
 		expect(onClose).toHaveBeenCalledTimes(1)
 	})
 
-	it('closes on an outside click', () => {
+	it('closes on an outside click without swallowing it', () => {
+		const onClose = vi.fn()
+		const onTarget = vi.fn()
+		function Harness() {
+			return (
+				<>
+					<button type='button' onClick={onTarget}>
+						outside target
+					</button>
+					<Uiv2ContextMenu open onClose={onClose} actions={buildActions()} position={{ x: 10, y: 10 }} />
+				</>
+			)
+		}
+		render(<Harness />)
+
+		fireEvent.click(screen.getByRole('button', { name: 'outside target' }))
+		expect(onClose).toHaveBeenCalled()
+		// The click still reaches its target (legacy document-listener behaviour).
+		expect(onTarget).toHaveBeenCalledTimes(1)
+	})
+
+	it('closes on a right click elsewhere so the next object can open its own menu', () => {
 		const onClose = vi.fn()
 		render(<MenuHarness onClose={onClose} />)
-		fireEvent.click(screen.getByTestId('uiv2-context-menu-backdrop'))
+		fireEvent.contextMenu(document.body)
 		expect(onClose).toHaveBeenCalled()
+	})
+
+	it('renders nothing for an empty action list', () => {
+		render(<Uiv2ContextMenu open onClose={vi.fn()} actions={[]} position={{ x: 10, y: 10 }} />)
+		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
 	})
 })
 
@@ -240,7 +266,7 @@ describe('useContextMenuTrigger', () => {
 		fireEvent.keyDown(object, { key: 'F10', shiftKey: true })
 		expect(screen.getByRole('menu')).toBeInTheDocument()
 
-		fireEvent.click(screen.getByTestId('uiv2-context-menu-backdrop'))
+		fireEvent.click(document.body)
 		fireEvent.keyDown(object, { key: 'ContextMenu' })
 		expect(screen.getByRole('menu')).toBeInTheDocument()
 	})
