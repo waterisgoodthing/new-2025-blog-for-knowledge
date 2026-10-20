@@ -18,3 +18,5 @@ export function getApiBase(): string {
 
 	return apiBase.replace(/\/$/, '')
 }
+
+export const IMAGE_BASE_URL = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL || getApiBase()).replace(/\/$/, '')

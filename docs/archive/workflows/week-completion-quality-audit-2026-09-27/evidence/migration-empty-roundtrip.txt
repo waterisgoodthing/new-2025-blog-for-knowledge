@@ -1,0 +1,53 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 001, initial schema
+INFO  [alembic.runtime.migration] Running upgrade 001 -> 002, add status field
+INFO  [alembic.runtime.migration] Running upgrade 002 -> 0ec85724afb9, add user admin field
+INFO  [alembic.runtime.migration] Running upgrade 0ec85724afb9 -> 1119bee5a419, add images to notes
+INFO  [alembic.runtime.migration] Running upgrade 1119bee5a419 -> 003, restore notes status index
+INFO  [alembic.runtime.migration] Running upgrade 003 -> 004, add ai_metadata to notes
+INFO  [alembic.runtime.migration] Running upgrade 004 -> 005, add folders table and folder_id/sort_order to notes
+INFO  [alembic.runtime.migration] Running upgrade 005 -> 006, add admin sessions, passkey credentials, and admin passwords
+INFO  [alembic.runtime.migration] Running upgrade 006 -> 007, change folder parent_id ondelete from CASCADE to SET NULL
+INFO  [alembic.runtime.migration] Running upgrade 007 -> 008, add audit_logs table
+INFO  [alembic.runtime.migration] Running upgrade 008 -> 009, add music daily song tables
+INFO  [alembic.runtime.migration] Running upgrade 009 -> 010, add managed content entries
+INFO  [alembic.runtime.migration] Running upgrade 010 -> 011, add subject taxonomy
+INFO  [alembic.runtime.migration] Running upgrade 011 -> 012, add question drafts and questions
+INFO  [alembic.runtime.migration] Running upgrade 012 -> 013, add mistakes and review
+INFO  [alembic.runtime.migration] Running upgrade 013 -> 014, add attachments
+INFO  [alembic.runtime.migration] Running upgrade 014 -> 015, add capture_items
+INFO  [alembic.runtime.migration] Running upgrade 015 -> 016, add ai_call_logs
+INFO  [alembic.runtime.migration] Running upgrade 016 -> 017, add prompt_version to ai_call_logs
+INFO  [alembic.runtime.migration] Running upgrade 017 -> 018, add independent ai_runs business audit table
+INFO  [alembic.runtime.migration] Running upgrade 018 -> 019, align subject knowledge tree
+INFO  [alembic.runtime.migration] Running upgrade 019 -> 020, add canonical question contract beside legacy question fields
+INFO  [alembic.runtime.migration] Running upgrade 020 -> 021, add protected learning attempts and attempt-backed mistake drafts
+INFO  [alembic.runtime.migration] Running upgrade 021 -> 022, add private administrator profiles and home preferences
+INFO  [alembic.runtime.migration] Running upgrade 022 -> 023, add file workspace metadata
+INFO  [alembic.runtime.migration] Running upgrade 023 -> 024, add markdown versions, wikilinks and search support
+INFO  [alembic.runtime.migration] Running upgrade 024 -> 025, align fresh-install schema with current model metadata
+INFO  [alembic.runtime.migration] Running upgrade 025 -> 026, Install the governed legacy Note migration contract.
+INFO  [alembic.runtime.migration] Running upgrade 026 -> 027, Provision the guestbook tables without taking ownership of legacy tables.
+INFO  [alembic.runtime.migration] Running upgrade 027 -> 028, Widen review_items state/algorithm enumerations and add last_rating.
+INFO  [alembic.runtime.migration] Running upgrade 028 -> 029, Add previous_state and new_state to review_records.
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+INFO  [alembic.runtime.migration] Running upgrade 031 -> 032, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+INFO  [alembic.runtime.migration] Running upgrade 032 -> 033, WebAuthn challenge persistence table (W4-D03 / PR-15).
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 033 -> 032, WebAuthn challenge persistence table (W4-D03 / PR-15).
+INFO  [alembic.runtime.migration] Running downgrade 032 -> 031, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+INFO  [alembic.runtime.migration] Running downgrade 031 -> 030, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+INFO  [alembic.runtime.migration] Running downgrade 030 -> 029, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running downgrade 029 -> 028, Add previous_state and new_state to review_records.
+INFO  [alembic.runtime.migration] Running downgrade 028 -> 027, Widen review_items state/algorithm enumerations and add last_rating.
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 027 -> 028, Widen review_items state/algorithm enumerations and add last_rating.
+INFO  [alembic.runtime.migration] Running upgrade 028 -> 029, Add previous_state and new_state to review_records.
+INFO  [alembic.runtime.migration] Running upgrade 029 -> 030, Re-answer audit linkage (R02/D4/D5).
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+INFO  [alembic.runtime.migration] Running upgrade 031 -> 032, Canonical Note <-> KnowledgePoint relation table (W3-D04 / PR-12).
+INFO  [alembic.runtime.migration] Running upgrade 032 -> 033, WebAuthn challenge persistence table (W4-D03 / PR-15).

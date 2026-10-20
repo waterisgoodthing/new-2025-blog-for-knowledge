@@ -1,0 +1,21 @@
+{
+  "run_id": "pra06-cors-recheck-20260822",
+  "probe": "no-cookie-invalid-session-boundary",
+  "valid": false,
+  "browser_version": "151.0.7922.34",
+  "environment_mode": "production-build-local-isolated",
+  "base_url": "http://localhost:3101",
+  "api_base": "http://api.localhost:8101",
+  "navigation_status": null,
+  "authenticated_before_probe": false,
+  "no_cookie_observed": null,
+  "rejected": {
+    "auth_me_status": null,
+    "strict_management_status": null
+  },
+  "public_reads_allowed": {
+    "notes_list_status": null
+  },
+  "failure_reason": "invalid:normal-auth-not-established",
+  "recorded_at": "2026-08-22T09:34:48.408Z"
+}

@@ -1,0 +1,6 @@
+=== PR-15 lifecycle unit tests (rework rerun) ===
+command: python3 scripts/week4-scratch-guard.py run --url postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr15 -- bash -c "cd backend && .venv/bin/python -m pytest tests/test_webauthn_challenge_lifecycle.py -q"
+
+..........                                                               [100%]
+10 passed in 3.96s
+PASS: db_name='astra_week4_pr15' source=explicit:--url; executing ['bash', '-c', 'cd backend && .venv/bin/python -m pytest tests/test_webauthn_challenge_lifecycle.py -q']

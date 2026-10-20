@@ -1,19 +1,18 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { useConfigStore } from '@/app/(home)/stores/config-store'
+import { useRouter } from 'next/navigation'
 import { Settings, Monitor, Upload, Power } from 'lucide-react'
 
 export default function Live2DPage() {
-	const { setConfigDialogOpen } = useConfigStore()
+	const router = useRouter()
 
 	return (
 		<div className='flex min-h-[60vh] items-center justify-center px-6 py-8'>
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
-				className='w-full max-w-md rounded-2xl border border-white/40 bg-white/60 p-8 shadow-lg backdrop-blur-xl'
-			>
+				className='w-full max-w-md rounded-2xl border border-white/40 bg-white/60 p-8 shadow-lg backdrop-blur-xl'>
 				<div className='mb-6 text-center'>
 					<div className='mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-brand)]/10 text-[var(--color-brand)]'>
 						<Monitor className='h-7 w-7' />
@@ -33,9 +32,9 @@ export default function Live2DPage() {
 					<div className='mb-3 text-xs font-medium text-gray-400'>如何使用</div>
 					<div className='space-y-3'>
 						{[
-							{ icon: Settings, text: '在网站设置中上传 Live2D 模型文件' },
+							{ icon: Settings, text: '在管理面板的页面设置中上传 Live2D 模型文件' },
 							{ icon: Power, text: '启用 Live2D 显示开关' },
-							{ icon: Monitor, text: '返回此页面查看模型效果' },
+							{ icon: Monitor, text: '返回此页面查看模型效果' }
 						].map((step, i) => (
 							<div key={i} className='flex items-start gap-3 text-sm text-gray-600'>
 								<div className='flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)]/8 text-[var(--color-brand)]'>
@@ -49,11 +48,10 @@ export default function Live2DPage() {
 
 				<button
 					type='button'
-					onClick={() => setConfigDialogOpen(true)}
-					className='flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.01] active:scale-[0.99]'
-				>
+					onClick={() => router.push('/manage?tab=settings')}
+					className='flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-transform hover:scale-[1.01] active:scale-[0.99]'>
 					<Settings className='h-4 w-4' />
-					前往网站设置
+					前往管理面板
 				</button>
 			</motion.div>
 		</div>

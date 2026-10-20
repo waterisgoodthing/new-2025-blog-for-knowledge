@@ -19,6 +19,7 @@ class PolishAction(str, Enum):
     compare = "compare"
     mindmap = "mindmap"
     data_chart = "data_chart"
+    custom = "custom"
 
 
 class PolishRequest(BaseModel):
@@ -28,6 +29,7 @@ class PolishRequest(BaseModel):
     title: str | None = Field(None, max_length=500)
     note_type: str | None = Field(None, max_length=20)
     existing_tags: list[str] | None = None
+    custom_prompt: str | None = Field(None, max_length=2000)
 
 
 class PolishChunkResponse(BaseModel):

@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 15 items
+
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a1_metrics_for_correct_and_wrong_practice_attempts PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a2_review_and_editor_context_attempts_do_not_inflate_practice PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a3_zero_graded_is_zero_float_not_none_or_nan PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a4_due_count_state_and_time_boundary_and_no_double_count PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a5_lapse_count_is_lifetime_and_boundary_at_rating_2 PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a6_multi_kp_question_counts_full_observation_per_kp PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a7_archived_question_mistake_and_inactive_kp_excluded PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_a8_tie_break_is_ascending_kp_id_and_deterministic PASSED
+tests/test_pr10_verify_matrix.py::VerifyMatrixTest::test_b_statement_count_constant_for_n_and_2n_active_kps PR-10 verify N+1 statement counts (active KPs -> analytics statements): {1: 1, 3: 1, 6: 1, 12: 1}
+PASSED
+tests/test_pr10_verify_contract.py::test_c1_anonymous_request_is_rejected PASSED
+tests/test_pr10_verify_contract.py::test_c1_admin_request_returns_200_and_metric_payload PASSED
+tests/test_pr10_verify_contract.py::test_c2_backend_schema_matches_locked_w3_d05_contract PASSED
+tests/test_pr10_verify_contract.py::test_c2_route_requires_current_admin_and_is_get_only PASSED
+tests/test_pr10_verify_contract.py::test_c3_frontend_dto_fields_and_endpoint_match_backend PASSED
+tests/test_pr10_verify_contract.py::test_c3_analytics_route_precedes_param_route PASSED
+
+============================== 15 passed in 1.49s ==============================
+PASS: db_name='astra_week3_pr10_verify' source=explicit:--db-name; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr10_verify_matrix.py', 'tests/test_pr10_verify_contract.py', '-v', '-s']

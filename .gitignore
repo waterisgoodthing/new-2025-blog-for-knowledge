@@ -15,7 +15,6 @@
 
 # next.js
 /.next/
-/.open-next/
 /out/
 
 # production
@@ -37,11 +36,10 @@ yarn-error.log*
 !.env.example
 !backend/.env.example
 
-# vercel
+# deploy artifacts
 .vercel
-# cloudflare
-.output
-.wrangler
+.open-next/
+.wrangler/
 
 # typescript
 *.tsbuildinfo
@@ -54,6 +52,21 @@ __pycache__/
 
 # local agent/tooling state
 .kilo/
+.cluster/
+.workbuddy/
+.claude/
+.agents/
+.playwright-mcp/
+.pytest_cache/
+test-results/
+
+# private local validation evidence
+/docs/ui-review/artifacts/authenticated/
+
+# runtime uploads served by the backend
+/public/images/pictures/
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 #vscode
 .history/

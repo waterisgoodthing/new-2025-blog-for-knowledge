@@ -1,0 +1,45 @@
+INC-02 fix — evidence 1/4: fail-closed guard blocks unguarded Week 3 DB tests (no DATABASE_URL env)
+=================================================================================================
+
+Scope: proves that running the affected Week 3 DB tests without any guard env does
+NOT silently write blog_v2 — the new `backend/tests/conftest.py` guard aborts the
+run (exit 2) before any test executes, and blog_v2 row counts are unchanged.
+
+1) Targeted run of the two INC-02 leak sources, no DATABASE_URL env:
+   (cwd: backend/; DATABASE_URL unset in shell; backend/.env points at blog_v2)
+
+   $ PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr09_wk3_runner.py tests/test_pr09_rework.py -q
+   exit=2
+   output:
+   ! _pytest.outcomes.Exit: refusing to start tests: a collected DB test targets a protected/non-scratch database (INC-02 fail-closed guard). Nothing was executed.
+     - test_pr09_rework.py: app.database engine targets database 'blog_v2' (config/DATABASE_URL), not on the ^astra_week3_[a-z0-9_]+$ allowlist
+     - test_pr09_wk3_runner.py: app.database engine targets database 'blog_v2' (config/DATABASE_URL), not on the ^astra_week3_[a-z0-9_]+$ allowlist
+   Run these tests against a sanctioned astra_week3_* scratch database instead, e.g.:
+     cd backend && PYTHONPATH=. python3 ../scripts/week3-scratch-guard.py run --db-name astra_week3_demo -- .venv/bin/python -m pytest tests/test_pr09_wk3_runner.py -q
+   no tests ran in 0.20s
+
+2) Whole-suite run, no DATABASE_URL env (the INC-02 command):
+   $ PYTHONPATH=. .venv/bin/python -m pytest tests/ -q
+   exit=2  (guard message; 8 offenders, one per Week 3 implicit DB test file)
+   offenders: test_pr09_rework.py, test_pr09_wk3_runner.py,
+              test_pr10_kp_analytics_service.py, test_pr10_verify_matrix.py,
+              test_pr11_dashboard_service.py, test_pr12_note_knowledge_points_service.py,
+              test_pr13_practice_service.py, test_pr13_verify_practice.py
+   -> matches the root-cause report §3 direct-write/high-risk list.
+
+3) Explicit-env Week 3 tests are also fail-closed when a forbidden DB is exported:
+   $ DATABASE_URL=postgresql+asyncpg://blog_user@localhost:5432/blog_v2 \
+       PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr09_verify_http.py -q
+   exit=2
+   ! ... test_pr09_verify_http.py: explicit create_engine targets database 'blog_v2' (env DATABASE_URL), ...
+
+4) blog_v2 row counts (read-only) unchanged before/after every guarded run:
+   - fixture notes (slug LIKE 'wk3-%' OR 'pr09rw-%' OR title='pr09-rework-note'): 9  (unchanged; these are the pre-existing INC-02 residues, NOT cleaned by this fix)
+   - subjects 'pr09-rework-subj': 1 ; knowledge_points 'pr09-rework-kp': 1  (unchanged)
+   No new rows were ever written by any run in this fix session.
+
+Guard mechanism: backend/tests/conftest.py collects every test, classifies
+DB-touching files (implicit `from app.database import ...` -> app.database engine
+URL; explicit `create_engine(os.environ["DATABASE_URL"])` -> env DATABASE_URL),
+and aborts with pytest.exit(..., returncode=2) before any test executes if the
+effective target database is not on `^astra_week3_[a-z0-9_]+$`.

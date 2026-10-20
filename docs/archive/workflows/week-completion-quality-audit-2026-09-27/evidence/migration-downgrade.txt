@@ -1,0 +1,56 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 033 -> 032, WebAuthn challenge persistence table (W4-D03 / PR-15).
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/.venv/bin/alembic", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 636, in main
+    CommandLine(prog=prog).main(argv=argv)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 626, in main
+    self.run_cmd(cfg, options)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 603, in run_cmd
+    fn(
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/command.py", line 455, in downgrade
+    script.run_env()
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/script/base.py", line 586, in run_env
+    util.load_python_file(self.dir, "env.py")
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/util/pyfiles.py", line 95, in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/util/pyfiles.py", line 113, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/limengyang/2025-blog-public/backend/alembic/env.py", line 81, in <module>
+    run_migrations_online()
+  File "/Users/limengyang/2025-blog-public/backend/alembic/env.py", line 75, in run_migrations_online
+    asyncio.run(run_async_migrations())
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/alembic/env.py", line 68, in run_async_migrations
+    await connection.run_sync(do_run_migrations)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/ext/asyncio/engine.py", line 887, in run_sync
+    return await greenlet_spawn(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/alembic/env.py", line 54, in do_run_migrations
+    context.run_migrations()
+  File "<string>", line 8, in run_migrations
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/runtime/environment.py", line 946, in run_migrations
+    self.get_context().run_migrations(**kw)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/alembic/runtime/migration.py", line 623, in run_migrations
+    step.migration_fn(**kw)
+  File "/Users/limengyang/2025-blog-public/backend/alembic/versions/033_webauthn_challenges.py", line 152, in downgrade
+    raise RuntimeError(
+RuntimeError: 2 live (unconsumed, unexpired) webauthn challenge(s) exist; refusing fail-closed downgrade

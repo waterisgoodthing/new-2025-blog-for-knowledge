@@ -1,0 +1,89 @@
+PR-19 — Validation Evidence
+===========================
+
+Environment
+-----------
+Scratch DB: astra_week4_pr19 (created with `createdb astra_week4_pr19`).
+All DB/alembic/test actions ran through scripts/week4-scratch-guard.py with
+--url postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr19.
+No migration was authored (target_type/target_id already exist).
+
+Command 1 — migrate scratch DB
+------------------------------
+python3 scripts/week4-scratch-guard.py run \
+  --url "postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr19" \
+  -- bash -c "cd backend && PYTHONPATH=. .venv/bin/alembic upgrade head"
+
+Result: PASS (exit 0). Revisions 001 .. 033 applied; log ends with:
+  INFO  [alembic.runtime.migration] Running upgrade 032 -> 033, WebAuthn challenge persistence table (W4-D03 / PR-15).
+  PASS: db_name='astra_week4_pr19' source=explicit:--url; executing [...]
+
+Deviation: the task-provided alembic command did not set PYTHONPATH; env.py
+imports `app` (backend/alembic/env.py:8 `require_migration_target`) and failed
+with ModuleNotFoundError: No module named 'app'. Added `PYTHONPATH=.` (the
+standard repo invocation, see docs/final-handoff.md:144). No behavioral change.
+
+Command 2 — targeted test suite (rework refresh)
+------------------------------------------------
+python3 scripts/week4-scratch-guard.py run \
+  --url "postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr19" \
+  -- bash -c "cd backend && .venv/bin/python -m pytest \
+       tests/test_ai_governance.py tests/test_ai_gateway.py tests/test_capture_service.py -q"
+
+Result: PASS — 34 passed, 2 warnings in 2.01s.
+Raw output:
+
+..................................                                       [100%]
+=============================== warnings summary ===============================
+tests/test_ai_gateway.py::LogWriteFailureTest::test_log_write_failure_does_not_block
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    ...
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 336, in test_log_write_failure_does_not_block
+      gw = await call_text("test_task", [{"role": "user", "content": "hi"}])
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 98, in _write_call_log
+      session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+
+tests/test_ai_gateway.py::LogWriteFailureTest::test_write_call_log_catches_exception
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    ...
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+34 passed, 2 warnings in 2.01s
+PASS: db_name='astra_week4_pr19' source=explicit:--url; executing [...]
+
+Note: the 2 warnings are pre-existing in tests/test_ai_gateway.py (AsyncMock
+sessions) and are unrelated to PR-19 changes; they occur in untouched tests.
+
+Command 3 — governance tests verbose (rework refresh)
+-----------------------------------------------------
+python3 scripts/week4-scratch-guard.py run \
+  --url "postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr19" \
+  -- bash -c "cd backend && .venv/bin/python -m pytest tests/test_ai_governance.py -v"
+
+Result: PASS — 9 passed in 0.42s.
+  tests/test_ai_governance.py::GatewayTargetLinkageTest::test_call_text_writes_target_type_and_id PASSED
+  tests/test_ai_governance.py::GatewayTargetLinkageTest::test_call_without_target_records_null_target PASSED
+  tests/test_ai_governance.py::RecognitionTargetLinkageTest::test_recognize_image_links_capture PASSED
+  tests/test_ai_governance.py::RecognitionTargetLinkageTest::test_recognize_image_without_capture_id_has_no_target PASSED
+  tests/test_ai_governance.py::CreationTypeBackfillTest::test_abandoned_suggestion_keeps_null_without_error PASSED
+  tests/test_ai_governance.py::CreationTypeBackfillTest::test_backfill_helper_links_existing_run PASSED
+  tests/test_ai_governance.py::CreationTypeBackfillTest::test_backfill_helper_returns_false_for_missing_run PASSED
+  tests/test_ai_governance.py::RetryTargetPropagationTest::test_retry_copies_parent_target PASSED
+  tests/test_ai_governance.py::PolishExemptionTest::test_polish_stream_creates_no_persisted_run PASSED
+
+Rework changes reflected above:
+- F1: tautological ORM-assignment test replaced by
+  test_backfill_helper_links_existing_run, which creates a real committed
+  AiRun with NULL target through the gateway and then calls the real
+  ai_run_service.backfill_ai_run_target helper, asserting the DB row now has
+  the target id. test_backfill_helper_returns_false_for_missing_run covers the
+  not-found path.
+- F2: RetryTargetPropagationTest::test_retry_copies_parent_target added.
+- The abandoned case (test_abandoned_suggestion_keeps_null_without_error) now
+  reads a real committed row and asserts NULL remains without a write/error.
+
+All AI provider calls in the new tests are mocked (ai_gateway._call_with_fallback);
+no network is used.

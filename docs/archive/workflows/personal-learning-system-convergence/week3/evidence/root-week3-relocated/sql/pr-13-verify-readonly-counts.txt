@@ -1,0 +1,23 @@
+$ python3 scripts/week3-scratch-guard.py run --db-name astra_week3_pr13_verify -- backend/.venv/bin/python /tmp/pr13_sql_audit.py
+
+=== revision + table counts snapshot ===
+032
+       t        | count 
+----------------+-------
+ attempts       |     0
+ review_items   |     0
+ review_records |     0
+(3 rows)
+
+
+=== service-emitted SQL (from event listener) ===
+{"leading_keywords": {"SELECT": 6, "WITH": 2}, "non_read_only_statements": [], "read_only": true, "statement_count": 8}
+SQL: WITH anon_5 AS (SELECT knowledge_point_links.knowledge_point_id AS knowledge_point_id, review_items.id AS review_item_id, review_items.state AS review_item_state, review_items.next_review_at AS next_review_at, review_rec
+SQL: SELECT question_knowledge_points.question_id, question_knowledge_points.knowledge_point_id FROM question_knowledge_points JOIN questions ON questions.id = question_knowledge_points.question_id JOIN knowledge_points ON kn
+SQL: SELECT DISTINCT attempts.question_id FROM attempts WHERE attempts.context_type = $1::VARCHAR AND attempts.submitted_at >= $2::TIMESTAMP WITH TIME ZONE AND attempts.submitted_at <= $3::TIMESTAMP WITH TIME ZONE
+SQL: SELECT DISTINCT mistakes.question_id FROM mistakes JOIN review_items ON review_items.mistake_id = mistakes.id WHERE review_items.state = $1::VARCHAR
+SQL: WITH anon_5 AS (SELECT knowledge_point_links.knowledge_point_id AS knowledge_point_id, review_items.id AS review_item_id, review_items.state AS review_item_state, review_items.next_review_at AS next_review_at, review_rec
+SQL: SELECT question_knowledge_points.question_id, question_knowledge_points.knowledge_point_id FROM question_knowledge_points JOIN questions ON questions.id = question_knowledge_points.question_id JOIN knowledge_points ON kn
+SQL: SELECT DISTINCT attempts.question_id FROM attempts WHERE attempts.context_type = $1::VARCHAR AND attempts.submitted_at >= $2::TIMESTAMP WITH TIME ZONE AND attempts.submitted_at <= $3::TIMESTAMP WITH TIME ZONE
+SQL: SELECT DISTINCT mistakes.question_id FROM mistakes JOIN review_items ON review_items.mistake_id = mistakes.id WHERE review_items.state = $1::VARCHAR
+PASS: db_name='astra_week3_pr13_verify' source=explicit:--db-name; executing ['.venv/bin/python', '/var/folders/my/wkqqwvb576z76ztsdntshdpm0000gn/T/opencode/pr13_sql_audit.py']

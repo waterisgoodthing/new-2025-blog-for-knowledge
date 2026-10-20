@@ -1,0 +1,2433 @@
+{
+  "generated_at": "2026-07-29",
+  "source_inventory": "2026-07-29-git-inventory.json",
+  "counts": {
+    "publish": 331,
+    "exclude": 14,
+    "publish_after_relocation": 1
+  },
+  "candidates": [
+    {
+      "path": "docs/workflows/git-cleanup-public-push/README.md",
+      "bytes": 2338,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/design.md",
+      "bytes": 3657,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/requirements.md",
+      "bytes": 3475,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/git-cleanup-public-push/tasks.md",
+      "bytes": 5543,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/README.md",
+      "bytes": 4846,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/audit.md",
+      "bytes": 52325,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/design.md",
+      "bytes": 22588,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/requirements.md",
+      "bytes": 20329,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/risks.md",
+      "bytes": 13310,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/tasks.md",
+      "bytes": 27508,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/validation.md",
+      "bytes": 55937,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/temp-admin-bootstrap/validation.md",
+      "bytes": 3188,
+      "kind": "modified",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/project-assessment/mvp-gap-analysis.md",
+      "bytes": 18520,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/auth-mobile-observations.json",
+      "bytes": 14247,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/auth-observations.json",
+      "bytes": 15087,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-1440x900-authenticated.png",
+      "bytes": 466905,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-1440x900-login.png",
+      "bytes": 398109,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-390x844-authenticated.png",
+      "bytes": 170687,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-ai-runs-1440x900-authenticated.png",
+      "bytes": 226820,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-dashboard-1440x900-authenticated.png",
+      "bytes": 317068,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-dashboard-390x844-authenticated.png",
+      "bytes": 145870,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-mistakes-1440x900-authenticated.png",
+      "bytes": 245458,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-mistakes-390x844-authenticated.png",
+      "bytes": 112113,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-questions-1440x900-authenticated.png",
+      "bytes": 219171,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-questions-390x844-authenticated.png",
+      "bytes": 103024,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-review-1440x900-authenticated.png",
+      "bytes": 301034,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/authenticated/manage-review-390x844-authenticated.png",
+      "bytes": 151997,
+      "kind": "untracked",
+      "classification": "exclude",
+      "reason": "private authenticated UI evidence; preserve locally via gitignore"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-guestbook.json",
+      "bytes": 8591,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-music.json",
+      "bytes": 7829,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-part.json",
+      "bytes": 7863,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-desktop-svgs.json",
+      "bytes": 7908,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-laptop.json",
+      "bytes": 7929,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-home.json",
+      "bytes": 7845,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-music.json",
+      "bytes": 7811,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-part.json",
+      "bytes": 8573,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile-svgs.json",
+      "bytes": 7893,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations-mobile.json",
+      "bytes": 32116,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/browser-observations.json",
+      "bytes": 72226,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/blog-1440x900-desktop.png",
+      "bytes": 297635,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/blog-390x844-mobile.png",
+      "bytes": 99816,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/guestbook-1440x900-desktop.png",
+      "bytes": 354776,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/guestbook-390x844-mobile.png",
+      "bytes": 122797,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/home-1440x900-desktop.png",
+      "bytes": 359965,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/home-390x844-mobile.png",
+      "bytes": 124438,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/mistakes-1440x900-desktop.png",
+      "bytes": 351367,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/mistakes-390x844-mobile.png",
+      "bytes": 129270,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/notes-1440x900-desktop.png",
+      "bytes": 418569,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/notes-390x844-mobile.png",
+      "bytes": 205528,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/clean-instance/observations.json",
+      "bytes": 7600,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/about-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/about-1440x900-full.png",
+      "bytes": 101337,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/blog-1440x900-first.png",
+      "bytes": 16315,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/blog-1440x900-full.png",
+      "bytes": 116906,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/bloggers-1440x900-first.png",
+      "bytes": 16315,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/bloggers-1440x900-full.png",
+      "bytes": 116906,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/clock-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/clock-1440x900-full.png",
+      "bytes": 120408,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/discover-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/discover-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/guestbook-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/guestbook-1440x900-full.png",
+      "bytes": 126360,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/home-1440x900-first.png",
+      "bytes": 5851,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/home-1440x900-full.png",
+      "bytes": 5851,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/image-toolbox-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/image-toolbox-1440x900-full.png",
+      "bytes": 121912,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/live2d-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/live2d-1440x900-full.png",
+      "bytes": 121377,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/manage-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/manage-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-1440x900-full.png",
+      "bytes": 127424,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-review-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/mistakes-review-1440x900-full.png",
+      "bytes": 120382,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/music-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/music-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/notes-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/notes-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/pictures-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/pictures-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/projects-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/projects-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/share-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/share-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/snippets-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/snippets-1440x900-full.png",
+      "bytes": 120446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/svgs-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/svgs-1440x900-full.png",
+      "bytes": 156857,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-1440x900-full.png",
+      "bytes": 120382,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-mistake-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-mistake-1440x900-full.png",
+      "bytes": 120382,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-note-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/write-note-1440x900-full.png",
+      "bytes": 120382,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/wuthering-waves-1440x900-first.png",
+      "bytes": 18218,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/desktop/wuthering-waves-1440x900-full.png",
+      "bytes": 165254,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/blog-1280x800-first.png",
+      "bytes": 14143,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/blog-1280x800-full.png",
+      "bytes": 101823,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/home-1280x800-first.png",
+      "bytes": 4714,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/home-1280x800-full.png",
+      "bytes": 4714,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/manage-1280x800-first.png",
+      "bytes": 15852,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/manage-1280x800-full.png",
+      "bytes": 104862,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/mistakes-1280x800-first.png",
+      "bytes": 15852,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/mistakes-1280x800-full.png",
+      "bytes": 112199,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/music-1280x800-first.png",
+      "bytes": 15852,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/music-1280x800-full.png",
+      "bytes": 104862,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/notes-1280x800-first.png",
+      "bytes": 15852,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/laptop/notes-1280x800-full.png",
+      "bytes": 104862,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/about-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/about-390x844-full.png",
+      "bytes": 27364,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/blog-390x844-first.png",
+      "bytes": 15777,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/blog-390x844-full.png",
+      "bytes": 32228,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/bloggers-390x844-first.png",
+      "bytes": 15777,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/bloggers-390x844-full.png",
+      "bytes": 32228,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/clock-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/clock-390x844-full.png",
+      "bytes": 32537,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/discover-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/discover-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/guestbook-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/guestbook-390x844-full.png",
+      "bytes": 37844,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/home-390x844-first.png",
+      "bytes": 2740,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/home-390x844-full.png",
+      "bytes": 2740,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/image-toolbox-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/image-toolbox-390x844-full.png",
+      "bytes": 33493,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/live2d-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/live2d-390x844-full.png",
+      "bytes": 33157,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/manage-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/manage-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-390x844-first.png",
+      "bytes": 14931,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-390x844-full.png",
+      "bytes": 41659,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-review-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/mistakes-review-390x844-full.png",
+      "bytes": 32984,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/music-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/music-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/notes-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/notes-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/pictures-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/pictures-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/projects-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/projects-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/share-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/share-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/snippets-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/snippets-390x844-full.png",
+      "bytes": 33031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/svgs-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/svgs-390x844-full.png",
+      "bytes": 72147,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-390x844-full.png",
+      "bytes": 32984,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-mistake-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-mistake-390x844-full.png",
+      "bytes": 32984,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-note-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/write-note-390x844-full.png",
+      "bytes": 32984,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/wuthering-waves-390x844-first.png",
+      "bytes": 16595,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/mobile/wuthering-waves-390x844-full.png",
+      "bytes": 70840,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/artifacts/states/home-390x844-first-button-state.png",
+      "bytes": 2740,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/issue-inventory.md",
+      "bytes": 3970,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/page-inventory.md",
+      "bytes": 2729,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/screenshot-index.md",
+      "bytes": 2976,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/ui-review/ui-review-report.md",
+      "bytes": 8387,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i-series-completion-plan/docs/workflows/i-series-completion-plan/C6-C12-REVIEW-REPORT.md",
+      "bytes": 12816,
+      "kind": "untracked",
+      "classification": "publish_after_relocation",
+      "reason": "content is publishable but path is accidentally duplicated; relocate to owning workflow root"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/README.md",
+      "bytes": 555,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/assets/dry-run-report.md",
+      "bytes": 1051,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/assets/source-manifest.json",
+      "bytes": 1541,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/audit.md",
+      "bytes": 1427,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/design.md",
+      "bytes": 260,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/diff-report.md",
+      "bytes": 777,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/next-requirements.md",
+      "bytes": 749,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/owner-coverage.md",
+      "bytes": 3356,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/owner-decision-proposal.md",
+      "bytes": 2297,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/requirements.md",
+      "bytes": 253,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/risk-register.md",
+      "bytes": 1159,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/tasks.md",
+      "bytes": 631,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i10-migration-dry-run/validation.md",
+      "bytes": 4301,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/README.md",
+      "bytes": 527,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/audit.md",
+      "bytes": 685,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/design.md",
+      "bytes": 229,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/diff-report.md",
+      "bytes": 337,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/next-requirements.md",
+      "bytes": 712,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/requirements.md",
+      "bytes": 225,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/risk-register.md",
+      "bytes": 688,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/tasks.md",
+      "bytes": 378,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i11-shadow-migration/validation.md",
+      "bytes": 368,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/README.md",
+      "bytes": 363,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-1280-manage.png",
+      "bytes": 11370,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-1440-manage.png",
+      "bytes": 13026,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/cross-390-manage.png",
+      "bytes": 10363,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-1280-manage.png",
+      "bytes": 182345,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-1440-manage.png",
+      "bytes": 206459,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/assets/prod-390-manage.png",
+      "bytes": 76310,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/audit.md",
+      "bytes": 650,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/design.md",
+      "bytes": 228,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/diff-report.md",
+      "bytes": 260,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/next-requirements.md",
+      "bytes": 577,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/requirements.md",
+      "bytes": 260,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/risk-register.md",
+      "bytes": 921,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/tasks.md",
+      "bytes": 461,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i12-final-closure/validation.md",
+      "bytes": 4251,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/README.md",
+      "bytes": 1270,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-1280x800.png",
+      "bytes": 168633,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-1440x900.png",
+      "bytes": 189849,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-390x844.png",
+      "bytes": 85424,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/assets/dashboard-keyboard-390x844.png",
+      "bytes": 82093,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/audit.md",
+      "bytes": 1402,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/design.md",
+      "bytes": 1512,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/requirements.md",
+      "bytes": 1127,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/tasks.md",
+      "bytes": 1724,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-final-fix/validation.md",
+      "bytes": 2525,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/README.md",
+      "bytes": 1289,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-1280x800.png",
+      "bytes": 178398,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-1440x900.png",
+      "bytes": 188858,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-390x844.png",
+      "bytes": 84143,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/assets/dashboard-preferences-keyboard-390x844.png",
+      "bytes": 84115,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/audit.md",
+      "bytes": 1263,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/design.md",
+      "bytes": 2110,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/requirements.md",
+      "bytes": 1503,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/tasks.md",
+      "bytes": 2031,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i4-i5-closure-fix-2/validation.md",
+      "bytes": 3232,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/README.md",
+      "bytes": 1823,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-1280x800.png",
+      "bytes": 223578,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-1440x900.png",
+      "bytes": 234753,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-390x844.png",
+      "bytes": 137274,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/assets/capture-keyboard-390x844.png",
+      "bytes": 135152,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/audit.md",
+      "bytes": 2714,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/design.md",
+      "bytes": 3471,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/next-requirements.md",
+      "bytes": 619,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/requirements.md",
+      "bytes": 3616,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/risk-register.md",
+      "bytes": 1156,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/tasks.md",
+      "bytes": 6811,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i6-capture-draft-chain/validation.md",
+      "bytes": 3458,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/README.md",
+      "bytes": 531,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-admin.png",
+      "bytes": 413298,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-anonymous.png",
+      "bytes": 321790,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1280x800-files-admin.png",
+      "bytes": 194264,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-admin.png",
+      "bytes": 455310,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-anonymous.png",
+      "bytes": 419099,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/1440x900-files-admin.png",
+      "bytes": 222649,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-admin.png",
+      "bytes": 172431,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-anonymous.png",
+      "bytes": 114006,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-files-admin.png",
+      "bytes": 78944,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-files-invalid.png",
+      "bytes": 117440,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/assets/browser/390x844-invalid.png",
+      "bytes": 141208,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/audit.md",
+      "bytes": 432,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/design.md",
+      "bytes": 505,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/diff-report.md",
+      "bytes": 389,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/next-requirements.md",
+      "bytes": 175,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/requirements.md",
+      "bytes": 364,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/risk-register.md",
+      "bytes": 612,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/tasks.md",
+      "bytes": 752,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i7-file-workspace/validation.md",
+      "bytes": 2054,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/README.md",
+      "bytes": 359,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/1280x800-admin-search.png",
+      "bytes": 180020,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/1440x900-admin-search.png",
+      "bytes": 203160,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-admin-search.png",
+      "bytes": 111604,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-anonymous.png",
+      "bytes": 115846,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/assets/390x844-invalid.png",
+      "bytes": 142479,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/audit.md",
+      "bytes": 504,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/design.md",
+      "bytes": 310,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/diff-report.md",
+      "bytes": 479,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/next-requirements.md",
+      "bytes": 175,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/requirements.md",
+      "bytes": 261,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/risk-register.md",
+      "bytes": 574,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/tasks.md",
+      "bytes": 735,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i8-markdown-search/validation.md",
+      "bytes": 1523,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/README.md",
+      "bytes": 392,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-ai.png",
+      "bytes": 271097,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-analytics.png",
+      "bytes": 299026,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin-jobs.png",
+      "bytes": 278001,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-admin1280.png",
+      "bytes": 247044,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-ai.png",
+      "bytes": 372112,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-anon-analytics.png",
+      "bytes": 277440,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-invalid-analytics.png",
+      "bytes": 348939,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-invalid.png",
+      "bytes": 336313,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1280x800-jobs.png",
+      "bytes": 255401,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-admin-analytics.png",
+      "bytes": 329258,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-admin1440.png",
+      "bytes": 257928,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-anon-analytics.png",
+      "bytes": 357521,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/1440x900-invalid-analytics.png",
+      "bytes": 348476,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-admin-analytics.png",
+      "bytes": 132679,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-admin390.png",
+      "bytes": 119652,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-anon-analytics.png",
+      "bytes": 111777,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-anon.png",
+      "bytes": 127081,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/assets/browser/390x844-invalid-analytics.png",
+      "bytes": 112299,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/audit.md",
+      "bytes": 519,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/design.md",
+      "bytes": 275,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/diff-report.md",
+      "bytes": 500,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/next-requirements.md",
+      "bytes": 114,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/requirements.md",
+      "bytes": 289,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/risk-register.md",
+      "bytes": 703,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/tasks.md",
+      "bytes": 226,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/i9-governance-analytics/validation.md",
+      "bytes": 2776,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/README.md",
+      "bytes": 715,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/audit.md",
+      "bytes": 2128,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/design.md",
+      "bytes": 996,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/requirements.md",
+      "bytes": 657,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/tasks.md",
+      "bytes": 706,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/mvp-goal-gap-analysis/validation.md",
+      "bytes": 971,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/README.md",
+      "bytes": 3806,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/1280x800-dashboard.png",
+      "bytes": 142418,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/1440x900-dashboard.png",
+      "bytes": 168348,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-admin-dashboard.png",
+      "bytes": 69449,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-anonymous-login.png",
+      "bytes": 82751,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/390x844-mobile-navigation.png",
+      "bytes": 44528,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i4-closure-fix/keyboard-navigation.png",
+      "bytes": 65072,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1280x800-dashboard-profile.png",
+      "bytes": 148589,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1280x800-settings.png",
+      "bytes": 154051,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-dashboard-profile-final.png",
+      "bytes": 169948,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-dashboard-profile.png",
+      "bytes": 167820,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/1440x900-settings.png",
+      "bytes": 182801,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-manage-anonymous-login.png",
+      "bytes": 86412,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-public-anonymous.png",
+      "bytes": 96981,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-final.png",
+      "bytes": 68085,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-saved.png",
+      "bytes": 68003,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/390x844-settings-top.png",
+      "bytes": 68799,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/assets/i5-preparation/keyboard-settings.png",
+      "bytes": 70156,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/design.md",
+      "bytes": 11628,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i0-freeze-audit.md",
+      "bytes": 7183,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i1-boundary-recovery-audit.md",
+      "bytes": 15140,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i2-learning-loop-validation.md",
+      "bytes": 3997,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-findings.md",
+      "bytes": 678,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-plan.md",
+      "bytes": 1181,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i3-attempt-capture-progress.md",
+      "bytes": 1038,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-findings.md",
+      "bytes": 1520,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-plan.md",
+      "bytes": 2446,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-closure-fix-progress.md",
+      "bytes": 686,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-findings.md",
+      "bytes": 956,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-plan.md",
+      "bytes": 1722,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i4-dashboard-navigation-progress.md",
+      "bytes": 908,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-design.md",
+      "bytes": 3992,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-findings.md",
+      "bytes": 3238,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-plan.md",
+      "bytes": 2176,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-progress.md",
+      "bytes": 3039,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-requirements.md",
+      "bytes": 2727,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-preparation-tasks.md",
+      "bytes": 2307,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/i5-profile-settings-adr.md",
+      "bytes": 2221,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/incremental-plan.md",
+      "bytes": 5248,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/master-plan.md",
+      "bytes": 7287,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/requirements.md",
+      "bytes": 8192,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/tasks.md",
+      "bytes": 13598,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/personal-learning-system-v2-unification/validation.md",
+      "bytes": 19602,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-formal-home.png",
+      "bytes": 176443,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-formal-manage-anon.png",
+      "bytes": 196927,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/phase-1-0-productization/assets/2026-07-19-public-worker-home-api-failure.png",
+      "bytes": 187450,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/README.md",
+      "bytes": 602,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/design.md",
+      "bytes": 637,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/requirements.md",
+      "bytes": 845,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/tasks.md",
+      "bytes": 763,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    },
+    {
+      "path": "docs/workflows/ui-browser-review/validation.md",
+      "bytes": 1696,
+      "kind": "untracked",
+      "classification": "publish",
+      "reason": "documentation or validation artifact passed filename/content safety scan"
+    }
+  ]
+}

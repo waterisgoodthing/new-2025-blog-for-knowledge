@@ -1,5 +1,7 @@
 # 个人笔记本与博客系统闭环与安全修复设计文档 (Revised Edition)
 
+> 文档治理（2026-10-09）：逻辑归档：保留历史方案/状态和原路径。本文中“当前/完成/批准”仅属于原时点；当前路线改用 docs/ROADMAP.md。过期 JWT/Bearer、恢复 auth bypass、强制先删旧路径等条款不得直接执行。 当前入口见 [文档索引](docs/DOCUMENTATION_INDEX.md)。
+
 > **历史参考文档**。当前设计文档见 `docs/roadmap-design.md`。本文档 P0/P1 修复项已基本完成。
 
 基于《博客及笔记系统全链路可用性与安全审计报告》的审查结论，结合最新的“无需考虑内容越权保护”及“重构安全架构与底线”的指令，本文档重写了全部修复与改进技术方案。本方案聚焦于系统闭环与基础安全，剔除 premature 级别功能扩展，并重新编排优先级。
@@ -336,7 +338,7 @@
 GitHub App 的私钥（PEM 文件内容）不应长期保留在浏览器的 `sessionStorage`/`localStorage` 中（即使使用 AES 进行加密，由于前端必须硬编码解密密钥 `ENCRYPT_KEY`，该防护极易被 XSS 等方式攻破，导致严重的供应链安全隐患）。
 
 #### 2. 影响范围
-- 前端密钥管理机制与认证获取模块：[src/lib/auth.ts](file:///Users/limengyang/2025-blog-public/src/lib/auth.ts)
+- 前端密钥管理机制与认证获取模块：`src/lib/auth.ts`（历史引用；2026-10-09核查该文件已不存在，保留原路径但不作为当前实现证据）
 
 #### 3. 修改文件
 - `src/lib/auth.ts`

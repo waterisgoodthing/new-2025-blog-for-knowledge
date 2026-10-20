@@ -27,12 +27,17 @@ export interface RecommendationHistoryItem {
   target: string | null;
   action_label: string | null;
   source: string | null;
-  raw_context: string | null;
   created_at: string;
 }
 
 export function getTodayRecommendation(): Promise<DailyRecommendation> {
   return apiFetch<DailyRecommendation>("/api/recommendations/today");
+}
+
+export function generateTodayRecommendation(): Promise<DailyRecommendation> {
+  return apiFetch<DailyRecommendation>("/api/recommendations/today/generate", {
+    method: "POST",
+  });
 }
 
 export function deleteTodayRecommendation(): Promise<void> {

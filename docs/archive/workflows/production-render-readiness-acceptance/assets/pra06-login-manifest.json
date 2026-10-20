@@ -1,0 +1,24 @@
+{
+  "run_id": "pra06-checkpoint-20260822",
+  "scenario": "M30-admin-login",
+  "count_requested": 1,
+  "batch_size": 1,
+  "max_attempts": 1,
+  "frontend_base": "http://localhost:3100",
+  "api_base": "http://api.localhost:8100",
+  "browser_version": "151.0.7922.34",
+  "environment_mode": "production-build-local-isolated",
+  "browser_temperature": "cold",
+  "server_temperature": "warm",
+  "fixture": {
+    "total": 30,
+    "public_visible": 20,
+    "published_hidden": 5,
+    "drafts": 5,
+    "d1_public": true
+  },
+  "auth_bypass": false,
+  "auth_bypass_allow": false,
+  "git_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "recorded_at": "2026-08-22T09:12:16.104Z"
+}

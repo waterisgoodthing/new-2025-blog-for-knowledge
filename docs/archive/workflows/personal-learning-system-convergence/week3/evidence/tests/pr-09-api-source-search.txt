@@ -1,0 +1,106 @@
+# PR-09-B source search — PR-09-verify-api 2026-09-24T08:03:10Z
+
+## B.1 src/app/mistakes/page.tsx must NOT contain useNoteIndex|listNotes|my_answer
+$ rg -n 'useNoteIndex|listNotes|my_answer' src/app/mistakes/page.tsx
+(no matches — PASS)
+
+$ rg -n 'useNoteIndex|listNotes' src/app/mistakes/ --glob '!*.test.*'
+(no matches — PASS)
+
+## B.2 public DTO allowlist is exactly 11 fields (source + TS + tests)
+--- pydantic PublicMistakeOut fields (backend/app/schemas/mistake.py:114-129) ---
+  id: uuid.UUID
+  title: str | None
+  question_text: str
+  correct_answer: str | None
+  analysis: str | None
+  reason_category: ReasonCategory
+  mistake_reason: str | None
+  difficulty: Difficulty | None
+  knowledge_point_ids: list[int]
+  created_at: datetime
+  updated_at: datetime
+--- TS PublicMistake fields (src/lib/api/mistakes.ts:178-190) ---
+  id: string
+  title: string | null
+  question_text: string
+  correct_answer: string | null
+  analysis: string | null
+  reason_category: MistakeReason
+  mistake_reason: string | null
+  difficulty: Exclude<Difficulty, 'unspecified'> | null
+  knowledge_point_ids: number[]
+  created_at: string
+  updated_at: string
+--- week3_contracts_support.PUBLIC_MISTAKE_DTO_ALLOWLIST ---
+PUBLIC_MISTAKE_DTO_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        "id",
+        "title",
+        "question_text",
+        "correct_answer",
+        "analysis",
+        "reason_category",
+        "mistake_reason",
+        "difficulty",
+        "knowledge_point_ids",
+        "created_at",
+        "updated_at",
+    }
+--- field counts ---
+pydantic PublicMistakeOut field count: 11
+TS PublicMistake field count: 11
+PUBLIC_MISTAKE_DTO_ALLOWLIST count: 11 ['analysis', 'correct_answer', 'created_at', 'difficulty', 'id', 'knowledge_point_ids', 'mistake_reason', 'question_text', 'reason_category', 'title', 'updated_at']
+
+## B.3 fixed_interval_v1 residual writes in adapter create path
+$ rg -n 'fixed_interval_v1|V2_REVIEW_ALGORITHM|fixed_interval_v2' backend/app/services/legacy_note_migration_adapter.py
+306:V2_REVIEW_ALGORITHM = "fixed_interval_v2"
+482:        """), {"id": review_item_id, "target": str(mistake_id), "algorithm": V2_REVIEW_ALGORITHM,
+558:        """), {"id": review_item_id, "target": str(mistake_id), "algorithm": V2_REVIEW_ALGORITHM,
+
+$ rg -n 'fixed_interval_v1' backend/app/services/legacy_note_migration_adapter.py (must be empty)
+(no matches — PASS: no residual v1 write)
+
+$ rg -n 'fixed_interval_v2|ri_algorithm' backend/tests/lsr03_final_verifier_harness.py
+357:               ri.state AS ri_state, ri.algorithm AS ri_algorithm,
+453:             t.ri_state IS DISTINCT FROM 'active' OR t.ri_algorithm IS DISTINCT FROM 'fixed_interval_v2' OR
+
+## B.4 ck_mistakes_visibility new shape only in 031
+$ rg -n 'ck_mistakes_visibility' backend/alembic/versions/
+backend/alembic/versions/031_mistake_visibility_public.py:1:"""Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+backend/alembic/versions/031_mistake_visibility_public.py:61:    if "ck_mistakes_visibility" not in checks:
+backend/alembic/versions/031_mistake_visibility_public.py:62:        raise RuntimeError("ck_mistakes_visibility is missing; expected pre-031 shape")
+backend/alembic/versions/031_mistake_visibility_public.py:63:    existing = _normalize(checks["ck_mistakes_visibility"])
+backend/alembic/versions/031_mistake_visibility_public.py:65:        raise RuntimeError("ck_mistakes_visibility already widened; expected pre-031 shape")
+backend/alembic/versions/031_mistake_visibility_public.py:67:    op.drop_constraint("ck_mistakes_visibility", "mistakes", type_="check")
+backend/alembic/versions/031_mistake_visibility_public.py:69:        "ck_mistakes_visibility",
+backend/alembic/versions/031_mistake_visibility_public.py:85:    if "ck_mistakes_visibility" not in checks:
+backend/alembic/versions/031_mistake_visibility_public.py:86:        raise RuntimeError("ck_mistakes_visibility is missing; expected 031 shape")
+backend/alembic/versions/031_mistake_visibility_public.py:93:            "re-narrowing ck_mistakes_visibility to private-only would violate data. "
+backend/alembic/versions/031_mistake_visibility_public.py:97:    op.drop_constraint("ck_mistakes_visibility", "mistakes", type_="check")
+backend/alembic/versions/031_mistake_visibility_public.py:99:        "ck_mistakes_visibility",
+backend/alembic/versions/013_add_mistakes_and_review.py:109:        sa.CheckConstraint("visibility='private'", name="ck_mistakes_visibility"),
+
+$ rg -n "visibility.*private|IN \(.*private.*public" backend/alembic/versions/031_mistake_visibility_public.py
+1:"""Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+3:Only the mistakes visibility CHECK is replaced. The sibling private-only
+7:downgrade is fail-closed: restoring ``visibility = 'private'`` is refused while
+8:any row carries ``visibility = 'public'``.
+26:_OLD_CHECK = "visibility = 'private'"
+27:_NEW_CHECK = "visibility IN ('private','public')"
+33:    for check in inspector.get_check_constraints(table_name, schema="public"):
+46:        text("SELECT count(*) FROM public.mistakes WHERE visibility = 'public'")
+92:            f"{public_rows} mistake row(s) have visibility='public'; "
+93:            "re-narrowing ck_mistakes_visibility to private-only would violate data. "
+
+--- other visibility constraints untouched (must still be private-only) ---
+backend/alembic/versions/031_mistake_visibility_public.py:4:constraints ck_questions_visibility and ck_attachments_visibility are left
+backend/alembic/versions/014_add_attachments.py:46:        sa.CheckConstraint("visibility='private'", name="ck_attachments_visibility"),
+backend/alembic/versions/012_add_question_drafts_and_questions.py:129:        sa.CheckConstraint("visibility = 'private'", name="ck_questions_visibility"),
+
+--- set equality pydantic == TS == PUBLIC_MISTAKE_DTO_ALLOWLIST (python cross-check) ---
+pydantic: 11 ['analysis', 'correct_answer', 'created_at', 'difficulty', 'id', 'knowledge_point_ids', 'mistake_reason', 'question_text', 'reason_category', 'title', 'updated_at']
+ts      : 11 ['analysis', 'correct_answer', 'created_at', 'difficulty', 'id', 'knowledge_point_ids', 'mistake_reason', 'question_text', 'reason_category', 'title', 'updated_at']
+allowlist: 11 ['analysis', 'correct_answer', 'created_at', 'difficulty', 'id', 'knowledge_point_ids', 'mistake_reason', 'question_text', 'reason_category', 'title', 'updated_at']
+all equal (11 fields): True
+forbidden present in allowlist: none — PASS

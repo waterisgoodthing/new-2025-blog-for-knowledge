@@ -1,0 +1,402 @@
+/* UI V2 Unified Design Tokens (Phase 1 — Dual-Surface System).
+ * Combines Legacy/Tailwind @theme bridge, UI V2 additive tokens (--uiv2-*),
+ * and Dual-Surface (Editorial Warm + Admin Cool + Liquid Glass Navigation) tokens.
+ */
+
+@theme {
+	--color-primary: #334f52;
+	--color-secondary: #7b888e;
+	--color-brand-secondary: #1fc9e7;
+	--color-bg: #eeeeee;
+	--color-border: #fff;
+	--color-brand: #3db8a8;
+	--color-card: #ffffff66;
+	--color-article: #ffffffcc;
+
+	--font-averia: 'Averia Gruesa Libre', sans-serif;
+	--font-sans:
+		'PingFang SC', -apple-system, system-ui, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif, BlinkMacSystemFont, 'Helvetica Neue',
+		'Hiragino Sans GB', 'Microsoft YaHei', Arial;
+}
+
+:root {
+	/* Typography (UI V2 namespace preserved) */
+	--uiv2-font-sans: 'PingFang SC', -apple-system, system-ui, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+	--uiv2-text-xs: 0.75rem;
+	--uiv2-text-sm: 0.875rem;
+	--uiv2-text-base: 1rem;
+	--uiv2-text-lg: 1.125rem;
+	--uiv2-text-xl: 1.25rem;
+	--uiv2-font-normal: 400;
+	--uiv2-font-medium: 500;
+	--uiv2-font-semibold: 600;
+
+	/* Semantic color (UI V2 namespace preserved) */
+	--uiv2-brand: #3db8a8;
+	--uiv2-brand-ink: #1f7a6e;
+	--uiv2-note: #2f7fd0;
+	--uiv2-blog: #4c9a52;
+	--uiv2-mistake: #c4554d;
+	--uiv2-warning: #b97f2c;
+	--uiv2-text-primary: #24312f;
+	--uiv2-text-secondary: #5d6b69;
+	--uiv2-text-tertiary: #8a9694;
+	--uiv2-surface: rgba(255, 255, 255, 0.72);
+	--uiv2-surface-solid: #ffffff;
+	--uiv2-border: rgba(36, 49, 47, 0.12);
+
+	/* Spacing (UI V2 namespace preserved) */
+	--uiv2-space-1: 4px;
+	--uiv2-space-2: 8px;
+	--uiv2-space-3: 12px;
+	--uiv2-space-4: 16px;
+	--uiv2-space-6: 24px;
+	--uiv2-space-8: 32px;
+	--uiv2-space-12: 48px;
+	--uiv2-space-16: 64px;
+
+	/* Radius (UI V2 namespace preserved) */
+	--uiv2-radius-sm: 8px;
+	--uiv2-radius-md: 12px;
+	--uiv2-radius-lg: 16px;
+	--uiv2-radius-xl: 24px;
+	--uiv2-radius-full: 9999px;
+
+	/* Elevation (UI V2 namespace preserved) */
+	--uiv2-shadow-sm: 0 1px 4px rgba(36, 49, 47, 0.08);
+	--uiv2-shadow-md: 0 4px 16px rgba(36, 49, 47, 0.1);
+	--uiv2-shadow-lg: 0 12px 32px rgba(36, 49, 47, 0.12);
+
+	/* Interaction (UI V2 namespace preserved) */
+	--uiv2-duration-fast: 150ms;
+	--uiv2-duration-normal: 250ms;
+	--uiv2-duration-slow: 300ms;
+	--uiv2-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+	/* 统一品牌色 (Unified Brand Tokens) */
+	--brand: #3db8a8;              /* 参考图中间值 */
+	--brand-ink: #1f7a6e;
+	--brand-hover: #2a9d8f;
+
+	/* Editorial Token（公开阅读表面） */
+	--editorial-bg: #f5f1eb;              /* warm beige */
+	--editorial-surface: #fffef8;         /* warm white */
+	--editorial-surface-elevated: #ffffff;
+	--editorial-text-primary: #4a3832;    /* 深棕 */
+	--editorial-text-secondary: #8b7667;
+	--editorial-text-tertiary: #b8a393;
+	--editorial-accent: #b85e4c;          /* brick red */
+	--editorial-accent-soft: #d4998c;
+	--editorial-border: rgba(74, 56, 50, 0.12);
+	--editorial-divider: rgba(74, 56, 50, 0.08);
+
+	/* Admin Token（管理工具表面） */
+	--admin-bg: linear-gradient(180deg, #f0fffe 0%, #f5fbfb 100%);
+	--admin-surface: #ffffff;
+	--admin-surface-subtle: #fafcfc;
+	--admin-text-primary: #2d3e3c;        /* cool charcoal */
+	--admin-text-secondary: #6b7b79;
+	--admin-text-tertiary: #9eadab;
+	--admin-border: rgba(45, 62, 60, 0.12);
+	--admin-divider: rgba(45, 62, 60, 0.08);
+	--admin-grid: rgba(61, 184, 168, 0.04);
+
+	/* Navigation/Overlay Token（共享） */
+	--nav-glass-bg: rgba(255, 255, 255, 0.8);
+	--nav-glass-border: rgba(255, 255, 255, 0.3);
+	--nav-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+	--nav-blur: blur(20px);
+	--nav-active-bg: rgba(61, 184, 168, 0.12);
+	--nav-hover-bg: rgba(255, 255, 255, 0.6);
+
+	/* Typography Foundations
+	 * NOTE: namespaced `--ui-font-*` on purpose. Tailwind 4 owns the bare
+	 * `--font-*` namespace (`.font-mono{font-family:var(--font-mono)}`), so
+	 * defining `--font-mono` here silently rewrites every `font-mono` call
+	 * site-wide. Phase 1 must stay visually neutral.
+	 */
+	--ui-font-serif: 'Noto Serif SC', Georgia, serif;
+	--ui-font-mono: 'JetBrains Mono', 'Menlo', monospace;
+	--ui-font-display: 'Averia Gruesa Libre', sans-serif;
+
+	/* Spacing Scale (4px base) */
+	--space-0: 0;
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--space-12: 48px;
+	--space-16: 64px;
+	--space-20: 80px;
+	--space-24: 96px;
+	--space-32: 128px;
+
+	/* Radius Scale (design-foundations.md §4: sm 8 / md 12 / lg 16 / xl 24)
+	 * NOTE: namespaced `--ui-radius-*` on purpose. Tailwind 4 emits
+	 * `.rounded-lg{border-radius:var(--radius-lg)}` from an `@layer theme`
+	 * block; an unlayered `:root{--radius-lg:16px}` here would win the
+	 * cascade and silently resize every `rounded-sm|md|lg|xl` in the app
+	 * (hundreds of call sites). Adopting this 16px scale is a later phase
+	 * that has to be verified page by page.
+	 */
+	--ui-radius-none: 0;
+	--ui-radius-sm: 8px;
+	--ui-radius-md: 12px;
+	--ui-radius-lg: 16px;
+	--ui-radius-xl: 24px;
+	--ui-radius-full: 9999px;
+
+	/* Shadow Scale
+	 * NOTE: also `--ui-` prefixed. `--shadow-*` is a Tailwind theme namespace
+	 * that arbitrary utilities resolve at runtime (`shadow-[var(--shadow-lg)]`
+	 * really does emit `--tw-shadow:var(--shadow-lg)`), so a bare override
+	 * would leak into any such call site.
+	 */
+	--ui-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--ui-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+	--ui-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+	--ui-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+	--ui-shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.16);
+	--ui-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+	--ui-shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.1);
+
+	/* Motion Scale */
+	--duration-instant: 0ms;
+	--duration-fast: 150ms;
+	--duration-normal: 200ms;
+	--duration-slow: 300ms;
+	--duration-slower: 450ms;
+	--ease: cubic-bezier(0.4, 0, 0.2, 1);
+	--ease-out: cubic-bezier(0, 0, 0.2, 1);
+	--ease-in: cubic-bezier(0.4, 0, 1, 1);
+	--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+	--ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+	/* Z-Index Scale */
+	--z-base: 0;
+	--z-dropdown: 1000;
+	--z-sticky: 1100;
+	--z-fixed: 1200;
+	--z-modal-backdrop: 1300;
+	--z-modal: 1400;
+	--z-popover: 1500;
+	--z-tooltip: 1600;
+	--z-toast: 1700;
+}
+
+/* Dark Mode Surface Tokens */
+[data-theme='dark'] {
+	--editorial-bg: #1a1311;
+	--editorial-surface: #2a1f1c;
+	--editorial-surface-elevated: #362824;
+	--editorial-text-primary: #f5ebe6;
+	--editorial-text-secondary: #b8a393;
+	--editorial-text-tertiary: #8b7667;
+	--editorial-accent: #d47461;
+	--editorial-accent-soft: #b85e4c;
+	--editorial-border: rgba(245, 235, 230, 0.14);
+	--editorial-divider: rgba(245, 235, 230, 0.08);
+
+	--admin-bg: linear-gradient(180deg, #0f1416 0%, #141b1e 100%);
+	--admin-surface: #1a1f21;
+	--admin-surface-subtle: #14191b;
+	--admin-text-primary: #e8f0ee;
+	--admin-text-secondary: #9eadab;
+	--admin-text-tertiary: #6b7b79;
+	--admin-border: rgba(232, 240, 238, 0.14);
+	--admin-divider: rgba(232, 240, 238, 0.08);
+	--admin-grid: rgba(61, 184, 168, 0.08);
+
+	--nav-glass-bg: rgba(26, 19, 17, 0.8);
+	--nav-glass-border: rgba(255, 255, 255, 0.12);
+	--nav-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.36);
+	--nav-active-bg: rgba(61, 184, 168, 0.2);
+	--nav-hover-bg: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--duration-fast: 0ms;
+		--duration-normal: 0ms;
+		--duration-slow: 0ms;
+		--duration-slower: 0ms;
+	}
+}
+
+/* Component rules (B-003 wiring, 2026-09-20).
+ * Additive-only: selectors are all `.uiv2-*` (used solely by ui-v2
+ * components), so Legacy rendering is unaffected. Restrained per the V2
+ * design system: no gradients, single-layer shadow, radius 8/12/16.
+ */
+
+.uiv2-card {
+	background: var(--uiv2-surface-solid);
+	border: 1px solid var(--uiv2-border);
+	border-radius: var(--uiv2-radius-md);
+	padding: var(--uiv2-space-4) var(--uiv2-space-6);
+	box-shadow: var(--uiv2-shadow-sm);
+	display: flex;
+	flex-direction: column;
+	gap: var(--uiv2-space-3);
+	font-family: var(--uiv2-font-sans);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-card-title {
+	margin: 0;
+	font-size: var(--uiv2-text-lg);
+	font-weight: var(--uiv2-font-semibold);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-badge {
+	display: inline-flex;
+	align-items: center;
+	min-height: 24px;
+	padding: 0 var(--uiv2-space-2);
+	border-radius: var(--uiv2-radius-full);
+	border: 1px solid var(--uiv2-border);
+	background: #fff;
+	font-size: var(--uiv2-text-xs);
+	font-weight: var(--uiv2-font-medium);
+	color: var(--uiv2-text-secondary);
+}
+
+.uiv2-badge[data-tone='note'] {
+	color: var(--uiv2-note);
+	border-color: var(--uiv2-note);
+}
+
+.uiv2-badge[data-tone='blog'] {
+	color: var(--uiv2-blog);
+	border-color: var(--uiv2-blog);
+}
+
+.uiv2-badge[data-tone='mistake'] {
+	color: var(--uiv2-mistake);
+	border-color: var(--uiv2-mistake);
+}
+
+.uiv2-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 40px;
+	padding: 0 var(--uiv2-space-4);
+	border-radius: var(--uiv2-radius-sm);
+	border: 1px solid transparent;
+	font-family: inherit;
+	font-size: var(--uiv2-text-sm);
+	font-weight: var(--uiv2-font-medium);
+	cursor: pointer;
+	transition:
+		opacity var(--uiv2-duration-normal) var(--uiv2-ease),
+		box-shadow var(--uiv2-duration-normal) var(--uiv2-ease);
+}
+
+.uiv2-btn-primary {
+	background: var(--uiv2-brand-ink);
+	color: #fff;
+}
+
+.uiv2-btn-ghost {
+	background: transparent;
+	border-color: var(--uiv2-border);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.uiv2-error {
+	background: var(--uiv2-surface-solid);
+	border: 1px solid var(--uiv2-mistake);
+	border-radius: var(--uiv2-radius-md);
+	padding: var(--uiv2-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--uiv2-space-2);
+	font-family: var(--uiv2-font-sans);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: var(--uiv2-space-2);
+}
+
+.uiv2-skeleton-line {
+	height: 12px;
+	border-radius: 4px;
+	background: rgba(36, 49, 47, 0.08);
+	animation: uiv2-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes uiv2-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+.uiv2-muted {
+	color: var(--uiv2-text-secondary);
+}
+
+.uiv2-section-header h2 {
+	margin: 0 0 var(--uiv2-space-1);
+	font-size: var(--uiv2-text-xl);
+	font-weight: var(--uiv2-font-semibold);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-section-header p {
+	margin: 0;
+	font-size: var(--uiv2-text-sm);
+	color: var(--uiv2-text-secondary);
+}
+
+.uiv2-page-header h1 {
+	margin: 0 0 var(--uiv2-space-1);
+	font-size: var(--uiv2-text-xl);
+	font-weight: var(--uiv2-font-semibold);
+	color: var(--uiv2-text-primary);
+}
+
+.uiv2-page-header p {
+	margin: 0;
+	font-size: var(--uiv2-text-sm);
+	color: var(--uiv2-text-secondary);
+}
+
+.uiv2-progress {
+	height: 8px;
+	border-radius: var(--uiv2-radius-full);
+	background: rgba(36, 49, 47, 0.1);
+	overflow: hidden;
+}
+
+.uiv2-progress-bar {
+	height: 100%;
+	background: var(--uiv2-brand-ink);
+	border-radius: var(--uiv2-radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.uiv2-skeleton-line {
+		animation: none;
+	}
+	.uiv2-btn {
+		transition: none;
+	}
+}

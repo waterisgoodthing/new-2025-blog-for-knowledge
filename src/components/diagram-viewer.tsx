@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ExternalLink, Maximize2, Minus, Plus, RotateCcw, X, Download } from 'lucide-react'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 import { cn } from '@/lib/utils'
 
 type DiagramViewerProps =
@@ -140,7 +140,7 @@ export function DiagramViewer(props: DiagramViewerProps) {
 				{preview}
 			</button>
 
-			<DialogModal open={open} onClose={() => setOpen(false)} className='h-[92vh] w-[94vw] max-w-none bg-white p-0' overlayClassName='bg-white/80'>
+			<Modal bare ariaLabel='图表查看' open={open} onClose={() => setOpen(false)} className='h-[92vh] w-[94vw] max-w-none bg-white p-0' overlayClassName='bg-white/80'>
 				<div className='flex h-full flex-col'>
 					<div className='flex h-12 shrink-0 items-center justify-between border-b border-zinc-200 px-3'>
 						<div className='min-w-0 truncate text-sm font-medium text-zinc-700'>{title}</div>
@@ -167,7 +167,7 @@ export function DiagramViewer(props: DiagramViewerProps) {
 						{fullView}
 					</div>
 				</div>
-			</DialogModal>
+			</Modal>
 		</figure>
 	)
 }

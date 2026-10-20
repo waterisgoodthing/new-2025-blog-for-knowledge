@@ -1,0 +1,4 @@
+
+> 2025-blog@0.1.0 test:typecheck
+> node node_modules/typescript/bin/tsc --noEmit --project tsconfig.test.json
+

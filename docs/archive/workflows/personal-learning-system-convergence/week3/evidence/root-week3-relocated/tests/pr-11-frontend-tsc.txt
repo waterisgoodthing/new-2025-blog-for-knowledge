@@ -1,0 +1,6 @@
+# PR-11 frontend self-cert — npx tsc --noEmit
+agent_id: PR-11-impl-frontend
+date: 2026-09-25 19:20:25
+command: npx tsc --noEmit
+---
+PASS: 0 TypeScript errors

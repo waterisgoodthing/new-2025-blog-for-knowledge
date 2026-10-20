@@ -1,0 +1,3 @@
+........................                                                 [100%]
+24 passed in 1.14s
+PASS: db_name='astra_week3_gate_contract' source=explicit:--db-name; executing ['env', 'PYTHONPATH=.', '.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_verify_api_contract.py', '-q']

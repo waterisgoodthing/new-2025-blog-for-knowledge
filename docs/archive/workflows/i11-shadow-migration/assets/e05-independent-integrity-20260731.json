@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-07-31T08:59:16Z",
+  "verification_method": "independent-read-only-sql",
+  "database": "i11_shadow_e05_20260731",
+  "revision": "025",
+  "business_count": 123,
+  "ledger_count": 123,
+  "missing_ledger_count": 0,
+  "extra_ledger_count": 0,
+  "distinct_owner_count": 1,
+  "canonical_owner_id": "4c503215-b158-4162-b472-79df8289ed0a",
+  "owner_fk_orphan_count": 0,
+  "relationship_orphans": {
+    "mistake_question": 0,
+    "mistake_draft": 0,
+    "review_item_target": 0,
+    "review_record_item": 0,
+    "attachment_link_attachment": 0,
+    "attachment_link_target": 0,
+    "capture_attachment": 0
+  },
+  "tombstone_count": 0,
+  "passed": true
+}

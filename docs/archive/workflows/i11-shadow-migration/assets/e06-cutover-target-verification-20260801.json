@@ -1,0 +1,44 @@
+{
+  "date": "2026-08-01",
+  "source": {
+    "database": "blog_db",
+    "role": "blog_user",
+    "revision_before": "024",
+    "revision_after": "025",
+    "default_transaction_read_only": true,
+    "other_sessions_after_stop": 0,
+    "pre_validation_identity_count": 123,
+    "cutover_freeze_count": 125,
+    "cutover_freeze_aggregate_sha256": "1013a4577959b4ec4655602c7ec0832fa91df1c3ded223ec3a42adac7cb5c095"
+  },
+  "target": {
+    "database": "blog_v2",
+    "role": "blog_user",
+    "revision": "025",
+    "default_transaction_read_only": false,
+    "upload_root": "/Users/limengyang/.local/share/personal-learning-system-v2/uploads",
+    "cutover_dump_sha256": "db141143f358fc9e99e986bf849ac7549b67f8cb3a6121fee76b90686b4c5b32",
+    "cutover_dump_toc_entries": 322,
+    "backend_upload_files_verified": 2
+  },
+  "reconciliation": {
+    "source_count": 125,
+    "target_count": 125,
+    "inserted": 0,
+    "updated": 0,
+    "deleted": 0,
+    "aggregate_match": true,
+    "temporary_users_each": 2,
+    "temporary_sessions_each": 2,
+    "temporary_login_audits_each": 2,
+    "relationship_orphans": 0,
+    "canonical_owner_count": 1
+  },
+  "alembic_current": "025 (head)",
+  "alembic_heads": "025 (head)",
+  "alembic_check": "No new upgrade operations detected",
+  "target_readiness": "PASS",
+  "auth_bypass": false,
+  "backend_listeners_after_freeze": 0,
+  "passed": true
+}

@@ -1,0 +1,61 @@
+## D. source search (PR-12-verify)  [reproduced: see commands inline]
+
+### D1. knowledge_point_links touched by PR-12 surface?
+$ grep -rn 'knowledge_point_links|KnowledgePointLink' backend/alembic/versions/032_note_knowledge_points.py backend/app/models/note_knowledge_point.py backend/app/services/note_knowledge_point_service.py backend/app/routers/admin_notes.py backend/app/schemas/note_knowledge_point.py
+backend/alembic/versions/032_note_knowledge_points.py:11:The existing polymorphic ``knowledge_point_links`` table is intentionally left
+backend/app/models/note_knowledge_point.py:15:    distinct from the polymorphic ``knowledge_point_links`` table (which stays
+backend/app/routers/admin_notes.py:10:    NoteKnowledgePointLinkOut,
+backend/app/routers/admin_notes.py:62:    response_model=NoteKnowledgePointLinkOut,
+backend/app/routers/admin_notes.py:73:    return NoteKnowledgePointLinkOut(
+backend/app/schemas/note_knowledge_point.py:6:class NoteKnowledgePointLinkOut(BaseModel):
+-- migration 032: only DDL target is note_knowledge_points; no op.* on knowledge_point_links --
+11:The existing polymorphic ``knowledge_point_links`` table is intentionally left
+45:                f"{required} table is missing; refusing unsafe alteration"
+60:    op.create_table(
+85:    op.create_index(
+102:    op.drop_index(INDEX, table_name=TABLE, schema="public")
+103:    op.drop_table(TABLE, schema="public")
+
+### D2. silent subject enforcement in PR-12 surface?
+backend/app/models/note_knowledge_point.py:16:    untouched). ``Note.subject`` remains free text, so no subject-consistency
+  NOTE: only the model docstring mentions Note.subject (documents deferral), no runtime logic
+
+### D3. client routes (src/lib/api/notes.ts) vs backend router
+client:
+199:    `/api/admin/notes/${noteId}/knowledge-points/${kpId}`,
+208:  return apiFetch<void>(`/api/admin/notes/${noteId}/knowledge-points/${kpId}`, {
+214:  return apiFetch<KnowledgePoint[]>(`/api/admin/notes/${noteId}/knowledge-points`);
+219:    `/api/admin/notes/knowledge-points/${kpId}/notes`,
+router prefix/decorators:
+21:    prefix="/api/admin/notes",
+35:@router.get(
+49:@router.get("/{note_id}/knowledge-points", response_model=list[KnowledgePointOut])
+60:@router.post(
+80:@router.delete(
+
+### D4. DTO field parity
+backend schemas/note_knowledge_point.py:
+9:    note_id: uuid.UUID
+10:    knowledge_point_id: int
+11:    linked: bool = True
+17:    id: uuid.UUID
+18:    slug: str
+19:    title: str
+20:    type: str
+21:    status: str
+22:    hidden: bool
+client interfaces:
+export interface NoteKnowledgePointLink {
+  note_id: string;
+  knowledge_point_id: number;
+  linked: boolean;
+}
+
+export interface KnowledgePointNoteItem {
+  id: string;
+  slug: string;
+  title: string;
+  type: "note" | "blog" | "mistake";
+  status: "draft" | "published";
+  hidden: boolean;
+}

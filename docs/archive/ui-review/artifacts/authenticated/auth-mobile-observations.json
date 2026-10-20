@@ -1,0 +1,126 @@
+{
+  "responses": [
+    {
+      "status": 401,
+      "url": "http://localhost:8000/api/auth/me"
+    },
+    {
+      "status": 401,
+      "url": "http://localhost:8000/api/auth/me"
+    },
+    {
+      "facts": {
+        "route": "/manage",
+        "text": "新学习空间已上线，题目 / 错题 / 复习 / 图片采集请使用工作区。旧管理面板仅保留历史内容维护。\n进入工作区\n管理面板\n管理员\n退出\n总览\n内容管理\n文件夹与标签\n音乐管理\nAI 管理\n留言审核\n页面设置\n安全设置\n操作记录\nAI 整理建议 (5 条)\n全部\n笔记\n博客\n错题\n\t标题\t类型\t标签\t日期\t操作\n\tTCP流量控制与发送窗口计算\t错题\t\n计算机网络\nTCP协议\n窗口机制\n\t06-23 18:01\t\n编辑\n删除\n\n\t计算机网络体系结构\t笔记\t\n\t06-16 16:37\t\n编辑\n删除\n\n\t1.3 计算机网络性能指标\t笔记\t\n\t06-16 16:24\t\n编辑\n删除\n\n\t1.2 三种交换方式\t笔记\t\n\t06-15 20:18\t\n编辑\n删除\n\n\t1.1 计算机网络与因特网\t笔记\t\n计算机网络\n\t06-15 20:16\t\n编辑\n删除\n\n\t计算机网络思维导图（自顶而下）\t笔记\t\n思维导图\n\t06-15 19:29\t\n编辑\n删除\n\n\tOSPF路由中TTL最小值计算\t错题\t\n计算机网络\nIP路由\nTTL\n\t06-15 13:53\t\n编辑\n删除\n\n\t第一章计算机网络概述：总览\t笔记\t\n\t06",
+        "sw": 390,
+        "cw": 390,
+        "h": 2367,
+        "buttons": 54
+      }
+    },
+    {
+      "facts": {
+        "route": "/manage/dashboard",
+        "text": "概览\n\n首页\n\n学习空间\n\n学习管理首页\n\n数据更新于 2026年7月19日 20:43\n\n学习反馈\n\n完成 3 项到期复习\n\n先完成今天到期的复习，再安排新的学习内容。\n\n进入复习\n今日任务\n\n从待复习内容继续今天的学习。\n\n进入复习\n待复习\n3\n最近错题\nLT-20260704 Tree BFS Review\n内容统计\n题目\n0\n错题\n3\n知识点\n3\n附件\n1\n最近活动\n最近题目\n\n暂无题目\n\n最近复习\n判断一个只包含括号字符的字符串，是否满足每个右括号都按正确顺序匹配最近的左括号。仅用于本地试运行。\n评分 0 · 2026年7月9日 23:31\n给定一棵二叉树，按从上到下、从左到右的层级顺序输出每一层节点值。仅用于本地试运行。\n评分 5 · 2026年7月4日 14:26\n判断一个只包含括号字符的字符串，是否满足每个右括号都按正确顺序匹配最近的左括号。仅用于本地试运行。\n评分 3 · 2026年7月4日 14:26\n给定一个整数列表和目标值，说明如何找到两个不同位置的数字，使它们的和等于目标值。仅用于本地试运行。\n评分 4 · 2026年7月4日 14:26\n系统状态\n服务正常\n",
+        "sw": 390,
+        "cw": 390,
+        "h": 1619,
+        "buttons": 2
+      }
+    },
+    {
+      "facts": {
+        "route": "/manage/questions",
+        "text": "题目\n\n首页\n\n内容管理\n\n题目\n\n管理可复用题目、答案、解析与知识点关联。\n\n题目列表\n新建题目\n0 道\n使用中\n已归档\n暂无正式题目\n\n请先确认一份题目草稿，或直接新建题目。\n\n首页\n博客\n笔记\n错题\n管理\n更多",
+        "sw": 390,
+        "cw": 390,
+        "h": 844,
+        "buttons": 2
+      }
+    },
+    {
+      "facts": {
+        "route": "/manage/mistakes",
+        "text": "错题\n\n首页\n\n内容管理\n\n错题\n\n查看已确认的私有错题与复盘入口。\n\n正式错题\n全部\n在用\n已归档\n3 条\nLT-20260704 Tree BFS Review\n概念理解 · v1 · 2026年7月4日\n在用\nLT-20260704 Parentheses Review\n概念理解 · v1 · 2026年7月4日\n在用\nLT-20260704 Two Sum Review\n概念理解 · v1 · 2026年7月4日\n在用\n首页\n博客\n笔记\n错题\n管理\n更多",
+        "sw": 390,
+        "cw": 390,
+        "h": 844,
+        "buttons": 2
+      }
+    },
+    {
+      "facts": {
+        "route": "/manage/review",
+        "text": "复习\n\n首页\n\n学习计划\n\n复习\n\n处理已确认错题的到期复习与不可变复习记录。\n\n今日到期\n\n固定间隔：0-2 分为 1 天，3 分 3 天，4 分 7 天，5 分 14 天。\n\nFIXED_INTERVAL_V1 · 第 3 次 · 当前间隔 1 天\n\n判断一个只包含括号字符的字符串，是否满足每个右括号都按正确顺序匹配最近的左括号。仅用于本地试运行。\n\n错因：忽略括号嵌套和最近匹配顺序。\n\n到期时间：2026年7月10日 23:31\n\n0\n1\n2\n3\n4\n5\n记录\n\nFIXED_INTERVAL_V1 · 第 2 次 · 当前间隔 7 天\n\n给定一个整数列表和目标值，说明如何找到两个不同位置的数字，使它们的和等于目标值。仅用于本地试运行。\n\n错因：忘记不同位置约束，也没有利用哈希表。\n\n到期时间：2026年7月11日 14:26\n\n0\n1\n2\n3\n4\n5\n记录\n\nFIXED_INTERVAL_V1 · 第 2 次 · 当前间隔 14 天\n\n给定一棵二叉树，按从上到下、从左到右的层级顺序输出每一层节点值。仅用于本地试运行。\n\n错因：没有在每轮固定当前层长度。\n\n到期时间：2026年7月",
+        "sw": 390,
+        "cw": 390,
+        "h": 1565,
+        "buttons": 23
+      }
+    }
+  ],
+  "failed": [
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465008991&gcd=13l3l3l3l1l1&npa=0&dma=0&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=0&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938465~115938468~118897920~118897930~119724320~119773331&sid=1784465009&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1196",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465008991&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=0&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938465~115938468~118897920~118897930~119724320~119773331&sid=1784465009&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=2&tfd=1724",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465008991&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=0&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=4&tag_exp=115938465~115938468~118897920~118897930~119724320~119773331&sid=1784465009&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=user_engagement&_et=1347&tfd=3072",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465008991&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=0&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=3&tag_exp=115938465~115938468~118897920~118897930~119724320~119773331&sid=1784465009&sct=1&seg=0&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=form_start&ep.form_id=&ep.form_destination=http%3A%2F%2Flocalhost%3A3000%2Fmanage&epn.form_length=3&ep.first_field_id=username&ep.first_field_type=text&epn.first_field_position=1&_et=526&tfd=3072",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465011169&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938465~115938468~118897920~118897930~119709550~119896802&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=page_view&_ee=1&tfd=136",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465011169&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=18&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938465~115938468~118897920~118897930~119709550~119896802&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=1&tfd=969",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465012075&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938465~115938469~118897920~118897930~119709550~119724322&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fdashboard&dt=My%20Blog&en=page_view&_ee=1&tfd=79",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465012075&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=8&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616985~115938465~115938469~118897920~118897930~119709550~119724322&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fdashboard&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=1&tfd=911",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465012967&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=5&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115938466~115938468~118012009~118395334~118897920~118897930~119724321&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fquestions&dt=My%20Blog&en=page_view&_ee=1&tfd=108",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465012967&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=5&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115938466~115938468~118012009~118395334~118897920~118897930~119724321&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fquestions&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=2&tfd=884",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465013834&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=14&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938466~115938468~118897920~118897930~119724322&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fmistakes&dt=My%20Blog&en=page_view&_ee=1&tfd=90",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465013834&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAAQ&ae=a&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=14&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=2&tag_exp=115616985~115938466~115938468~118897920~118897930~119724322&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Fmistakes&dt=My%20Blog&en=scroll&epn.percent_scrolled=90&_et=1&tfd=905",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-ZNSFR7C9PM&gtm=45je67f0v9132992491za200zd9132992491&_p=1784465014714&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAAQ&are=1&cid=870181892.1784465009&frm=0&ngs=1&pscdl=noapi&rcb=6&sr=390x844&uaa=arm&uab=64&uafvl=HeadlessChrome%3B149.0.7827.55%7CChromium%3B149.0.7827.55%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=macOS&uapv=27.0.0&uaw=0&ul=en-us&_s=1&tag_exp=115616985~115938466~115938468~118395333~118897920~118897930~118981135&sid=1784465009&sct=1&seg=1&dl=http%3A%2F%2Flocalhost%2Fmanage%2Freview&dt=My%20Blog&en=page_view&_ee=1&tfd=109",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "consoleEntries": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    }
+  ]
+}

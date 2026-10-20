@@ -1,0 +1,39 @@
+/* PublicTopNav surface rules.
+ *
+ * Kept in a CSS module because the degraded state must be expressed with
+ * `@supports` (Tailwind cannot express a feature query the way we need) and
+ * because tokens.css is frozen for this phase.
+ */
+.bar {
+	transition:
+		height 200ms var(--ease-out, cubic-bezier(0, 0, 0.2, 1)),
+		background-color 200ms var(--ease-out, cubic-bezier(0, 0, 0.2, 1)),
+		box-shadow 200ms var(--ease-out, cubic-bezier(0, 0, 0.2, 1)),
+		border-color 200ms var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
+}
+
+.top {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+}
+
+.stuck {
+	background: var(--nav-glass-bg, rgba(255, 255, 255, 0.8));
+	border-color: var(--nav-glass-border, rgba(255, 255, 255, 0.3));
+	box-shadow: var(--nav-glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.08));
+	-webkit-backdrop-filter: var(--nav-blur, blur(20px));
+	backdrop-filter: var(--nav-blur, blur(20px));
+}
+
+/* No backdrop-filter: fall back to a near-solid surface so text stays legible. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+	.stuck {
+		background: rgba(255, 255, 255, 0.95);
+	}
+}
+
+/* Reduced motion: the state change is immediate, no animated geometry. */
+.reducedMotion {
+	transition: none;
+}

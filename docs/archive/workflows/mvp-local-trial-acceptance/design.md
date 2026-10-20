@@ -1,0 +1,146 @@
+# 设计文档：MVP 本地试运行验收
+
+## 总体设计
+
+本 workflow 不改变系统架构。试运行采用“人工少量样例 + 页面优先、既有 API/数据库证据补充
++ 问题只记录”的方式，验证 Batch 0–7 后的 MVP 主链路。
+
+```text
+准备本地环境
+  → 人工改写样例
+  → 管理员登录
+  → 创建 subject / knowledge point
+  → 创建 question draft
+  → 确认为 question
+  → 创建 mistake draft
+  → 确认为 mistake
+  → 创建/查看 review item
+  → 提交 review record
+  → 上传 attachment
+  → link attachment
+  → read attachment
+  → 记录结果 / 问题
+```
+
+## 文档结构
+
+- `checklist.md`：执行前、执行中、执行后的验收勾选清单。
+- `sample-data-plan.md`：本地样例数据设计和 LeetCode 使用边界。
+- `trial-record.md`：试跑记录模板，按样例和链路节点填结果。
+- `issues.md`：问题记录表，只记录不修复。
+- `validation.md`：环境、命令、页面、API、数据库及公开边界的最终验收汇总。
+
+## 执行与证据设计
+
+1. 先记录分支、commit、工作树、数据库、前后端地址和认证方式。
+2. 使用既有启动方式运行本地服务，不修改业务代码、迁移、脚本或配置。
+3. 优先通过管理页面执行真实用户链路；页面缺少入口时，只可调用已有管理 API，并在记录中明确标注。
+4. 每完成一个执行任务，立即更新 `tasks.md` 对应复选框，再进入下一任务。
+5. 对象证据至少包含 ID、URL、API 响应摘要、数据库查询或截图中的一种；关键状态转换应保留前后证据。
+6. 只执行前三条最小样例；后两条保持 `not run`，除非前三条全部通过且仍需扩大覆盖。
+7. 附件使用本地新建的无敏感信息文本文件，文件名带 `LT-20260704` 前缀。
+8. 试跑数据默认保留供用户复核，本轮不自动清理。
+
+## 临时管理员复跑设计
+
+- 使用现有 `python -m app.cli create-temp-admin`，不修改 CLI 或认证代码。
+- CLI 输出重定向到权限为 600 的 `/tmp` 文件；密码不进入仓库、命令输出或报告。
+- 使用本地 cookie jar 调用现有 `/api/auth/login` 和管理 API。
+- 主链路完成或失败后，使用现有 `disable-temp-admin` 禁用账号，并删除临时密码文件和 cookie jar。
+- 该授权只扩展本地认证数据写入，不授权修改配置、业务代码或生产数据。
+
+## 数据设计
+
+样例数据不通过脚本导入，只由管理员在本地 UI 或已有管理接口中人工创建。建议使用统一前缀，便于试运行后识别和清理：
+
+```text
+LT-20260704-<sample-key>
+```
+
+每条样例保留来源字段或备注：
+
+```yaml
+source_type: manual
+source_title: LeetCode 相关练习
+source_note: 仅用于本地试运行，不公开展示
+```
+
+题目内容采用题意转述或自己改写，不复制完整原题。
+
+## 权限设计
+
+- 管理后台试运行必须使用管理员会话。
+- 公开 `/blog`、`/notes`、`/mistakes` 不承载本地试运行样例。
+- 附件默认按私有测试附件处理，不加入公开附件集合。
+- 不使用 `AUTH_BYPASS` 证明验收通过。
+
+## 异常设计
+
+- 环境启动失败：记录为环境阻塞，不改代码。
+- 权限失败：记录实际登录态、页面、接口返回，不用 bypass 绕过。
+- 数据创建失败：记录输入、页面提示、接口响应或日志摘要。
+- 关联失败：记录源对象、目标对象、link 类型和失败现象。
+- 附件读写失败：记录文件类型、大小、上传结果、读取路径和错误。
+- 发现缺陷：进入 `issues.md`，不自动修复。
+
+## 停止条件
+
+出现以下情况时停止试运行并记录：
+
+1. 需要修改业务代码才能继续。
+2. 需要新增脚本、批量导入或外部 API。
+3. 需要进入 AI、OCR、BKT、完整练习、对象存储或云部署。
+4. 样例内容需要复制 LeetCode 原题大段文本或批量采集。
+5. 公开页面出现本地测试题、公开附件或管理员操作泄露。
+6. 执行阶段 `tasks.md` 尚未获得用户明确批准。
+
+## 项目验收与演示准备设计
+
+本阶段只整理验收结论和现场演示路径，不改变代码、数据库或部署状态。
+
+演示分为三条证据线：
+
+1. **Public Read**：未登录查看首页、博客、笔记和错题公开内容，证明公开读取可用且不显示管理操作。
+2. **Private Manage**：展示管理入口的登录保护，并在已授权本地会话下展示 subject → question → mistake → review → attachment 的已验证结果。
+3. **Closure Evidence**：展示 Batch 7 validation、数据库 `020 (head)`、counts、已知条件项和明确未进入的范围。
+
+默认演示优先使用已记录的真实验收证据和只读页面浏览。若需要现场重新写入样例或重新登录，必须在执行前单独批准，并使用本地私有、可清理的演示数据。
+
+## DEMO-ISSUE-001 修复设计
+
+### 根因
+
+`next.config.ts` 将公开 `/mistakes` 直接重定向到私有 `/manage/mistakes`。这条规则覆盖了现有公开 `src/app/mistakes/page.tsx`，导致匿名用户无法到达公开错题列表。
+
+### 最小修复
+
+- 删除仅针对 `/mistakes` 的 redirect。
+- 保留 `/mistakes/review` → `/manage/review`，因为复习页是私有操作入口。
+- 保留 `/write-*` 旧入口的既有兼容重定向/保护行为。
+- 不修改 `src/app/mistakes/page.tsx`、后端 API、schema、数据库或数据。
+
+### 回归契约
+
+1. 匿名 `GET /mistakes` 返回公开页面，不跳转到 `/manage/**`。
+2. 匿名 `/mistakes` 不显示编辑、删除、AI、上传或复习提交操作。
+3. `/mistakes/review` 仍进入私有管理保护。
+4. Batch 7 前端路由契约测试和现场浏览器演示均通过后，关闭 `DEMO-ISSUE-001`。
+
+## LT-ISSUE-002 Auth Error Handling Cleanup 设计
+
+### 根因
+
+`disable_temp_admin()` 使用 \"disabled\" 作为不可登录标记，但 `login()` 直接把该值交给 `bcrypt.checkpw()`。无效 bcrypt hash 引发异常，导致禁用账号密码登录返回 500。
+
+### 最小修复
+
+- 在 `verify_password()` 这一密码校验边界捕获无效 hash，返回 `False`。
+- 保持 `login()` 现有统一的 `401 Invalid credentials` 行为。
+- 不修改数据库字段、schema、禁用标记、session 撤销逻辑或生产配置。
+
+### 回归契约
+
+1. 合法 bcrypt hash + 正确密码仍返回 `True`。
+2. 合法 bcrypt hash + 错误密码返回 `False`。
+3. \"disabled\"、空值或 malformed hash 返回 `False`，不抛异常。
+4. 禁用临时管理员后密码登录返回 401，不创建 session。

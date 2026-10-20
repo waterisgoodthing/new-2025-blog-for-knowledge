@@ -1,0 +1,13 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.ddl.postgresql] Detected sequence named 'guest_message_bans_id_seq' as owned by integer column 'guest_message_bans(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'admin_passwords_id_seq' as owned by integer column 'admin_passwords(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'music_candidates_id_seq' as owned by integer column 'music_candidates(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'music_sync_logs_id_seq' as owned by integer column 'music_sync_logs(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'knowledge_point_links_id_seq' as owned by integer column 'knowledge_point_links(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'recommendations_id_seq' as owned by integer column 'recommendations(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'netease_api_configs_id_seq' as owned by integer column 'netease_api_configs(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'categories_id_seq' as owned by integer column 'categories(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'daily_songs_id_seq' as owned by integer column 'daily_songs(id)', assuming SERIAL and omitting
+INFO  [alembic.ddl.postgresql] Detected sequence named 'music_items_id_seq' as owned by integer column 'music_items(id)', assuming SERIAL and omitting
+No new upgrade operations detected.

@@ -1,0 +1,108 @@
+INFO:     Started server process [10347]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:60727 (Press CTRL+C to quit)
+INFO:     127.0.0.1:61184 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61186 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61185 - "GET /api/auth/passkey/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61184 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61191 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61185 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61186 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61193 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/knowledge-points/188 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "DELETE /api/admin/knowledge-points/188 HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88/recognize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "POST /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88/recognize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "POST /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88/recognize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61186 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61193 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/mistakes/9294e873-b7c8-4683-9eff-dfb42f707192 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/mistakes/9294e873-b7c8-4683-9eff-dfb42f707192 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/questions/6fee2274-dbe6-4e33-8033-c45d7529a6ab HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/questions/6fee2274-dbe6-4e33-8033-c45d7529a6ab HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61192 - "OPTIONS /api/admin/attempts/review HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "POST /api/admin/attempts/review HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61215 - "POST /api/admin/attempts/review HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61194 - "GET /api/admin/mistakes/9294e873-b7c8-4683-9eff-dfb42f707192 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/questions/6fee2274-dbe6-4e33-8033-c45d7529a6ab HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "POST /api/admin/review/items/ba531352-03c3-44b7-8d23-da43a97b4c9e/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/review/items/ba531352-03c3-44b7-8d23-da43a97b4c9e/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61194 - "GET /api/admin/knowledge-points/analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61641 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61641 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61641 - "GET /api/auth/passkey/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61641 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61641 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61649 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61650 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61641 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61650 - "OPTIONS /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61649 - "OPTIONS /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "GET /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61649 - "OPTIONS /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "GET /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61649 - "OPTIONS /api/admin/knowledge-points?subject_id=185&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61640 - "GET /api/admin/attachments/7c47ecb5-e9da-4720-94f9-821d9c496450/content?disposition=inline HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61651 - "GET /api/admin/knowledge-points?subject_id=185&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61651 - "PATCH /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61712 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61713 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61713 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61713 - "GET /api/auth/passkey/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61713 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61713 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61722 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61733 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61733 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61734 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61722 - "OPTIONS /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "OPTIONS /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61733 - "GET /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61734 - "GET /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "OPTIONS /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61734 - "GET /api/admin/captures HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61733 - "GET /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "OPTIONS /api/admin/knowledge-points?subject_id=185&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61733 - "GET /api/admin/attachments/7c47ecb5-e9da-4720-94f9-821d9c496450/content?disposition=inline HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61734 - "GET /api/admin/knowledge-points?subject_id=185&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61734 - "GET /api/admin/captures/4f4799f7-095a-4703-b055-63863f707f88 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10347]

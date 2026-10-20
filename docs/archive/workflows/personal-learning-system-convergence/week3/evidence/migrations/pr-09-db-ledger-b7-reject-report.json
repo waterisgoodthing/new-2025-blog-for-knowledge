@@ -1,0 +1,53 @@
+{
+  "mapping_version": "wk3-mistake-visibility-v1",
+  "generated_at": "2026-09-24T08:14:12.871297+00:00",
+  "source": {
+    "total_legacy_mistakes": 7,
+    "by_mapping": {
+      "published_visible": 3,
+      "published_hidden": 1,
+      "unpublished_visible": 2,
+      "unpublished_hidden": 1
+    }
+  },
+  "targets": {
+    "created": 0,
+    "visibility_reconciled": 0,
+    "skipped_already_migrated": 6,
+    "skipped_already_migrated_private_ok": 6,
+    "rejected": [
+      {
+        "source_note_id": "633818c7-19d3-454d-b2b0-460980031d41",
+        "reason": "SUBJECT_UNMAPPED"
+      }
+    ]
+  },
+  "review_items": {
+    "created_v2": 0,
+    "next_due_from_source": 0,
+    "next_due_default": 0,
+    "unmapped": [
+      "ef",
+      "interval",
+      "repetitions",
+      "last_reviewed"
+    ]
+  },
+  "unmapped_source_fields": [
+    "ef",
+    "interval",
+    "repetitions",
+    "last_reviewed"
+  ],
+  "checks": {
+    "count_match": true,
+    "provenance_match": true,
+    "visibility_matrix_match": true,
+    "public_field_allowlist_match": true,
+    "replay_noop": false
+  },
+  "idempotency": {
+    "replay_noop": false
+  },
+  "dry_run": false
+}

@@ -1,0 +1,224 @@
+ M .env.example
+ M .github/workflows/ci.yml
+ M AGENTS.md
+ M agents/README.md
+ M agents/orchestration.md
+ M agents/permissions.md
+ M agents/report-template.md
+ M agents/task-template.md
+ M agents/workers/senior-qa-sdet.md
+ M backend/alembic/env.py
+ M backend/app/cli.py
+ M backend/app/config.py
+ M backend/app/models/__init__.py
+ M backend/app/models/attempt.py
+ M backend/app/models/mistake.py
+ M backend/app/models/registry.py
+ M backend/app/models/review_item.py
+ M backend/app/routers/admin_mistakes.py
+ M backend/app/routers/ai_polish.py
+ M backend/app/routers/attempts.py
+ M backend/app/routers/auth.py
+ M backend/app/routers/dashboard.py
+ M backend/app/routers/folders.py
+ M backend/app/routers/knowledge_points.py
+ M backend/app/routers/notes.py
+ M backend/app/routers/review.py
+ M backend/app/routers/review_items.py
+ M backend/app/routers/suggestions.py
+ M backend/app/routers/tags.py
+ M backend/app/schemas/ai.py
+ M backend/app/schemas/attempt.py
+ M backend/app/schemas/auth.py
+ M backend/app/schemas/capture.py
+ M backend/app/schemas/dashboard.py
+ M backend/app/schemas/mistake.py
+ M backend/app/schemas/review_item.py
+ M backend/app/services/ai_gateway.py
+ M backend/app/services/ai_run_service.py
+ M backend/app/services/ai_service.py
+ M backend/app/services/attempt_service.py
+ M backend/app/services/capture_ai_draft.py
+ M backend/app/services/capture_recognition.py
+ M backend/app/services/capture_service.py
+ M backend/app/services/dashboard_service.py
+ M backend/app/services/legacy_note_migration_adapter.py
+ M backend/app/services/mistake_service.py
+ M backend/app/services/mistake_staged_service.py
+ M backend/app/services/passkey_service.py
+ M backend/app/services/review_item_service.py
+ M backend/main.py
+ M backend/tests/lsr03_final_verifier_harness.py
+ M backend/tests/test_attempt_service.py
+ M backend/tests/test_capture_service.py
+ M backend/tests/test_dashboard_routes.py
+ M backend/tests/test_i6_capture_failure_matrix.py
+ M backend/tests/test_legacy_note_migration_contract.py
+ M backend/tests/test_mistake_review_service.py
+ M backend/tests/test_security_settings_guards.py
+ M docs/public-deploy-runbook.md
+ M next.config.ts
+ M package.json
+ M src/app/batch7-compatibility.test.ts
+ M src/app/blog/page.tsx
+ M src/app/manage/(workspace)/capture/components/capture-workspace.tsx
+ D src/app/manage/(workspace)/components/future-capability-page.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+ M src/app/manage/(workspace)/mistakes/components/mistake-detail.tsx
+ M src/app/manage/(workspace)/review/review-queue.tsx
+ M src/app/manage/components/feature-state.tsx
+ D src/app/manage/components/manage-placeholder-page.tsx
+ M src/app/manage/components/manage-sidebar.test.ts
+ M src/app/manage/components/manage-sidebar.test.tsx
+ M src/app/manage/components/manage-sidebar.tsx
+ M src/app/mistakes/page.tsx
+ D src/app/music/list.ts
+ M src/app/notes/page.tsx
+ M src/app/write-mistake/components/mistake-form.tsx
+ M src/app/write-mistake/components/staged-mistake-form.tsx
+ M src/app/write-note/[slug]/page.tsx
+ M src/app/write-note/hooks/use-note-editor.ts
+ M src/app/write/components/ui/tag-input.tsx
+ D src/components/wip.tsx
+ M src/lib/api/ai.ts
+ M src/lib/api/attempts.ts
+ M src/lib/api/captures.ts
+ M src/lib/api/dashboard.ts
+ M src/lib/api/mistakes.ts
+ M src/lib/api/notes.ts
+ M src/lib/api/review-items.ts
+ M src/lib/content-routes.ts
+ M src/styles/globals.css
+ M tsconfig.test.json
+?? IMPROVEMENT_BACKLOG.md
+?? PERSONAL_LEARNING_SYSTEM_AUDIT.md
+?? Personal_Learning_System_Week_Completion_Quality_Audit.md
+?? Personal_Learning_System_Week_Completion_Quality_Audit.pdf
+?? agents/workers/api-contract-reviewer.md
+?? agents/workers/compatibility-retirement-engineer.md
+?? agents/workers/learning-workflow-reviewer.md
+?? backend/alembic/versions/027_guestbook.py
+?? backend/alembic/versions/028_review_items_v2.py
+?? backend/alembic/versions/029_review_record_states.py
+?? backend/alembic/versions/030_reanswer_audit.py
+?? backend/alembic/versions/031_mistake_visibility_public.py
+?? backend/alembic/versions/032_note_knowledge_points.py
+?? backend/alembic/versions/033_webauthn_challenges.py
+?? backend/app/models/note_knowledge_point.py
+?? backend/app/models/sql_owned.py
+?? backend/app/models/webauthn_challenge.py
+?? backend/app/routers/admin_notes.py
+?? backend/app/routers/practice.py
+?? backend/app/routers/public_mistakes.py
+?? backend/app/schemas/kp_analytics.py
+?? backend/app/schemas/note_knowledge_point.py
+?? backend/app/schemas/practice.py
+?? backend/app/services/capture_failure_taxonomy.py
+?? backend/app/services/kp_analytics_service.py
+?? backend/app/services/legacy_mistake_freeze.py
+?? backend/app/services/login_throttle.py
+?? backend/app/services/note_knowledge_point_service.py
+?? backend/app/services/practice_service.py
+?? backend/app/services/reanswer_service.py
+?? backend/app/services/webauthn_challenge_service.py
+?? backend/app/services/wk3_mistake_visibility_migration.py
+?? backend/app/utils/scratch_db_safety.py
+?? backend/tests/_pr09_evidence_constraint.py
+?? backend/tests/_pr09_evidence_seed.py
+?? backend/tests/_pr10_n1_evidence.py
+?? backend/tests/_pr13_attempt_count_evidence.py
+?? backend/tests/conftest.py
+?? backend/tests/test_ai_error_chain.py
+?? backend/tests/test_ai_governance.py
+?? backend/tests/test_capture_taxonomy.py
+?? backend/tests/test_cli_registration_server.py
+?? backend/tests/test_f03_freeze_coverage.py
+?? backend/tests/test_f04_schema_ownership.py
+?? backend/tests/test_guest_migration_contract.py
+?? backend/tests/test_login_throttling.py
+?? backend/tests/test_login_throttling_integration.py
+?? backend/tests/test_ocr_baseline.py
+?? backend/tests/test_passkey_ceremonies.py
+?? backend/tests/test_pr09_legacy_mistake_freeze.py
+?? backend/tests/test_pr09_migration.py
+?? backend/tests/test_pr09_permissions.py
+?? backend/tests/test_pr09_rework.py
+?? backend/tests/test_pr09_routes.py
+?? backend/tests/test_pr09_verify_api_contract.py
+?? backend/tests/test_pr09_verify_http.py
+?? backend/tests/test_pr09_wk3_runner.py
+?? backend/tests/test_pr10_kp_analytics_contract.py
+?? backend/tests/test_pr10_kp_analytics_http.py
+?? backend/tests/test_pr10_kp_analytics_service.py
+?? backend/tests/test_pr10_verify_contract.py
+?? backend/tests/test_pr10_verify_matrix.py
+?? backend/tests/test_pr11_dashboard_http.py
+?? backend/tests/test_pr11_dashboard_service.py
+?? backend/tests/test_pr12_note_knowledge_points_contract.py
+?? backend/tests/test_pr12_note_knowledge_points_http.py
+?? backend/tests/test_pr12_note_knowledge_points_service.py
+?? backend/tests/test_pr12_verify_api.py
+?? backend/tests/test_pr12_verify_concurrency.py
+?? backend/tests/test_pr13_practice_http.py
+?? backend/tests/test_pr13_practice_service.py
+?? backend/tests/test_pr13_verify_practice.py
+?? backend/tests/test_reanswer_v2.py
+?? backend/tests/test_review_scheduling_v2.py
+?? backend/tests/test_review_schema_v2.py
+?? backend/tests/test_webauthn_challenge_lifecycle.py
+?? backend/tests/test_week3_contracts.py
+?? backend/tests/week3_contracts_support.py
+?? docs/architecture/ai-governance.md
+?? docs/ci-local-reproduction.md
+?? docs/ui-v2/
+?? docs/workflows/personal-learning-system-convergence/
+?? docs/workflows/personal-learning-ui-foundation/
+?? docs/workflows/personal-learning-ui-v2/
+?? docs/workflows/week-completion-quality-audit-2026-09-27/
+?? docs/workflows/week-completion-remediation-2026-09-27/
+?? playwright.config.ts
+?? scripts/incident-db-safety.test.py
+?? scripts/pr09_verify_ledger_matrix.py
+?? scripts/pr09_verify_migration_matrix.py
+?? scripts/pr12_verify_migration_matrix.py
+?? scripts/runtime-smoke.mjs
+?? scripts/runtime-smoke.test.mjs
+?? scripts/week3-scratch-guard.py
+?? scripts/week3-scratch-guard.test.py
+?? scripts/week4-scratch-guard.py
+?? scripts/week4-scratch-guard.test.py
+?? scripts/wk3_mistake_visibility_runner.py
+?? src/adapters/
+?? src/app/manage/(workspace)/capture/components/capture-workspace.test.tsx
+?? src/app/manage/(workspace)/dashboard/dashboard-content-verify.test.tsx
+?? src/app/manage/(workspace)/dashboard/dashboard-verify.test.tsx
+?? src/app/manage/(workspace)/dashboard/error.tsx
+?? src/app/manage/(workspace)/dashboard/loading.tsx
+?? src/app/manage/(workspace)/notes/
+?? src/app/manage/(workspace)/practice/
+?? src/app/manage/(workspace)/review/review-queue.test.tsx
+?? src/app/mistakes/page.test.tsx
+?? src/app/notes/error.tsx
+?? src/app/notes/loading.tsx
+?? src/app/notes/page.test.tsx
+?? src/app/write-mistake/components/legacy-mistake-write-freeze.test.tsx
+?? src/app/write-note/legacy-mistake-write-freeze.test.tsx
+?? src/components/async-state-panel.test.tsx
+?? src/components/async-state-panel.tsx
+?? src/components/legacy-mistake-write-frozen.tsx
+?? src/components/tag-input.tsx
+?? src/components/ui-v2/
+?? src/contracts/
+?? src/features/
+?? src/hooks/use-note-editor.ts
+?? src/lib/api/dashboard.test.ts
+?? src/lib/api/knowledge-points.test.ts
+?? src/lib/api/knowledge-points.ts
+?? src/lib/api/mistakes.test.ts
+?? src/lib/api/notes.test.ts
+?? src/lib/api/practice.test.ts
+?? src/lib/api/practice.ts
+?? src/mocks/
+?? tests/

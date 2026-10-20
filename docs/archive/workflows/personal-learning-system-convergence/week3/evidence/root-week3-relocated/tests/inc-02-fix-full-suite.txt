@@ -1,0 +1,33 @@
+INC-02 fix — evidence 3/4: full backend suite failure count does not increase
+=============================================================================
+
+Baseline (Week 3 Gate, week3/evidence/gate/tests/gate-full-pytest.txt):
+  4 failed, 821 passed, 9 skipped, 6 subtests passed   (fresh scratch DB astra_week3_gate_full)
+
+With backend/tests/conftest.py present, explicit sanctioned target, fresh DB:
+
+  1) create fresh scratch DB + migrate to head (guarded, no user in DSN so it runs
+     as the owning local OS user):
+     $ createdb -h localhost astra_week3_inc02_fix
+     $ cd backend && env PYTHONPATH=. python3 ../scripts/week3-scratch-guard.py run \
+         --db-name astra_week3_inc02_fix -- env PYTHONPATH=. .venv/bin/alembic upgrade head
+     ... Running upgrade 031 -> 032 ... PASS: db_name='astra_week3_inc02_fix'
+
+  2) full suite against that explicit astra_week3_* URL:
+     $ cd backend && env DATABASE_URL="postgresql+asyncpg://localhost:5432/astra_week3_inc02_fix" \
+         PYTHONPATH=. .venv/bin/python -m pytest tests/ -q
+     4 failed, 821 passed, 9 skipped, 2 warnings, 6 subtests passed in 17.59s
+     exit=1
+
+  The 4 failures are byte-identical to the gate baseline (pre-existing
+  isolation/environment issues, not caused by the guard):
+    FAILED tests/test_lsr03_guarded_runner.py::test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback
+    FAILED tests/test_pr09_verify_http.py::test_public_empty_envelope_explicit
+    FAILED tests/test_pr11_dashboard_service.py::DashboardPr11ServiceTest::test_all_empty_answers_are_honest
+    FAILED tests/test_pr11_dashboard_service.py::DashboardPr11ServiceTest::test_partial_service_failure_degrades_without_raising
+
+  => 4F / 821P / 9S / 6 subtests: identical to baseline. Guard adds zero regressions.
+
+Note: run WITHOUT an explicit astra_week3_* target (repo `backend/.env` -> blog_v2)
+the whole suite exits 2 at collection with the guard message and zero tests run —
+this is the intended fail-closed behaviour, and is distinct from the baseline above.

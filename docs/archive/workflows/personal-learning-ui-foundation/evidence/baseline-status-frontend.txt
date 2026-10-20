@@ -1,0 +1,66 @@
+# Frontend track independent baseline — 2026-09-13 (Asia/Shanghai)
+
+PRE-EXISTING DIRTY WORK (52 entries, frozen before this track wrote any file).
+THIS TRACK CHANGES must be distinguished from the list below; none of the
+entries below count as this track's achievement.
+
+Tracked modified (29):
+ M AGENTS.md
+ M agents/README.md
+ M agents/orchestration.md
+ M agents/permissions.md
+ M agents/report-template.md
+ M agents/task-template.md
+ M agents/workers/senior-qa-sdet.md
+ M backend/app/models/review_item.py
+ M backend/app/routers/review_items.py
+ M backend/app/schemas/review_item.py
+ M backend/main.py
+ M backend/tests/test_legacy_note_migration_contract.py
+ M backend/tests/test_security_settings_guards.py
+ M docs/public-deploy-runbook.md
+ M next.config.ts
+ M package.json
+ M src/app/batch7-compatibility.test.ts
+ M src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+ M src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+ M src/app/manage/components/feature-state.tsx
+ M src/app/manage/components/manage-sidebar.test.ts
+ M src/app/manage/components/manage-sidebar.test.tsx
+ M src/app/manage/components/manage-sidebar.tsx
+ M src/app/notes/page.tsx
+ M src/app/write-note/hooks/use-note-editor.ts
+ M src/app/write/components/ui/tag-input.tsx
+ M src/lib/api/review-items.ts
+ M src/lib/content-routes.ts
+
+Untracked (23):
+?? IMPROVEMENT_BACKLOG.md
+?? PERSONAL_LEARNING_SYSTEM_AUDIT.md
+?? agents/workers/api-contract-reviewer.md
+?? agents/workers/compatibility-retirement-engineer.md
+?? agents/workers/learning-workflow-reviewer.md
+?? backend/alembic/versions/027_guestbook.py
+?? backend/alembic/versions/028_review_items_v2.py
+?? backend/alembic/versions/029_review_record_states.py
+?? backend/tests/test_guest_migration_contract.py
+?? backend/tests/test_review_schema_v2.py
+?? docs/workflows/personal-learning-system-convergence/
+?? scripts/runtime-smoke.mjs
+?? scripts/runtime-smoke.test.mjs
+?? src/app/manage/(workspace)/dashboard/error.tsx
+?? src/app/manage/(workspace)/dashboard/loading.tsx
+?? src/app/manage/(workspace)/notes/
+?? src/app/notes/error.tsx
+?? src/app/notes/loading.tsx
+?? src/app/notes/page.test.tsx
+?? src/components/async-state-panel.test.tsx
+?? src/components/async-state-panel.tsx
+?? src/components/tag-input.tsx
+?? src/hooks/use-note-editor.ts
+
+Week2 READ-ONLY overlap present in baseline (must stay untouched by this track):
+backend/app/models/review_item.py, backend/app/routers/review_items.py,
+backend/app/schemas/review_item.py, backend/tests/test_review_schema_v2.py,
+alembic 027/028/029, src/lib/api/review-items.ts, src/lib/content-routes.ts.

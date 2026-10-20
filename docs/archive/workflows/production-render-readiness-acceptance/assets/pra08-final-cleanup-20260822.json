@@ -1,0 +1,103 @@
+{
+  "run_id": "pra08-final-cleanup-20260822",
+  "status": "pass",
+  "scope": "read-only final QA/SDET acceptance and cleanup verification; no service start and no resampling",
+  "overall_f4_status": "partial",
+  "commands": {
+    "ports": "for p in 3000 3100-3108 3110 8100-8108 8110 55432-55441; do lsof -nP -iTCP:$p -sTCP:LISTEN; done",
+    "processes": "ps -axo pid=,ppid=,command= | rg 'pra06|single-shell|m30|postgres.*554|next-server|uvicorn|node.*3000|node.*3110|python.*8110'",
+    "worktrees": "git worktree list --porcelain",
+    "prune_dry_run": "git worktree prune -n -v",
+    "status_hash": "git status --porcelain=v1 | shasum -a 256",
+    "staged_check": "git diff --cached --name-only",
+    "diff_check": "git diff --check",
+    "parse_check": "JSON/NDJSON parser over docs/workflows/production-render-readiness-acceptance/assets",
+    "aggregation_contract": "python3 assets/pra07-raw-aggregation.test.py"
+  },
+  "resource_cleanup": {
+    "target_ports": {
+      "ports_checked": [3000, 3100, 3101, 3102, 3103, 3104, 3105, 3106, 3107, 3108, 3110, 8100, 8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8110, 55432, 55433, 55434, 55435, 55436, 55437, 55438, 55439, 55440, 55441],
+      "listeners": 0,
+      "result": "pass"
+    },
+    "process_check": {
+      "target_processes": 0,
+      "unrelated_processes_observed": ["pre-existing Next process", "pre-existing uvicorn on port 8000"],
+      "unrelated_processes_touched": false,
+      "result": "pass"
+    },
+    "worktrees": {
+      "expected_count": 4,
+      "actual_count": 4,
+      "prune_dry_run_output": "",
+      "user_worktrees_deleted": false,
+      "result": "pass"
+    },
+    "temporary_admin_and_credentials": {
+      "workflow_records_checked": true,
+      "disable_evidence_paths": [
+        "docs/workflows/production-render-readiness-acceptance/tasks.md",
+        "docs/workflows/production-render-readiness-acceptance/audit.md",
+        "docs/workflows/production-render-readiness-acceptance/validation.md",
+        "assets/pra06-m30-negative-final-20260822.cleanup.log"
+      ],
+      "temporary_admin_disabled": true,
+      "isolated_sessions_revoked_or_expired": 3,
+      "password_token_raw_cookie_values_persisted": false,
+      "real_services_or_credentials_contacted": false,
+      "result": "pass"
+    }
+  },
+  "artifact_integrity": {
+    "json_ndjson_files_parsed": 94,
+    "json_ndjson_records_parsed": 164,
+    "parse_failures": 0,
+    "empty_json_ndjson_files": 0,
+    "required_m30_samples": {"attempts": 10, "valid": 10, "failed": 0},
+    "negative_boundary": {
+      "path": "assets/pra06-m30-negative-final-20260822-negative.json",
+      "valid": true,
+      "no_cookie_auth_me": 401,
+      "no_cookie_strict_management": 401,
+      "logout": 200,
+      "after_logout_auth_me": 401,
+      "after_logout_strict_management": 401,
+      "admin_session_present_after_logout": false
+    },
+    "preserved_failure_evidence": [
+      "assets/pra05-e0-raw.ndjson: 11 records, 1 invalid retained",
+      "assets/pra06-login-raw.ndjson: invalid diagnostic retained",
+      "assets/pra06-cookie-diagnostic-20260822.raw.ndjson: invalid diagnostic retained",
+      "assets/pra06-m30-batch-20260822-negative.json: invalid historical negative raw retained",
+      "assets/pra06-m30-negative-recheck-20260822-negative.json: invalid historical negative raw retained"
+    ],
+    "aggregation": {
+      "json_path": "assets/pra07-raw-aggregation-20260822.json",
+      "markdown_path": "assets/pra07-raw-aggregation-20260822.md",
+      "input_file_count": 14,
+      "input_hashes_match_current_files": true,
+      "sensitive_findings": [],
+      "contract_test": "pass"
+    }
+  },
+  "main_tree_protection": {
+    "expected_status_hash": "6de303c46f48dfd069c96161d5b6e967a54ba056fa60879093ebd3ef21ea2476",
+    "observed_status_hash": "6de303c46f48dfd069c96161d5b6e967a54ba056fa60879093ebd3ef21ea2476",
+    "status_hash_match": true,
+    "staged_paths": [],
+    "git_diff_check": "pass",
+    "product_source_changed_by_pra08": false,
+    "commit_push_deploy_performed": false
+  },
+  "workflow_gate": {
+    "pra04": "pass",
+    "pra05": "pass_with_notes",
+    "pra06": "pass",
+    "pra07": "pass_with_notes",
+    "pra08": "pass",
+    "f4": "partial",
+    "production_ready": false,
+    "deployment_authorized": false,
+    "performance_baseline_claim": false
+  }
+}

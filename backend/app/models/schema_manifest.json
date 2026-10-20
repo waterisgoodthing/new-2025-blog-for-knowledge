@@ -1,0 +1,1642 @@
+{
+  "columns": {
+    "legacy_migration.allowed_legacy_note_migration_transitions.from_state": {
+      "default": null,
+      "notnull": true,
+      "type": "legacy_note_migration_state"
+    },
+    "legacy_migration.allowed_legacy_note_migration_transitions.to_state": {
+      "default": null,
+      "notnull": true,
+      "type": "legacy_note_migration_state"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.actor_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.approval_kind": {
+      "default": null,
+      "notnull": false,
+      "type": "character varying(32)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.consumed_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.created_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.expected_from": {
+      "default": null,
+      "notnull": false,
+      "type": "text"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.expected_source_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.expected_to": {
+      "default": null,
+      "notnull": true,
+      "type": "text"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.ledger_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.mapping_version": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.nonce": {
+      "default": null,
+      "notnull": true,
+      "type": "text"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.op": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(16)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.payload_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.rollback_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.session_user": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.source_note_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.table_name": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.table_schema": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.target_bundle_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "legacy_migration.legacy_migration_guard_nonces.txid": {
+      "default": null,
+      "notnull": true,
+      "type": "bigint"
+    },
+    "public.draft_items.approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.draft_items.approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.draft_items.conversion_sequence": {
+      "default": null,
+      "notnull": false,
+      "type": "integer"
+    },
+    "public.draft_items.source_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "public.draft_items.target_mistake_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.draft_items.target_question_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_migration_approval_authorizations.approval_kind": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(32)"
+    },
+    "public.legacy_migration_approval_authorizations.enabled": {
+      "default": "true",
+      "notnull": true,
+      "type": "boolean"
+    },
+    "public.legacy_migration_approval_authorizations.granted_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_migration_approval_authorizations.user_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_migration_rollback_admins.enabled": {
+      "default": "true",
+      "notnull": true,
+      "type": "boolean"
+    },
+    "public.legacy_migration_rollback_admins.granted_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_migration_rollback_admins.user_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_migration_rollback_audits.created_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_migration_rollback_audits.ledger_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_migration_rollback_audits.mapping_version": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.legacy_migration_rollback_audits.rollback_json": {
+      "default": null,
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_migration_rollback_audits.rollback_reference": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "public.legacy_migration_rollback_audits.source_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "public.legacy_migration_rollback_audits.source_note_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_events.actor_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_events.approval_kind": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(32)"
+    },
+    "public.legacy_note_migration_events.created_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migration_events.details": {
+      "default": "'{}'::jsonb",
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_note_migration_events.from_state": {
+      "default": null,
+      "notnull": true,
+      "type": "legacy_note_migration_state"
+    },
+    "public.legacy_note_migration_events.id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_events.ledger_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_events.mapping_version": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.legacy_note_migration_events.reason": {
+      "default": null,
+      "notnull": true,
+      "type": "text"
+    },
+    "public.legacy_note_migration_events.rollback_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migration_events.source_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migration_events.source_note_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_events.target_bundle_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migration_events.to_state": {
+      "default": null,
+      "notnull": true,
+      "type": "legacy_note_migration_state"
+    },
+    "public.legacy_note_migration_rejections.actor_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_rejections.created_at": {
+      "default": null,
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migration_rejections.disposition": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(16)"
+    },
+    "public.legacy_note_migration_rejections.id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_rejections.idempotency_key": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "public.legacy_note_migration_rejections.mapping_version": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.legacy_note_migration_rejections.migration_notes": {
+      "default": null,
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_note_migration_rejections.reason": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.legacy_note_migration_rejections.snapshot_ref": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(255)"
+    },
+    "public.legacy_note_migration_rejections.source_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migration_rejections.source_note_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migration_rejections.source_title": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(500)"
+    },
+    "public.legacy_note_migrations.approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.canonical_payload": {
+      "default": null,
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_note_migrations.created_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.idempotency_key": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "public.legacy_note_migrations.legacy_ef": {
+      "default": null,
+      "notnull": true,
+      "type": "double precision"
+    },
+    "public.legacy_note_migrations.legacy_ef_bits": {
+      "default": null,
+      "notnull": true,
+      "type": "character(16)"
+    },
+    "public.legacy_note_migrations.legacy_interval": {
+      "default": null,
+      "notnull": true,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.legacy_last_reviewed": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp without time zone"
+    },
+    "public.legacy_note_migrations.legacy_next_review": {
+      "default": null,
+      "notnull": false,
+      "type": "date"
+    },
+    "public.legacy_note_migrations.legacy_repetitions": {
+      "default": null,
+      "notnull": true,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.legacy_review_json": {
+      "default": null,
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_note_migrations.manual_review_required": {
+      "default": "true",
+      "notnull": true,
+      "type": "boolean"
+    },
+    "public.legacy_note_migrations.mapped_last_reviewed_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.mapped_next_review_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.mapping_version": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.legacy_note_migrations.migration_notes": {
+      "default": null,
+      "notnull": true,
+      "type": "jsonb"
+    },
+    "public.legacy_note_migrations.mistake_approval_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.mistake_conversion_approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.mistake_conversion_approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.mistake_conversion_sequence": {
+      "default": null,
+      "notnull": false,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.question_approval_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.question_conversion_approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.question_conversion_approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.question_conversion_sequence": {
+      "default": null,
+      "notnull": false,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.rollback_actor_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.rollback_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.rollback_reference": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migrations.schedule_approval_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.schedule_approval_sequence": {
+      "default": null,
+      "notnull": false,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.schedule_approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.schedule_approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.snapshot_ref": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(255)"
+    },
+    "public.legacy_note_migrations.source_approval_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.source_approval_sequence": {
+      "default": null,
+      "notnull": false,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.source_approved_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.legacy_note_migrations.source_approved_by": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.source_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migrations.source_hidden": {
+      "default": null,
+      "notnull": true,
+      "type": "boolean"
+    },
+    "public.legacy_note_migrations.source_note_id": {
+      "default": null,
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.source_revision": {
+      "default": null,
+      "notnull": true,
+      "type": "integer"
+    },
+    "public.legacy_note_migrations.source_slug": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(255)"
+    },
+    "public.legacy_note_migrations.source_status": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(20)"
+    },
+    "public.legacy_note_migrations.source_title": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(500)"
+    },
+    "public.legacy_note_migrations.source_url": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(500)"
+    },
+    "public.legacy_note_migrations.state": {
+      "default": null,
+      "notnull": true,
+      "type": "legacy_note_migration_state"
+    },
+    "public.legacy_note_migrations.target_bundle_hash": {
+      "default": null,
+      "notnull": false,
+      "type": "character(64)"
+    },
+    "public.legacy_note_migrations.target_mistake_draft_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_mistake_draft_item_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_mistake_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_projection_ids": {
+      "default": null,
+      "notnull": false,
+      "type": "integer[]"
+    },
+    "public.legacy_note_migrations.target_qkp_ids": {
+      "default": null,
+      "notnull": false,
+      "type": "integer[]"
+    },
+    "public.legacy_note_migrations.target_question_draft_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_question_draft_item_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_question_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_question_source_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.target_review_item_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.transition_event_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    },
+    "public.legacy_note_migrations.updated_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.webauthn_challenges.challenge": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(128)"
+    },
+    "public.webauthn_challenges.challenge_hash": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(64)"
+    },
+    "public.webauthn_challenges.consumed_at": {
+      "default": null,
+      "notnull": false,
+      "type": "timestamp with time zone"
+    },
+    "public.webauthn_challenges.created_at": {
+      "default": "now()",
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.webauthn_challenges.expires_at": {
+      "default": null,
+      "notnull": true,
+      "type": "timestamp with time zone"
+    },
+    "public.webauthn_challenges.id": {
+      "default": "gen_random_uuid()",
+      "notnull": true,
+      "type": "uuid"
+    },
+    "public.webauthn_challenges.purpose": {
+      "default": null,
+      "notnull": true,
+      "type": "character varying(32)"
+    },
+    "public.webauthn_challenges.session_id": {
+      "default": null,
+      "notnull": false,
+      "type": "character varying(255)"
+    },
+    "public.webauthn_challenges.user_id": {
+      "default": null,
+      "notnull": false,
+      "type": "uuid"
+    }
+  },
+  "constraints": {
+    "legacy_migration.allowed_legacy_note_migration_transitions_pkey": {
+      "definition": "PRIMARY KEY (from_state, to_state)",
+      "kind": "p",
+      "table": "legacy_migration.allowed_legacy_note_migration_transitions",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_expected_source_hash_check": {
+      "definition": "CHECK (expected_source_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_nonce_check": {
+      "definition": "CHECK (nonce ~ '^[0-9a-f]{32}$'::text)",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_op_check": {
+      "definition": "CHECK (op::text = ANY (ARRAY['INSERT'::character varying, 'UPDATE'::character varying]::text[]))",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_payload_hash_check": {
+      "definition": "CHECK (payload_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_pkey": {
+      "definition": "PRIMARY KEY (nonce)",
+      "kind": "p",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_rollback_hash_check": {
+      "definition": "CHECK (rollback_hash IS NULL OR rollback_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_target_bundle_hash_check": {
+      "definition": "CHECK (target_bundle_hash IS NULL OR target_bundle_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_txid_nonce_key": {
+      "definition": "UNIQUE (txid, nonce)",
+      "kind": "u",
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "validated": true
+    },
+    "public.ck_legacy_note_migrations_retained_shape": {
+      "definition": "CHECK (state <> 'retained_public_only'::legacy_note_migration_state OR source_status::text = 'published'::text AND source_hidden = false AND target_question_draft_item_id IS NULL AND target_question_draft_id IS NULL AND target_question_id IS NULL AND target_question_source_id IS NULL AND target_mistake_draft_item_id IS NULL AND target_mistake_draft_id IS NULL AND target_mistake_id IS NULL AND target_review_item_id IS NULL AND target_qkp_ids IS NULL AND target_projection_ids IS NULL AND target_bundle_hash IS NULL AND mapped_next_review_at IS NULL AND mapped_last_reviewed_at IS NULL AND rollback_actor_id IS NULL AND rollback_reference IS NULL AND rollback_event_id IS NULL AND source_approved_by IS NOT NULL AND source_approved_at IS NOT NULL AND source_approval_sequence IS NOT NULL AND source_approval_event_id IS NOT NULL AND NOT approved_by IS DISTINCT FROM source_approved_by AND NOT approved_at IS DISTINCT FROM source_approved_at AND question_conversion_approved_by IS NULL AND question_conversion_approved_at IS NULL AND question_conversion_sequence IS NULL AND question_approval_event_id IS NULL AND mistake_conversion_approved_by IS NULL AND mistake_conversion_approved_at IS NULL AND mistake_conversion_sequence IS NULL AND mistake_approval_event_id IS NULL AND schedule_approved_by IS NULL AND schedule_approved_at IS NULL AND schedule_approval_sequence IS NULL AND schedule_approval_event_id IS NULL)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.ck_webauthn_challenges_purpose": {
+      "definition": "CHECK (purpose::text = ANY (ARRAY['registration'::character varying, 'authentication'::character varying, 'operator_registration'::character varying]::text[]))",
+      "kind": "c",
+      "table": "public.webauthn_challenges",
+      "validated": true
+    },
+    "public.fk_lnm_mistake_approval_event": {
+      "definition": "FOREIGN KEY (mistake_approval_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_lnm_question_approval_event": {
+      "definition": "FOREIGN KEY (question_approval_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_lnm_rollback_event": {
+      "definition": "FOREIGN KEY (rollback_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_lnm_schedule_approval_event": {
+      "definition": "FOREIGN KEY (schedule_approval_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_lnm_source_approval_event": {
+      "definition": "FOREIGN KEY (source_approval_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_lnm_transition_event": {
+      "definition": "FOREIGN KEY (transition_event_id) REFERENCES legacy_note_migration_events(id) DEFERRABLE INITIALLY DEFERRED",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.fk_webauthn_challenges_user_id": {
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "kind": "f",
+      "table": "public.webauthn_challenges",
+      "validated": true
+    },
+    "public.legacy_migration_approval_authorizations_approval_kind_check": {
+      "definition": "CHECK (approval_kind::text = ANY (ARRAY['source'::character varying, 'question_conversion'::character varying, 'mistake_conversion'::character varying, 'schedule'::character varying]::text[]))",
+      "kind": "c",
+      "table": "public.legacy_migration_approval_authorizations",
+      "validated": true
+    },
+    "public.legacy_migration_approval_authorizations_pkey": {
+      "definition": "PRIMARY KEY (user_id, approval_kind)",
+      "kind": "p",
+      "table": "public.legacy_migration_approval_authorizations",
+      "validated": true
+    },
+    "public.legacy_migration_approval_authorizations_user_id_fkey": {
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_migration_approval_authorizations",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_admins_pkey": {
+      "definition": "PRIMARY KEY (user_id)",
+      "kind": "p",
+      "table": "public.legacy_migration_rollback_admins",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_admins_user_id_fkey": {
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_migration_rollback_admins",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_aud_source_note_id_mapping_versio_key": {
+      "definition": "UNIQUE (source_note_id, mapping_version)",
+      "kind": "u",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_ledger_id_fkey": {
+      "definition": "FOREIGN KEY (ledger_id) REFERENCES legacy_note_migrations(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_pkey": {
+      "definition": "PRIMARY KEY (ledger_id)",
+      "kind": "p",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_rollback_json_check": {
+      "definition": "CHECK (jsonb_typeof(rollback_json) = 'object'::text)",
+      "kind": "c",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_rollback_reference_check": {
+      "definition": "CHECK (rollback_reference ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_source_hash_check": {
+      "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_migration_rollback_audits_source_note_id_fkey": {
+      "definition": "FOREIGN KEY (source_note_id) REFERENCES notes(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_migration_rollback_audits",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_actor_id_fkey": {
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_approval_kind_check": {
+      "definition": "CHECK (approval_kind::text = ANY (ARRAY['source'::character varying, 'question_conversion'::character varying, 'mistake_conversion'::character varying, 'schedule'::character varying, 'rollback'::character varying, 'state_transition'::character varying]::text[]))",
+      "kind": "c",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_check": {
+      "definition": "CHECK (approval_kind::text = 'rollback'::text AND rollback_hash IS NOT NULL OR approval_kind::text <> 'rollback'::text AND rollback_hash IS NULL)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_check1": {
+      "definition": "CHECK (from_state <> to_state OR approval_kind::text <> 'state_transition'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_ledger_id_fkey": {
+      "definition": "FOREIGN KEY (ledger_id) REFERENCES legacy_note_migrations(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_pkey": {
+      "definition": "PRIMARY KEY (id)",
+      "kind": "p",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_source_hash_check": {
+      "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_source_note_id_fkey": {
+      "definition": "FOREIGN KEY (source_note_id) REFERENCES notes(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_events_target_bundle_hash_check": {
+      "definition": "CHECK (target_bundle_hash IS NULL OR target_bundle_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_events",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejecti_source_note_id_mapping_versi_key1": {
+      "definition": "UNIQUE (source_note_id, mapping_version, source_hash, reason)",
+      "kind": "u",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejecti_source_note_id_mapping_versio_key": {
+      "definition": "UNIQUE (source_note_id, mapping_version, idempotency_key)",
+      "kind": "u",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_actor_id_fkey": {
+      "definition": "FOREIGN KEY (actor_id) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_disposition_check": {
+      "definition": "CHECK (disposition::text = ANY (ARRAY['manual'::character varying, 'failed'::character varying]::text[]))",
+      "kind": "c",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_migration_notes_check": {
+      "definition": "CHECK (jsonb_typeof(migration_notes) = 'array'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_pkey": {
+      "definition": "PRIMARY KEY (id)",
+      "kind": "p",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_reason_check": {
+      "definition": "CHECK (reason::text = 'SOURCE_TITLE_TOO_LONG'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_source_hash_check": {
+      "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migration_rejections_source_note_id_fkey": {
+      "definition": "FOREIGN KEY (source_note_id) REFERENCES notes(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migration_rejections",
+      "validated": true
+    },
+    "public.legacy_note_migrations_approved_by_fkey": {
+      "definition": "FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_canonical_payload_check": {
+      "definition": "CHECK (jsonb_typeof(canonical_payload) = 'object'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_idempotency_key_key": {
+      "definition": "UNIQUE (idempotency_key)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_legacy_ef_bits_check": {
+      "definition": "CHECK (legacy_ef_bits ~ '^[0-9a-f]{16}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_legacy_ef_check": {
+      "definition": "CHECK (legacy_ef::text <> ALL (ARRAY['NaN'::text, 'Infinity'::text, '-Infinity'::text]))",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_legacy_interval_check": {
+      "definition": "CHECK (legacy_interval >= 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_legacy_repetitions_check": {
+      "definition": "CHECK (legacy_repetitions >= 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_legacy_review_json_check": {
+      "definition": "CHECK (jsonb_typeof(legacy_review_json) = 'object'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_migration_notes_check": {
+      "definition": "CHECK (jsonb_typeof(migration_notes) = 'array'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_mistake_conversion_approved_by_fkey": {
+      "definition": "FOREIGN KEY (mistake_conversion_approved_by) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_mistake_conversion_sequence_check": {
+      "definition": "CHECK (mistake_conversion_sequence > 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_pkey": {
+      "definition": "PRIMARY KEY (id)",
+      "kind": "p",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_question_conversion_approved_by_fkey": {
+      "definition": "FOREIGN KEY (question_conversion_approved_by) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_question_conversion_sequence_check": {
+      "definition": "CHECK (question_conversion_sequence > 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_rollback_actor_id_fkey": {
+      "definition": "FOREIGN KEY (rollback_actor_id) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_rollback_reference_check": {
+      "definition": "CHECK (rollback_reference IS NULL OR rollback_reference ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_schedule_approval_sequence_check": {
+      "definition": "CHECK (schedule_approval_sequence > 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_schedule_approved_by_fkey": {
+      "definition": "FOREIGN KEY (schedule_approved_by) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_approval_sequence_check": {
+      "definition": "CHECK (source_approval_sequence > 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_approved_by_fkey": {
+      "definition": "FOREIGN KEY (source_approved_by) REFERENCES users(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_hash_check": {
+      "definition": "CHECK (source_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_note_id_fkey": {
+      "definition": "FOREIGN KEY (source_note_id) REFERENCES notes(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_note_id_mapping_version_key": {
+      "definition": "UNIQUE (source_note_id, mapping_version)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_source_revision_check": {
+      "definition": "CHECK (source_revision > 0)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_bundle_hash_check": {
+      "definition": "CHECK (target_bundle_hash IS NULL OR target_bundle_hash ~ '^[0-9a-f]{64}$'::text)",
+      "kind": "c",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_id_fkey": {
+      "definition": "FOREIGN KEY (target_mistake_draft_id) REFERENCES mistake_drafts(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_id_key": {
+      "definition": "UNIQUE (target_mistake_draft_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_item_id_fkey": {
+      "definition": "FOREIGN KEY (target_mistake_draft_item_id) REFERENCES draft_items(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_item_id_key": {
+      "definition": "UNIQUE (target_mistake_draft_item_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_id_fkey": {
+      "definition": "FOREIGN KEY (target_mistake_id) REFERENCES mistakes(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_mistake_id_key": {
+      "definition": "UNIQUE (target_mistake_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_draft_id_fkey": {
+      "definition": "FOREIGN KEY (target_question_draft_id) REFERENCES question_drafts(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_draft_id_key": {
+      "definition": "UNIQUE (target_question_draft_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_draft_item_id_fkey": {
+      "definition": "FOREIGN KEY (target_question_draft_item_id) REFERENCES draft_items(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_draft_item_id_key": {
+      "definition": "UNIQUE (target_question_draft_item_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_id_fkey": {
+      "definition": "FOREIGN KEY (target_question_id) REFERENCES questions(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_id_key": {
+      "definition": "UNIQUE (target_question_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_source_id_fkey": {
+      "definition": "FOREIGN KEY (target_question_source_id) REFERENCES question_sources(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_question_source_id_key": {
+      "definition": "UNIQUE (target_question_source_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_review_item_id_fkey": {
+      "definition": "FOREIGN KEY (target_review_item_id) REFERENCES review_items(id) ON DELETE RESTRICT",
+      "kind": "f",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.legacy_note_migrations_target_review_item_id_key": {
+      "definition": "UNIQUE (target_review_item_id)",
+      "kind": "u",
+      "table": "public.legacy_note_migrations",
+      "validated": true
+    },
+    "public.webauthn_challenges_pkey": {
+      "definition": "PRIMARY KEY (id)",
+      "kind": "p",
+      "table": "public.webauthn_challenges",
+      "validated": true
+    }
+  },
+  "functions": {
+    "legacy_migration.canonicalize_legacy_note(p_source_note_id uuid)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.canonicalize_legacy_note(p_source_note_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE n public.notes%ROWTYPE; payload JSONB;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner'\n             OR NOT pg_catalog.pg_has_role(session_user,'legacy_note_adapter','member') THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED';\n          END IF;\n          SELECT * INTO n FROM public.notes WHERE id=p_source_note_id FOR UPDATE;\n          IF NOT FOUND THEN RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_NOT_FOUND'; END IF;\n          IF n.ef IS NULL OR n.interval IS NULL OR n.repetitions IS NULL\n             OR n.ef::text IN ('NaN','Infinity','-Infinity') THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END IF;\n          payload := jsonb_build_object(\n            'id',n.id,'source_note_id',n.id,'slug',n.slug,'source_url','/notes/'||n.slug,\n            'title',n.title,'content',n.content,'type',n.type,'status',n.status,'hidden',n.hidden,\n            'created_at',to_char(n.created_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"'),\n            'updated_at',to_char(n.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"'),\n            'summary',n.summary,'cover',n.cover,'category',n.category,'subject',n.subject,\n            'difficulty',n.difficulty,'subject_id',(SELECT s.id FROM public.subjects s WHERE lower(s.name)=lower(n.subject)),\n            'question',n.question,'question_type',n.ai_metadata::jsonb->'legacy_question'->>'question_type',\n            'options',COALESCE(n.ai_metadata::jsonb->'legacy_question'->'options','null'::jsonb),\n            'answers',jsonb_build_object('my_answer',n.my_answer,'correct_answer',n.correct_answer),\n            'analysis',n.analysis,\n            'knowledge_points',COALESCE((SELECT jsonb_agg(trim(k.value) ORDER BY k.ordinality)\n              FROM regexp_split_to_table(replace(replace(replace(replace(COALESCE(n.knowledge_points,''),'，',','),'、',','),E'\\n',','),'；',','),',')\n              WITH ORDINALITY AS k(value,ordinality) WHERE trim(k.value)<>''),'[]'::jsonb),\n            'ef',n.ef,'legacy_ef_bits',pg_catalog.encode(pg_catalog.float8send(n.ef),'hex'),\n            'interval',n.interval,'repetitions',n.repetitions,\n            'next_review',to_char(n.next_review,'YYYY-MM-DD'),\n            'last_reviewed',to_char(n.last_reviewed AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"'),\n            'images',n.images,'ai_metadata',n.ai_metadata,'folder_id',n.folder_id,\n            'sort_order',n.sort_order,'revision',n.revision,\n            'tags',COALESCE((SELECT jsonb_agg(to_jsonb(t.name) ORDER BY t.id,t.name)\n              FROM public.note_tags nt JOIN public.tags t ON t.id=nt.tag_id WHERE nt.note_id=n.id),'[]'::jsonb),\n            'search_vector_token',CASE WHEN n.search_vector IS NULL THEN '<NULL>' ELSE '<VALUE>'||n.search_vector::text END,\n            'legacy_review_json',jsonb_build_object('ef',n.ef,'interval',n.interval,\n              'repetitions',n.repetitions,'next_review',to_char(n.next_review,'YYYY-MM-DD'),\n              'last_reviewed',to_char(n.last_reviewed AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"')));\n          RETURN payload;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "jsonb",
+      "security_definer": true
+    },
+    "legacy_migration.cleanup_legacy_migration_guard_nonces(p_cutoff timestamp with time zone, p_limit integer)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.cleanup_legacy_migration_guard_nonces(p_cutoff timestamp with time zone, p_limit integer)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE v_deleted INTEGER;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_migration_maintenance_runner'\n             OR p_cutoff IS NULL OR p_limit IS NULL OR p_limit < 1 OR p_limit > 10000 THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_NONCE_CLEANUP_NOT_AUTHORIZED';\n          END IF;\n          WITH doomed AS (\n            SELECT nonce\n              FROM legacy_migration.legacy_migration_guard_nonces\n             WHERE consumed_at IS NOT NULL AND consumed_at < p_cutoff\n             ORDER BY consumed_at, nonce\n             FOR UPDATE SKIP LOCKED\n             LIMIT p_limit\n          )\n          DELETE FROM legacy_migration.legacy_migration_guard_nonces n\n           USING doomed d\n           WHERE n.nonce=d.nonce;\n          GET DIAGNOSTICS v_deleted = ROW_COUNT;\n          RETURN v_deleted;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "integer",
+      "security_definer": true
+    },
+    "legacy_migration.create_legacy_note_migration_pending(p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text, p_source_slug character varying, p_source_title character varying, p_source_url character varying, p_source_status character varying, p_source_hidden boolean, p_source_revision integer, p_snapshot_ref character varying, p_idempotency_key character varying, p_canonical_payload jsonb, p_legacy_review_json jsonb, p_migration_notes jsonb)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.create_legacy_note_migration_pending(p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text, p_source_slug character varying, p_source_title character varying, p_source_url character varying, p_source_status character varying, p_source_hidden boolean, p_source_revision integer, p_snapshot_ref character varying, p_idempotency_key character varying, p_canonical_payload jsonb, p_legacy_review_json jsonb, p_migration_notes jsonb)\n RETURNS legacy_note_migrations\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE n public.notes%ROWTYPE; old public.legacy_note_migrations%ROWTYPE;\n          result public.legacy_note_migrations; live JSONB; live_hash CHAR(64);\n          expected_idempotency_key VARCHAR(128);\n          ef_bits TEXT; ef_value DOUBLE PRECISION; iv INTEGER; reps INTEGER;\n          next_day DATE; last_seen TIMESTAMP; mapped_last TIMESTAMPTZ;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner'\n             OR NOT pg_catalog.pg_has_role(session_user,'legacy_note_adapter','member') THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED';\n          END IF;\n          IF p_source_hash IS NULL OR octet_length(p_source_hash)<>64 OR p_source_hash !~ '^[0-9a-f]{64}$'\n             OR p_snapshot_ref IS DISTINCT FROM 'sha256:'||lower(p_source_hash)\n             OR p_canonical_payload IS NULL OR jsonb_typeof(p_canonical_payload)<>'object'\n             OR p_legacy_review_json IS NULL OR jsonb_typeof(p_legacy_review_json)<>'object'\n             OR p_migration_notes IS NULL OR jsonb_typeof(p_migration_notes)<>'array' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END IF;\n          IF p_source_title IS NULL OR char_length(p_source_title)>300\n             OR p_canonical_payload->>'title' IS NULL\n             OR char_length(p_canonical_payload->>'title')>300 THEN\n            RAISE EXCEPTION 'SOURCE_TITLE_TOO_LONG';\n          END IF;\n          IF NOT (p_canonical_payload ?& ARRAY['id','source_note_id','slug','source_url','title','content','type','status','hidden','created_at','updated_at','summary','cover','category','subject','difficulty','question','answers','analysis','knowledge_points','ef','legacy_ef_bits','interval','repetitions','next_review','last_reviewed','images','ai_metadata','folder_id','sort_order','revision','tags','search_vector_token','legacy_review_json']) THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END IF;\n          IF NOT (p_canonical_payload ?& ARRAY['subject_id','question_type','options']) THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END IF;\n          IF jsonb_typeof(p_canonical_payload->'answers')<>'object'\n             OR jsonb_typeof(p_canonical_payload->'knowledge_points')<>'array'\n             OR jsonb_typeof(p_canonical_payload->'tags')<>'array'\n             OR jsonb_typeof(p_canonical_payload->'ef')<>'number'\n             OR jsonb_typeof(p_canonical_payload->'legacy_ef_bits')<>'string'\n             OR p_canonical_payload->>'legacy_ef_bits' !~ '^[0-9a-f]{16}$'\n             OR p_canonical_payload->>'interval' !~ '^(0|[1-9][0-9]{0,9})$'\n             OR p_canonical_payload->>'repetitions' !~ '^(0|[1-9][0-9]{0,9})$' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END IF;\n          BEGIN\n            ef_value := (p_canonical_payload->>'ef')::double precision;\n            iv := (p_canonical_payload->>'interval')::integer;\n            reps := (p_canonical_payload->>'repetitions')::integer;\n            next_day := CASE WHEN p_canonical_payload->>'next_review' IS NULL THEN NULL ELSE (p_canonical_payload->>'next_review')::date END;\n            last_seen := CASE WHEN p_canonical_payload->>'last_reviewed' IS NULL THEN NULL ELSE ((p_canonical_payload->>'last_reviewed')::timestamptz AT TIME ZONE 'UTC') END;\n            mapped_last := CASE WHEN p_canonical_payload->>'last_reviewed' IS NULL THEN NULL ELSE (p_canonical_payload->>'last_reviewed')::timestamptz END;\n          EXCEPTION WHEN others THEN RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_INVALID';\n          END;\n          ef_bits := p_canonical_payload->>'legacy_ef_bits';\n          IF ef_value::text IN ('NaN','Infinity','-Infinity') THEN RAISE EXCEPTION 'LEGACY_MIGRATION_EF_NONFINITE'; END IF;\n          IF ef_bits IS DISTINCT FROM pg_catalog.encode(pg_catalog.float8send(ef_value),'hex')\n             OR iv<0 OR reps<0 THEN RAISE EXCEPTION 'LEGACY_MIGRATION_EF_NONFINITE'; END IF;\n          live := legacy_migration.canonicalize_legacy_note(p_source_note_id);\n          live_hash := pg_catalog.encode(public.digest(pg_catalog.convert_to(live::text,'UTF8'),'sha256'),'hex');\n          IF live_hash IS DISTINCT FROM lower(p_source_hash)\n             OR p_canonical_payload IS DISTINCT FROM live THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_DRIFT';\n          END IF;\n          expected_idempotency_key := 'legacy:'||pg_catalog.encode(\n            public.digest(pg_catalog.convert_to(\n              'legacy-note-migration|'||lower(p_source_note_id::text)||'|'||p_source_revision::text||'|'||lower(p_source_hash)||'|'||p_mapping_version,\n              'UTF8'),'sha256'),'hex');\n          IF p_idempotency_key IS DISTINCT FROM expected_idempotency_key THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_IDEMPOTENCY_CONFLICT';\n          END IF;\n          SELECT * INTO n FROM public.notes WHERE id=p_source_note_id FOR UPDATE;\n          IF NOT FOUND OR n.type IS DISTINCT FROM 'mistake' THEN RAISE EXCEPTION 'SOURCE_TYPE_NOT_MISTAKE'; END IF;\n          IF n.slug IS DISTINCT FROM p_source_slug OR n.title IS DISTINCT FROM p_source_title\n             OR n.status IS DISTINCT FROM p_source_status OR n.hidden IS DISTINCT FROM p_source_hidden\n             OR n.revision IS DISTINCT FROM p_source_revision OR p_source_url IS DISTINCT FROM '/notes/'||n.slug THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_DRIFT';\n          END IF;\n          SELECT * INTO old FROM public.legacy_note_migrations\n           WHERE source_note_id=p_source_note_id AND mapping_version=p_mapping_version FOR UPDATE;\n          IF FOUND THEN\n            IF old.id IS DISTINCT FROM p_ledger_id OR old.source_hash IS DISTINCT FROM p_source_hash\n               OR old.idempotency_key IS DISTINCT FROM p_idempotency_key THEN\n              RAISE EXCEPTION 'LEGACY_MIGRATION_IDEMPOTENCY_CONFLICT';\n            END IF;\n            RETURN old;\n          END IF;\n          PERFORM legacy_migration.set_legacy_transition_marker(\n            'INSERT','public','legacy_note_migrations',p_ledger_id,p_source_note_id,p_mapping_version,p_source_hash,\n            NULL,'pending_mapping',NULL,NULL,NULL,NULL,NULL);\n          INSERT INTO public.legacy_note_migrations(\n            id,source_note_id,source_slug,source_title,source_url,source_status,source_hidden,\n            source_revision,source_hash,snapshot_ref,mapping_version,idempotency_key,state,\n            legacy_ef,legacy_ef_bits,legacy_interval,legacy_repetitions,legacy_next_review,\n            legacy_last_reviewed,mapped_last_reviewed_at,legacy_review_json,canonical_payload,migration_notes)\n          VALUES(p_ledger_id,p_source_note_id,p_source_slug,p_source_title,p_source_url,p_source_status,\n            p_source_hidden,p_source_revision,p_source_hash,p_snapshot_ref,p_mapping_version,p_idempotency_key,\n            'pending_mapping',ef_value,ef_bits::char(16),iv,reps,next_day,last_seen,mapped_last,\n            p_legacy_review_json,p_canonical_payload,p_migration_notes) RETURNING * INTO result;\n          RETURN result;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "legacy_note_migrations",
+      "security_definer": true
+    },
+    "legacy_migration.guard_legacy_migration_rollback_audit()": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.guard_legacy_migration_rollback_audit()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE m JSONB;\n        BEGIN\n          IF TG_OP <> 'INSERT' OR current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_ROLLBACK_AUDIT_IMMUTABLE';\n          END IF;\n          BEGIN m:=pg_catalog.current_setting('app.legacy_transition_guard',true)::jsonb;\n          EXCEPTION WHEN OTHERS THEN RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_INVALID'; END;\n          PERFORM legacy_migration.validate_and_consume_transition_marker(m,TG_OP,TG_TABLE_SCHEMA,TG_TABLE_NAME);\n          RETURN NEW;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "trigger",
+      "security_definer": false
+    },
+    "legacy_migration.guard_legacy_note_migration()": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.guard_legacy_note_migration()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE m JSONB;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_DIRECT_LEDGER_MUTATION_REJECTED';\n          END IF;\n          IF TG_OP='DELETE' THEN RAISE EXCEPTION 'LEGACY_MIGRATION_LEDGER_DELETE_REJECTED'; END IF;\n          BEGIN m:=pg_catalog.current_setting('app.legacy_transition_guard',true)::jsonb;\n          EXCEPTION WHEN OTHERS THEN RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_INVALID'; END;\n          PERFORM legacy_migration.validate_and_consume_transition_marker(m,TG_OP,TG_TABLE_SCHEMA,TG_TABLE_NAME);\n          IF TG_OP='UPDATE' AND NEW.canonical_payload IS DISTINCT FROM OLD.canonical_payload THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_CANONICAL_PAYLOAD_IMMUTABLE';\n          END IF;\n          RETURN COALESCE(NEW,OLD);\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "trigger",
+      "security_definer": false
+    },
+    "legacy_migration.guard_legacy_note_migration_event()": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.guard_legacy_note_migration_event()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE m JSONB;\n        BEGIN\n          IF TG_OP <> 'INSERT' OR current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_EVENT_APPEND_ONLY';\n          END IF;\n          BEGIN m:=pg_catalog.current_setting('app.legacy_transition_guard',true)::jsonb;\n          EXCEPTION WHEN OTHERS THEN RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_INVALID'; END;\n          PERFORM legacy_migration.validate_and_consume_transition_marker(m,TG_OP,TG_TABLE_SCHEMA,TG_TABLE_NAME);\n          RETURN NEW;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "trigger",
+      "security_definer": false
+    },
+    "legacy_migration.guard_legacy_note_migration_rejection()": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.guard_legacy_note_migration_rejection()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        BEGIN\n          IF TG_OP <> 'INSERT' OR current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_REJECTION_IMMUTABLE';\n          END IF;\n          RETURN NEW;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "trigger",
+      "security_definer": false
+    },
+    "legacy_migration.legacy_question_answer_data_expected(p_question_type text, p_correct_answer text)": {
+      "config": [],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.legacy_question_answer_data_expected(p_question_type text, p_correct_answer text)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\n        BEGIN\n          IF p_question_type='true_false' THEN\n            IF p_correct_answer='True' THEN RETURN jsonb_build_object('kind','true_false','value',true); END IF;\n            IF p_correct_answer='False' THEN RETURN jsonb_build_object('kind','true_false','value',false); END IF;\n            RETURN NULL;\n          ELSIF p_question_type IN ('single_choice','single') THEN\n            IF p_correct_answer IS NULL OR btrim(p_correct_answer)='' OR position(',' IN p_correct_answer)>0 THEN RETURN NULL; END IF;\n            RETURN jsonb_build_object('kind','single_choice','value',jsonb_build_array(btrim(p_correct_answer)));\n          ELSIF p_question_type IN ('multiple_choice','multiple') THEN\n            IF p_correct_answer IS NULL OR btrim(p_correct_answer)='' THEN RETURN NULL; END IF;\n            IF EXISTS (\n              SELECT btrim(v.value) FROM regexp_split_to_table(p_correct_answer,',') AS v(value)\n              WHERE btrim(v.value)='' GROUP BY btrim(v.value)\n              UNION ALL\n              SELECT btrim(v.value) FROM regexp_split_to_table(p_correct_answer,',') AS v(value)\n              GROUP BY btrim(v.value) HAVING count(*)>1\n            ) THEN RETURN NULL; END IF;\n            RETURN jsonb_build_object(\n              'kind','multiple_choice',\n              'value',COALESCE((SELECT jsonb_agg(trim(v.value) ORDER BY v.ordinality)\n                FROM regexp_split_to_table(p_correct_answer,',') WITH ORDINALITY AS v(value,ordinality)\n                WHERE trim(v.value)<>''),'[]'::jsonb));\n          ELSIF p_question_type IN ('short_answer','essay') THEN\n            IF p_correct_answer IS NULL OR btrim(p_correct_answer)='' THEN RETURN NULL; END IF;\n            RETURN jsonb_build_object('kind',p_question_type,'value',p_correct_answer);\n          END IF;\n          RETURN NULL;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "jsonb",
+      "security_definer": false
+    },
+    "legacy_migration.legacy_question_mirror_matches(p_question_id uuid, p_source_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.legacy_question_mirror_matches(p_question_id uuid, p_source_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE v_question RECORD; v_source RECORD; v_source_raw TEXT; v_meta JSONB;\n          v_source_note JSONB; v_migration RECORD; v_expected JSONB; v_options JSONB;\n          v_answer_parts JSONB; v_answer_count INTEGER; v_distinct_answer_count INTEGER;\n        BEGIN\n          IF p_question_id IS NULL OR p_source_id IS NULL OR p_source_note_id IS NULL\n             OR p_mapping_version IS NULL OR p_source_hash IS NULL OR octet_length(p_source_hash)<>64\n             OR p_source_hash !~ '^[0-9a-f]{64}$' THEN RETURN FALSE; END IF;\n          SELECT q.id,q.subject_id,q.title,q.question_type,q.options,q.difficulty,q.question_text,q.stem_md,\n                 q.correct_answer,q.answer_data,q.analysis_md,q.explanation,q.visibility,q.status,q.version INTO v_question\n            FROM public.questions q WHERE q.id=p_question_id;\n          IF NOT FOUND THEN RETURN FALSE; END IF;\n          SELECT m.* INTO v_migration FROM public.legacy_note_migrations m\n           WHERE m.source_note_id=p_source_note_id AND m.mapping_version=p_mapping_version\n             AND m.target_question_id=p_question_id AND m.target_question_source_id=p_source_id\n             AND m.source_hash=p_source_hash::char(64);\n          IF NOT FOUND THEN RETURN FALSE; END IF;\n          IF v_question.status IS DISTINCT FROM 'active'\n             OR v_question.visibility IS DISTINCT FROM 'private' OR v_question.version IS DISTINCT FROM 1 THEN RETURN FALSE; END IF;\n          SELECT qs.id,qs.question_id,qs.source_type,qs.source_ref,qs.source_url,qs.source_title,qs.source_note\n            INTO v_source FROM public.question_sources qs WHERE qs.id=p_source_id;\n          IF NOT FOUND THEN RETURN FALSE; END IF;\n          IF v_source.question_id IS DISTINCT FROM p_question_id THEN RETURN FALSE; END IF;\n          IF NOT legacy_migration.legacy_question_source_matches(\n               p_source_id,p_source_note_id,p_mapping_version,v_migration.source_slug,\n               v_migration.source_title,v_migration.source_url,p_source_hash) THEN RETURN FALSE; END IF;\n          v_source_raw := v_source.source_note;\n          BEGIN\n            v_source_note := v_source_raw::jsonb;\n          EXCEPTION WHEN invalid_text_representation THEN\n            RETURN FALSE;\n          END;\n          IF v_source_note IS NULL OR jsonb_typeof(v_source_note->'mirror_contract') IS DISTINCT FROM 'object' THEN RETURN FALSE; END IF;\n          IF v_source_note->>'source_revision' IS DISTINCT FROM v_migration.source_revision::text THEN RETURN FALSE; END IF;\n          v_meta := v_source_note->'mirror_contract';\n          IF v_question.question_type::text NOT IN ('short_answer','single_choice','multiple_choice','true_false') THEN RETURN FALSE; END IF;\n          v_options := to_jsonb(v_question.options);\n          IF jsonb_typeof(v_options) IS DISTINCT FROM 'array' THEN RETURN FALSE; END IF;\n          IF v_question.question_type::text IN ('short_answer','true_false') AND v_options IS DISTINCT FROM '[]'::jsonb THEN RETURN FALSE; END IF;\n          IF v_question.question_type::text IN ('single_choice','multiple_choice') THEN\n            IF jsonb_array_length(v_options)<2 THEN RETURN FALSE; END IF;\n            IF EXISTS (\n              SELECT 1 FROM jsonb_array_elements(v_options) AS e(value)\n              WHERE CASE WHEN jsonb_typeof(e.value)='object' THEN\n                jsonb_object_length(e.value)<>2\n                OR jsonb_typeof(e.value->'key')<>'string' OR jsonb_typeof(e.value->'text')<>'string'\n                OR btrim(e.value->>'key')='' OR btrim(e.value->>'text')=''\n                ELSE TRUE END\n            ) THEN RETURN FALSE; END IF;\n            IF (SELECT count(*) FROM jsonb_array_elements(v_options) AS e(value)) <>\n               (SELECT count(DISTINCT e.value->>'key') FROM jsonb_array_elements(v_options) AS e(value)) THEN RETURN FALSE; END IF;\n          END IF;\n          IF v_question.correct_answer IS NULL OR btrim(v_question.correct_answer)='' THEN RETURN FALSE; END IF;\n          IF v_question.question_type::text='true_false' AND v_question.correct_answer NOT IN ('True','False') THEN RETURN FALSE; END IF;\n          IF v_question.question_type::text IN ('single_choice','multiple_choice') THEN\n            v_answer_parts := COALESCE((SELECT jsonb_agg(trim(v.value) ORDER BY v.ordinality)\n              FROM regexp_split_to_table(v_question.correct_answer,',') WITH ORDINALITY AS v(value,ordinality)), '[]'::jsonb);\n            IF EXISTS (SELECT 1 FROM jsonb_array_elements_text(v_answer_parts) AS a(value) WHERE btrim(a.value)='') THEN RETURN FALSE; END IF;\n            SELECT jsonb_array_length(v_answer_parts),count(DISTINCT a.value) INTO v_answer_count,v_distinct_answer_count\n              FROM jsonb_array_elements_text(v_answer_parts) AS a(value);\n            IF v_question.question_type::text='single_choice' AND\n               (v_answer_count<>1 OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(v_options) AS e(value) WHERE e.value->>'key'=v_answer_parts->>0)) THEN RETURN FALSE; END IF;\n            IF v_question.question_type::text='multiple_choice' AND\n               (v_answer_count<1 OR v_answer_count<>v_distinct_answer_count OR EXISTS (\n                 SELECT 1 FROM jsonb_array_elements_text(v_answer_parts) AS a(value)\n                 WHERE NOT EXISTS (SELECT 1 FROM jsonb_array_elements(v_options) AS e(value) WHERE e.value->>'key'=a.value)\n               )) THEN RETURN FALSE; END IF;\n          END IF;\n          v_expected := legacy_migration.legacy_question_answer_data_expected(v_question.question_type::text,v_meta->>'correct_answer');\n          IF v_expected IS NULL THEN RETURN FALSE; END IF;\n          RETURN v_question.subject_id::text IS NOT DISTINCT FROM v_meta->>'subject_id'\n             AND v_question.title IS NOT DISTINCT FROM v_meta->>'title'\n             AND v_question.question_text IS NOT DISTINCT FROM v_meta->>'question_text'\n             AND v_question.stem_md IS NOT DISTINCT FROM v_meta->>'stem_md'\n             AND v_question.question_type::text IS NOT DISTINCT FROM v_meta->>'question_type'\n             AND to_jsonb(v_question.options) IS NOT DISTINCT FROM v_meta->'options'\n             AND v_question.difficulty::text IS NOT DISTINCT FROM v_meta->>'difficulty'\n             AND to_jsonb(v_question.correct_answer) IS NOT DISTINCT FROM v_meta->'correct_answer'\n             AND to_jsonb(v_question.answer_data) IS NOT DISTINCT FROM v_expected\n             AND v_meta->'answer_data' IS NOT DISTINCT FROM v_expected\n             AND v_question.analysis_md IS NOT DISTINCT FROM v_meta->>'analysis_md'\n             AND v_question.explanation IS NOT DISTINCT FROM v_meta->>'explanation';\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "boolean",
+      "security_definer": false
+    },
+    "legacy_migration.legacy_question_options_normalize(p_options jsonb)": {
+      "config": [],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.legacy_question_options_normalize(p_options jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\n        DECLARE out_value JSONB := '[]'::jsonb; v JSONB; i INTEGER := 0;\n        BEGIN\n          IF p_options IS NULL OR jsonb_typeof(p_options)<>'array' THEN RETURN NULL; END IF;\n          IF jsonb_array_length(p_options)=0 THEN RETURN '[]'::jsonb; END IF;\n          FOR v IN SELECT value FROM jsonb_array_elements(p_options)\n          LOOP\n            IF jsonb_typeof(v)='string' AND btrim(v#>>'{}')<>'' THEN\n              out_value := out_value || jsonb_build_array(jsonb_build_object('key',chr(65+i),'text',v#>>'{}')); i:=i+1;\n            ELSIF jsonb_typeof(v)='object' AND (v ? 'key') AND (v ? 'text')\n              AND jsonb_typeof(v->'key')='string' AND jsonb_typeof(v->'text')='string'\n              AND btrim(v->>'key')<>'' AND btrim(v->>'text')<>''\n              AND (SELECT count(*) FROM jsonb_object_keys(v))=2 THEN\n              out_value := out_value || jsonb_build_array(jsonb_build_object('key',v->>'key','text',v->>'text')); i:=i+1;\n            ELSE RETURN NULL;\n            END IF;\n          END LOOP;\n          RETURN out_value;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "jsonb",
+      "security_definer": false
+    },
+    "legacy_migration.legacy_question_source_matches(p_source_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_slug character varying, p_source_title character varying, p_source_url character varying, p_source_hash text)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.legacy_question_source_matches(p_source_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_slug character varying, p_source_title character varying, p_source_url character varying, p_source_hash text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE v_source RECORD; v_migration RECORD; v_meta JSONB; v_source_raw TEXT;\n        BEGIN\n          IF p_source_id IS NULL OR p_source_note_id IS NULL OR p_mapping_version IS NULL\n             OR p_source_slug IS NULL OR p_source_title IS NULL OR p_source_url IS NULL\n             OR p_source_hash IS NULL OR octet_length(p_source_hash)<>64\n             OR p_source_hash !~ '^[0-9a-f]{64}$' THEN RETURN FALSE; END IF;\n          SELECT q.id,q.source_type,q.source_ref,q.source_url,q.source_title,q.source_note,q.question_id\n            INTO v_source FROM public.question_sources q WHERE q.id=p_source_id;\n          IF NOT FOUND THEN RETURN FALSE; END IF;\n          IF v_source.source_type IS DISTINCT FROM 'note'\n             OR v_source.source_ref IS DISTINCT FROM ('legacy-note:'||lower(p_source_note_id::text))\n             OR v_source.source_url IS DISTINCT FROM p_source_url\n             OR v_source.source_title IS DISTINCT FROM p_source_title THEN RETURN FALSE; END IF;\n          SELECT m.* INTO v_migration FROM public.legacy_note_migrations m\n           WHERE m.source_note_id=p_source_note_id AND m.mapping_version=p_mapping_version\n             AND m.target_question_source_id=p_source_id AND m.source_hash=p_source_hash::char(64);\n          IF NOT FOUND THEN RETURN FALSE; END IF;\n          v_source_raw := v_source.source_note;\n          BEGIN\n            v_meta := v_source_raw::jsonb;\n          EXCEPTION WHEN invalid_text_representation THEN\n            RETURN FALSE;\n          END;\n          RETURN v_meta->>'source_note_id' IS NOT DISTINCT FROM p_source_note_id::text\n             AND v_meta->>'source_slug' IS NOT DISTINCT FROM p_source_slug\n             AND v_meta->>'source_title' IS NOT DISTINCT FROM p_source_title\n             AND v_meta->>'source_url' IS NOT DISTINCT FROM p_source_url\n             AND v_meta->>'source_hash' IS NOT DISTINCT FROM p_source_hash\n             AND v_meta->>'mapping_version' IS NOT DISTINCT FROM p_mapping_version\n             AND v_meta->>'source_revision' IS NOT DISTINCT FROM v_migration.source_revision::text;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "boolean",
+      "security_definer": false
+    },
+    "legacy_migration.legacy_uuid_or_null(p_value text)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.legacy_uuid_or_null(p_value text)\n RETURNS uuid\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        BEGIN\n          IF p_value IS NULL OR p_value !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' THEN\n            RETURN NULL;\n          END IF;\n          RETURN p_value::uuid;\n        EXCEPTION WHEN others THEN RETURN NULL;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "uuid",
+      "security_definer": false
+    },
+    "legacy_migration.load_legacy_migration_rollback_audit(p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text, p_rollback_reference text, p_rollback_json jsonb)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.load_legacy_migration_rollback_audit(p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_source_hash text, p_rollback_reference text, p_rollback_json jsonb)\n RETURNS legacy_migration_rollback_audits\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE r public.legacy_migration_rollback_audits;\n          l public.legacy_note_migrations%ROWTYPE;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner' OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED'; END IF;\n          IF p_source_hash !~ '^[0-9a-f]{64}$' OR p_rollback_reference !~ '^[0-9a-f]{64}$' OR pg_catalog.encode(public.digest(pg_catalog.convert_to(p_rollback_json::text,'UTF8'),'sha256'),'hex') IS DISTINCT FROM p_rollback_reference THEN RAISE EXCEPTION 'LEGACY_MIGRATION_ROLLBACK_HASH_INVALID'; END IF;\n          SELECT * INTO l FROM public.legacy_note_migrations WHERE id=p_ledger_id FOR UPDATE;\n          IF NOT FOUND OR l.source_note_id IS DISTINCT FROM p_source_note_id\n             OR l.mapping_version IS DISTINCT FROM p_mapping_version\n             OR l.source_hash IS DISTINCT FROM p_source_hash::char(64) THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_ROLLBACK_SOURCE_BINDING_MISMATCH';\n          END IF;\n          PERFORM legacy_migration.set_legacy_transition_marker(\n            'INSERT','public','legacy_migration_rollback_audits',p_ledger_id,p_source_note_id,p_mapping_version,p_source_hash,\n            NULL,'rollback_audit',NULL,NULL,NULL,NULL,p_rollback_reference);\n          INSERT INTO public.legacy_migration_rollback_audits(ledger_id,source_note_id,mapping_version,source_hash,rollback_reference,rollback_json)\n          VALUES(p_ledger_id,p_source_note_id,p_mapping_version,p_source_hash::char(64),p_rollback_reference::char(64),p_rollback_json) RETURNING * INTO r;\n          RETURN r;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "legacy_migration_rollback_audits",
+      "security_definer": true
+    },
+    "legacy_migration.record_legacy_note_migration_approval(p_ledger_id uuid, p_mapping_version text, p_expected_source_hash text, p_expected_state legacy_note_migration_state, p_kind character varying, p_actor_id uuid, p_approved_at timestamp with time zone, p_expected_sequence integer, p_sequence integer, p_reason text, p_event_details jsonb)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.record_legacy_note_migration_approval(p_ledger_id uuid, p_mapping_version text, p_expected_source_hash text, p_expected_state legacy_note_migration_state, p_kind character varying, p_actor_id uuid, p_approved_at timestamp with time zone, p_expected_sequence integer, p_sequence integer, p_reason text, p_event_details jsonb)\n RETURNS legacy_note_migrations\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE m public.legacy_note_migrations%ROWTYPE; eid UUID; result public.legacy_note_migrations; expected_seq INTEGER;\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner' OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED'; END IF;\n          IF p_kind NOT IN ('source','question_conversion','mistake_conversion','schedule') OR p_actor_id IS NULL OR p_approved_at IS NULL OR p_sequence IS NULL OR p_sequence<=0 THEN RAISE EXCEPTION 'LEGACY_MIGRATION_APPROVAL_KIND_INVALID'; END IF;\n          SELECT * INTO m FROM public.legacy_note_migrations WHERE id=p_ledger_id FOR UPDATE;\n          IF NOT FOUND OR m.mapping_version<>p_mapping_version OR m.source_hash<>p_expected_source_hash::char(64) OR m.state<>p_expected_state THEN RAISE EXCEPTION 'LEGACY_MIGRATION_STALE_EXPECTED_STATE'; END IF;\n          IF NOT EXISTS (SELECT 1 FROM public.legacy_migration_approval_authorizations a WHERE a.user_id=p_actor_id AND a.approval_kind=p_kind AND a.enabled) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_APPROVAL_ACTOR_NOT_AUTHORIZED'; END IF;\n          IF (p_kind='source' AND (m.state<>'pending_mapping' OR m.source_approval_event_id IS NOT NULL)) OR\n             (p_kind IN ('question_conversion','mistake_conversion') AND (m.state<>'ready' OR (p_kind='question_conversion' AND m.question_approval_event_id IS NOT NULL) OR (p_kind='mistake_conversion' AND m.mistake_approval_event_id IS NOT NULL))) OR\n             (p_kind='schedule' AND m.state NOT IN ('ready','migrated_paused')) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_DUPLICATE_APPROVAL'; END IF;\n          expected_seq := CASE p_kind\n            WHEN 'source' THEN COALESCE(m.source_approval_sequence,0)\n            WHEN 'question_conversion' THEN COALESCE(m.question_conversion_sequence,0)\n            WHEN 'mistake_conversion' THEN COALESCE(m.mistake_conversion_sequence,0)\n            ELSE COALESCE(m.schedule_approval_sequence,0)\n          END;\n          IF p_expected_sequence IS DISTINCT FROM expected_seq OR p_sequence<>expected_seq+1 THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_STALE_EXPECTED_SEQUENCE';\n          END IF;\n          eid := public.gen_random_uuid();\n          PERFORM legacy_migration.set_legacy_transition_marker(\n            'INSERT','public','legacy_note_migration_events',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n            m.state::text,m.state::text,NULL,eid,p_kind,p_actor_id,NULL);\n          INSERT INTO public.legacy_note_migration_events(id,ledger_id,source_note_id,from_state,to_state,actor_id,approval_kind,reason,details,source_hash,mapping_version)\n          VALUES(eid,m.id,m.source_note_id,m.state,m.state,p_actor_id,p_kind,COALESCE(NULLIF(p_reason,''),'approval'),COALESCE(p_event_details,'{}'::jsonb)||jsonb_build_object('approved_at',p_approved_at,'sequence',p_sequence),m.source_hash,m.mapping_version);\n          PERFORM legacy_migration.set_legacy_transition_marker(\n            'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n            m.state::text,m.state::text,NULL,eid,p_kind,p_actor_id,NULL);\n          IF p_kind='source' THEN UPDATE public.legacy_note_migrations SET approved_by=p_actor_id,approved_at=p_approved_at,source_approved_by=p_actor_id,source_approved_at=p_approved_at,source_approval_sequence=p_sequence,source_approval_event_id=eid,updated_at=now() WHERE id=m.id;\n          ELSIF p_kind='question_conversion' THEN UPDATE public.legacy_note_migrations SET question_conversion_approved_by=p_actor_id,question_conversion_approved_at=p_approved_at,question_conversion_sequence=p_sequence,question_approval_event_id=eid,updated_at=now() WHERE id=m.id;\n          ELSIF p_kind='mistake_conversion' THEN UPDATE public.legacy_note_migrations SET mistake_conversion_approved_by=p_actor_id,mistake_conversion_approved_at=p_approved_at,mistake_conversion_sequence=p_sequence,mistake_approval_event_id=eid,updated_at=now() WHERE id=m.id;\n          ELSE UPDATE public.legacy_note_migrations SET schedule_approved_by=p_actor_id,schedule_approved_at=p_approved_at,schedule_approval_sequence=p_sequence,schedule_approval_event_id=eid,updated_at=now() WHERE id=m.id;\n          END IF;\n          SELECT * INTO result FROM public.legacy_note_migrations WHERE id=m.id; RETURN result;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "legacy_note_migrations",
+      "security_definer": true
+    },
+    "legacy_migration.record_legacy_note_migration_rejection(p_rejection_id uuid, p_source_note_id uuid, p_mapping_version text, p_source_hash text, p_source_title text, p_disposition text, p_reason text, p_snapshot_ref text, p_idempotency_key text, p_actor_id uuid)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.record_legacy_note_migration_rejection(p_rejection_id uuid, p_source_note_id uuid, p_mapping_version text, p_source_hash text, p_source_title text, p_disposition text, p_reason text, p_snapshot_ref text, p_idempotency_key text, p_actor_id uuid)\n RETURNS legacy_note_migration_rejections\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE n public.notes%ROWTYPE; r public.legacy_note_migration_rejections; live JSONB; live_hash CHAR(64);\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner' OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED'; END IF;\n          IF p_reason<>'SOURCE_TITLE_TOO_LONG' OR p_disposition NOT IN ('manual','failed') THEN RAISE EXCEPTION 'LEGACY_MIGRATION_REJECTION_REASON_INVALID'; END IF;\n          SELECT * INTO n FROM public.notes WHERE id=p_source_note_id FOR UPDATE;\n          IF NOT FOUND OR n.type<>'mistake' THEN RAISE EXCEPTION 'SOURCE_TYPE_NOT_MISTAKE'; END IF;\n          live:=legacy_migration.canonicalize_legacy_note(p_source_note_id);\n          live_hash:=pg_catalog.encode(public.digest(pg_catalog.convert_to(live::text,'UTF8'),'sha256'),'hex');\n          IF p_source_hash IS DISTINCT FROM live_hash OR p_snapshot_ref IS DISTINCT FROM 'sha256:'||live_hash THEN RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_DRIFT'; END IF;\n          IF n.title IS NULL OR char_length(n.title)<=300 OR p_source_title IS DISTINCT FROM n.title THEN RAISE EXCEPTION 'SOURCE_TITLE_TOO_LONG'; END IF;\n          IF EXISTS (SELECT 1 FROM public.legacy_note_migration_rejections WHERE source_note_id=p_source_note_id AND mapping_version=p_mapping_version AND idempotency_key=p_idempotency_key) THEN SELECT * INTO r FROM public.legacy_note_migration_rejections WHERE source_note_id=p_source_note_id AND mapping_version=p_mapping_version AND idempotency_key=p_idempotency_key; RETURN r; END IF;\n          INSERT INTO public.legacy_note_migration_rejections(id,source_note_id,mapping_version,source_hash,snapshot_ref,source_title,reason,disposition,migration_notes,created_at,idempotency_key,actor_id)\n          VALUES(p_rejection_id,p_source_note_id,p_mapping_version,p_source_hash::char(64),p_snapshot_ref,p_source_title,p_reason,p_disposition,jsonb_build_array(p_reason),now(),p_idempotency_key,p_actor_id) RETURNING * INTO r;\n          RETURN r;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "legacy_note_migration_rejections",
+      "security_definer": true
+    },
+    "legacy_migration.set_legacy_transition_marker(p_op text, p_table_schema text, p_table_name text, p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_expected_source_hash text, p_expected_from text, p_expected_to text, p_target_bundle_hash text, p_event_id uuid, p_approval_kind text, p_actor_id uuid, p_rollback_hash text)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.set_legacy_transition_marker(p_op text, p_table_schema text, p_table_name text, p_ledger_id uuid, p_source_note_id uuid, p_mapping_version character varying, p_expected_source_hash text, p_expected_from text, p_expected_to text, p_target_bundle_hash text, p_event_id uuid, p_approval_kind text, p_actor_id uuid, p_rollback_hash text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE v_nonce TEXT; v_marker JSONB; v_payload_hash CHAR(64);\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner'\n             OR NOT pg_catalog.pg_has_role(session_user,'legacy_note_adapter','member') THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_CALLER_NOT_AUTHORIZED';\n          END IF;\n          IF p_op NOT IN ('INSERT','UPDATE') OR p_table_schema<>'public'\n             OR p_table_name NOT IN ('legacy_note_migrations','legacy_note_migration_events','legacy_migration_rollback_audits')\n             OR p_expected_source_hash IS NULL OR octet_length(p_expected_source_hash)<>64\n             OR p_expected_source_hash !~ '^[0-9a-f]{64}$' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_BINDING_INVALID';\n          END IF;\n          v_nonce:=pg_catalog.encode(public.gen_random_bytes(16),'hex');\n          v_marker:=pg_catalog.jsonb_build_object(\n            'nonce',v_nonce,'txid',pg_catalog.txid_current()::text,'op',p_op,\n            'table_schema',p_table_schema,'table_name',p_table_name,\n            'ledger_id',p_ledger_id::text,'source_note_id',p_source_note_id::text,\n            'mapping_version',p_mapping_version,'expected_source_hash',p_expected_source_hash,\n            'expected_from',p_expected_from,'expected_to',p_expected_to,\n            'target_bundle_hash',p_target_bundle_hash,'event_id',p_event_id::text,\n            'approval_kind',p_approval_kind,'actor_id',p_actor_id::text,'rollback_hash',p_rollback_hash);\n          v_payload_hash:=pg_catalog.encode(public.digest(pg_catalog.convert_to(v_marker::text,'UTF8'),'sha256'),'hex');\n          INSERT INTO legacy_migration.legacy_migration_guard_nonces(\n            nonce,txid,\"session_user\",op,table_schema,table_name,ledger_id,source_note_id,\n            mapping_version,expected_source_hash,expected_from,expected_to,target_bundle_hash,\n            event_id,approval_kind,actor_id,rollback_hash,payload_hash)\n          VALUES(v_nonce,pg_catalog.txid_current(),session_user,p_op,p_table_schema,p_table_name,\n            p_ledger_id,p_source_note_id,p_mapping_version,p_expected_source_hash::char(64),\n            p_expected_from,p_expected_to,p_target_bundle_hash::char(64),p_event_id,p_approval_kind,\n            p_actor_id,p_rollback_hash::char(64),v_payload_hash);\n          PERFORM pg_catalog.set_config('app.legacy_transition_guard',v_marker::text,true);\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "void",
+      "security_definer": true
+    },
+    "legacy_migration.transition_legacy_note_migration(p_ledger_id uuid, p_expected_from legacy_note_migration_state, p_to legacy_note_migration_state, p_actor_id uuid, p_reason text, p_source_note_id uuid, p_mapping_version character varying, p_expected_source_hash text, p_target_bundle legacy_migration.legacy_note_migration_target_bundle, p_rollback_reference text, p_expected_rollback_hash text, p_mapped_next_review_at timestamp with time zone, p_mapped_last_reviewed_at timestamp with time zone, p_event_details jsonb)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.transition_legacy_note_migration(p_ledger_id uuid, p_expected_from legacy_note_migration_state, p_to legacy_note_migration_state, p_actor_id uuid, p_reason text, p_source_note_id uuid, p_mapping_version character varying, p_expected_source_hash text, p_target_bundle legacy_migration.legacy_note_migration_target_bundle, p_rollback_reference text, p_expected_rollback_hash text, p_mapped_next_review_at timestamp with time zone, p_mapped_last_reviewed_at timestamp with time zone, p_event_details jsonb)\n RETURNS legacy_note_migrations\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE m public.legacy_note_migrations%ROWTYPE; result public.legacy_note_migrations; eid UUID; bundle_hash CHAR(64);\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner' OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner' THEN RAISE EXCEPTION 'LEGACY_MIGRATION_CALLER_NOT_AUTHORIZED'; END IF;\n          IF NOT EXISTS (SELECT 1 FROM legacy_migration.allowed_legacy_note_migration_transitions WHERE from_state=p_expected_from AND to_state=p_to) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_ILLEGAL_TRANSITION'; END IF;\n          IF p_expected_source_hash IS NULL OR p_expected_source_hash !~ '^[0-9a-f]{64}$' OR p_actor_id IS NULL THEN RAISE EXCEPTION 'LEGACY_MIGRATION_INVALID_REASON_OR_REQUIRED_PARAMETER'; END IF;\n          SELECT * INTO m FROM public.legacy_note_migrations WHERE id=p_ledger_id FOR UPDATE;\n          IF NOT FOUND OR m.state<>p_expected_from OR m.source_note_id<>p_source_note_id OR m.mapping_version<>p_mapping_version OR m.source_hash<>p_expected_source_hash::char(64) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_STALE_EXPECTED_STATE'; END IF;\n          IF p_to IN ('ready','retained_public_only') AND (m.source_approval_event_id IS NULL OR m.source_approved_by<>p_actor_id) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_APPROVAL_REQUIRED'; END IF;\n          IF p_to='retained_public_only' AND (m.source_status<>'published' OR m.source_hidden) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_PUBLIC_ONLY_TARGETS_NONNULL'; END IF;\n          IF p_to='retained_public_only' AND (\n             m.source_approved_by IS NULL OR m.source_approved_at IS NULL OR m.source_approval_sequence IS NULL\n             OR m.source_approval_event_id IS NULL OR m.approved_by IS DISTINCT FROM m.source_approved_by\n             OR m.approved_at IS DISTINCT FROM m.source_approved_at\n          ) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_SOURCE_APPROVAL_REQUIRED'; END IF;\n          IF p_to='retained_public_only' AND (\n             p_target_bundle.target_question_draft_item_id IS NOT NULL\n             OR p_target_bundle.target_question_draft_id IS NOT NULL\n             OR p_target_bundle.target_question_id IS NOT NULL\n             OR p_target_bundle.target_question_source_id IS NOT NULL\n             OR p_target_bundle.target_mistake_draft_item_id IS NOT NULL\n             OR p_target_bundle.target_mistake_draft_id IS NOT NULL\n             OR p_target_bundle.target_mistake_id IS NOT NULL\n             OR p_target_bundle.target_review_item_id IS NOT NULL\n             OR p_target_bundle.target_qkp_ids IS NOT NULL\n             OR p_target_bundle.target_projection_ids IS NOT NULL\n             OR p_mapped_next_review_at IS NOT NULL OR p_mapped_last_reviewed_at IS NOT NULL\n             OR p_rollback_reference IS NOT NULL OR p_expected_rollback_hash IS NOT NULL\n             OR m.mapped_next_review_at IS NOT NULL OR m.mapped_last_reviewed_at IS NOT NULL\n             OR m.rollback_reference IS NOT NULL OR m.rollback_event_id IS NOT NULL\n             OR m.rollback_actor_id IS NOT NULL OR m.target_bundle_hash IS NOT NULL\n             OR m.question_conversion_approved_by IS NOT NULL OR m.question_conversion_approved_at IS NOT NULL\n             OR m.question_conversion_sequence IS NOT NULL OR m.question_approval_event_id IS NOT NULL\n             OR m.mistake_conversion_approved_by IS NOT NULL OR m.mistake_conversion_approved_at IS NOT NULL\n             OR m.mistake_conversion_sequence IS NOT NULL OR m.mistake_approval_event_id IS NOT NULL\n             OR m.schedule_approved_by IS NOT NULL OR m.schedule_approved_at IS NOT NULL\n             OR m.schedule_approval_sequence IS NOT NULL OR m.schedule_approval_event_id IS NOT NULL\n          ) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_PUBLIC_ONLY_TARGETS_NONNULL'; END IF;\n          IF p_to='migrated_active' AND (m.schedule_approval_event_id IS NULL OR m.schedule_approved_by<>p_actor_id OR p_mapped_next_review_at IS NULL OR p_target_bundle.target_review_item_id IS NULL) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_ACTIVE_TARGETS_REQUIRED'; END IF;\n          IF p_to='migrated_paused' AND (m.question_approval_event_id IS NULL OR m.mistake_approval_event_id IS NULL OR p_target_bundle.target_review_item_id IS NOT NULL OR p_mapped_next_review_at IS NOT NULL) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_PAUSED_TARGET_SHAPE'; END IF;\n          IF p_to IN ('migrated_active','migrated_paused') AND (p_target_bundle.target_question_id IS NULL OR p_target_bundle.target_question_source_id IS NULL OR p_target_bundle.target_mistake_id IS NULL OR p_target_bundle.target_qkp_ids IS NULL OR p_target_bundle.target_projection_ids IS NULL OR p_target_bundle.target_question_draft_item_id IS NULL OR p_target_bundle.target_question_draft_id IS NULL OR p_target_bundle.target_mistake_draft_item_id IS NULL OR p_target_bundle.target_mistake_draft_id IS NULL) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_TARGETS_REQUIRED'; END IF;\n          IF p_to='rolled_back' THEN\n            IF p_rollback_reference IS NULL OR p_expected_rollback_hash IS DISTINCT FROM p_rollback_reference OR NOT EXISTS (SELECT 1 FROM public.legacy_migration_rollback_audits a WHERE a.ledger_id=m.id AND a.rollback_reference=p_rollback_reference) OR NOT EXISTS (SELECT 1 FROM public.legacy_migration_rollback_admins a WHERE a.user_id=p_actor_id AND a.enabled) THEN RAISE EXCEPTION 'LEGACY_MIGRATION_ROLLBACK_HASH_MISMATCH'; END IF;\n            IF EXISTS (SELECT 1 FROM public.capture_items c WHERE c.mistake_draft_item_id=m.target_mistake_draft_item_id)\n               OR EXISTS (SELECT 1 FROM public.attempts a WHERE a.mistake_draft_item_id=m.target_mistake_draft_item_id)\n               OR EXISTS (SELECT 1 FROM public.mistake_drafts d WHERE d.id=m.target_mistake_draft_id AND d.attempt_id IS NOT NULL) THEN\n              RAISE EXCEPTION 'LEGACY_MIGRATION_UNEXPECTED_INBOUND_REFERENCE_SNAPSHOT_RESTORE_REQUIRED';\n            END IF;\n          ELSIF p_rollback_reference IS NOT NULL THEN RAISE EXCEPTION 'LEGACY_MIGRATION_UNEXPECTED_ROLLBACK_REFERENCE'; END IF;\n          bundle_hash := pg_catalog.encode(public.digest(pg_catalog.convert_to(row_to_json(p_target_bundle)::text,'UTF8'),'sha256'),'hex');\n          eid := public.gen_random_uuid();\n          PERFORM legacy_migration.set_legacy_transition_marker(\n            'INSERT','public','legacy_note_migration_events',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n            m.state::text,p_to::text,CASE WHEN p_to IN ('migrated_active','migrated_paused') THEN bundle_hash ELSE NULL END,\n            eid,CASE WHEN p_to='rolled_back' THEN 'rollback' ELSE 'state_transition' END,p_actor_id,\n            CASE WHEN p_to='rolled_back' THEN p_rollback_reference ELSE NULL END);\n          INSERT INTO public.legacy_note_migration_events(id,ledger_id,source_note_id,from_state,to_state,actor_id,approval_kind,reason,details,source_hash,mapping_version,target_bundle_hash,rollback_hash)\n          VALUES(eid,m.id,m.source_note_id,m.state,p_to,p_actor_id,CASE WHEN p_to='rolled_back' THEN 'rollback' ELSE 'state_transition' END,COALESCE(NULLIF(p_reason,''),'transition'),COALESCE(p_event_details,'{}'::jsonb),m.source_hash,m.mapping_version,CASE WHEN p_to IN ('migrated_active','migrated_paused') THEN bundle_hash ELSE NULL END,CASE WHEN p_to='rolled_back' THEN p_rollback_reference ELSE NULL END);\n          IF p_to='rolled_back' THEN\n            PERFORM legacy_migration.set_legacy_transition_marker(\n              'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n              m.state::text,m.state::text,NULL,eid,'rollback',p_actor_id,p_rollback_reference);\n            UPDATE public.legacy_note_migrations\n              SET target_question_draft_item_id=NULL,target_question_draft_id=NULL,target_question_source_id=NULL,\n                  target_qkp_ids=NULL,target_question_id=NULL,target_projection_ids=NULL,\n                  target_mistake_draft_item_id=NULL,target_mistake_draft_id=NULL,target_mistake_id=NULL,\n                  target_review_item_id=NULL,target_bundle_hash=NULL\n              WHERE id=m.id;\n            DELETE FROM public.knowledge_point_links\n             WHERE target_type='mistake' AND target_id=m.target_mistake_id::text;\n            DELETE FROM public.review_items WHERE id=m.target_review_item_id;\n            DELETE FROM public.mistakes WHERE id=m.target_mistake_id;\n            DELETE FROM public.mistake_drafts WHERE id=m.target_mistake_draft_id;\n            DELETE FROM public.question_sources WHERE id=m.target_question_source_id;\n            DELETE FROM public.question_knowledge_points WHERE question_id=m.target_question_id;\n            DELETE FROM public.questions WHERE id=m.target_question_id;\n            DELETE FROM public.question_drafts WHERE id=m.target_question_draft_id;\n            DELETE FROM public.draft_items WHERE id IN (m.target_question_draft_item_id,m.target_mistake_draft_item_id);\n            PERFORM legacy_migration.set_legacy_transition_marker(\n              'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n              m.state::text,'rolled_back',NULL,eid,'rollback',p_actor_id,p_rollback_reference);\n            UPDATE public.legacy_note_migrations SET state='rolled_back',rollback_actor_id=p_actor_id,rollback_reference=p_rollback_reference,rollback_event_id=eid,transition_event_id=NULL,target_question_draft_item_id=NULL,target_question_draft_id=NULL,target_question_source_id=NULL,target_qkp_ids=NULL,target_question_id=NULL,target_projection_ids=NULL,target_mistake_draft_item_id=NULL,target_mistake_draft_id=NULL,target_mistake_id=NULL,target_review_item_id=NULL,target_bundle_hash=NULL,manual_review_required=TRUE,mapped_next_review_at=NULL,approved_by=NULL,approved_at=NULL,source_approved_by=NULL,source_approved_at=NULL,source_approval_sequence=NULL,question_conversion_approved_by=NULL,question_conversion_approved_at=NULL,question_conversion_sequence=NULL,mistake_conversion_approved_by=NULL,mistake_conversion_approved_at=NULL,mistake_conversion_sequence=NULL,schedule_approved_by=NULL,schedule_approved_at=NULL,schedule_approval_sequence=NULL,source_approval_event_id=NULL,question_approval_event_id=NULL,mistake_approval_event_id=NULL,schedule_approval_event_id=NULL,updated_at=now() WHERE id=m.id;\n          ELSIF p_to='failed' THEN\n            PERFORM legacy_migration.set_legacy_transition_marker(\n              'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n              m.state::text,'failed',NULL,eid,'state_transition',p_actor_id,NULL);\n            UPDATE public.legacy_note_migrations SET state='failed',target_question_draft_item_id=NULL,target_question_draft_id=NULL,target_question_source_id=NULL,target_qkp_ids=NULL,target_question_id=NULL,target_projection_ids=NULL,target_mistake_draft_item_id=NULL,target_mistake_draft_id=NULL,target_mistake_id=NULL,target_review_item_id=NULL,target_bundle_hash=NULL,manual_review_required=TRUE,mapped_next_review_at=NULL,updated_at=now() WHERE id=m.id;\n          ELSIF p_to='pending_mapping' THEN\n            PERFORM legacy_migration.set_legacy_transition_marker(\n              'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n              m.state::text,'pending_mapping',NULL,eid,'state_transition',p_actor_id,NULL);\n            UPDATE public.legacy_note_migrations SET state='pending_mapping',approved_by=NULL,approved_at=NULL,source_approved_by=NULL,source_approved_at=NULL,source_approval_sequence=NULL,question_conversion_approved_by=NULL,question_conversion_approved_at=NULL,question_conversion_sequence=NULL,mistake_conversion_approved_by=NULL,mistake_conversion_approved_at=NULL,mistake_conversion_sequence=NULL,schedule_approved_by=NULL,schedule_approved_at=NULL,schedule_approval_sequence=NULL,source_approval_event_id=NULL,question_approval_event_id=NULL,mistake_approval_event_id=NULL,schedule_approval_event_id=NULL,updated_at=now() WHERE id=m.id;\n          ELSE\n            PERFORM legacy_migration.set_legacy_transition_marker(\n              'UPDATE','public','legacy_note_migrations',m.id,m.source_note_id,m.mapping_version,m.source_hash::text,\n              m.state::text,p_to::text,CASE WHEN p_to IN ('migrated_active','migrated_paused') THEN bundle_hash ELSE NULL END,\n              eid,'state_transition',p_actor_id,NULL);\n            UPDATE public.legacy_note_migrations SET state=p_to,transition_event_id=eid,target_question_draft_item_id=p_target_bundle.target_question_draft_item_id,target_question_draft_id=p_target_bundle.target_question_draft_id,target_question_source_id=p_target_bundle.target_question_source_id,target_qkp_ids=p_target_bundle.target_qkp_ids,target_question_id=p_target_bundle.target_question_id,target_projection_ids=p_target_bundle.target_projection_ids,target_mistake_draft_item_id=p_target_bundle.target_mistake_draft_item_id,target_mistake_draft_id=p_target_bundle.target_mistake_draft_id,target_mistake_id=p_target_bundle.target_mistake_id,target_review_item_id=p_target_bundle.target_review_item_id,target_bundle_hash=CASE WHEN p_to IN ('migrated_active','migrated_paused') THEN bundle_hash ELSE NULL END,manual_review_required=(p_to<>'migrated_active'),mapped_next_review_at=CASE WHEN p_to='migrated_active' THEN p_mapped_next_review_at ELSE NULL END,mapped_last_reviewed_at=COALESCE(p_mapped_last_reviewed_at,m.mapped_last_reviewed_at),updated_at=now() WHERE id=m.id;\n          END IF;\n          SELECT * INTO result FROM public.legacy_note_migrations WHERE id=m.id; RETURN result;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "legacy_note_migrations",
+      "security_definer": true
+    },
+    "legacy_migration.validate_and_consume_transition_marker(p_marker jsonb, p_tg_op text, p_tg_table_schema text, p_tg_table_name text)": {
+      "config": [
+        "search_path=pg_catalog, legacy_migration"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION legacy_migration.validate_and_consume_transition_marker(p_marker jsonb, p_tg_op text, p_tg_table_schema text, p_tg_table_name text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'legacy_migration'\nAS $function$\n        DECLARE r legacy_migration.legacy_migration_guard_nonces%ROWTYPE;\n          keys TEXT[]:=ARRAY['nonce','txid','op','table_schema','table_name','ledger_id','source_note_id','mapping_version','expected_source_hash','expected_from','expected_to','target_bundle_hash','event_id','approval_kind','actor_id','rollback_hash'];\n          v_hash CHAR(64);\n        BEGIN\n          IF current_user IS DISTINCT FROM 'legacy_migration_owner'\n             OR session_user IS DISTINCT FROM 'legacy_note_adapter_runner'\n             OR p_marker IS NULL OR jsonb_typeof(p_marker)<>'object'\n             OR NOT (p_marker ?& keys)\n             OR (SELECT count(*) FROM jsonb_object_keys(p_marker))<>cardinality(keys)\n             OR EXISTS (SELECT 1 FROM jsonb_object_keys(p_marker) k WHERE NOT (k=ANY(keys)))\n             OR p_marker->>'txid' IS DISTINCT FROM pg_catalog.txid_current()::text\n             OR p_marker->>'op' IS DISTINCT FROM p_tg_op\n             OR p_marker->>'table_schema' IS DISTINCT FROM p_tg_table_schema\n             OR p_marker->>'table_name' IS DISTINCT FROM p_tg_table_name THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_MARKER_CONTEXT_REJECTED';\n          END IF;\n          v_hash:=pg_catalog.encode(public.digest(pg_catalog.convert_to(p_marker::text,'UTF8'),'sha256'),'hex');\n          SELECT * INTO r FROM legacy_migration.legacy_migration_guard_nonces\n           WHERE nonce=p_marker->>'nonce' FOR UPDATE;\n          IF NOT FOUND OR r.consumed_at IS NOT NULL OR r.txid<>pg_catalog.txid_current()\n             OR r.\"session_user\"<>session_user OR r.payload_hash<>v_hash\n             OR r.op<>p_tg_op OR r.table_schema<>p_tg_table_schema OR r.table_name<>p_tg_table_name\n             OR r.ledger_id::text<>p_marker->>'ledger_id' OR r.source_note_id::text<>p_marker->>'source_note_id'\n             OR r.mapping_version<>p_marker->>'mapping_version' OR r.expected_source_hash<>p_marker->>'expected_source_hash' THEN\n            RAISE EXCEPTION 'LEGACY_MIGRATION_NONCE_REJECTED';\n          END IF;\n          UPDATE legacy_migration.legacy_migration_guard_nonces SET consumed_at=now()\n           WHERE nonce=r.nonce AND consumed_at IS NULL;\n          IF NOT FOUND THEN RAISE EXCEPTION 'LEGACY_MIGRATION_NONCE_REPLAY'; END IF;\n        END; $function$\n",
+      "language": "plpgsql",
+      "result": "void",
+      "security_definer": true
+    }
+  },
+  "indexes": {
+    "legacy_migration.allowed_legacy_note_migration_transitions_pkey": {
+      "definition": "CREATE UNIQUE INDEX allowed_legacy_note_migration_transitions_pkey ON legacy_migration.allowed_legacy_note_migration_transitions USING btree (from_state, to_state)",
+      "predicate": null,
+      "table": "legacy_migration.allowed_legacy_note_migration_transitions",
+      "unique": true,
+      "valid": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_guard_nonces_pkey ON legacy_migration.legacy_migration_guard_nonces USING btree (nonce)",
+      "predicate": null,
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "unique": true,
+      "valid": true
+    },
+    "legacy_migration.legacy_migration_guard_nonces_txid_nonce_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_guard_nonces_txid_nonce_key ON legacy_migration.legacy_migration_guard_nonces USING btree (txid, nonce)",
+      "predicate": null,
+      "table": "legacy_migration.legacy_migration_guard_nonces",
+      "unique": true,
+      "valid": true
+    },
+    "public.idx_legacy_note_migrations_source_hash": {
+      "definition": "CREATE INDEX idx_legacy_note_migrations_source_hash ON public.legacy_note_migrations USING btree (source_hash)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": false,
+      "valid": true
+    },
+    "public.idx_legacy_note_migrations_state": {
+      "definition": "CREATE INDEX idx_legacy_note_migrations_state ON public.legacy_note_migrations USING btree (state, updated_at)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": false,
+      "valid": true
+    },
+    "public.idx_webauthn_challenges_challenge_hash": {
+      "definition": "CREATE INDEX idx_webauthn_challenges_challenge_hash ON public.webauthn_challenges USING btree (challenge_hash)",
+      "predicate": null,
+      "table": "public.webauthn_challenges",
+      "unique": false,
+      "valid": true
+    },
+    "public.idx_webauthn_challenges_expires": {
+      "definition": "CREATE INDEX idx_webauthn_challenges_expires ON public.webauthn_challenges USING btree (expires_at) WHERE (consumed_at IS NULL)",
+      "predicate": "(consumed_at IS NULL)",
+      "table": "public.webauthn_challenges",
+      "unique": false,
+      "valid": true
+    },
+    "public.idx_webauthn_challenges_purpose_session": {
+      "definition": "CREATE INDEX idx_webauthn_challenges_purpose_session ON public.webauthn_challenges USING btree (purpose, session_id) WHERE (session_id IS NOT NULL)",
+      "predicate": "(session_id IS NOT NULL)",
+      "table": "public.webauthn_challenges",
+      "unique": false,
+      "valid": true
+    },
+    "public.idx_webauthn_challenges_purpose_user": {
+      "definition": "CREATE INDEX idx_webauthn_challenges_purpose_user ON public.webauthn_challenges USING btree (purpose, user_id) WHERE (user_id IS NOT NULL)",
+      "predicate": "(user_id IS NOT NULL)",
+      "table": "public.webauthn_challenges",
+      "unique": false,
+      "valid": true
+    },
+    "public.legacy_migration_approval_authorizations_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_approval_authorizations_pkey ON public.legacy_migration_approval_authorizations USING btree (user_id, approval_kind)",
+      "predicate": null,
+      "table": "public.legacy_migration_approval_authorizations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_migration_rollback_admins_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_rollback_admins_pkey ON public.legacy_migration_rollback_admins USING btree (user_id)",
+      "predicate": null,
+      "table": "public.legacy_migration_rollback_admins",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_migration_rollback_aud_source_note_id_mapping_versio_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_rollback_aud_source_note_id_mapping_versio_key ON public.legacy_migration_rollback_audits USING btree (source_note_id, mapping_version)",
+      "predicate": null,
+      "table": "public.legacy_migration_rollback_audits",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_migration_rollback_audits_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_migration_rollback_audits_pkey ON public.legacy_migration_rollback_audits USING btree (ledger_id)",
+      "predicate": null,
+      "table": "public.legacy_migration_rollback_audits",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migration_events_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migration_events_pkey ON public.legacy_note_migration_events USING btree (id)",
+      "predicate": null,
+      "table": "public.legacy_note_migration_events",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migration_rejecti_source_note_id_mapping_versi_key1": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migration_rejecti_source_note_id_mapping_versi_key1 ON public.legacy_note_migration_rejections USING btree (source_note_id, mapping_version, source_hash, reason)",
+      "predicate": null,
+      "table": "public.legacy_note_migration_rejections",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migration_rejecti_source_note_id_mapping_versio_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migration_rejecti_source_note_id_mapping_versio_key ON public.legacy_note_migration_rejections USING btree (source_note_id, mapping_version, idempotency_key)",
+      "predicate": null,
+      "table": "public.legacy_note_migration_rejections",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migration_rejections_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migration_rejections_pkey ON public.legacy_note_migration_rejections USING btree (id)",
+      "predicate": null,
+      "table": "public.legacy_note_migration_rejections",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_idempotency_key_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_idempotency_key_key ON public.legacy_note_migrations USING btree (idempotency_key)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_pkey": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_pkey ON public.legacy_note_migrations USING btree (id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_source_note_id_mapping_version_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_source_note_id_mapping_version_key ON public.legacy_note_migrations USING btree (source_note_id, mapping_version)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_mistake_draft_id_key ON public.legacy_note_migrations USING btree (target_mistake_draft_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_mistake_draft_item_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_mistake_draft_item_id_key ON public.legacy_note_migrations USING btree (target_mistake_draft_item_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_mistake_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_mistake_id_key ON public.legacy_note_migrations USING btree (target_mistake_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_question_draft_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_question_draft_id_key ON public.legacy_note_migrations USING btree (target_question_draft_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_question_draft_item_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_question_draft_item_id_key ON public.legacy_note_migrations USING btree (target_question_draft_item_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_question_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_question_id_key ON public.legacy_note_migrations USING btree (target_question_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_question_source_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_question_source_id_key ON public.legacy_note_migrations USING btree (target_question_source_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.legacy_note_migrations_target_review_item_id_key": {
+      "definition": "CREATE UNIQUE INDEX legacy_note_migrations_target_review_item_id_key ON public.legacy_note_migrations USING btree (target_review_item_id)",
+      "predicate": null,
+      "table": "public.legacy_note_migrations",
+      "unique": true,
+      "valid": true
+    },
+    "public.webauthn_challenges_pkey": {
+      "definition": "CREATE UNIQUE INDEX webauthn_challenges_pkey ON public.webauthn_challenges USING btree (id)",
+      "predicate": null,
+      "table": "public.webauthn_challenges",
+      "unique": true,
+      "valid": true
+    }
+  },
+  "manifest_version": 1,
+  "revision": "034",
+  "triggers": {
+    "public.trg_lnm_event_guard": {
+      "definition": "CREATE TRIGGER trg_lnm_event_guard BEFORE INSERT OR DELETE OR UPDATE ON legacy_note_migration_events FOR EACH ROW EXECUTE FUNCTION legacy_migration.guard_legacy_note_migration_event()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_note_migration_event",
+      "table": "public.legacy_note_migration_events"
+    },
+    "public.trg_lnm_event_no_truncate": {
+      "definition": "CREATE TRIGGER trg_lnm_event_no_truncate BEFORE TRUNCATE ON legacy_note_migration_events FOR EACH STATEMENT EXECUTE FUNCTION legacy_migration.guard_legacy_note_migration_event()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_note_migration_event",
+      "table": "public.legacy_note_migration_events"
+    },
+    "public.trg_lnm_guard": {
+      "definition": "CREATE TRIGGER trg_lnm_guard BEFORE INSERT OR DELETE OR UPDATE ON legacy_note_migrations FOR EACH ROW EXECUTE FUNCTION legacy_migration.guard_legacy_note_migration()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_note_migration",
+      "table": "public.legacy_note_migrations"
+    },
+    "public.trg_lnm_rejection_guard": {
+      "definition": "CREATE TRIGGER trg_lnm_rejection_guard BEFORE INSERT OR DELETE OR UPDATE ON legacy_note_migration_rejections FOR EACH ROW EXECUTE FUNCTION legacy_migration.guard_legacy_note_migration_rejection()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_note_migration_rejection",
+      "table": "public.legacy_note_migration_rejections"
+    },
+    "public.trg_lnm_rejection_no_truncate": {
+      "definition": "CREATE TRIGGER trg_lnm_rejection_no_truncate BEFORE TRUNCATE ON legacy_note_migration_rejections FOR EACH STATEMENT EXECUTE FUNCTION legacy_migration.guard_legacy_note_migration_rejection()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_note_migration_rejection",
+      "table": "public.legacy_note_migration_rejections"
+    },
+    "public.trg_lnm_rollback_guard": {
+      "definition": "CREATE TRIGGER trg_lnm_rollback_guard BEFORE INSERT OR DELETE OR UPDATE ON legacy_migration_rollback_audits FOR EACH ROW EXECUTE FUNCTION legacy_migration.guard_legacy_migration_rollback_audit()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_migration_rollback_audit",
+      "table": "public.legacy_migration_rollback_audits"
+    },
+    "public.trg_lnm_rollback_no_truncate": {
+      "definition": "CREATE TRIGGER trg_lnm_rollback_no_truncate BEFORE TRUNCATE ON legacy_migration_rollback_audits FOR EACH STATEMENT EXECUTE FUNCTION legacy_migration.guard_legacy_migration_rollback_audit()",
+      "enabled": "O",
+      "function": "legacy_migration.guard_legacy_migration_rollback_audit",
+      "table": "public.legacy_migration_rollback_audits"
+    }
+  }
+}

@@ -30,6 +30,8 @@ class NoteCreate(BaseModel):
     status: NoteStatus = NoteStatus.published
     hidden: bool = False
     tags: list[str] = []
+    folder_id: uuid.UUID | None = None
+    sort_order: int = 0
 
     summary: str | None = None
     cover: str | None = None
@@ -47,12 +49,14 @@ class NoteCreate(BaseModel):
 
 
 class NoteUpdate(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     title: str | None = None
     content: str | None = None
     type: NoteType | None = None
     status: NoteStatus | None = None
     hidden: bool | None = None
     tags: list[str] | None = None
+    sort_order: int | None = None
 
     summary: str | None = None
     cover: str | None = None
@@ -67,6 +71,7 @@ class NoteUpdate(BaseModel):
     knowledge_points: str | None = None
     images: list[str] | None = None
     ai_metadata: dict | None = None
+    folder_id: uuid.UUID | None = None
 
 
 class TagOut(BaseModel):
@@ -87,6 +92,9 @@ class NoteOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    folder_id: uuid.UUID | None = None
+    sort_order: int = 0
+    revision: int = 1
 
     summary: str | None = None
     cover: str | None = None
@@ -120,6 +128,9 @@ class NoteListItem(BaseModel):
     created_at: datetime
     updated_at: datetime
     tags: list[TagOut] = []
+    folder_id: uuid.UUID | None = None
+    sort_order: int = 0
+    revision: int = 1
 
     summary: str | None = None
     cover: str | None = None

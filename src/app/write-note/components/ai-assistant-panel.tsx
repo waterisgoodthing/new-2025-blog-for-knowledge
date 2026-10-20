@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, type RefObject } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronLeft, ChevronRight, Square, RefreshCw, Copy, ArrowDown, Replace, Type, Tags, FileText, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Square, RefreshCw, Copy, ArrowDown, Replace, Type, Tags, FileText, Sparkles, FolderKanban } from 'lucide-react'
 import { toast } from 'sonner'
 import { streamPolish, type PolishAction } from '@/lib/api/ai-polish'
 
@@ -69,12 +69,13 @@ type AIAssistantPanelProps = {
 	onApplyTitle?: (title: string) => void
 	onApplySummary?: (summary: string) => void
 	onApplyTags?: (tags: string[]) => void
+	onApplyCategory?: (category: string) => void
 }
 
 export function AIAssistantPanel({
 	textareaRef, content, title, noteType, existingTags,
 	onInsert, onReplaceSelection, getSelectedText,
-	onApplyTitle, onApplySummary, onApplyTags,
+	onApplyTitle, onApplySummary, onApplyTags, onApplyCategory,
 }: AIAssistantPanelProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [loading, setLoading] = useState(false)
@@ -83,10 +84,16 @@ export function AIAssistantPanel({
 	const [lastAction, setLastAction] = useState<ActionMeta | null>(null)
 	const abortRef = useRef<AbortController | null>(null)
 	const requestIdRef = useRef(0)
+	const rafRef = useRef(0)
 	const isMobile = useIsMobile()
+	const [customPrompt, setCustomPrompt] = useState('')
 
 	useEffect(() => {
-		return () => { abortRef.current?.abort() }
+		return () => {
+			++requestIdRef.current
+			abortRef.current?.abort()
+			if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+		}
 	}, [])
 
 	const runAction = async (action: PolishAction, label: string) => {
@@ -114,15 +121,23 @@ export function AIAssistantPanel({
 			onChunk: chunk => {
 				if (currentId !== requestIdRef.current) return
 				accumulated += chunk
-				setResult(accumulated)
+				if (!rafRef.current) {
+					rafRef.current = requestAnimationFrame(() => {
+						rafRef.current = 0
+						if (currentId === requestIdRef.current) setResult(accumulated)
+					})
+				}
 			},
 			onDone: () => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setResult(accumulated)
 				setLoading(false)
 				abortRef.current = null
 			},
 			onError: err => {
 				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 				setError(err)
 				setLoading(false)
 				abortRef.current = null
@@ -137,9 +152,69 @@ export function AIAssistantPanel({
 	}
 
 	const handleStop = () => {
+		++requestIdRef.current
 		abortRef.current?.abort()
 		abortRef.current = null
+		if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
 		setLoading(false)
+	}
+
+	const runCustomPrompt = async () => {
+		const prompt = customPrompt.trim()
+		if (!prompt) { toast.warning('请输入你想让 AI 做什么'); return }
+		const selected = getSelectedText()
+		let text = selected || content
+		if (!text.trim()) {
+			if (title) { text = `标题: ${title}` }
+			else { toast.warning('请先输入内容'); return }
+		}
+
+		abortRef.current?.abort()
+		const controller = new AbortController()
+		abortRef.current = controller
+		const currentId = ++requestIdRef.current
+
+		setLoading(true)
+		setResult('')
+		setError('')
+		setLastAction({ action: 'custom', label: '自定义请求' })
+		setCustomPrompt('')
+
+		let accumulated = ''
+
+		await streamPolish(text, 'custom', {
+			onChunk: chunk => {
+				if (currentId !== requestIdRef.current) return
+				accumulated += chunk
+				if (!rafRef.current) {
+					rafRef.current = requestAnimationFrame(() => {
+						rafRef.current = 0
+						if (currentId === requestIdRef.current) setResult(accumulated)
+					})
+				}
+			},
+			onDone: () => {
+				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setResult(accumulated)
+				setLoading(false)
+				abortRef.current = null
+			},
+			onError: err => {
+				if (currentId !== requestIdRef.current) return
+				if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+				setError(err)
+				setLoading(false)
+				abortRef.current = null
+			},
+		}, {
+			context: selected ? content : undefined,
+			signal: controller.signal,
+			title,
+			noteType,
+			existingTags,
+			custom_prompt: prompt,
+		})
 	}
 
 	const handleClose = () => {
@@ -200,6 +275,11 @@ export function AIAssistantPanel({
 		toast.success('已应用为摘要')
 	}
 
+	const handleApplyCategory = () => {
+		onApplyCategory?.(result.trim())
+		toast.success('已应用为分类')
+	}
+
 	const panelContent = (
 		<div className='flex h-full flex-col'>
 			<div className='flex items-center justify-between border-b border-white/40 p-3'>
@@ -210,6 +290,24 @@ export function AIAssistantPanel({
 			</div>
 
 			<div className='space-y-3 p-3'>
+				<div className='flex gap-2'>
+					<input
+						value={customPrompt}
+						onChange={e => setCustomPrompt(e.target.value)}
+						onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); runCustomPrompt() } }}
+						placeholder='告诉 AI 你想做什么，如"把选中内容整理成表格"...'
+						disabled={loading}
+						className='flex-1 rounded-lg border border-white/40 bg-white/60 px-3 py-2 text-xs outline-none focus:border-[var(--color-brand)] disabled:opacity-50'
+					/>
+					<button
+						type='button'
+						onClick={runCustomPrompt}
+						disabled={loading || !customPrompt.trim()}
+						className='shrink-0 rounded-lg bg-[var(--color-brand)]/10 px-3 py-2 text-xs text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/20 disabled:opacity-40'
+					>
+						发送
+					</button>
+				</div>
 				{actionGroups.map(group => (
 					<div key={group.label}>
 						<div className='mb-1.5 text-[11px] font-medium text-gray-400'>{group.label}</div>
@@ -270,6 +368,30 @@ export function AIAssistantPanel({
 						<button type='button' onClick={handleApplySummary} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
 							<FileText size={12} /> 应用为摘要
 						</button>
+					)}
+					{lastAction?.action === 'custom' && (
+						<>
+							{onApplyTitle && (
+								<button type='button' onClick={handleApplyTitle} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+									<Type size={12} /> 应用为标题
+								</button>
+							)}
+							{onApplySummary && (
+								<button type='button' onClick={handleApplySummary} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+									<FileText size={12} /> 应用为摘要
+								</button>
+							)}
+							{onApplyTags && (
+								<button type='button' onClick={handleApplyTags} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+									<Tags size={12} /> 合并标签
+								</button>
+							)}
+							{onApplyCategory && (
+								<button type='button' onClick={handleApplyCategory} className='flex items-center gap-1 rounded-lg bg-[var(--color-brand)]/10 px-2.5 py-1.5 text-xs text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20'>
+									<FolderKanban size={12} /> 应用为分类
+								</button>
+							)}
+						</>
 					)}
 					<button type='button' onClick={handleInsert} className='flex items-center gap-1 rounded-lg bg-white/60 px-2.5 py-1.5 text-xs hover:bg-white/80'>
 						<ArrowDown size={12} /> 插入

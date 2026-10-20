@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collected 147 items
+
+tests/test_pr09_legacy_mistake_freeze.py .....................           [ 14%]
+tests/test_pr09_migration.py .........                                   [ 20%]
+tests/test_pr09_permissions.py .......                                   [ 25%]
+tests/test_pr09_routes.py ...............................                [ 46%]
+tests/test_pr10_kp_analytics_contract.py .........                       [ 52%]
+tests/test_pr10_kp_analytics_service.py .......                          [ 57%]
+tests/test_pr12_note_knowledge_points_contract.py ....................   [ 70%]
+tests/test_pr12_note_knowledge_points_service.py ...............         [ 80%]
+tests/test_pr13_practice_service.py ...............                      [ 91%]
+tests/test_pr13_practice_http.py ..                                      [ 92%]
+tests/test_pr11_dashboard_service.py .........                           [ 98%]
+tests/test_pr11_dashboard_http.py ..                                     [100%]
+
+============================= 147 passed in 4.17s ==============================
+PASS: db_name='astra_week3_gate_targ' source=explicit:--db-name; executing ['env', 'PYTHONPATH=.', '.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_legacy_mistake_freeze.py', 'tests/test_pr09_migration.py', 'tests/test_pr09_permissions.py', 'tests/test_pr09_routes.py', 'tests/test_pr10_kp_analytics_contract.py', 'tests/test_pr10_kp_analytics_service.py', 'tests/test_pr12_note_knowledge_points_contract.py', 'tests/test_pr12_note_knowledge_points_service.py', 'tests/test_pr13_practice_service.py', 'tests/test_pr13_practice_http.py', 'tests/test_pr11_dashboard_service.py', 'tests/test_pr11_dashboard_http.py']

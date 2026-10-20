@@ -1,0 +1,6 @@
+      Tests  522 passed (522)
+   Start at  16:50:01
+   Duration  5.41s (transform 1.56s, setup 2.15s, collect 7.67s, tests 6.26s, environment 15.54s, prepare 2.92s)
+
+tsc exit=0
+typecheck exit=0

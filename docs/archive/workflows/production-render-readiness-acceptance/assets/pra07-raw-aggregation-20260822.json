@@ -1,0 +1,1152 @@
+{
+  "aggregation_run_id": "pra07-raw-aggregation-20260822",
+  "generated_at": "2026-08-22T15:06:52.814569Z",
+  "raw_only": true,
+  "source_boundary": "Only the three explicit PRA-05 raw NDJSON files and the ten raw files explicitly listed by the PRA-06 final M30 manifest were read.",
+  "input_files": [
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-raw.ndjson",
+      "sha256": "d811e1bbf7361ddfa6bb7088e6d1508acdf6eee4d0f7999fcfd253d75300c924",
+      "exists": true,
+      "record_count": 11,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra05-l20-raw.ndjson",
+      "sha256": "f59d458a43d6ce0e0a94a91fb4e935e3a720ecf38c3c66f91bf00f838aaef32e",
+      "exists": true,
+      "record_count": 10,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra05-d1-raw.ndjson",
+      "sha256": "44e34c247a57a94ff1ef16f592a2247396de5cf18a23e3a976af2ab7bc41dbeb",
+      "exists": true,
+      "record_count": 10,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-final-20260822.manifest.json",
+      "sha256": "f5a14fb58717ffad79a8e552afa3871aca5072613ca1860e5361cce1819dd735",
+      "exists": true,
+      "record_count": 0,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-01.raw.ndjson",
+      "sha256": "d4c0fe33a3f35ad12b21c06f7873b756c8e41f9a477c66b3caa801ff87c5338d",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-02.raw.ndjson",
+      "sha256": "34e9b0c5a930c2ec1cdf0c547559569843d0b91f32ea4202aa59df2ebff1fb5d",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-03.raw.ndjson",
+      "sha256": "65aafeea775027205ec8de3d80676762391ae8b260ef927a845dd9bcf8d756e3",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-04.raw.ndjson",
+      "sha256": "5ffce1332427a6e4a2010d5b143acb54442aa2e301cd90576a943a8654714cab",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-05.raw.ndjson",
+      "sha256": "b5771d0b3da89de833cd014cfc53dcb193cbb440f5d72cac8d3500fc76c5c19a",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-06.raw.ndjson",
+      "sha256": "c581af3e2a5bb388c51b0f9ec171ce753798d98346b43cae73152bb1237fc712",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-07.raw.ndjson",
+      "sha256": "5503e08c6d8d91369f8c244382d750a064e4bed065b49a053abf128872f35b27",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-08.raw.ndjson",
+      "sha256": "22cf34ec978594a4f753ec09b15e186a94bb498e5e7e28d14a5d888e2e64f503",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-09.raw.ndjson",
+      "sha256": "020324a02194b609c41b00d5a7292ea82f91d083580ba977f75c4347a0813075",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    },
+    {
+      "path": "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-10.raw.ndjson",
+      "sha256": "ca3346d8b3a577200bb6941697cfb7465f6a200155746dcdd5d4a52c584aa98c",
+      "exists": true,
+      "record_count": 1,
+      "anomaly_count": 0
+    }
+  ],
+  "separate_or_excluded_artifacts": [
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-pra05-e0-smoke-20260822-manifest.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-pra05-qa-smoke-20260822-manifest.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-smoke.ndjson",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-l20-health-check.ndjson",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-l20-pra05-l20-healthcheck-20260822-manifest.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra05-qa-smoke-20260822.ndjson",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-cors-recheck-20260822.negative.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-cors-recheck-20260822.preflight-negative.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-negative.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822-negative.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.api-health.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.api-host-health.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.api.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.batch.manifest.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.build.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.cleanup.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.frontend.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.migration.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.npm-ci.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.pip-install.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.postgres-init.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.postgres-start.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.preflight.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.runner.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.snapshot-rsync.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.snapshot.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-final-20260822.venv.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822-negative.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.api-health.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.api-host-health.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.api.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.batch.manifest.json",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.build.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.frontend.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.migration.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.npm-ci.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.pip-install.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.postgres-init.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.postgres-start.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.preflight.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.runner.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.snapshot-rsync.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.snapshot.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-negative-recheck-20260822.venv.log",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-negative-boundary-20260822.mjs",
+    "docs/workflows/production-render-readiness-acceptance/assets/pra06-negative-probe.json"
+  ],
+  "browser_server_temperature_rule": "Primary aggregate retains each raw row's declared browser_temperature/server_temperature; server-cold, smoke and health-check artifacts are excluded and listed separately.",
+  "valid_filter_rule": "A sample contributes to timing percentiles only when its parsed row has valid=true and the metric is finite numeric and >= 0. Failed rows remain in attempts/failed_count and failed_samples.",
+  "percentile_algorithm": "nearest-rank",
+  "percentile_definition": "Sort n numeric values ascending; p50/p90 use 1-indexed rank ceil(q*n), clamped to at least 1; no interpolation.",
+  "sensitive_findings": [],
+  "count_consistency": {
+    "passed": true,
+    "rule": "For every scenario attempt_count == valid_count + failed_count and every explicit input file exists."
+  },
+  "scenarios": [
+    {
+      "scenario": "E0",
+      "input_paths": [
+        "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-raw.ndjson"
+      ],
+      "browser_temperature": "cold",
+      "server_temperature": "warm",
+      "attempt_count": 11,
+      "valid_count": 10,
+      "failed_count": 1,
+      "failure_rate": 0.09090909090909091,
+      "valid_sample_ids": [
+        "E0-01",
+        "E0-02",
+        "E0-03",
+        "E0-04",
+        "E0-05",
+        "E0-06",
+        "E0-07",
+        "E0-08",
+        "E0-09",
+        "E0-10"
+      ],
+      "failed_samples": [
+        {
+          "sample_id": "E0-01",
+          "input_path": "docs/workflows/production-render-readiness-acceptance/assets/pra05-e0-raw.ndjson",
+          "input_line": 11,
+          "failure_reason": "visible-count:links=0,h3=1"
+        }
+      ],
+      "anomalies": [],
+      "metrics": {
+        "ttfb": {
+          "source": "raw sample field navigation.ttfb",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "E0-01",
+            "E0-02",
+            "E0-03",
+            "E0-04",
+            "E0-05",
+            "E0-06",
+            "E0-07",
+            "E0-08",
+            "E0-09",
+            "E0-10"
+          ],
+          "excluded_samples": [],
+          "p50": 1.800000011920929,
+          "p90": 5.600000023841858,
+          "max": 6.699999988079071,
+          "status": "available"
+        },
+        "dom_content_loaded": {
+          "source": "raw sample field navigation.dom_content_loaded",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "E0-01",
+            "E0-02",
+            "E0-03",
+            "E0-04",
+            "E0-05",
+            "E0-06",
+            "E0-07",
+            "E0-08",
+            "E0-09",
+            "E0-10"
+          ],
+          "excluded_samples": [],
+          "p50": 831.2000000178814,
+          "p90": 1800.2000000178814,
+          "max": 2748.0999999940395,
+          "status": "available"
+        },
+        "load": {
+          "source": "raw sample field navigation.load",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "E0-01",
+            "E0-02",
+            "E0-03",
+            "E0-04",
+            "E0-05",
+            "E0-06",
+            "E0-07",
+            "E0-08",
+            "E0-09",
+            "E0-10"
+          ],
+          "excluded_samples": [],
+          "p50": 837.2000000178814,
+          "p90": 1806.4000000059605,
+          "max": 2753.0999999940395,
+          "status": "available"
+        },
+        "lcp": {
+          "source": "raw sample field lcp; null is missing and is never converted to zero",
+          "valid_metric_count": 0,
+          "contributing_sample_ids": [],
+          "excluded_samples": [
+            {
+              "sample_id": "E0-01",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-02",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-03",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-04",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-05",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-06",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-07",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-08",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-09",
+              "reason": "null"
+            },
+            {
+              "sample_id": "E0-10",
+              "reason": "null"
+            }
+          ],
+          "p50": null,
+          "p90": null,
+          "max": null,
+          "status": "not_available",
+          "null_count": 10,
+          "not_available_reason": "all persisted lcp values are null"
+        },
+        "readiness": {
+          "source": "E0/L20/D1: readiness.readiness_duration; M30: content_ready mark start minus auth_submit mark start",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "E0-01",
+            "E0-02",
+            "E0-03",
+            "E0-04",
+            "E0-05",
+            "E0-06",
+            "E0-07",
+            "E0-08",
+            "E0-09",
+            "E0-10"
+          ],
+          "excluded_samples": [],
+          "p50": 1053.0999999940395,
+          "p90": 2107.300000011921,
+          "max": 2964.199999988079,
+          "status": "available"
+        },
+        "key_api_timing": {
+          "/api/notes?status=published&page=1&size=20": {
+            "source": "raw sample field required_api[].duration; status remains in the raw required_api[].status field and is not used as a duration",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "E0-01",
+              "E0-02",
+              "E0-03",
+              "E0-04",
+              "E0-05",
+              "E0-06",
+              "E0-07",
+              "E0-08",
+              "E0-09",
+              "E0-10"
+            ],
+            "excluded_samples": [],
+            "p50": 91.80000001192093,
+            "p90": 122.0,
+            "max": 129.40000000596046,
+            "status": "available"
+          }
+        }
+      }
+    },
+    {
+      "scenario": "L20",
+      "input_paths": [
+        "docs/workflows/production-render-readiness-acceptance/assets/pra05-l20-raw.ndjson"
+      ],
+      "browser_temperature": "cold",
+      "server_temperature": "warm",
+      "attempt_count": 10,
+      "valid_count": 10,
+      "failed_count": 0,
+      "failure_rate": 0.0,
+      "valid_sample_ids": [
+        "L20-01",
+        "L20-02",
+        "L20-03",
+        "L20-04",
+        "L20-05",
+        "L20-06",
+        "L20-07",
+        "L20-08",
+        "L20-09",
+        "L20-10"
+      ],
+      "failed_samples": [],
+      "anomalies": [],
+      "metrics": {
+        "ttfb": {
+          "source": "raw sample field navigation.ttfb",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "L20-01",
+            "L20-02",
+            "L20-03",
+            "L20-04",
+            "L20-05",
+            "L20-06",
+            "L20-07",
+            "L20-08",
+            "L20-09",
+            "L20-10"
+          ],
+          "excluded_samples": [],
+          "p50": 1.5999999940395355,
+          "p90": 2.5,
+          "max": 2.600000023841858,
+          "status": "available"
+        },
+        "dom_content_loaded": {
+          "source": "raw sample field navigation.dom_content_loaded",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "L20-01",
+            "L20-02",
+            "L20-03",
+            "L20-04",
+            "L20-05",
+            "L20-06",
+            "L20-07",
+            "L20-08",
+            "L20-09",
+            "L20-10"
+          ],
+          "excluded_samples": [],
+          "p50": 714.8000000119209,
+          "p90": 865.7999999821186,
+          "max": 1198.7000000178814,
+          "status": "available"
+        },
+        "load": {
+          "source": "raw sample field navigation.load",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "L20-01",
+            "L20-02",
+            "L20-03",
+            "L20-04",
+            "L20-05",
+            "L20-06",
+            "L20-07",
+            "L20-08",
+            "L20-09",
+            "L20-10"
+          ],
+          "excluded_samples": [],
+          "p50": 721.4000000059605,
+          "p90": 872.8999999761581,
+          "max": 1203.2000000178814,
+          "status": "available"
+        },
+        "lcp": {
+          "source": "raw sample field lcp; null is missing and is never converted to zero",
+          "valid_metric_count": 0,
+          "contributing_sample_ids": [],
+          "excluded_samples": [
+            {
+              "sample_id": "L20-01",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-02",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-03",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-04",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-05",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-06",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-07",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-08",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-09",
+              "reason": "null"
+            },
+            {
+              "sample_id": "L20-10",
+              "reason": "null"
+            }
+          ],
+          "p50": null,
+          "p90": null,
+          "max": null,
+          "status": "not_available",
+          "null_count": 10,
+          "not_available_reason": "all persisted lcp values are null"
+        },
+        "readiness": {
+          "source": "E0/L20/D1: readiness.readiness_duration; M30: content_ready mark start minus auth_submit mark start",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "L20-01",
+            "L20-02",
+            "L20-03",
+            "L20-04",
+            "L20-05",
+            "L20-06",
+            "L20-07",
+            "L20-08",
+            "L20-09",
+            "L20-10"
+          ],
+          "excluded_samples": [],
+          "p50": 941.6999999880791,
+          "p90": 1077.199999988079,
+          "max": 1419.4000000059605,
+          "status": "available"
+        },
+        "key_api_timing": {
+          "/api/notes?status=published&page=1&size=20": {
+            "source": "raw sample field required_api[].duration; status remains in the raw required_api[].status field and is not used as a duration",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "L20-01",
+              "L20-02",
+              "L20-03",
+              "L20-04",
+              "L20-05",
+              "L20-06",
+              "L20-07",
+              "L20-08",
+              "L20-09",
+              "L20-10"
+            ],
+            "excluded_samples": [],
+            "p50": 92.19999998807907,
+            "p90": 119.69999998807907,
+            "max": 123.69999998807907,
+            "status": "available"
+          }
+        }
+      }
+    },
+    {
+      "scenario": "D1",
+      "input_paths": [
+        "docs/workflows/production-render-readiness-acceptance/assets/pra05-d1-raw.ndjson"
+      ],
+      "browser_temperature": "cold",
+      "server_temperature": "warm",
+      "attempt_count": 10,
+      "valid_count": 10,
+      "failed_count": 0,
+      "failure_rate": 0.0,
+      "valid_sample_ids": [
+        "D1-01",
+        "D1-02",
+        "D1-03",
+        "D1-04",
+        "D1-05",
+        "D1-06",
+        "D1-07",
+        "D1-08",
+        "D1-09",
+        "D1-10"
+      ],
+      "failed_samples": [],
+      "anomalies": [],
+      "metrics": {
+        "ttfb": {
+          "source": "raw sample field navigation.ttfb",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "D1-01",
+            "D1-02",
+            "D1-03",
+            "D1-04",
+            "D1-05",
+            "D1-06",
+            "D1-07",
+            "D1-08",
+            "D1-09",
+            "D1-10"
+          ],
+          "excluded_samples": [],
+          "p50": 4.100000023841858,
+          "p90": 6.199999988079071,
+          "max": 47.099999994039536,
+          "status": "available"
+        },
+        "dom_content_loaded": {
+          "source": "raw sample field navigation.dom_content_loaded",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "D1-01",
+            "D1-02",
+            "D1-03",
+            "D1-04",
+            "D1-05",
+            "D1-06",
+            "D1-07",
+            "D1-08",
+            "D1-09",
+            "D1-10"
+          ],
+          "excluded_samples": [],
+          "p50": 747.2999999821186,
+          "p90": 885.4000000059605,
+          "max": 999.0,
+          "status": "available"
+        },
+        "load": {
+          "source": "raw sample field navigation.load",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "D1-01",
+            "D1-02",
+            "D1-03",
+            "D1-04",
+            "D1-05",
+            "D1-06",
+            "D1-07",
+            "D1-08",
+            "D1-09",
+            "D1-10"
+          ],
+          "excluded_samples": [],
+          "p50": 748.1999999880791,
+          "p90": 886.0999999940395,
+          "max": 999.6999999880791,
+          "status": "available"
+        },
+        "lcp": {
+          "source": "raw sample field lcp; null is missing and is never converted to zero",
+          "valid_metric_count": 0,
+          "contributing_sample_ids": [],
+          "excluded_samples": [
+            {
+              "sample_id": "D1-01",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-02",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-03",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-04",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-05",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-06",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-07",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-08",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-09",
+              "reason": "null"
+            },
+            {
+              "sample_id": "D1-10",
+              "reason": "null"
+            }
+          ],
+          "p50": null,
+          "p90": null,
+          "max": null,
+          "status": "not_available",
+          "null_count": 10,
+          "not_available_reason": "all persisted lcp values are null"
+        },
+        "readiness": {
+          "source": "E0/L20/D1: readiness.readiness_duration; M30: content_ready mark start minus auth_submit mark start",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "D1-01",
+            "D1-02",
+            "D1-03",
+            "D1-04",
+            "D1-05",
+            "D1-06",
+            "D1-07",
+            "D1-08",
+            "D1-09",
+            "D1-10"
+          ],
+          "excluded_samples": [],
+          "p50": 1339.0999999940395,
+          "p90": 1415.0,
+          "max": 1581.300000011921,
+          "status": "available"
+        },
+        "key_api_timing": {
+          "/api/notes/pra04-d1": {
+            "source": "raw sample field required_api[].duration; status remains in the raw required_api[].status field and is not used as a duration",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "D1-01",
+              "D1-02",
+              "D1-03",
+              "D1-04",
+              "D1-05",
+              "D1-06",
+              "D1-07",
+              "D1-08",
+              "D1-09",
+              "D1-10"
+            ],
+            "excluded_samples": [],
+            "p50": 5.4000000059604645,
+            "p90": 9.0,
+            "max": 10.599999994039536,
+            "status": "available"
+          }
+        }
+      }
+    },
+    {
+      "scenario": "M30",
+      "input_paths": [
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-01.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-02.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-03.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-04.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-05.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-06.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-07.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-08.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-09.raw.ndjson",
+        "docs/workflows/production-render-readiness-acceptance/assets/pra06-m30-batch-20260822-attempt-10.raw.ndjson"
+      ],
+      "browser_temperature": "cold",
+      "server_temperature": "warm",
+      "attempt_count": 10,
+      "valid_count": 10,
+      "failed_count": 0,
+      "failure_rate": 0.0,
+      "valid_sample_ids": [
+        "M30-01",
+        "M30-02",
+        "M30-03",
+        "M30-04",
+        "M30-05",
+        "M30-06",
+        "M30-07",
+        "M30-08",
+        "M30-09",
+        "M30-10"
+      ],
+      "failed_samples": [],
+      "anomalies": [],
+      "metrics": {
+        "ttfb": {
+          "source": "raw sample field navigation.ttfb",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "M30-01",
+            "M30-02",
+            "M30-03",
+            "M30-04",
+            "M30-05",
+            "M30-06",
+            "M30-07",
+            "M30-08",
+            "M30-09",
+            "M30-10"
+          ],
+          "excluded_samples": [],
+          "p50": 2.800000011920929,
+          "p90": 3.0999999940395355,
+          "max": 5.299999982118607,
+          "status": "available"
+        },
+        "dom_content_loaded": {
+          "source": "raw sample field navigation.dom_content_loaded",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "M30-01",
+            "M30-02",
+            "M30-03",
+            "M30-04",
+            "M30-05",
+            "M30-06",
+            "M30-07",
+            "M30-08",
+            "M30-09",
+            "M30-10"
+          ],
+          "excluded_samples": [],
+          "p50": 864.7000000178814,
+          "p90": 1823.4000000059605,
+          "max": 2104.2000000178814,
+          "status": "available"
+        },
+        "load": {
+          "source": "raw sample field navigation.load",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "M30-01",
+            "M30-02",
+            "M30-03",
+            "M30-04",
+            "M30-05",
+            "M30-06",
+            "M30-07",
+            "M30-08",
+            "M30-09",
+            "M30-10"
+          ],
+          "excluded_samples": [],
+          "p50": 871.5999999940395,
+          "p90": 1830.0,
+          "max": 2110.7000000178814,
+          "status": "available"
+        },
+        "lcp": {
+          "source": "raw sample field lcp; null is missing and is never converted to zero",
+          "valid_metric_count": 0,
+          "contributing_sample_ids": [],
+          "excluded_samples": [
+            {
+              "sample_id": "M30-01",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-02",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-03",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-04",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-05",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-06",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-07",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-08",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-09",
+              "reason": "null"
+            },
+            {
+              "sample_id": "M30-10",
+              "reason": "null"
+            }
+          ],
+          "p50": null,
+          "p90": null,
+          "max": null,
+          "status": "not_available",
+          "null_count": 10,
+          "not_available_reason": "all persisted lcp values are null"
+        },
+        "readiness": {
+          "source": "E0/L20/D1: readiness.readiness_duration; M30: content_ready mark start minus auth_submit mark start",
+          "valid_metric_count": 10,
+          "contributing_sample_ids": [
+            "M30-01",
+            "M30-02",
+            "M30-03",
+            "M30-04",
+            "M30-05",
+            "M30-06",
+            "M30-07",
+            "M30-08",
+            "M30-09",
+            "M30-10"
+          ],
+          "excluded_samples": [],
+          "p50": 15.099999994039536,
+          "p90": 24.399999976158142,
+          "max": 36.400000005960464,
+          "status": "available"
+        },
+        "key_api_timing": {
+          "/api/admin/dashboard/summary": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 9.400000005960464,
+            "p90": 12.400000005960464,
+            "max": 18.0,
+            "status": "available"
+          },
+          "/api/ai/suggestions": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 7.700000017881393,
+            "p90": 11.400000005960464,
+            "max": 18.900000005960464,
+            "status": "available"
+          },
+          "/api/auth/login": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 175.30000001192093,
+            "p90": 180.69999998807907,
+            "max": 199.19999998807907,
+            "status": "available"
+          },
+          "/api/auth/me": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 20,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-01",
+              "M30-02",
+              "M30-02",
+              "M30-03",
+              "M30-03",
+              "M30-04",
+              "M30-04",
+              "M30-05",
+              "M30-05",
+              "M30-06",
+              "M30-06",
+              "M30-07",
+              "M30-07",
+              "M30-08",
+              "M30-08",
+              "M30-09",
+              "M30-09",
+              "M30-10",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 1.5,
+            "p90": 2.199999988079071,
+            "max": 8.0,
+            "status": "available"
+          },
+          "/api/auth/passkey/status": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 2.5,
+            "p90": 3.300000011920929,
+            "max": 3.5,
+            "status": "available"
+          },
+          "/api/content/site-settings": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 2.5,
+            "p90": 3.5999999940395355,
+            "max": 15.400000005960464,
+            "status": "available"
+          },
+          "/api/folders": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 5.4000000059604645,
+            "p90": 9.800000011920929,
+            "max": 14.400000005960464,
+            "status": "available"
+          },
+          "/api/music/manage/daily-song/public": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 1.5999999940395355,
+            "p90": 1.800000011920929,
+            "max": 11.200000017881393,
+            "status": "available"
+          },
+          "/api/notes?page=1&size=30": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 8.099999994039536,
+            "p90": 12.599999994039536,
+            "max": 15.300000011920929,
+            "status": "available"
+          },
+          "/api/tags": {
+            "source": "raw sample field api_timings[].duration grouped by URL path; HTTP status is reported separately and never used as latency",
+            "valid_metric_count": 10,
+            "contributing_sample_ids": [
+              "M30-01",
+              "M30-02",
+              "M30-03",
+              "M30-04",
+              "M30-05",
+              "M30-06",
+              "M30-07",
+              "M30-08",
+              "M30-09",
+              "M30-10"
+            ],
+            "excluded_samples": [],
+            "p50": 5.5,
+            "p90": 9.899999976158142,
+            "max": 14.199999988079071,
+            "status": "available"
+          }
+        }
+      },
+      "authentication_status_overview": {
+        "login_response_status_counts": {
+          "200": 10
+        },
+        "auth_me_status_counts": {
+          "200": 20,
+          "401": 10
+        },
+        "strict_management_status_counts": {
+          "200": 10
+        },
+        "interpretation": "HTTP status counts are authorization/session evidence only; they are not latency values."
+      }
+    }
+  ],
+  "claims": {
+    "performance_baseline": false,
+    "production_readiness": false,
+    "sla_or_budget_commitment": false,
+    "optimization_verified": false,
+    "interpretation": "These are local isolated raw-data aggregates only. Any observation or optimization candidate remains unverified."
+  }
+}

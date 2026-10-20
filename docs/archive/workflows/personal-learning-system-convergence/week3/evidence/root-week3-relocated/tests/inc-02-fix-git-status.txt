@@ -1,0 +1,32 @@
+INC-02 fix — evidence 4/4: git status / write-scope discipline
+==============================================================
+
+Write scope honoured:
+  - NEW (untracked): backend/tests/conftest.py           (the guard)
+  - NEW (untracked): week3/evidence/tests/inc-02-fix-*.txt (this self-evidence)
+  - No change to backend/app/**, backend/.env, scripts/week3-scratch-guard.py.
+  - No git write operations performed (no add/commit/push/checkout).
+  - No writes to blog_v2 (residue remains 9 notes / 1 subject / 1 kp, unchanged).
+
+Session-start `git status --porcelain` (relevant paths):
+  ?? backend/tests/conftest.py
+  ?? week3/evidence/tests/            # evidence dir already untracked; new files only
+  (backend/app/** already had M/?? entries from pre-existing unrelated work;
+   these were NOT modified by this INC-02 fix session.)
+
+Current `git status --porcelain` (relevant paths):
+  $ git status --porcelain backend/tests/conftest.py week3/evidence/tests/
+  ?? backend/tests/conftest.py
+  ?? week3/evidence/tests/
+
+Forbidden paths — unchanged by this session (pre-existing user changes remain as-is):
+  $ git status --porcelain backend/app/ backend/.env scripts/week3-scratch-guard.py
+  M backend/app/models/... (pre-existing)  ...  ?<new app files: pre-existing>
+  ?? scripts/week3-scratch-guard.py        (pre-existing untracked, untouched)
+  backend/.env: not tracked / not modified.
+
+New evidence files in this session:
+  week3/evidence/tests/inc-02-fix-explicit-scratch.txt   (2/4)
+  week3/evidence/tests/inc-02-fix-full-suite.txt         (3/4)
+  week3/evidence/tests/inc-02-fix-git-status.txt         (4/4)
+  week3/evidence/tests/inc-02-fix-guard-block.txt        (1/4, already present)

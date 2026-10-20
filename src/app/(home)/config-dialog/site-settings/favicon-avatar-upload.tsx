@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
+import { useConfigStore } from '../../stores/config-store'
 import type { FileItem } from './types'
 
 interface FaviconAvatarUploadProps {
@@ -15,6 +16,7 @@ interface FaviconAvatarUploadProps {
 export function FaviconAvatarUpload({ faviconItem, setFaviconItem, avatarItem, setAvatarItem }: FaviconAvatarUploadProps) {
 	const faviconInputRef = useRef<HTMLInputElement>(null)
 	const avatarInputRef = useRef<HTMLInputElement>(null)
+	const { siteContent } = useConfigStore()
 
 	const handleFaviconFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
@@ -72,7 +74,7 @@ export function FaviconAvatarUpload({ faviconItem, setFaviconItem, avatarItem, s
 					{avatarItem?.type === 'file' ? (
 						<img src={avatarItem.previewUrl} alt='avatar preview' className='h-full w-full object-cover' />
 					) : (
-						<img src='/images/avatar.png' alt='current avatar' className='h-full w-full object-cover' />
+						<img src={siteContent.avatarUrl || '/images/avatar.png'} alt='current avatar' className='h-full w-full object-cover' />
 					)}
 					<div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
 						<span className='text-xs text-white'>{avatarItem ? '更换' : '上传'}</span>

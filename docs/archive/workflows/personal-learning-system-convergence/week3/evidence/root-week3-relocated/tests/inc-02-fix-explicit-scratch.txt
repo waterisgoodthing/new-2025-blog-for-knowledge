@@ -1,0 +1,43 @@
+INC-02 fix — evidence 2/4: explicit astra_week3_* URL behaves exactly as before
+===============================================================================
+
+Scope: (a) with an explicit sanctioned scratch URL the guard is transparent — the
+two INC-02 leak-source tests execute and pass; (b) the default-closed release for
+pre-existing legacy tests works, so non-Week-3 tests are not collateral damage.
+
+1) Affected Week 3 tests, explicit astra_week3_* DATABASE_URL (guard must NOT block):
+
+   $ cd backend && env DATABASE_URL="postgresql+asyncpg://localhost:5432/astra_week3_inc02_clean" \
+       PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr09_wk3_runner.py tests/test_pr09_rework.py -q
+   ..............................                                           [100%]
+   30 passed in 1.62s
+   exit=0
+   -> No `pytest.exit` / no guard message: the effective target is astra_week3_inc02_clean
+      (matches ^astra_week3_[a-z0-9_]+$), so behaviour is unchanged vs. a run without conftest.
+
+2) Pre-existing legacy DB test (allowlisted, rollback-only), NO DATABASE_URL env,
+   collect-only — proves the release prevents false-positive breakage:
+
+   $ cd backend && env -u DATABASE_URL PYTHONPATH=. .venv/bin/python -m pytest \
+       tests/test_attempt_service.py --collect-only -q
+   2 tests collected in 0.20s
+   exit=0
+   -> test_attempt_service.py is on the audited `_LEGACY_LOCAL_DB_ALLOWLIST`, so the
+      fail-closed guard does not abort it (no DB write occurs during --collect-only).
+
+3) blog_v2 was not touched by any of the above (read-only counts as blog_user):
+
+   $ psql -h localhost -U blog_user -d blog_v2 -tAc \
+       "select count(*) from notes where slug like 'wk3-%' or slug like 'pr09rw-%' or title='pr09-rework-note'"
+   9
+   $ ... subjects where name='pr09-rework-subj'   -> 1
+   $ ... knowledge_points where name='pr09-rework-kp' -> 1
+   (Unchanged from the root-cause residue: 9/1/1. No new rows.)
+
+Guard mechanism (unchanged): backend/tests/conftest.py
+pytest_collection_modifyitems() resolves the effective DB per file (implicit
+`from app.database import ...` -> app.database engine URL; explicit
+`create_engine(os.environ["DATABASE_URL"])` -> env DATABASE_URL) and calls
+pytest.exit(..., returncode=2) before executing anything unless the target matches
+^astra_week3_[a-z0-9_]+$. Legacy Week 1/2 rollback/self-cleaning tests are released
+via the default-closed file allowlist (or @pytest.mark.allow_local_db).

@@ -1,0 +1,7 @@
+Listing tests:
+  [chromium] › 01-login-dashboard.spec.ts:24:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页
+  [chromium] › 02-note-creation.spec.ts:20:5 › E2E-02: 新建笔记并保存后可再次编辑保存
+  [chromium] › 03-capture.spec.ts:22:5 › E2E-03: 采集页展示上传入口并可在三种采集模式间切换
+  [chromium] › 04-review-flow.spec.ts:23:5 › E2E-04: 复习页加载到期队列，无到期项时显示已完成空状态
+  [chromium] › 05-error-retry.spec.ts:8:5 › E2E-05: 公开笔记页 API 失败时显示错误状态，重试后恢复
+Total: 5 tests in 5 files

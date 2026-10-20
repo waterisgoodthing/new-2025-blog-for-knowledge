@@ -1,0 +1,6 @@
+=== PR-15 ceremony integration tests (rework rerun; real DB storage, stubbed webauthn verify) ===
+command: python3 scripts/week4-scratch-guard.py run --url postgresql+asyncpg://limengyang@localhost:5432/astra_week4_pr15 -- bash -c "cd backend && .venv/bin/python -m pytest tests/test_passkey_ceremonies.py -q"
+
+....                                                                     [100%]
+4 passed in 0.22s
+PASS: db_name='astra_week4_pr15' source=explicit:--url; executing ['bash', '-c', 'cd backend && .venv/bin/python -m pytest tests/test_passkey_ceremonies.py -q']

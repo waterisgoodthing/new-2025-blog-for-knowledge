@@ -1,0 +1,25 @@
+.......................F                                                 [100%]
+=================================== FAILURES ===================================
+___________________ test_visibility_correct_version_toggles ____________________
+
+client = <starlette.testclient.TestClient object at 0x10b7a8ce0>
+
+    def test_visibility_correct_version_toggles(client):
+        mistake_id = asyncio.run(_seed_mistake(visibility="private", status="active"))
+        _ensure_admin(client)
+        resp = client.patch(
+            f"/api/admin/mistakes/{mistake_id}/visibility",
+            json={"version": 1, "visibility": "public"},
+        )
+>       assert resp.status_code == 200, (resp.status_code, resp.text)
+E       AssertionError: (500, '{"detail":"Internal server error","request_id":"7d1e6000-e15b-4737-a308-b3452a0506a7"}')
+E       assert 500 == 200
+E        +  where 500 = <Response [500 Internal Server Error]>.status_code
+
+tests/test_pr09_verify_api_contract.py:448: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    app.observability:request_observability.py:20 unhandled_request_error
+=========================== short test summary info ============================
+FAILED tests/test_pr09_verify_api_contract.py::test_visibility_correct_version_toggles
+1 failed, 23 passed in 0.91s
+PASS: db_name='astra_week3_pr09_ui_api' source=explicit:--url; executing ['zsh', '-c', 'dropdb -h 127.0.0.1 -p 49621 -U postgres --if-exists astra_week3_pr09_ui_api && createdb -h 127.0.0.1 -p 49621 -U postgres astra_week3_pr09_ui_api && cd backend && .venv/bin/python -m alembic upgrade head >/tmp/pr09_alembic.log 2>&1 && PYTHONPATH=. .venv/bin/python -m pytest tests/test_pr09_verify_api_contract.py -q 2>&1']

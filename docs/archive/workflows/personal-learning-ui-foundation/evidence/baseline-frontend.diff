@@ -1,0 +1,2624 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index c7fd870..4dc464c 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -49,7 +49,7 @@ docs/workflows/<task-name>/
+ When a workflow is required:
+ 
+ 1. Establish goal, scope, requirements, task order, risks, and validation.
+-2. Obtain explicit approval for the task list or named phase before implementation.
++2. Use explicit approval already given for the task list or named phase; do not request it again. Obtain approval only when the required scope is not yet authorized.
+ 3. Execute approved items serially when the workflow requires serial execution.
+ 4. Update the exact task and evidence immediately after each item.
+ 5. Do not carry approval into later phases, migrations, deployment, production writes, commit, or push.
+@@ -146,14 +146,16 @@ Allowed final states are `PASS`, `PARTIAL`, `FAIL`, `BLOCKED`, `NOT_VERIFIED`, a
+ 
+ ## 7. Persona Workers And Collaboration
+ 
+-Persona Workers are specialist reasoning profiles under `agents/workers/`; they are not Cloudflare Workers or background jobs.
++Worker files under `agents/workers/` define specialist profiles, not Cloudflare Workers or background jobs. A profile describes expertise; an assignment role describes what an actual agent does in this task.
+ 
+-- Choose exactly one Primary Owner for a non-trivial task.
+-- Add consulted specialists only when the task crosses their domain.
+-- Keep implementation, independent review, verification, gate decisions, and final approval separate.
+-- A role title, seniority claim, or Persona voice is not evidence.
+-- Do not invoke all Workers by default.
+-- A single agent adopting several Personas in sequence is not independent review; label it as a perspective pass unless a separate agent/process actually reviewed it.
++- Classify the task at the start and briefly state why. Use `SOLO` only when the goal is clear, scope is small and bounded, risk is low, verification is straightforward, and no auth, data/schema, API contract, core business/AI rule, or production boundary is affected. Simple wording, links, read-only lookups, local styling, and well-understood local fixes may qualify.
++- Non-simple tasks default to `WORKER`: the main agent is the single `primary_owner`, responsible for planning, finalizing the solution, choosing modification scope and acceptance criteria, assigning real subagents, judging rework, and final code accept.
++- Workers execute bounded investigation, consultation, implementation, review, or verification and return evidence and unresolved issues. They cannot expand scope or grant final accept.
++- Independent review of non-simple results requires a real separate agent without implementation ownership. Persona switching is only a perspective pass. Select only needed specialists; do not invoke all Workers.
++- Do not classify by file count or line count alone, split work merely to use agents, or split a complex task into small pieces to evade review or gates. Reclassify if dependencies, uncertainty, or scope grow.
++- Run independent work concurrently only with disjoint write ownership and satisfied dependencies. Required serial tasks and gates remain serial.
++- Final code accept belongs to the main agent and requires relevant review, verification, and gates; it does not authorize commit, push, merge, migration, deployment, or production writes. Required user approvals remain separate.
++- Follow higher-priority instructions and actual tool availability. If real subagents cannot run, report the limitation and follow the fallback in orchestration; never fabricate delegation or independent review.
+ 
+ Follow [`agents/orchestration.md`](agents/orchestration.md), [`agents/permissions.md`](agents/permissions.md), [`agents/gates.md`](agents/gates.md), [`agents/task-template.md`](agents/task-template.md), and [`agents/report-template.md`](agents/report-template.md).
+ 
+diff --git a/agents/README.md b/agents/README.md
+index a8189a8..699f236 100644
+--- a/agents/README.md
++++ b/agents/README.md
+@@ -2,13 +2,21 @@
+ 
+ Shared repository rules live in [`../AGENTS.md`](../AGENTS.md). This directory defines selective specialist collaboration; Worker files add domain judgment without overriding shared rules.
+ 
++## Default Execution
++
++Use `SOLO` for simple tasks: the goal and scope are clear, risk is low, and the result is easy to verify. Non-simple tasks default to real Worker sub-agents, with bounded assignments and independent review. Apply the classification, exception handling, and sequence in [orchestration](orchestration.md); file count alone does not determine complexity.
++
++The main agent is the single `primary_owner`. It plans the work, finalizes the design and modification scope, assigns Workers, resolves findings and rework, and makes the final code accept decision. Accept does not authorize commit, push, merge, migration, or deployment, and cannot override a failed gate or required user approval.
++
++A Worker profile defines domain expertise; an assignment role defines whether that agent consults, implements, reviews, or verifies this task. Workers return findings, changes, evidence, and unresolved issues to the main agent. They cannot expand scope or make the final accept decision. The implementer cannot independently review the same change. Load only the profiles relevant to assigned work; never start the whole catalog by default.
++
+ ## Selective Loading
+ 
+ 1. Always read `AGENTS.md`.
+ 2. Read [orchestration](orchestration.md) for non-trivial ownership or multi-role work.
+ 3. Read [permissions](permissions.md) for review, verification, blocking, or approval boundaries.
+ 4. Read [gates](gates.md) for high-risk scope.
+-5. Read the Primary Owner Worker and only relevant consulted/review Workers.
++5. Read only the Worker profiles relevant to each assigned task; the main agent is not required to adopt a Worker profile to be Primary Owner.
+ 
+ Do not load all Persona files by default.
+ 
+@@ -38,6 +46,19 @@ Do not load all Persona files by default.
+ | [Senior DevOps / SRE](workers/senior-devops-sre.md) | Build, release, runtime, observability, incidents |
+ | [Senior UX / Interaction Designer](workers/senior-ux-interaction-designer.md) | Information architecture and interaction quality |
+ | [Senior Domain Analyst](workers/senior-domain-analyst.md) | Personal-knowledge and learning-domain semantics |
++| [Learning Workflow Reviewer](workers/learning-workflow-reviewer.md) | End-to-end learning transitions and retained data links |
++| [Compatibility / Retirement Engineer](workers/compatibility-retirement-engineer.md) | Coexisting paths, consumer compatibility, and staged retirement |
++| [API Contract Reviewer](workers/api-contract-reviewer.md) | Consistency across backend contracts and frontend consumers |
++
++“Worker” here means an agent assigned a specialist profile, not Cloudflare Worker or an application background worker. Reading a profile alone does not create a sub-agent or establish independent review.
++
++## Candidate Specialist Modes
++
++These are optional bounded assignments using existing profiles, not additional Worker files or mandatory stages:
++
++- **Content publication consistency** (`content-publication-reviewer`): compare draft, published, and withdrawn visibility across pages, lists, search, and static exports. Use Domain/Security/QA expertise as relevant. Read-only by default; do not publish content, deploy, or replace security review.
++- **Runtime delivery verification** (`runtime-delivery-verifier`): verify actual page behavior, JS/CSS resources, route navigation, and API connectivity, with the source/build/runtime identity recorded where verifiable. Use SRE/QA expertise. Read-only by default; report delivery defects to the implementation owner and keep deployment separately authorized.
+ 
+-“Worker” here means Persona Worker, not Cloudflare Worker or an application background worker.
++## Shared Evidence Verification Mode
+ 
++Any relevant specialist may receive a read-only evidence verification assignment. For each supplied claim, distinguish current source facts, observed runtime results, historical descriptions, and unverified assumptions. Return whether the claim is supported, partially supported, outdated, or unverified, with exact evidence and limits. Do not turn verification into unsolicited repair or treat a historical “complete” statement as current proof. These claim labels do not replace the task statuses in `AGENTS.md`.
+diff --git a/agents/orchestration.md b/agents/orchestration.md
+index ddb9760..7232b15 100644
+--- a/agents/orchestration.md
++++ b/agents/orchestration.md
+@@ -1,50 +1,77 @@
+-# Persona Worker Orchestration
++# Worker Orchestration
+ 
+-## Assignment
++## Task Routing
+ 
+-Every non-trivial task has exactly one `primary_owner`. Other roles are explicit:
++Start with current evidence and briefly record `SOLO` or `WORKER` and the reason. Task complexity and domain risk are separate from whether a dedicated workflow folder is needed under `AGENTS.md`.
+ 
+-```yaml
+-primary_owner: senior-backend-engineer
+-consulted: [senior-security-engineer]
+-reviewers: [principal-technical-reviewer]
+-verifiers: [senior-qa-sdet]
+-required_gates: [G3_SECURITY_AUTH]
+-final_approver: project-lead-if-required
+-```
++Use `SOLO` only if all conditions hold: a clear goal, small bounded scope, low risk, straightforward verification, and no auth, data/schema, API contract, core business/AI rule, or production boundary. The main agent directly handles and verifies simple tasks; no subagent or assignment document is required.
++
++Use `WORKER` by default for non-simple tasks: multiple dependent stages, cross-module coordination, substantial design trade-offs, complex diagnosis, or high-risk boundaries. Do not use file count or lines changed as the deciding test. Do not force artificial delegation or split a complex task to evade review. Reclassify when new uncertainty or dependencies make a simple task non-simple; obtain only missing authorization before expanded high-risk work.
+ 
+-- **Owner** drives the task to its authorized terminal state.
+-- **Consulted** roles answer bounded specialist questions.
+-- **Reviewer** searches independently for defects and unsupported assumptions.
+-- **Verifier** produces reproducible evidence.
+-- **Gate reviewer** decides only the named domain gate.
+-- **Project Lead** supplies explicit approval where rules require it.
++## Assignment And Decision Ownership
+ 
+-## Modes And Sequence
++The main agent is the single `primary_owner`. Specialist profiles describe expertise, while assignment roles describe responsibility in this task. Each Worker is a real subagent with an explicit identity and bounded assignment.
++
++```yaml
++execution_mode: WORKER
++primary_owner: main-agent
++assignments:
++  - agent_id: <actual executor id>
++    profile: senior-backend-engineer
++    role: implementer
++    write_scope: [<authorized paths>]
++  - agent_id: <actual independent reviewer id>
++    profile: principal-technical-reviewer
++    role: reviewer
++    write_scope: []
++consulted: []
++verifiers: []
++required_gates: [] # derive from actual scope, never from the sample
++code_acceptor: main-agent
++user_approval: <existing authorization or required decision>
++```
+ 
+-- `SOLO`: low-risk, single-domain task.
+-- `CONSULT`: Owner obtains bounded specialist input.
+-- `REVIEW`: design or implementation receives an independent pass.
+-- `GATE`: evidence must satisfy a high-risk boundary.
+-- `INCIDENT`: detect, contain, collect evidence, recover minimally, verify, and record follow-up.
++- **Main agent / Primary Owner** understands the request, makes the plan, finalizes the solution and acceptance criteria, chooses changes, delegates, reconciles evidence, requests rework, and makes final code accept. Specialist proposals inform its decision; they do not replace it.
++- **Implementer** changes only assigned files within the approved solution, self-tests, and returns a diff summary and evidence. It reports necessary scope or design changes before implementing them.
++- **Consulted** roles answer bounded specialist questions and propose options.
++- **Reviewer** independently searches for defects, regressions, and unsupported assumptions; it recommends a disposition but cannot grant final accept.
++- **Verifier** produces reproducible evidence against acceptance criteria. An implementer's tests are self-checks, not independent verification.
++- **Gate reviewer** decides only the named domain gate from evidence. The main agent cannot override a failing gate with accept.
++- **Project Lead / user** supplies explicit authorization where required. Existing authorization remains valid within its scope; do not ask again merely because a Worker is assigned.
+ 
+-Use the smallest safe mode:
++## Sequence And Coordination
+ 
+ ```text
+-goal/boundaries -> current evidence -> risk/gates -> one Owner
+--> consultation -> implementation/analysis -> review -> verification
+--> gate reconciliation -> truthful report or approval request
++main agent: goal/boundaries -> current evidence -> classification/risk/gates
++-> plan, solution, scope and acceptance finalized within user authorization
++-> bounded Worker execution and self-checks
++-> independent review and necessary verification
++-> main agent assesses findings -> assigned rework and affected rechecks
++-> gate reconciliation -> main agent final code accept and truthful report
+ ```
+ 
+-## Independence And Conflicts
++Consultation may inform the solution before implementation. In non-simple work, delegate concrete bounded execution and independent review; the main agent may perform investigation, integration, and targeted corrections, but corrections remain subject to independent review. Spawn only when a subtask can run independently alongside useful main-agent work. Stage assignments when dependencies require it; do not keep idle agents merely to fill roles.
++
++Each assignment must state objective, included/excluded scope, write ownership (or read-only), dependencies, acceptance, validation, stop conditions, and required output. Use actual agent identities to demonstrate independence. Parallel execution is allowed only for independent work with disjoint write ownership. Shared files need a single writer or an explicit sequential handoff. Never overwrite others' dirty changes. Required serial task items and gates cannot be bypassed by parallel dispatch.
++
++Use consultation, review, gate checks, incident handling, and evidence verification as activities within the selected execution mode, not alternatives that bypass `WORKER`. Incidents still follow detect, contain, collect evidence, recover minimally, verify, and record follow-up within authorization.
++
++## Independence, Rework And Constraints
++
++For non-simple results, use a real separate reviewer with no implementation ownership. A single agent changing Persona is only a perspective pass. The Technical Reviewer does not repair reviewed implementation by default. QA may add tests and fixtures; product-code repair is assigned by the main agent to an implementer. A reviewer who starts implementing cannot independently review those changes. A domain Worker that raises a block rechecks it after the fix.
++
++Reviewer and verifier activities may share one non-implementing agent for proportionate low/medium-risk work; high-risk work keeps implementation, independent review, verification, and named gate decisions separately assigned as required by the gates. The main agent records those decisions and retains final code accept, without replacing independent evidence or required user authorization.
++
++If tools, capacity, or higher-priority rules prevent real subagents, state the limitation. Stage work when capacity is temporary. Safe authorized investigation may continue, but label any solo assessment as a perspective pass. Do not claim independent review or final accept for non-simple work while required independent review is missing; report `PARTIAL` or `BLOCKED` as appropriate. Simple work remains `SOLO`.
+ 
+-A single agent may use multiple Persona perspectives but must not call that independent review. Independent review requires a separate reviewer pass without implementation ownership, preferably a separately delegated agent when available and justified.
++Resolve conflicts through the disputed claim, domain ownership, current evidence, alternatives, and consequences. The main agent determines changes within scope; unresolved material choices or missing authorization go to the user. Seniority and role titles are not evidence.
+ 
+-The Technical Reviewer does not repair reviewed implementation by default. QA may add tests and fixtures, but product-code repair returns to the Owner. A domain Worker that raises a block rechecks that domain after the fix.
++## Evidence Verification Activity
+ 
+-Resolve disagreement through the exact disputed claim, domain ownership, current evidence, alternatives, and consequences—not seniority. Escalate material unresolved choices to the Project Lead.
++Any relevant Worker may receive a read-only evidence verification assignment. Input: exact claims, sources, and existing artifacts. Compare current source/tests, runtime evidence, and historical descriptions; report each claim as supported, partially supported, stale, or unverified, with paths or reproducible evidence and limitations. Do not repair while verifying or treat historical completion wording as current proof. This activity does not create a new specialist or replace independent review.
+ 
+-## Status Separation
++## Final Accept And Status Separation
+ 
+-Keep implementation, verification, gate, approval, commit, push, migration, and deployment statuses independent. One status never implies another.
++Before accept, the main agent checks the actual changes against agreed scope and acceptance, resolves actionable review findings, confirms relevant validation and required gates, and reports remaining limitations. In `SOLO`, proportionate self-checks suffice. In `WORKER`, self-checks never replace required independent review. Acceptance means the authorized code/document changes are accepted; it is not a platform merge operation.
+ 
++Keep implementation, review disposition, verification, domain gate, code accept, user authorization, commit, push, merge, migration, and deployment statuses independent. One status never implies another.
+diff --git a/agents/permissions.md b/agents/permissions.md
+index cf7e415..ebc71d7 100644
+--- a/agents/permissions.md
++++ b/agents/permissions.md
+@@ -1,8 +1,14 @@
+ # Persona Worker Permissions
+ 
++## Main Agent And Worker Boundary
++
++The main agent is the Primary Owner and final code acceptor. It owns planning, solution finalization, modification scope, assignments, rework decisions, and acceptance within user authorization. Worker profiles grant expertise, not final decision authority. Where a profile says it owns a design or acceptance criteria, it supplies specialist proposals and evidence for the main agent to finalize; named domain gates retain their independent blocking authority.
++
++A Worker may modify only its assigned write scope and may not enlarge authorization, delegate additional work without main-agent assignment, or grant final code accept. Existing user approval does not need repetition for an in-scope handoff. Final accept never grants commit, push, merge, migration, deployment, or production permission.
++
+ ## Capabilities
+ 
+-- `DESIGN`: propose or change a design within owned scope.
++- `DESIGN`: investigate and propose a design within assigned scope; the main agent finalizes the solution and any design changes.
+ - `IMPLEMENT`: modify authorized project files.
+ - `REVIEW`: independently assess design or implementation.
+ - `VERIFY`: produce reproducible evidence.
+@@ -19,8 +25,11 @@ No Persona grants itself permission for destructive actions, production writes,
+ | Database/Security/SRE | yes | scoped | yes | yes | domain/release |
+ | QA/SDET | test design | tests only by default | yes | yes | quality/release |
+ | Technical Reviewer | critique | no by default | yes | review evidence | technical/release |
++| Learning Workflow Reviewer | flow critique | no by default | yes | end-to-end evidence | learning flow |
++| Compatibility Retirement Engineer | transition proposal | scoped compatibility work | peer | own work | compatibility |
++| API Contract Reviewer | contract critique | no by default | yes | cross-layer evidence | contract |
+ 
+ Every block must state `Block Type`, `Severity`, `Problem`, `Evidence`, `Impact`, `Reproduction/Detection`, `Required Action`, and `Recheck Condition`. Unsupported concern is a risk note, not a block.
+ 
+-An Owner cannot independently approve its own high-risk result. A Reviewer cannot silently edit and approve the same implementation. Project Lead approval does not make a failing gate pass; a passing gate does not imply approval.
++The main agent cannot accept its own high-risk result without required independent review, verification, gates, and user authorization. A Reviewer cannot silently edit and approve the same implementation. Project Lead approval does not make a failing gate pass; a passing gate does not imply approval.
+ 
+diff --git a/agents/report-template.md b/agents/report-template.md
+index 81d8ea2..feb5f85 100644
+--- a/agents/report-template.md
++++ b/agents/report-template.md
+@@ -4,7 +4,7 @@
+ 
+ `PASS | PARTIAL | FAIL | BLOCKED | NOT_VERIFIED | NOT_AUTHORIZED`
+ 
+-State the outcome first.
++State the outcome first. Briefly state execution mode and routing reason; distinguish final code accept from task status and user authorization.
+ 
+ ## Changes
+ 
+@@ -12,12 +12,16 @@ List only actual changes.
+ 
+ ## Evidence
+ 
+-Provide relevant paths, current-source facts, or runtime/data evidence.
++Provide relevant paths, current-source facts, or runtime/data evidence. For `WORKER`, identify actual executor/reviewer/verifier assignments and their outputs; distinguish planned, executed, and unavailable assignments.
+ 
+ ## Verification
+ 
+ List checks and results. Distinguish simulated, real-browser, isolated-database, and production evidence.
+ 
++## Main Agent Acceptance
++
++For non-simple work, record accepted, rework required, or not accepted with the reason: scope/acceptance checks, actionable findings and their resolution, verification, and required gate results. Simple work may state acceptance alongside the conclusion. Final accept does not imply commit, push, merge, migration, deployment, or production writes.
++
+ ## Risks / Remaining / Decision Needed
+ 
+ State remaining risks, deferred or unexecuted work, and the exact decision required. Omit empty sections when a shorter report is clearer.
+diff --git a/agents/task-template.md b/agents/task-template.md
+index b335920..8457241 100644
+--- a/agents/task-template.md
++++ b/agents/task-template.md
+@@ -3,20 +3,32 @@
+ ```yaml
+ task_id: TASK-000
+ objective: <observable outcome>
++execution_mode: SOLO | WORKER
++routing_reason: <complexity and risk, not file count>
+ scope: {included: [], excluded: []}
+ acceptance: []
+ risk: LOW | MEDIUM | HIGH | CRITICAL
+-primary_owner: <one worker>
+-consulted: []
+-reviewers: []
+-verifiers: []
++primary_owner: main-agent
++code_acceptor: main-agent
++plan_and_solution: <main-agent finalized approach>
++assignments:
++  - agent_id: <actual id; never invent an executed assignment>
++    profile: <relevant worker profile>
++    role: implementer | consulted | reviewer | verifier | gate-reviewer
++    objective: <bounded outcome>
++    write_scope: [] # empty means read-only
++    excluded_scope: []
++    depends_on: []
++    acceptance: []
++    validation: []
++    stop_conditions: []
++    required_output: [changes, evidence, unresolved_issues]
+ required_gates: []
+-approval_required: false
++user_authorization: <existing approved scope or missing decision>
+ current_evidence: []
+ assumptions: []
+ stop_conditions: []
+ validation: []
+ ```
+ 
+-Use this only when assignment structure adds value. Low-risk work does not require a dedicated task document.
+-
++Use only when assignment structure adds value. Simple `SOLO` work does not need a task document or assignments. Record actual identities when dispatching; planned assignments are not execution evidence. Apply workflow-folder requirements separately under `AGENTS.md`. The main agent records review findings, rework, verification, gates, and final accept without treating any of them as production or Git authorization.
+diff --git a/agents/workers/senior-qa-sdet.md b/agents/workers/senior-qa-sdet.md
+index e33658a..73bf4a3 100644
+--- a/agents/workers/senior-qa-sdet.md
++++ b/agents/workers/senior-qa-sdet.md
+@@ -21,7 +21,7 @@ Reject tests that assert implementation trivia, false-positive mocks, unverified
+ 
+ ## Permissions And Limits
+ 
+-May implement tests, fixtures, harnesses, and verification utilities. Product-code repair belongs to the Owner by default. Can raise quality/release blocks with evidence but cannot approve untested behavior or reinterpret requirements.
++May implement tests, fixtures, harnesses, and verification utilities. Product-code repair returns to the main agent for assignment to an implementer. Can raise quality/release blocks with evidence but cannot approve untested behavior or reinterpret requirements.
+ 
+ ## Output
+ 
+diff --git a/backend/app/models/review_item.py b/backend/app/models/review_item.py
+index 8ac45c9..4986454 100644
+--- a/backend/app/models/review_item.py
++++ b/backend/app/models/review_item.py
+@@ -1,7 +1,7 @@
+ import uuid
+ from datetime import datetime
+ 
+-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint, func
++from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, SmallInteger, String, UniqueConstraint, func
+ from sqlalchemy.dialects.postgresql import UUID
+ from sqlalchemy.orm import Mapped, mapped_column
+ 
+@@ -20,18 +20,19 @@ class ReviewItem(Base):
+         nullable=False,
+     )
+     state: Mapped[str] = mapped_column(String(20), default="active", server_default="active", nullable=False)
+-    algorithm: Mapped[str] = mapped_column(String(30), default="fixed_interval_v1", server_default="fixed_interval_v1", nullable=False)
++    algorithm: Mapped[str] = mapped_column(String(30), default="fixed_interval_v2", server_default="fixed_interval_v2", nullable=False)
+     interval_days: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+     repetitions: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+     next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+     last_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
++    last_rating: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+ 
+     __table_args__ = (
+         CheckConstraint("target_type = 'mistake'", name="ck_review_items_target_type"),
+-        CheckConstraint("state IN ('active','paused')", name="ck_review_items_state"),
+-        CheckConstraint("algorithm = 'fixed_interval_v1'", name="ck_review_items_algorithm"),
++        CheckConstraint("state IN ('active','mastered','paused')", name="ck_review_items_state"),
++        CheckConstraint("algorithm IN ('fixed_interval_v1','fixed_interval_v2')", name="ck_review_items_algorithm"),
+         CheckConstraint("interval_days >= 0 AND repetitions >= 0", name="ck_review_items_counts"),
+         UniqueConstraint("target_type", "target_id", name="uq_review_items_target"),
+         Index("uq_review_items_mistake_id", "mistake_id", unique=True),
+@@ -52,10 +53,14 @@ class ReviewRecord(Base):
+     next_interval_days: Mapped[int] = mapped_column(Integer, nullable=False)
+     previous_next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+     next_review_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
++    previous_state: Mapped[str] = mapped_column(String(20), server_default="active", nullable=False)
++    new_state: Mapped[str] = mapped_column(String(20), server_default="active", nullable=False)
+     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+ 
+     __table_args__ = (
+         CheckConstraint("rating BETWEEN 0 AND 5", name="ck_review_records_rating"),
+         CheckConstraint("previous_interval_days >= 0 AND next_interval_days > 0", name="ck_review_records_intervals"),
++        CheckConstraint("previous_state IN ('active','mastered','paused')", name="ck_review_records_state"),
++        CheckConstraint("new_state IN ('active','mastered','paused')", name="ck_review_records_new_state"),
+         Index("idx_review_records_item_time", "review_item_id", "reviewed_at"),
+     )
+diff --git a/backend/app/routers/review_items.py b/backend/app/routers/review_items.py
+index 75da3b3..6d67f7b 100644
+--- a/backend/app/routers/review_items.py
++++ b/backend/app/routers/review_items.py
+@@ -34,6 +34,7 @@ def _item_out(item, mistake) -> ReviewItemOut:
+         repetitions=item.repetitions,
+         next_review_at=item.next_review_at,
+         last_reviewed_at=item.last_reviewed_at,
++        last_rating=item.last_rating,
+         question_text=mistake.question_text,
+         mistake_reason=mistake.mistake_reason,
+     )
+diff --git a/backend/app/schemas/review_item.py b/backend/app/schemas/review_item.py
+index e3c5d90..504b31c 100644
+--- a/backend/app/schemas/review_item.py
++++ b/backend/app/schemas/review_item.py
+@@ -1,5 +1,7 @@
+ import uuid
+ from datetime import datetime
++from typing import Literal
++
+ from pydantic import BaseModel, Field
+ 
+ 
+@@ -12,12 +14,13 @@ class ReviewItemOut(BaseModel):
+     id: uuid.UUID
+     target_type: str
+     target_id: str
+-    state: str
+-    algorithm: str
++    state: Literal["active", "mastered", "paused"]
++    algorithm: Literal["fixed_interval_v1", "fixed_interval_v2"]
+     interval_days: int
+     repetitions: int
+     next_review_at: datetime
+     last_reviewed_at: datetime | None
++    last_rating: int | None
+     question_text: str
+     mistake_reason: str | None
+ 
+@@ -33,6 +36,8 @@ class ReviewRecordOut(BaseModel):
+     next_interval_days: int
+     previous_next_review_at: datetime
+     next_review_at: datetime
++    previous_state: Literal["active", "mastered", "paused"]
++    new_state: Literal["active", "mastered", "paused"]
+     created_at: datetime
+ 
+     model_config = {"from_attributes": True}
+diff --git a/backend/main.py b/backend/main.py
+index 7a6da21..7dbbf32 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -14,7 +14,7 @@ from app.middleware.request_observability import request_observability
+ from app.routers import admin_mistakes, admin_profile, ai, ai_polish, ai_runs, attachments, attempts, audit, auth, captures, categories, content, dashboard, diagnostics, drafts, file_workspace, folders, governance, guest_messages, knowledge, knowledge_points, mistake_drafts, music, music_manage, notes, questions, recommendations, review, review_items, search, subjects, suggestions, tags
+ from app.services.keep_alive import start_keep_alive, stop_keep_alive
+ 
+-EXPECTED_ALEMBIC_REVISION = "026"
++EXPECTED_ALEMBIC_REVISION = "029"
+ 
+ 
+ def _is_enabled(value: str) -> bool:
+diff --git a/backend/tests/test_legacy_note_migration_contract.py b/backend/tests/test_legacy_note_migration_contract.py
+index 8667c43..2b768a6 100644
+--- a/backend/tests/test_legacy_note_migration_contract.py
++++ b/backend/tests/test_legacy_note_migration_contract.py
+@@ -176,7 +176,7 @@ class LegacyNoteMigrationContractTest(unittest.IsolatedAsyncioTestCase):
+                 migration_schema = await connection.scalar(
+                     text("SELECT to_regnamespace('legacy_migration')::text")
+                 )
+-            self.assertEqual(revision, "026")
++            self.assertEqual(revision, "027")
+             self.assertEqual(ledger, "legacy_note_migrations")
+             self.assertEqual(migration_schema, "legacy_migration")
+         finally:
+diff --git a/backend/tests/test_security_settings_guards.py b/backend/tests/test_security_settings_guards.py
+index b6fb513..357964e 100644
+--- a/backend/tests/test_security_settings_guards.py
++++ b/backend/tests/test_security_settings_guards.py
+@@ -65,7 +65,7 @@ def test_development_environments_keep_bypass_semantics(env: str) -> None:
+ 
+ 
+ def test_pinned_revision_matches_the_newest_migration() -> None:
+-    assert main.EXPECTED_ALEMBIC_REVISION == "026"
++    assert main.EXPECTED_ALEMBIC_REVISION == "029"
+ 
+ 
+ def test_orphaned_passkey_registration_options_endpoint_is_removed() -> None:
+diff --git a/docs/public-deploy-runbook.md b/docs/public-deploy-runbook.md
+index 88c1538..54a576c 100644
+--- a/docs/public-deploy-runbook.md
++++ b/docs/public-deploy-runbook.md
+@@ -1,6 +1,35 @@
+ # Public Deploy Runbook
+ 
+-Last updated: 2026-06-05
++Last updated: 2026-09-04
++
++## Post-Deploy Smoke (Mandatory)
++
++After every public deploy, re-run the runtime smoke against the production URL **before** declaring the release good (Phase 0 T-00b contract, evidence: `docs/workflows/personal-learning-system-convergence/phase-0-evidence.md`):
++
++1. `GET <production-url>/` → HTTP 200
++2. Parse the returned HTML for `<script src>` / `<link href>` assets and request each one → all HTTP 200 (`referenced = successful`, `failed = 0`)
++3. `GET <production-url>/notes` → HTTP 200
++4. `GET <backend-url>/api/health` → HTTP 200 with `{"status":"ok"}`
++
++If any check fails, treat the deployment as bad and follow [Rollback](#rollback).
++
++The dedicated smoke script `scripts/runtime-smoke.mjs` covers the status-code checks above (home page, every referenced asset, `/notes`, and the health endpoint's HTTP status; asset counting + exit-code gating; any 2xx is accepted). It does not inspect response bodies, so the health JSON body (`{"status":"ok"}`, step 4) must still be confirmed manually.
++
++Pre-deploy (local): after `npm run build:cf`, start the production preview on :8787 (`npm run preview`, workerd) and the smoke backend on :8001, then run:
++
++```bash
++node scripts/runtime-smoke.mjs   # or: npm run smoke
++```
++
++The defaults match that topology (`--frontend-url http://localhost:8787`, `--api-health-url http://127.0.0.1:8001/api/health`).
++
++Post-deploy (production): re-run against the live URLs before declaring the release good:
++
++```bash
++node scripts/runtime-smoke.mjs --frontend-url https://<production-url> --api-health-url https://<backend-url>/api/health
++```
++
++Record the `SMOKE` / `SMOKE_JSON` output (`referenced` / `failed` counts) in the release record. Any failed check makes the script exit with code 1: pre-deploy, do not run `npm run deploy`; post-deploy, treat the deployment as bad and follow [Rollback](#rollback).
+ 
+ ## Latest Deployment
+ 
+@@ -152,7 +181,9 @@ For task-based work:
+ git status --short
+ npx tsc --noEmit
+ npm run build
++npm run build:cf   # production artifact; verify locally via `npm run preview` (workerd, :8787)
+ npm run deploy
++# then: run Post-Deploy Smoke (above) against the production URL
+ ```
+ 
+ Optional GitHub push after a clean commit:
+diff --git a/next.config.ts b/next.config.ts
+index d86a6e1..4b79910 100644
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -46,10 +46,10 @@ const nextConfig: NextConfig = {
+ 			// Route Cutover: legacy write-* 与旧入口下线，统一重定向到 /manage/* 主线
+ 			{ source: '/write-mistake', destination: '/manage/capture', permanent: false },
+ 			{ source: '/write-mistake/:slug', destination: '/manage/mistakes', permanent: false },
+-			{ source: '/write-note', destination: '/manage/dashboard', permanent: false },
+-			{ source: '/write-note/:slug', destination: '/manage/dashboard', permanent: false },
+-			{ source: '/write', destination: '/manage/dashboard', permanent: false },
+-			{ source: '/write/:slug', destination: '/manage/dashboard', permanent: false },
++			{ source: '/write-note', destination: '/manage/notes/new?type=note', permanent: false },
++			{ source: '/write-note/:slug', destination: '/manage/notes/:slug', permanent: false },
++			{ source: '/write', destination: '/manage/notes/new?type=blog', permanent: false },
++			{ source: '/write/:slug', destination: '/manage/notes/:slug', permanent: false },
+ 			{ source: '/mistakes/review', destination: '/manage/review', permanent: false }
+ 		]
+ 	}
+diff --git a/package.json b/package.json
+index 230a271..8b1238f 100644
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,7 @@
+ 		"predeploy:frontend": "node scripts/predeploy-frontend-audit.mjs",
+ 		"predeploy:backend": "node scripts/predeploy-backend-audit.mjs",
+ 		"preview": "opennextjs-cloudflare preview",
++		"smoke": "node scripts/runtime-smoke.mjs",
+ 		"postinstall": "node scripts/patch-opennext-node-minify.mjs",
+ 		"deploy": "opennextjs-cloudflare deploy",
+ 		"deploy:frontend": "npm run predeploy:frontend && opennextjs-cloudflare deploy",
+diff --git a/src/app/batch7-compatibility.test.ts b/src/app/batch7-compatibility.test.ts
+index 90a885a..835c53f 100644
+--- a/src/app/batch7-compatibility.test.ts
++++ b/src/app/batch7-compatibility.test.ts
+@@ -5,55 +5,55 @@ import { describe, expect, it } from 'vitest'
+ const root = resolve(process.cwd(), 'src/app')
+ 
+ function source(relativePath: string) {
+-  return readFileSync(resolve(root, relativePath), 'utf8')
++	return readFileSync(resolve(root, relativePath), 'utf8')
+ }
+ 
+ describe('Batch 7 route compatibility contract', () => {
+-  it('keeps the public read routes available without page-level AuthGate', () => {
+-    const publicRoutes = [
+-      '(home)/page.tsx',
+-      'blog/page.tsx',
+-      'blog/[id]/page.tsx',
+-      'notes/page.tsx',
+-      'notes/[id]/page.tsx',
+-      'mistakes/page.tsx',
+-    ]
+-
+-    for (const route of publicRoutes) {
+-      expect(existsSync(resolve(root, route)), route).toBe(true)
+-      expect(source(route), route).not.toContain("from '@/components/auth-gate'")
+-    }
+-  })
+-
+-  it('keeps private entry points behind AuthGate', () => {
+-    const protectedRoutes = [
+-      'manage/(workspace)/layout.tsx',
+-      'mistakes/review/page.tsx',
+-      'write-note/page.tsx',
+-      'write-note/[slug]/page.tsx',
+-      'write-mistake/page.tsx',
+-      'write-mistake/[slug]/page.tsx',
+-    ]
+-
+-    for (const route of protectedRoutes) {
+-      expect(existsSync(resolve(root, route)), route).toBe(true)
+-      expect(source(route), route).toContain('AuthGate')
+-    }
+-  })
+-
+-  it('keeps current content links on the manage workflow without removing legacy routes', () => {
+-    const routes = source('../lib/content-routes.ts')
+-    expect(routes).toContain("return `/manage/mistakes`")
+-    expect(routes).toContain("return `/manage/dashboard`")
+-    expect(existsSync(resolve(root, 'write-note/page.tsx'))).toBe(true)
+-    expect(existsSync(resolve(root, 'write-note/[slug]/page.tsx'))).toBe(true)
+-    expect(existsSync(resolve(root, 'write-mistake/page.tsx'))).toBe(true)
+-    expect(existsSync(resolve(root, 'write-mistake/[slug]/page.tsx'))).toBe(true)
+-  })
+-
+-  it('keeps the public mistakes route while preserving private review cutover', () => {
+-    const nextConfig = readFileSync(resolve(process.cwd(), 'next.config.ts'), 'utf8')
+-    expect(nextConfig).not.toContain("{ source: '/mistakes', destination: '/manage/mistakes', permanent: false }")
+-    expect(nextConfig).toContain("{ source: '/mistakes/review', destination: '/manage/review', permanent: false }")
+-  })
++	it('keeps the public read routes available without page-level AuthGate', () => {
++		const publicRoutes = ['(home)/page.tsx', 'blog/page.tsx', 'blog/[id]/page.tsx', 'notes/page.tsx', 'notes/[id]/page.tsx', 'mistakes/page.tsx']
++
++		for (const route of publicRoutes) {
++			expect(existsSync(resolve(root, route)), route).toBe(true)
++			expect(source(route), route).not.toContain("from '@/components/auth-gate'")
++		}
++	})
++
++	it('keeps private entry points behind AuthGate', () => {
++		const protectedRoutes = [
++			'manage/(workspace)/layout.tsx',
++			'mistakes/review/page.tsx',
++			'write-note/page.tsx',
++			'write-note/[slug]/page.tsx',
++			'write-mistake/page.tsx',
++			'write-mistake/[slug]/page.tsx'
++		]
++
++		for (const route of protectedRoutes) {
++			expect(existsSync(resolve(root, route)), route).toBe(true)
++			expect(source(route), route).toContain('AuthGate')
++		}
++	})
++
++	it('keeps current content links on the manage workflow without removing legacy routes', () => {
++		const routes = source('../lib/content-routes.ts')
++		expect(routes).toContain('return `/manage/mistakes`')
++		expect(routes).toContain('return `/manage/notes/${slug}`')
++		expect(existsSync(resolve(root, 'write-note/page.tsx'))).toBe(true)
++		expect(existsSync(resolve(root, 'write-note/[slug]/page.tsx'))).toBe(true)
++		expect(existsSync(resolve(root, 'write-mistake/page.tsx'))).toBe(true)
++		expect(existsSync(resolve(root, 'write-mistake/[slug]/page.tsx'))).toBe(true)
++	})
++
++	it('redirects legacy authoring routes to the converged notes workspace', () => {
++		const nextConfig = readFileSync(resolve(process.cwd(), 'next.config.ts'), 'utf8')
++		expect(nextConfig).toContain("destination: '/manage/notes/new?type=note'")
++		expect(nextConfig).toContain("destination: '/manage/notes/new?type=blog'")
++		expect(nextConfig).toContain("destination: '/manage/notes/:slug'")
++	})
++
++	it('keeps the public mistakes route while preserving private review cutover', () => {
++		const nextConfig = readFileSync(resolve(process.cwd(), 'next.config.ts'), 'utf8')
++		expect(nextConfig).not.toContain("{ source: '/mistakes', destination: '/manage/mistakes', permanent: false }")
++		expect(nextConfig).toContain("{ source: '/mistakes/review', destination: '/manage/review', permanent: false }")
++	})
+ })
+diff --git a/src/app/manage/(workspace)/dashboard/dashboard-content.tsx b/src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+index f17368a..aaa152f 100644
+--- a/src/app/manage/(workspace)/dashboard/dashboard-content.tsx
++++ b/src/app/manage/(workspace)/dashboard/dashboard-content.tsx
+@@ -1,13 +1,16 @@
+ 'use client'
+ 
++import { useEffect, useRef } from 'react'
+ import useSWR from 'swr'
+ 
+ import { getAdminProfile } from '@/lib/api/admin-profile'
+ import { getDashboardSummary } from '@/lib/api/dashboard'
+-import { FeatureState } from '../../components/feature-state'
++import { AsyncStatePanel } from '@/components/async-state-panel'
+ import { DashboardOverview } from './dashboard-overview'
+ 
+ export function DashboardContent() {
++	const resultRegionRef = useRef<HTMLDivElement>(null)
++	const retryRequestedRef = useRef(false)
+   const { data, error, isLoading, mutate } = useSWR(
+     'manage-dashboard-summary',
+     getDashboardSummary,
+@@ -15,13 +18,24 @@ export function DashboardContent() {
+   )
+   const profileState = useSWR('manage-admin-profile', getAdminProfile, { revalidateOnFocus: false })
+ 
++	useEffect(() => {
++		if (!data || !retryRequestedRef.current) return
++		retryRequestedRef.current = false
++		resultRegionRef.current?.focus()
++	}, [data])
++
++	const retrySummary = () => {
++		retryRequestedRef.current = true
++		return mutate()
++	}
++
+   if (isLoading) {
+-    return <FeatureState state={{ kind: 'loading', label: '正在加载学习概览', rows: 5 }} />
++    return <AsyncStatePanel status='loading' loadingLabel='正在加载学习概览' skeletonRows={5} skeletonTestId='feature-state-skeleton' />
+   }
+ 
+   if (error || !data) {
+-    return <FeatureState state={{ kind: 'error', title: '学习概览加载失败', description: '请检查服务状态后重试。', retry: () => void mutate() }} />
++    return <AsyncStatePanel status='error' title='学习概览加载失败' error='请检查服务状态后重试。' onRetry={retrySummary} retryLabel='重新尝试' />
+   }
+ 
+-  return <DashboardOverview summary={data} profile={profileState.data} profileUnavailable={Boolean(profileState.error)} onProfileRetry={() => void profileState.mutate()} />
++  return <div ref={resultRegionRef} role='region' aria-label='学习概览结果' tabIndex={-1} className='outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'><DashboardOverview summary={data} profile={profileState.data} profileError={profileState.error} profileLoading={profileState.isLoading} onProfileRetry={profileState.mutate} /></div>
+ }
+diff --git a/src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx b/src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+index 88a650d..bc19285 100644
+--- a/src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
++++ b/src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx
+@@ -5,169 +5,171 @@ import type { DashboardSummary } from '@/lib/api/dashboard'
+ import { DashboardOverview, getLearningFeedback, getWelcomeGreeting } from './dashboard-overview'
+ 
+ const summary: DashboardSummary = {
+-  generated_at: '2026-07-19T10:00:00Z',
+-  counts: {
+-    questions: 12,
+-    mistakes: 5,
+-    knowledge_points: 8,
+-    attachments: 3,
+-    due_reviews: 2,
+-  },
+-  recent_questions: [
+-    {
+-      id: 'question-1',
+-      title: '极限练习',
+-      question_text: '求这个函数的极限',
+-      updated_at: '2026-07-19T09:00:00Z',
+-    },
+-  ],
+-  recent_mistakes: [
+-    {
+-      id: 'mistake-1',
+-      title: null,
+-      question_text: '链表删除节点',
+-      reason_category: 'concept',
+-      updated_at: '2026-07-19T08:00:00Z',
+-    },
+-  ],
+-  recent_reviews: [
+-    {
+-      id: 'review-1',
+-      review_item_id: 'item-1',
+-      rating: 4,
+-      reviewed_at: '2026-07-19T07:00:00Z',
+-      question_text: '概率计算',
+-    },
+-  ],
+-  sections: {
+-    learning: 'ready',
+-    activity: 'ready',
+-    storage: 'ready',
+-  },
+-  system: {
+-    service: 'ok',
+-    database: 'ok',
+-    storage: 'ok',
+-  },
++	generated_at: '2026-07-19T10:00:00Z',
++	counts: {
++		questions: 12,
++		mistakes: 5,
++		knowledge_points: 8,
++		attachments: 3,
++		due_reviews: 2
++	},
++	recent_questions: [
++		{
++			id: 'question-1',
++			title: '极限练习',
++			question_text: '求这个函数的极限',
++			updated_at: '2026-07-19T09:00:00Z'
++		}
++	],
++	recent_mistakes: [
++		{
++			id: 'mistake-1',
++			title: null,
++			question_text: '链表删除节点',
++			reason_category: 'concept',
++			updated_at: '2026-07-19T08:00:00Z'
++		}
++	],
++	recent_reviews: [
++		{
++			id: 'review-1',
++			review_item_id: 'item-1',
++			rating: 4,
++			reviewed_at: '2026-07-19T07:00:00Z',
++			question_text: '概率计算'
++		}
++	],
++	sections: {
++		learning: 'ready',
++		activity: 'ready',
++		storage: 'ready'
++	},
++	system: {
++		service: 'ok',
++		database: 'ok',
++		storage: 'ok'
++	}
+ }
+ 
+ describe('DashboardOverview', () => {
+-  it('uses the private timezone for the administrator welcome area', () => {
+-    expect(getWelcomeGreeting({ display_name: 'I5 Owner', timezone: 'UTC' }, new Date('2026-07-22T08:00:00Z'))).toBe('早上好，I5 Owner')
+-  })
+-
+-  it('shows real learning counts, current work and recent activity in Chinese', () => {
+-    render(<DashboardOverview summary={summary} />)
+-
+-    expect(screen.getByRole('heading', { name: '学习管理首页' })).toBeInTheDocument()
+-    expect(screen.getByText('待复习')).toBeInTheDocument()
+-    expect(screen.getByText('2')).toBeInTheDocument()
+-    expect(screen.getByText('题目')).toBeInTheDocument()
+-    expect(screen.getByText('12')).toBeInTheDocument()
+-    expect(screen.getByText('最近题目')).toBeInTheDocument()
+-    expect(screen.getByText('极限练习')).toBeInTheDocument()
+-    expect(screen.getByText('最近复习')).toBeInTheDocument()
+-    expect(screen.getByText('概率计算')).toBeInTheDocument()
+-    expect(screen.getByText('服务正常')).toBeInTheDocument()
+-    expect(screen.queryByText(/Coming Soon|No API connected|Static shell/i)).not.toBeInTheDocument()
+-  })
+-
+-  it('offers real daily actions without creating a parallel workspace route', () => {
+-    render(<DashboardOverview summary={summary} />)
+-
+-    expect(screen.getByRole('heading', { name: '快速开始' })).toBeInTheDocument()
+-    expect(screen.getByRole('link', { name: '写笔记' })).toHaveAttribute('href', '/write-note')
+-    expect(screen.getByRole('link', { name: '写博客' })).toHaveAttribute('href', '/write')
+-    expect(screen.getByRole('link', { name: '图片采集' })).toHaveAttribute('href', '/manage/capture')
+-    expect(screen.getByRole('link', { name: '开始复习' })).toHaveAttribute('href', '/manage/review')
+-
+-    const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
+-    expect(hrefs.some(href => href?.startsWith('/workspace'))).toBe(false)
+-  })
+-
+-  it('renders dashboard sections in preference order and omits hidden sections', () => {
+-    render(
+-      <DashboardOverview
+-        summary={summary}
+-        profile={{
+-          id: 'profile-1',
+-          user_id: 'user-1',
+-          display_name: 'I5 Owner',
+-          identity_title: 'Learner',
+-          signature: '',
+-          welcome_message: '',
+-          timezone: 'UTC',
+-          home_preferences: {
+-            show_welcome: false,
+-            section_order: ['activity', 'today', 'storage', 'stats'],
+-            hidden_sections: ['stats'],
+-          },
+-        }}
+-      />,
+-    )
+-
+-    const headings = Array.from(document.querySelectorAll('section[data-dashboard-section] h2')).map(node => node.textContent)
+-    expect(headings).toEqual(['最近活动', '今日任务', '系统状态'])
+-    expect(screen.queryByRole('heading', { name: '内容统计' })).not.toBeInTheDocument()
+-  })
+-
+-  it.each([
+-    [{ due_reviews: 2, mistakes: 5, questions: 12 }, '完成 2 项到期复习', '/manage/review'],
+-    [{ due_reviews: 0, mistakes: 5, questions: 12 }, '整理 5 条已有错题', '/manage/mistakes'],
+-    [{ due_reviews: 0, mistakes: 0, questions: 12 }, '从已有题目开始复盘', '/manage/questions'],
+-    [{ due_reviews: 0, mistakes: 0, questions: 0 }, '从新建题目开始', '/manage/questions'],
+-  ] as const)('derives deterministic learning feedback for the current summary', (counts, title, href) => {
+-    expect(getLearningFeedback(counts)).toMatchObject({ title, href })
+-  })
+-
+-  it('keeps a safe learning action while the today-summary section is unavailable', () => {
+-    const unavailableSummary = {
+-      ...summary,
+-          sections: { learning: 'unavailable', activity: 'ready', storage: 'ready' },
+-      system: { ...summary.system, database: 'unavailable' },
+-    } as unknown as DashboardSummary
+-
+-    render(
+-      <DashboardOverview summary={unavailableSummary} />,
+-    )
+-
+-    expect(screen.getByText('今日任务暂不可用')).toBeInTheDocument()
+-    expect(screen.getByRole('link', { name: '新建题目' })).toHaveAttribute('href', '/manage/questions')
+-    expect(screen.getByText('数据库状态未知')).toBeInTheDocument()
+-  })
+-
+-  it('shows independent activity failure and unknown storage without hiding learning', () => {
+-    const partialSummary = {
+-      ...summary,
+-      sections: { learning: 'ready', activity: 'unavailable', storage: 'unknown' },
+-      system: { ...summary.system, storage: 'unknown' },
+-    } as DashboardSummary
+-
+-    render(<DashboardOverview summary={partialSummary} />)
+-
+-    expect(screen.getByText('最近活动暂不可用')).toBeInTheDocument()
+-    expect(screen.getByText('附件存储状态未知')).toBeInTheDocument()
+-    expect(screen.getByText('待复习')).toBeInTheDocument()
+-  })
+-
+-  it('treats empty storage as healthy while showing the empty label', () => {
+-    render(<DashboardOverview summary={{
+-      ...summary,
+-      sections: { ...summary.sections, storage: 'empty' },
+-      system: { ...summary.system, storage: 'ok' },
+-    }} />)
+-
+-    expect(screen.getByText('暂无附件')).toBeInTheDocument()
+-    expect(screen.getByText('服务正常')).toBeInTheDocument()
+-  })
+-
+-  it('keeps the I4 dashboard usable when private profile data is unavailable', () => {
+-    const retry = vi.fn()
+-    render(<DashboardOverview summary={summary} profileUnavailable onProfileRetry={retry} />)
+-
+-    expect(screen.getByRole('heading', { name: '个人资料暂不可用' })).toBeInTheDocument()
+-    fireEvent.click(screen.getByRole('button', { name: '重新加载个人资料' }))
+-    expect(retry).toHaveBeenCalledOnce()
+-    expect(screen.getByText('待复习')).toBeInTheDocument()
+-  })
++	it('uses the private timezone for the administrator welcome area', () => {
++		expect(getWelcomeGreeting({ display_name: 'I5 Owner', timezone: 'UTC' }, new Date('2026-07-22T08:00:00Z'))).toBe('早上好，I5 Owner')
++	})
++
++	it('shows real learning counts, current work and recent activity in Chinese', () => {
++		render(<DashboardOverview summary={summary} />)
++
++		expect(screen.getByRole('heading', { name: '学习管理首页' })).toBeInTheDocument()
++		expect(screen.getByText('待复习')).toBeInTheDocument()
++		expect(screen.getByText('2')).toBeInTheDocument()
++		expect(screen.getByText('题目')).toBeInTheDocument()
++		expect(screen.getByText('12')).toBeInTheDocument()
++		expect(screen.getByText('最近题目')).toBeInTheDocument()
++		expect(screen.getByText('极限练习')).toBeInTheDocument()
++		expect(screen.getByText('最近复习')).toBeInTheDocument()
++		expect(screen.getByText('概率计算')).toBeInTheDocument()
++		expect(screen.getByText('服务正常')).toBeInTheDocument()
++		expect(screen.queryByText(/Coming Soon|No API connected|Static shell/i)).not.toBeInTheDocument()
++	})
++
++	it('offers real daily actions without creating a parallel workspace route', () => {
++		render(<DashboardOverview summary={summary} />)
++
++		expect(screen.getByRole('heading', { name: '快速开始' })).toBeInTheDocument()
++		expect(screen.getByRole('link', { name: '写笔记' })).toHaveAttribute('href', '/manage/notes/new?type=note')
++		expect(screen.getByRole('link', { name: '写博客' })).toHaveAttribute('href', '/manage/notes/new?type=blog')
++		expect(screen.getByRole('link', { name: '图片采集' })).toHaveAttribute('href', '/manage/capture')
++		expect(screen.getByRole('link', { name: '开始复习' })).toHaveAttribute('href', '/manage/review')
++
++		const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
++		expect(hrefs.some(href => href?.startsWith('/workspace'))).toBe(false)
++	})
++
++	it('renders dashboard sections in preference order and omits hidden sections', () => {
++		render(
++			<DashboardOverview
++				summary={summary}
++				profile={{
++					id: 'profile-1',
++					user_id: 'user-1',
++					display_name: 'I5 Owner',
++					identity_title: 'Learner',
++					signature: '',
++					welcome_message: '',
++					timezone: 'UTC',
++					home_preferences: {
++						show_welcome: false,
++						section_order: ['activity', 'today', 'storage', 'stats'],
++						hidden_sections: ['stats']
++					}
++				}}
++			/>
++		)
++
++		const headings = Array.from(document.querySelectorAll('section[data-dashboard-section] h2')).map(node => node.textContent)
++		expect(headings).toEqual(['最近活动', '今日任务', '系统状态'])
++		expect(screen.queryByRole('heading', { name: '内容统计' })).not.toBeInTheDocument()
++	})
++
++	it.each([
++		[{ due_reviews: 2, mistakes: 5, questions: 12 }, '完成 2 项到期复习', '/manage/review'],
++		[{ due_reviews: 0, mistakes: 5, questions: 12 }, '整理 5 条已有错题', '/manage/mistakes'],
++		[{ due_reviews: 0, mistakes: 0, questions: 12 }, '从已有题目开始复盘', '/manage/questions'],
++		[{ due_reviews: 0, mistakes: 0, questions: 0 }, '从新建题目开始', '/manage/questions']
++	] as const)('derives deterministic learning feedback for the current summary', (counts, title, href) => {
++		expect(getLearningFeedback(counts)).toMatchObject({ title, href })
++	})
++
++	it('keeps a safe learning action while the today-summary section is unavailable', () => {
++		const unavailableSummary = {
++			...summary,
++			sections: { learning: 'unavailable', activity: 'ready', storage: 'ready' },
++			system: { ...summary.system, database: 'unavailable' }
++		} as unknown as DashboardSummary
++
++		render(<DashboardOverview summary={unavailableSummary} />)
++
++		expect(screen.getByText('今日任务暂不可用')).toBeInTheDocument()
++		expect(screen.getByRole('link', { name: '新建题目' })).toHaveAttribute('href', '/manage/questions')
++		expect(screen.getByText('数据库状态未知')).toBeInTheDocument()
++	})
++
++	it('shows independent activity failure and unknown storage without hiding learning', () => {
++		const partialSummary = {
++			...summary,
++			sections: { learning: 'ready', activity: 'unavailable', storage: 'unknown' },
++			system: { ...summary.system, storage: 'unknown' }
++		} as DashboardSummary
++
++		render(<DashboardOverview summary={partialSummary} />)
++
++		expect(screen.getByText('最近活动暂不可用')).toBeInTheDocument()
++		expect(screen.getByText('附件存储状态未知')).toBeInTheDocument()
++		expect(screen.getByText('待复习')).toBeInTheDocument()
++	})
++
++	it('treats empty storage as healthy while showing the empty label', () => {
++		render(
++			<DashboardOverview
++				summary={{
++					...summary,
++					sections: { ...summary.sections, storage: 'empty' },
++					system: { ...summary.system, storage: 'ok' }
++				}}
++			/>
++		)
++
++		expect(screen.getByText('暂无附件')).toBeInTheDocument()
++		expect(screen.getByText('服务正常')).toBeInTheDocument()
++	})
++
++	it('keeps the I4 dashboard usable when private profile data is unavailable', () => {
++		const retry = vi.fn()
++		render(<DashboardOverview summary={summary} profileUnavailable onProfileRetry={retry} />)
++
++		expect(screen.getByRole('heading', { name: '个人资料暂不可用' })).toBeInTheDocument()
++		fireEvent.click(screen.getByRole('button', { name: '重新加载个人资料' }))
++		expect(retry).toHaveBeenCalledOnce()
++		expect(screen.getByText('待复习')).toBeInTheDocument()
++	})
+ })
+diff --git a/src/app/manage/(workspace)/dashboard/dashboard-overview.tsx b/src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+index 12d0faf..b4562fe 100644
+--- a/src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
++++ b/src/app/manage/(workspace)/dashboard/dashboard-overview.tsx
+@@ -1,219 +1,365 @@
+ import Link from 'next/link'
+-import {
+-  ArrowUpRight,
+-  Brain,
+-  CheckCircle2,
+-  CircleHelp,
+-  Clock3,
+-  FileText,
+-  Newspaper,
+-  ScanLine,
+-} from 'lucide-react'
++import { ArrowUpRight, Brain, CheckCircle2, CircleHelp, Clock3, FileText, Newspaper, ScanLine } from 'lucide-react'
+ 
+ import type { DashboardSummary } from '@/lib/api/dashboard'
+ import { normalizeHomePreferences, type AdminProfile, type HomeSection } from '@/lib/api/admin-profile'
+ import { formatChineseDateTime } from '@/lib/manage-display'
+ import { ManagePageHeader } from '../../components/manage-page-header'
++import { AsyncStatePanel } from '@/components/async-state-panel'
+ 
+ type DashboardOverviewProps = {
+-  summary: DashboardSummary
+-  profile?: AdminProfile
+-  profileUnavailable?: boolean
+-  onProfileRetry?: () => void
++	summary: DashboardSummary
++	profile?: AdminProfile
++	profileError?: unknown
++	profileLoading?: boolean
++	profileUnavailable?: boolean
++	onProfileRetry?: () => void
+ }
+ 
+ type LearningFeedback = {
+-  title: string
+-  description: string
+-  href: string
+-  actionLabel: string
++	title: string
++	description: string
++	href: string
++	actionLabel: string
+ }
+ 
+ function displayTitle(title: string | null, questionText: string): string {
+-  return title?.trim() || questionText
++	return title?.trim() || questionText
+ }
+ 
+ export function getWelcomeGreeting(profile: Pick<AdminProfile, 'display_name' | 'timezone'>, now = new Date()): string {
+-  let hour = now.getHours()
+-  try {
+-    hour = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: profile.timezone }).format(now))
+-  } catch {
+-    // Backend validates IANA zones; keep the UI usable if an old record is invalid.
+-  }
+-  const salutation = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好'
+-  return `${salutation}，${profile.display_name}`
++	let hour = now.getHours()
++	try {
++		hour = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: profile.timezone }).format(now))
++	} catch {
++		// Backend validates IANA zones; keep the UI usable if an old record is invalid.
++	}
++	const salutation = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好'
++	return `${salutation}，${profile.display_name}`
+ }
+ 
+ function formatProfileTime(profile: Pick<AdminProfile, 'timezone'>, now = new Date()): string {
+-  try {
+-    return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short', timeZone: profile.timezone }).format(now)
+-  } catch {
+-    return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(now)
+-  }
++	try {
++		return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short', timeZone: profile.timezone }).format(now)
++	} catch {
++		return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(now)
++	}
+ }
+ 
+-export function getLearningFeedback(
+-  counts: Pick<DashboardSummary['counts'], 'due_reviews' | 'mistakes' | 'questions'>,
+-): LearningFeedback {
+-  if (counts.due_reviews > 0) {
+-    return {
+-      title: `完成 ${counts.due_reviews} 项到期复习`,
+-      description: '先完成今天到期的复习，再安排新的学习内容。',
+-      href: '/manage/review',
+-      actionLabel: '进入复习',
+-    }
+-  }
+-
+-  if (counts.mistakes > 0) {
+-    return {
+-      title: `整理 ${counts.mistakes} 条已有错题`,
+-      description: '今天没有到期复习，可以从已有错题中继续整理学习记录。',
+-      href: '/manage/mistakes',
+-      actionLabel: '查看错题',
+-    }
+-  }
+-
+-  if (counts.questions > 0) {
+-    return {
+-      title: '从已有题目开始复盘',
+-      description: '还没有错题记录，可从已有题目开始记录一次学习结果。',
+-      href: '/manage/questions',
+-      actionLabel: '查看题目',
+-    }
+-  }
+-
+-  return {
+-    title: '从新建题目开始',
+-    description: '先添加一条题目，再逐步形成错题和复习记录。',
+-    href: '/manage/questions',
+-    actionLabel: '新建题目',
+-  }
++export function getLearningFeedback(counts: Pick<DashboardSummary['counts'], 'due_reviews' | 'mistakes' | 'questions'>): LearningFeedback {
++	if (counts.due_reviews > 0) {
++		return {
++			title: `完成 ${counts.due_reviews} 项到期复习`,
++			description: '先完成今天到期的复习，再安排新的学习内容。',
++			href: '/manage/review',
++			actionLabel: '进入复习'
++		}
++	}
++
++	if (counts.mistakes > 0) {
++		return {
++			title: `整理 ${counts.mistakes} 条已有错题`,
++			description: '今天没有到期复习，可以从已有错题中继续整理学习记录。',
++			href: '/manage/mistakes',
++			actionLabel: '查看错题'
++		}
++	}
++
++	if (counts.questions > 0) {
++		return {
++			title: '从已有题目开始复盘',
++			description: '还没有错题记录，可从已有题目开始记录一次学习结果。',
++			href: '/manage/questions',
++			actionLabel: '查看题目'
++		}
++	}
++
++	return {
++		title: '从新建题目开始',
++		description: '先添加一条题目，再逐步形成错题和复习记录。',
++		href: '/manage/questions',
++		actionLabel: '新建题目'
++	}
+ }
+ 
+ const countItems = [
+-  { key: 'questions', label: '题目', href: '/manage/questions' },
+-  { key: 'mistakes', label: '错题', href: '/manage/mistakes' },
+-  { key: 'knowledge_points', label: '知识点', href: '/manage/knowledge-points' },
+-  { key: 'attachments', label: '附件', href: '/manage/attachments' },
++	{ key: 'questions', label: '题目', href: '/manage/questions' },
++	{ key: 'mistakes', label: '错题', href: '/manage/mistakes' },
++	{ key: 'knowledge_points', label: '知识点', href: '/manage/knowledge-points' },
++	{ key: 'attachments', label: '附件', href: '/manage/attachments' }
+ ] as const
+ 
+ const quickActions = [
+-  {
+-    label: '写笔记',
+-    description: '记录知识与想法',
+-    href: '/write-note',
+-    icon: FileText,
+-    tone: 'border-blue-200/70 bg-blue-50/65 text-blue-700',
+-  },
+-  {
+-    label: '写博客',
+-    description: '整理并发布长文',
+-    href: '/write',
+-    icon: Newspaper,
+-    tone: 'border-emerald-200/70 bg-emerald-50/65 text-emerald-700',
+-  },
+-  {
+-    label: '图片采集',
+-    description: '识别并整理错题',
+-    href: '/manage/capture',
+-    icon: ScanLine,
+-    tone: 'border-amber-200/70 bg-amber-50/65 text-amber-700',
+-  },
+-  {
+-    label: '开始复习',
+-    description: '处理今天到期内容',
+-    href: '/manage/review',
+-    icon: Brain,
+-    tone: 'border-violet-200/70 bg-violet-50/65 text-violet-700',
+-  },
++	{
++		label: '写笔记',
++		description: '记录知识与想法',
++		href: '/manage/notes/new?type=note',
++		icon: FileText,
++		tone: 'border-blue-200/70 bg-blue-50/65 text-blue-700'
++	},
++	{
++		label: '写博客',
++		description: '整理并发布长文',
++		href: '/manage/notes/new?type=blog',
++		icon: Newspaper,
++		tone: 'border-emerald-200/70 bg-emerald-50/65 text-emerald-700'
++	},
++	{
++		label: '图片采集',
++		description: '识别并整理错题',
++		href: '/manage/capture',
++		icon: ScanLine,
++		tone: 'border-amber-200/70 bg-amber-50/65 text-amber-700'
++	},
++	{
++		label: '开始复习',
++		description: '处理今天到期内容',
++		href: '/manage/review',
++		icon: Brain,
++		tone: 'border-violet-200/70 bg-violet-50/65 text-violet-700'
++	}
+ ] as const
+ 
+ type DashboardSectionProps = { summary: DashboardSummary }
+ 
+ function QuickActionsSection() {
+-  return (
+-    <section aria-labelledby='quick-actions-title'>
+-      <div className='border-b border-slate-200/70 pb-3'>
+-        <h2 id='quick-actions-title' className='font-semibold text-slate-900'>快速开始</h2>
+-        <p className='mt-1 text-sm text-slate-500'>从现有、安全的流程继续今天的记录与学习。</p>
+-      </div>
+-      <div className='mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+-        {quickActions.map(({ label, description, href, icon: Icon, tone }) => (
+-          <Link
+-            key={href}
+-            href={href}
+-            aria-label={label}
+-            className={`group rounded-2xl border p-4 transition-[border-color,background-color,box-shadow] hover:shadow-sm motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 ${tone}`}
+-          >
+-            <span className='flex items-center justify-between gap-3'>
+-              <span className='font-medium'>{label}</span>
+-              <Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
+-            </span>
+-            <span className='mt-2 block text-xs leading-5 text-slate-500'>{description}</span>
+-          </Link>
+-        ))}
+-      </div>
+-    </section>
+-  )
++	return (
++		<section aria-labelledby='quick-actions-title'>
++			<div className='border-b border-slate-200/70 pb-3'>
++				<h2 id='quick-actions-title' className='font-semibold text-slate-900'>
++					快速开始
++				</h2>
++				<p className='mt-1 text-sm text-slate-500'>从现有、安全的流程继续今天的记录与学习。</p>
++			</div>
++			<div className='mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
++				{quickActions.map(({ label, description, href, icon: Icon, tone }) => (
++					<Link
++						key={href}
++						href={href}
++						aria-label={label}
++						className={`group rounded-2xl border p-4 transition-[border-color,background-color,box-shadow] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none motion-reduce:transition-none ${tone}`}>
++						<span className='flex items-center justify-between gap-3'>
++							<span className='font-medium'>{label}</span>
++							<Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
++						</span>
++						<span className='mt-2 block text-xs leading-5 text-slate-500'>{description}</span>
++					</Link>
++				))}
++			</div>
++		</section>
++	)
+ }
+ 
+ function TodaySection({ summary }: DashboardSectionProps) {
+-  const latestMistake = summary.recent_mistakes[0]
+-  const learningAvailable = summary.sections.learning !== 'unavailable'
+-  return <section data-dashboard-section='today' aria-labelledby='today-title'>
+-    <div className='flex items-end justify-between gap-4 border-b border-slate-200/70 pb-3'>
+-      <div><h2 id='today-title' className='font-semibold text-slate-900'>今日任务</h2><p className='mt-1 text-sm text-slate-500'>{learningAvailable ? '从待复习内容继续今天的学习。' : '今日摘要暂不可用；不会影响你从题库继续学习。'}</p></div>
+-      <Link href='/manage/review' className='inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>进入复习<ArrowUpRight className='h-4 w-4' aria-hidden='true' /></Link>
+-    </div>
+-    {learningAvailable ? <div className='grid gap-0 md:grid-cols-2'>
+-      <Link href='/manage/review' className='group flex items-center justify-between gap-4 border-b border-slate-200/60 py-5 md:border-r md:pr-6'><span><span className='block text-sm text-slate-500'>待复习</span><span className='mt-1 block text-3xl font-semibold tracking-tight text-slate-900'>{summary.counts.due_reviews}</span></span><Clock3 className='h-5 w-5 text-[var(--color-brand)]' aria-hidden='true' /></Link>
+-      <div className='flex min-w-0 items-center justify-between gap-4 border-b border-slate-200/60 py-5 md:pl-6'><span className='min-w-0'><span className='block text-sm text-slate-500'>最近错题</span>{latestMistake ? <Link href={`/manage/mistakes/${latestMistake.id}`} className='mt-1 block truncate font-medium text-slate-800 hover:text-[var(--color-brand)]'>{displayTitle(latestMistake.title, latestMistake.question_text)}</Link> : <span className='mt-1 block text-sm text-slate-400'>暂无错题记录</span>}</span><ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' /></div>
+-    </div> : <p className='py-5 text-sm text-amber-700'>今日任务暂不可用</p>}
+-  </section>
++	const latestMistake = summary.recent_mistakes[0]
++	const learningAvailable = summary.sections.learning !== 'unavailable'
++	return (
++		<section data-dashboard-section='today' aria-labelledby='today-title'>
++			<div className='flex items-end justify-between gap-4 border-b border-slate-200/70 pb-3'>
++				<div>
++					<h2 id='today-title' className='font-semibold text-slate-900'>
++						今日任务
++					</h2>
++					<p className='mt-1 text-sm text-slate-500'>{learningAvailable ? '从待复习内容继续今天的学习。' : '今日摘要暂不可用；不会影响你从题库继续学习。'}</p>
++				</div>
++				<Link
++					href='/manage/review'
++					className='inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none'>
++					进入复习
++					<ArrowUpRight className='h-4 w-4' aria-hidden='true' />
++				</Link>
++			</div>
++			{learningAvailable ? (
++				<div className='grid gap-0 md:grid-cols-2'>
++					<Link href='/manage/review' className='group flex items-center justify-between gap-4 border-b border-slate-200/60 py-5 md:border-r md:pr-6'>
++						<span>
++							<span className='block text-sm text-slate-500'>待复习</span>
++							<span className='mt-1 block text-3xl font-semibold tracking-tight text-slate-900'>{summary.counts.due_reviews}</span>
++						</span>
++						<Clock3 className='h-5 w-5 text-[var(--color-brand)]' aria-hidden='true' />
++					</Link>
++					<div className='flex min-w-0 items-center justify-between gap-4 border-b border-slate-200/60 py-5 md:pl-6'>
++						<span className='min-w-0'>
++							<span className='block text-sm text-slate-500'>最近错题</span>
++							{latestMistake ? (
++								<Link href={`/manage/mistakes/${latestMistake.id}`} className='mt-1 block truncate font-medium text-slate-800 hover:text-[var(--color-brand)]'>
++									{displayTitle(latestMistake.title, latestMistake.question_text)}
++								</Link>
++							) : (
++								<span className='mt-1 block text-sm text-slate-400'>暂无错题记录</span>
++							)}
++						</span>
++						<ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' />
++					</div>
++				</div>
++			) : (
++				<p className='py-5 text-sm text-amber-700'>今日任务暂不可用</p>
++			)}
++		</section>
++	)
+ }
+ 
+ function StatsSection({ summary }: DashboardSectionProps) {
+-  const learningAvailable = summary.sections.learning !== 'unavailable'
+-  return <section data-dashboard-section='stats' aria-labelledby='content-counts-title'>
+-    <h2 id='content-counts-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>内容统计</h2>
+-    {learningAvailable ? <div className='grid grid-cols-2 border-b border-slate-200/60 md:grid-cols-4'>{countItems.map((item, index) => <Link key={item.key} href={item.href} className={`py-5 ${index % 2 === 0 ? 'border-r' : ''} border-slate-200/60 md:border-r md:px-5 md:first:pl-0 md:last:border-r-0`}><span className='block text-sm text-slate-500'>{item.label}</span><span className='mt-1 block text-2xl font-semibold tracking-tight text-slate-900'>{summary.counts[item.key]}</span></Link>)}</div> : <p className='py-4 text-sm text-slate-500'>内容统计暂不可用</p>}
+-  </section>
++	const learningAvailable = summary.sections.learning !== 'unavailable'
++	return (
++		<section data-dashboard-section='stats' aria-labelledby='content-counts-title'>
++			<h2 id='content-counts-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>
++				内容统计
++			</h2>
++			{learningAvailable ? (
++				<div className='grid grid-cols-2 border-b border-slate-200/60 md:grid-cols-4'>
++					{countItems.map((item, index) => (
++						<Link
++							key={item.key}
++							href={item.href}
++							className={`py-5 ${index % 2 === 0 ? 'border-r' : ''} border-slate-200/60 md:border-r md:px-5 md:first:pl-0 md:last:border-r-0`}>
++							<span className='block text-sm text-slate-500'>{item.label}</span>
++							<span className='mt-1 block text-2xl font-semibold tracking-tight text-slate-900'>{summary.counts[item.key]}</span>
++						</Link>
++					))}
++				</div>
++			) : (
++				<p className='py-4 text-sm text-slate-500'>内容统计暂不可用</p>
++			)}
++		</section>
++	)
+ }
+ 
+ function ActivitySection({ summary }: DashboardSectionProps) {
+-  const activityAvailable = summary.sections.activity !== 'unavailable'
+-  return <section data-dashboard-section='activity' aria-labelledby='recent-activity-title'>
+-    <h2 id='recent-activity-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>最近活动</h2>
+-    {activityAvailable ? <div className='grid gap-8 pt-5 lg:grid-cols-2'><div><h3 className='text-sm font-medium text-slate-500'>最近题目</h3><div className='mt-2 divide-y divide-slate-200/60'>{summary.recent_questions.length > 0 ? summary.recent_questions.map(question => <Link key={question.id} href={`/manage/questions/${question.id}`} className='group flex items-center justify-between gap-4 py-3'><span className='min-w-0'><span className='block truncate text-sm font-medium text-slate-800 group-hover:text-[var(--color-brand)]'>{displayTitle(question.title, question.question_text)}</span><span className='mt-0.5 block text-xs text-slate-400'>{formatChineseDateTime(question.updated_at)}</span></span><ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' /></Link>) : <p className='py-4 text-sm text-slate-400'>暂无题目</p>}</div></div><div><h3 className='text-sm font-medium text-slate-500'>最近复习</h3><div className='mt-2 divide-y divide-slate-200/60'>{summary.recent_reviews.length > 0 ? summary.recent_reviews.map(review => <Link key={review.id} href='/manage/review' className='group flex items-center justify-between gap-4 py-3'><span className='min-w-0'><span className='block truncate text-sm font-medium text-slate-800 group-hover:text-[var(--color-brand)]'>{review.question_text}</span><span className='mt-0.5 block text-xs text-slate-400'>评分 {review.rating} · {formatChineseDateTime(review.reviewed_at)}</span></span><ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' /></Link>) : <p className='py-4 text-sm text-slate-400'>暂无复习记录</p>}</div></div></div> : <p className='pt-4 text-sm text-slate-500'>最近活动暂不可用</p>}
+-  </section>
++	const activityAvailable = summary.sections.activity !== 'unavailable'
++	return (
++		<section data-dashboard-section='activity' aria-labelledby='recent-activity-title'>
++			<h2 id='recent-activity-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>
++				最近活动
++			</h2>
++			{activityAvailable ? (
++				<div className='grid gap-8 pt-5 lg:grid-cols-2'>
++					<div>
++						<h3 className='text-sm font-medium text-slate-500'>最近题目</h3>
++						<div className='mt-2 divide-y divide-slate-200/60'>
++							{summary.recent_questions.length > 0 ? (
++								summary.recent_questions.map(question => (
++									<Link key={question.id} href={`/manage/questions/${question.id}`} className='group flex items-center justify-between gap-4 py-3'>
++										<span className='min-w-0'>
++											<span className='block truncate text-sm font-medium text-slate-800 group-hover:text-[var(--color-brand)]'>
++												{displayTitle(question.title, question.question_text)}
++											</span>
++											<span className='mt-0.5 block text-xs text-slate-400'>{formatChineseDateTime(question.updated_at)}</span>
++										</span>
++										<ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' />
++									</Link>
++								))
++							) : (
++								<p className='py-4 text-sm text-slate-400'>暂无题目</p>
++							)}
++						</div>
++					</div>
++					<div>
++						<h3 className='text-sm font-medium text-slate-500'>最近复习</h3>
++						<div className='mt-2 divide-y divide-slate-200/60'>
++							{summary.recent_reviews.length > 0 ? (
++								summary.recent_reviews.map(review => (
++									<Link key={review.id} href='/manage/review' className='group flex items-center justify-between gap-4 py-3'>
++										<span className='min-w-0'>
++											<span className='block truncate text-sm font-medium text-slate-800 group-hover:text-[var(--color-brand)]'>{review.question_text}</span>
++											<span className='mt-0.5 block text-xs text-slate-400'>
++												评分 {review.rating} · {formatChineseDateTime(review.reviewed_at)}
++											</span>
++										</span>
++										<ArrowUpRight className='h-4 w-4 shrink-0 text-slate-300' aria-hidden='true' />
++									</Link>
++								))
++							) : (
++								<p className='py-4 text-sm text-slate-400'>暂无复习记录</p>
++							)}
++						</div>
++					</div>
++				</div>
++			) : (
++				<p className='pt-4 text-sm text-slate-500'>最近活动暂不可用</p>
++			)}
++		</section>
++	)
+ }
+ 
+ function StorageSection({ summary }: DashboardSectionProps) {
+-  const storageHealthy = summary.sections.storage !== 'unknown' && summary.system.storage === 'ok'
+-  return <section data-dashboard-section='storage' aria-labelledby='system-status-title'>
+-    <h2 id='system-status-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>系统状态</h2>
+-    <div className='flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm'><span className='inline-flex items-center gap-2 text-emerald-700'><CheckCircle2 className='h-4 w-4' aria-hidden='true' />服务正常</span><span className={`inline-flex items-center gap-2 ${summary.system.database === 'ok' ? 'text-emerald-700' : 'text-amber-700'}`}>{summary.system.database === 'ok' ? <CheckCircle2 className='h-4 w-4' aria-hidden='true' /> : <CircleHelp className='h-4 w-4' aria-hidden='true' />}{summary.system.database === 'ok' ? '数据库正常' : '数据库状态未知'}</span><span className={`inline-flex items-center gap-2 ${storageHealthy ? 'text-emerald-700' : 'text-amber-700'}`}>{storageHealthy ? <CheckCircle2 className='h-4 w-4' aria-hidden='true' /> : <CircleHelp className='h-4 w-4' aria-hidden='true' />}{summary.sections.storage === 'empty' ? '暂无附件' : storageHealthy ? '附件存储正常' : '附件存储状态未知'}</span></div>
+-  </section>
++	const storageHealthy = summary.sections.storage !== 'unknown' && summary.system.storage === 'ok'
++	return (
++		<section data-dashboard-section='storage' aria-labelledby='system-status-title'>
++			<h2 id='system-status-title' className='border-b border-slate-200/70 pb-3 font-semibold text-slate-900'>
++				系统状态
++			</h2>
++			<div className='flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm'>
++				<span className='inline-flex items-center gap-2 text-emerald-700'>
++					<CheckCircle2 className='h-4 w-4' aria-hidden='true' />
++					服务正常
++				</span>
++				<span className={`inline-flex items-center gap-2 ${summary.system.database === 'ok' ? 'text-emerald-700' : 'text-amber-700'}`}>
++					{summary.system.database === 'ok' ? <CheckCircle2 className='h-4 w-4' aria-hidden='true' /> : <CircleHelp className='h-4 w-4' aria-hidden='true' />}
++					{summary.system.database === 'ok' ? '数据库正常' : '数据库状态未知'}
++				</span>
++				<span className={`inline-flex items-center gap-2 ${storageHealthy ? 'text-emerald-700' : 'text-amber-700'}`}>
++					{storageHealthy ? <CheckCircle2 className='h-4 w-4' aria-hidden='true' /> : <CircleHelp className='h-4 w-4' aria-hidden='true' />}
++					{summary.sections.storage === 'empty' ? '暂无附件' : storageHealthy ? '附件存储正常' : '附件存储状态未知'}
++				</span>
++			</div>
++		</section>
++	)
+ }
+ 
+ function renderDashboardSection(section: HomeSection, summary: DashboardSummary) {
+-  if (section === 'today') return <TodaySection key={section} summary={summary} />
+-  if (section === 'activity') return <ActivitySection key={section} summary={summary} />
+-  if (section === 'stats') return <StatsSection key={section} summary={summary} />
+-  return <StorageSection key={section} summary={summary} />
++	if (section === 'today') return <TodaySection key={section} summary={summary} />
++	if (section === 'activity') return <ActivitySection key={section} summary={summary} />
++	if (section === 'stats') return <StatsSection key={section} summary={summary} />
++	return <StorageSection key={section} summary={summary} />
+ }
+ 
+-export function DashboardOverview({ summary, profile, profileUnavailable = false, onProfileRetry }: DashboardOverviewProps) {
+-  const preferences = normalizeHomePreferences(profile?.home_preferences)
+-  const visibleSections = preferences.section_order.filter(section => !preferences.hidden_sections.includes(section))
+-  const learningAvailable = summary.sections.learning !== 'unavailable'
+-  const feedback = learningAvailable ? getLearningFeedback(summary.counts) : { title: '学习摘要暂不可用', description: '可以先从题目开始继续学习，稍后再刷新查看今日安排。', href: '/manage/questions', actionLabel: '新建题目' }
+-
+-  return <div className='space-y-10'>
+-    {profile ? (profile.home_preferences.show_welcome ? <section aria-labelledby='private-welcome-title' className='rounded-2xl border border-[var(--color-brand)]/15 bg-[var(--color-brand)]/5 px-5 py-4'><p className='text-xs font-medium tracking-[0.12em] text-[var(--color-brand)] uppercase'>个人学习</p><h2 id='private-welcome-title' className='mt-2 text-xl font-semibold text-slate-900'>{getWelcomeGreeting(profile)}</h2><p className='mt-1 text-sm text-slate-600'>{profile.welcome_message || profile.signature || '按自己的节奏继续积累。'}</p><p className='mt-2 text-xs text-slate-400'>当前时间：{formatProfileTime(profile)}</p></section> : null) : profileUnavailable ? <section aria-labelledby='private-welcome-unavailable-title' className='rounded-2xl border border-amber-200 bg-amber-50/70 px-5 py-4'><h2 id='private-welcome-unavailable-title' className='font-semibold text-amber-900'>个人资料暂不可用</h2><p className='mt-1 text-sm text-amber-800'>学习摘要仍可使用；稍后可重试加载私有欢迎区域。</p>{onProfileRetry ? <button type='button' onClick={onProfileRetry} className='mt-3 text-sm font-medium text-amber-900 underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/40'>重新加载个人资料</button> : null}</section> : null}
+-    <ManagePageHeader eyebrow='学习空间' title='学习管理首页' description={`数据更新于 ${formatChineseDateTime(summary.generated_at)}`} />
+-    <QuickActionsSection />
+-    <section aria-labelledby='learning-feedback-title' className='border-y border-slate-200/70 py-5'><p className='text-sm font-medium text-[var(--color-brand)]'>学习反馈</p><div className='mt-2 flex flex-wrap items-end justify-between gap-4'><div><h2 id='learning-feedback-title' className='font-semibold text-slate-900'>{feedback.title}</h2><p className='mt-1 text-sm text-slate-500'>{feedback.description}</p></div><Link href={feedback.href} className='inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>{feedback.actionLabel}<ArrowUpRight className='h-4 w-4' aria-hidden='true' /></Link></div></section>
+-    <div className='space-y-10'>{visibleSections.map(section => renderDashboardSection(section, summary))}</div>
+-  </div>
++export function DashboardOverview({ summary, profile, profileError, profileLoading = false, profileUnavailable = false, onProfileRetry }: DashboardOverviewProps) {
++	const preferences = normalizeHomePreferences(profile?.home_preferences)
++	const visibleSections = preferences.section_order.filter(section => !preferences.hidden_sections.includes(section))
++	const learningAvailable = summary.sections.learning !== 'unavailable'
++	const feedback = learningAvailable
++		? getLearningFeedback(summary.counts)
++		: { title: '学习摘要暂不可用', description: '可以先从题目开始继续学习，稍后再刷新查看今日安排。', href: '/manage/questions', actionLabel: '新建题目' }
++
++	return (
++		<div className='space-y-10'>
++			{profileLoading ? (
++				<AsyncStatePanel status='loading' loadingLabel='正在加载个人资料' skeletonRows={2} />
++			) : profileError || profileUnavailable ? (
++				<AsyncStatePanel status='error' title={profileUnavailable && !profileError ? '个人资料暂不可用' : '个人资料加载失败'} error={profileError ?? '学习摘要仍可使用；稍后可重试加载私有欢迎区域。'} onRetry={onProfileRetry} retryLabel='重新加载个人资料' />
++			) : profile ? (
++				profile.home_preferences.show_welcome ? (
++					<section aria-labelledby='private-welcome-title' className='rounded-2xl border border-[var(--color-brand)]/15 bg-[var(--color-brand)]/5 px-5 py-4'>
++						<p className='text-xs font-medium tracking-[0.12em] text-[var(--color-brand)] uppercase'>个人学习</p>
++						<h2 id='private-welcome-title' className='mt-2 text-xl font-semibold text-slate-900'>
++							{getWelcomeGreeting(profile)}
++						</h2>
++						<p className='mt-1 text-sm text-slate-600'>{profile.welcome_message || profile.signature || '按自己的节奏继续积累。'}</p>
++						<p className='mt-2 text-xs text-slate-400'>当前时间：{formatProfileTime(profile)}</p>
++					</section>
++				) : null
++			) : null}
++			<ManagePageHeader eyebrow='学习空间' title='学习管理首页' description={`数据更新于 ${formatChineseDateTime(summary.generated_at)}`} />
++			<QuickActionsSection />
++			<section aria-labelledby='learning-feedback-title' className='border-y border-slate-200/70 py-5'>
++				<p className='text-sm font-medium text-[var(--color-brand)]'>学习反馈</p>
++				<div className='mt-2 flex flex-wrap items-end justify-between gap-4'>
++					<div>
++						<h2 id='learning-feedback-title' className='font-semibold text-slate-900'>
++							{feedback.title}
++						</h2>
++						<p className='mt-1 text-sm text-slate-500'>{feedback.description}</p>
++					</div>
++					<Link
++						href={feedback.href}
++						className='inline-flex items-center gap-1 text-sm font-medium text-[var(--color-brand)] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none'>
++						{feedback.actionLabel}
++						<ArrowUpRight className='h-4 w-4' aria-hidden='true' />
++					</Link>
++				</div>
++			</section>
++			<div className='space-y-10'>{visibleSections.map(section => renderDashboardSection(section, summary))}</div>
++		</div>
++	)
+ }
+diff --git a/src/app/manage/components/feature-state.tsx b/src/app/manage/components/feature-state.tsx
+index bac025d..c4924f8 100644
+--- a/src/app/manage/components/feature-state.tsx
++++ b/src/app/manage/components/feature-state.tsx
+@@ -1,4 +1,6 @@
+-import { CircleAlert, Clock3, Inbox } from 'lucide-react'
++import { Clock3 } from 'lucide-react'
++
++import { AsyncStatePanel } from '@/components/async-state-panel'
+ 
+ export type FeatureStateModel =
+   | { kind: 'loading'; label?: string; rows?: number }
+@@ -22,66 +24,32 @@ type FeatureStateProps = {
+ 
+ export function FeatureState({ state }: FeatureStateProps) {
+   if (state.kind === 'loading') {
+-    const rows = Math.max(1, state.rows ?? 4)
+-    const label = state.label ?? '正在加载内容'
+-    return (
+-      <div role='status' aria-label={label} className='space-y-3 py-4'>
+-        <span className='sr-only'>{label}</span>
+-        {Array.from({ length: rows }, (_, index) => (
+-          <div
+-            key={index}
+-            data-testid='feature-state-skeleton'
+-            className='animate-pulse border-b border-slate-200/55 pb-3'
+-            aria-hidden='true'
+-          >
+-            <div className='h-3 w-2/5 rounded-full bg-slate-200/75' />
+-            <div className='mt-2 h-2.5 w-3/5 rounded-full bg-slate-100' />
+-          </div>
+-        ))}
+-      </div>
+-    )
++    return <AsyncStatePanel status='loading' loadingLabel={state.label} skeletonRows={state.rows} skeletonTestId='feature-state-skeleton' />
+   }
+ 
+   const isDeferred = state.kind === 'deferred'
+-  const isError = state.kind === 'error'
+-  const Icon = isDeferred ? Clock3 : isError ? CircleAlert : Inbox
+-
+-  return (
+-    <div className='flex min-h-44 items-center border-y border-slate-200/60 py-8'>
+-      <div className='max-w-lg'>
+-        {isDeferred ? (
++  if (isDeferred) {
++    return (
++      <div className='flex min-h-44 items-center border-y border-slate-200/60 py-8'>
++        <div className='max-w-lg'>
+           <p className='mb-2 text-xs font-medium tracking-[0.12em] text-amber-700 uppercase'>后续能力</p>
+-        ) : null}
+-        <div className='flex items-start gap-3'>
+-          <span className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${isError ? 'bg-red-50 text-red-600' : isDeferred ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+-            <Icon className='h-4 w-4' aria-hidden='true' />
+-          </span>
+-          <div>
+-            <h2 className='font-semibold text-slate-900'>{state.title}</h2>
+-            {state.description ? (
++          <div className='flex items-start gap-3'>
++            <span className='mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700'>
++              <Clock3 className='h-4 w-4' aria-hidden='true' />
++            </span>
++            <div>
++              <h2 className='font-semibold text-slate-900'>{state.title}</h2>
+               <p className='mt-1 text-sm leading-6 text-slate-500'>{state.description}</p>
+-            ) : null}
+-            {state.kind === 'empty' && state.action ? (
+-              <button
+-                type='button'
+-                onClick={state.action.onClick}
+-                className='mt-4 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
+-              >
+-                {state.action.label}
+-              </button>
+-            ) : null}
+-            {state.kind === 'error' && state.retry ? (
+-              <button
+-                type='button'
+-                onClick={state.retry}
+-                className='mt-4 rounded-lg border border-slate-200 bg-white/70 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'
+-              >
+-                重新尝试
+-              </button>
+-            ) : null}
++            </div>
+           </div>
+         </div>
+       </div>
+-    </div>
+-  )
++    )
++  }
++
++  if (state.kind === 'empty') {
++    return <AsyncStatePanel status='empty' title={state.title} emptyHint={<>{state.description ? <p>{state.description}</p> : null}{state.action ? <button type='button' onClick={state.action.onClick} className='mt-4 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white'>{state.action.label}</button> : null}</>} />
++  }
++
++  return <AsyncStatePanel status='error' title={state.title} error={state.description} onRetry={state.retry} retryLabel='重新尝试' />
+ }
+diff --git a/src/app/manage/components/manage-sidebar.test.ts b/src/app/manage/components/manage-sidebar.test.ts
+index 2039b43..3cf4c62 100644
+--- a/src/app/manage/components/manage-sidebar.test.ts
++++ b/src/app/manage/components/manage-sidebar.test.ts
+@@ -11,7 +11,7 @@ describe('manage navigation information architecture', () => {
+ 
+     expect(groups).toEqual(expect.arrayContaining([
+       { title: '学习空间', labels: ['概览'] },
+-      { title: '内容管理', labels: ['草稿', '题目', '错题'] },
++      { title: '内容管理', labels: ['笔记写作', '草稿', '题目', '错题'] },
+       { title: '知识体系', labels: ['科目', '知识点'] },
+       { title: '学习计划', labels: ['复习'] },
+       { title: '资料管理', labels: ['附件'] },
+@@ -22,6 +22,7 @@ describe('manage navigation information architecture', () => {
+     const hrefs = navGroups.flatMap((group) => group.items.map((item) => item.href))
+     expect(hrefs).toEqual(expect.arrayContaining([
+       '/manage/dashboard',
++      '/manage/notes',
+       '/manage/drafts',
+       '/manage/questions',
+       '/manage/mistakes',
+diff --git a/src/app/manage/components/manage-sidebar.test.tsx b/src/app/manage/components/manage-sidebar.test.tsx
+index 640eef4..69b98d3 100644
+--- a/src/app/manage/components/manage-sidebar.test.tsx
++++ b/src/app/manage/components/manage-sidebar.test.tsx
+@@ -3,9 +3,14 @@ import { describe, expect, it } from 'vitest'
+ import { navGroups } from './manage-sidebar'
+ 
+ describe('ManageSidebar navigation facts', () => {
+-  it('marks the enabled Capture workspace as active instead of deferred', () => {
+-    const capture = navGroups.flatMap((group) => group.items).find((item) => item.href === '/manage/capture')
++	it('marks the enabled Capture workspace as active instead of deferred', () => {
++		const capture = navGroups.flatMap(group => group.items).find(item => item.href === '/manage/capture')
+ 
+-    expect(capture?.status).toBe('active')
+-  })
++		expect(capture?.status).toBe('active')
++	})
++
++	it('exposes the converged notes authoring workspace first in content management', () => {
++		const content = navGroups.find(group => group.title === '内容管理')
++		expect(content?.items[0]).toMatchObject({ href: '/manage/notes', label: '笔记写作' })
++	})
+ })
+diff --git a/src/app/manage/components/manage-sidebar.tsx b/src/app/manage/components/manage-sidebar.tsx
+index 4610e74..69c6fc3 100644
+--- a/src/app/manage/components/manage-sidebar.tsx
++++ b/src/app/manage/components/manage-sidebar.tsx
+@@ -3,19 +3,20 @@
+ import Link from 'next/link'
+ import { usePathname } from 'next/navigation'
+ import {
+-  Archive,
+-  BarChart3,
+-  Bot,
+-  Brain,
+-  ClipboardCheck,
+-  DatabaseZap,
+-  FilePenLine,
+-  FileQuestion,
+-  Library,
+-  ScanLine,
+-  Search,
+-  Settings,
+-  Sun,
++	Archive,
++	BarChart3,
++	Bot,
++	Brain,
++	ClipboardCheck,
++	DatabaseZap,
++	FilePenLine,
++	FileQuestion,
++	Library,
++	NotebookPen,
++	ScanLine,
++	Search,
++	Settings,
++	Sun
+ } from 'lucide-react'
+ import { cn } from '@/lib/utils'
+ import { manageCapabilityStates, type ManageCapabilityState } from '../(workspace)/capability-state'
+@@ -23,197 +24,190 @@ import { manageCapabilityStates, type ManageCapabilityState } from '../(workspac
+ type LucideIcon = typeof Sun
+ 
+ type NavItem = {
+-  href: string
+-  label: string
+-  icon: LucideIcon
+-  match: (pathname: string) => boolean
+-  status?: ManageCapabilityState
++	href: string
++	label: string
++	icon: LucideIcon
++	match: (pathname: string) => boolean
++	status?: ManageCapabilityState
+ }
+ 
+ type NavGroup = {
+-  title: string
+-  items: NavItem[]
++	title: string
++	items: NavItem[]
+ }
+ 
+ export const navGroups: NavGroup[] = [
+-  {
+-    title: '学习空间',
+-    items: [
+-      {
+-        href: '/manage/dashboard',
+-        label: '概览',
+-        icon: Sun,
+-        match: (p) => p === '/manage/dashboard',
+-      },
+-    ],
+-  },
+-  {
+-    title: '内容管理',
+-    items: [
+-      {
+-        href: '/manage/drafts',
+-        label: '草稿',
+-        icon: FilePenLine,
+-        match: (p) => p === '/manage/drafts' || p.startsWith('/manage/drafts/'),
+-        status: manageCapabilityStates.drafts,
+-      },
+-      {
+-        href: '/manage/questions',
+-        label: '题目',
+-        icon: FileQuestion,
+-        match: (p) => p === '/manage/questions' || p.startsWith('/manage/questions/'),
+-      },
+-      {
+-        href: '/manage/mistakes',
+-        label: '错题',
+-        icon: ClipboardCheck,
+-        match: (p) => p === '/manage/mistakes' || p.startsWith('/manage/mistakes/'),
+-      },
+-    ],
+-  },
+-  {
+-    title: '知识体系',
+-    items: [
+-      {
+-        href: '/manage/subjects',
+-        label: '科目',
+-        icon: Library,
+-        match: (p) => p === '/manage/subjects' || p.startsWith('/manage/subjects/'),
+-      },
+-      {
+-        href: '/manage/knowledge-points',
+-        label: '知识点',
+-        icon: DatabaseZap,
+-        match: (p) =>
+-          p === '/manage/knowledge-points' ||
+-          p.startsWith('/manage/knowledge-points/'),
+-      },
+-    ],
+-  },
+-  {
+-    title: '学习计划',
+-    items: [
+-      {
+-        href: '/manage/review',
+-        label: '复习',
+-        icon: Brain,
+-        match: (p) => p === '/manage/review',
+-      },
+-    ],
+-  },
+-  {
+-    title: '资料管理',
+-    items: [
+-      {
+-        href: '/manage/attachments',
+-        label: '附件',
+-        icon: Archive,
+-        match: (p) => p === '/manage/attachments' || p.startsWith('/manage/attachments/'),
+-      },
+-    ],
+-  },
+-  {
+-    title: '工具',
+-    items: [
+-      {
+-        href: '/manage/capture',
+-        label: '采集',
+-        icon: ScanLine,
+-        match: (p) => p === '/manage/capture' || p.startsWith('/manage/capture/'),
+-        status: manageCapabilityStates.capture,
+-      },
+-      {
+-        href: '/manage/ai',
+-        label: 'AI',
+-        icon: Bot,
+-        match: (p) => p === '/manage/ai' || p.startsWith('/manage/ai/'),
+-        status: manageCapabilityStates.ai,
+-      },
+-    ],
+-  },
+-  {
+-    title: '系统',
+-    items: [
+-      {
+-        href: '/manage/settings',
+-        label: '设置',
+-        icon: Settings,
+-        match: (p) => p === '/manage/settings',
+-      },
+-    ],
+-  },
+-  {
+-    title: '后续能力',
+-    items: [
+-      {
+-        href: '/manage/jobs',
+-        label: '任务',
+-        icon: Archive,
+-        match: (p) => p === '/manage/jobs' || p.startsWith('/manage/jobs/'),
+-        status: manageCapabilityStates.jobs,
+-      },
+-      {
+-        href: '/manage/search',
+-        label: '搜索',
+-        icon: Search,
+-        match: (p) => p === '/manage/search',
+-        status: manageCapabilityStates.search,
+-      },
+-      {
+-        href: '/manage/analytics',
+-        label: '分析',
+-        icon: BarChart3,
+-        match: (p) => p === '/manage/analytics',
+-        status: manageCapabilityStates.analytics,
+-      },
+-    ],
+-  },
++	{
++		title: '学习空间',
++		items: [
++			{
++				href: '/manage/dashboard',
++				label: '概览',
++				icon: Sun,
++				match: p => p === '/manage/dashboard'
++			}
++		]
++	},
++	{
++		title: '内容管理',
++		items: [
++			{
++				href: '/manage/notes',
++				label: '笔记写作',
++				icon: NotebookPen,
++				match: p => p === '/manage/notes' || p.startsWith('/manage/notes/')
++			},
++			{
++				href: '/manage/drafts',
++				label: '草稿',
++				icon: FilePenLine,
++				match: p => p === '/manage/drafts' || p.startsWith('/manage/drafts/'),
++				status: manageCapabilityStates.drafts
++			},
++			{
++				href: '/manage/questions',
++				label: '题目',
++				icon: FileQuestion,
++				match: p => p === '/manage/questions' || p.startsWith('/manage/questions/')
++			},
++			{
++				href: '/manage/mistakes',
++				label: '错题',
++				icon: ClipboardCheck,
++				match: p => p === '/manage/mistakes' || p.startsWith('/manage/mistakes/')
++			}
++		]
++	},
++	{
++		title: '知识体系',
++		items: [
++			{
++				href: '/manage/subjects',
++				label: '科目',
++				icon: Library,
++				match: p => p === '/manage/subjects' || p.startsWith('/manage/subjects/')
++			},
++			{
++				href: '/manage/knowledge-points',
++				label: '知识点',
++				icon: DatabaseZap,
++				match: p => p === '/manage/knowledge-points' || p.startsWith('/manage/knowledge-points/')
++			}
++		]
++	},
++	{
++		title: '学习计划',
++		items: [
++			{
++				href: '/manage/review',
++				label: '复习',
++				icon: Brain,
++				match: p => p === '/manage/review'
++			}
++		]
++	},
++	{
++		title: '资料管理',
++		items: [
++			{
++				href: '/manage/attachments',
++				label: '附件',
++				icon: Archive,
++				match: p => p === '/manage/attachments' || p.startsWith('/manage/attachments/')
++			}
++		]
++	},
++	{
++		title: '工具',
++		items: [
++			{
++				href: '/manage/capture',
++				label: '采集',
++				icon: ScanLine,
++				match: p => p === '/manage/capture' || p.startsWith('/manage/capture/'),
++				status: manageCapabilityStates.capture
++			},
++			{
++				href: '/manage/ai',
++				label: 'AI',
++				icon: Bot,
++				match: p => p === '/manage/ai' || p.startsWith('/manage/ai/'),
++				status: manageCapabilityStates.ai
++			}
++		]
++	},
++	{
++		title: '系统',
++		items: [
++			{
++				href: '/manage/settings',
++				label: '设置',
++				icon: Settings,
++				match: p => p === '/manage/settings'
++			}
++		]
++	},
++	{
++		title: '后续能力',
++		items: [
++			{
++				href: '/manage/jobs',
++				label: '任务',
++				icon: Archive,
++				match: p => p === '/manage/jobs' || p.startsWith('/manage/jobs/'),
++				status: manageCapabilityStates.jobs
++			},
++			{
++				href: '/manage/search',
++				label: '搜索',
++				icon: Search,
++				match: p => p === '/manage/search',
++				status: manageCapabilityStates.search
++			},
++			{
++				href: '/manage/analytics',
++				label: '分析',
++				icon: BarChart3,
++				match: p => p === '/manage/analytics',
++				status: manageCapabilityStates.analytics
++			}
++		]
++	}
+ ]
+ 
+-export const allItems = navGroups.flatMap((g) => g.items)
++export const allItems = navGroups.flatMap(g => g.items)
+ 
+ export function ManageSidebar() {
+-  const pathname = usePathname()
++	const pathname = usePathname()
+ 
+-  return (
+-    <aside
+-      aria-label='学习管理导航'
+-      className='hidden min-w-0 overflow-hidden border-white/45 bg-white/48 shadow-[0_18px_70px_-38px_rgba(66,107,113,0.45)] backdrop-blur-xl md:mr-0 md:block md:min-h-[calc(100svh-3rem)] md:w-56 md:shrink-0 md:rounded-[28px] md:border'
+-    >
+-      <nav
+-        className='hidden md:flex md:flex-col md:gap-4 md:p-3'
+-        aria-label='导航（桌面端分组）'
+-      >
+-        {navGroups.map((group) => (
+-          <div key={group.title} className='flex flex-col gap-1.5'>
+-            <p className='px-3 text-xs font-medium tracking-wide text-slate-400'>
+-              {group.title}
+-            </p>
+-            {group.items.map(({ href, label, icon: Icon, match, status }) => {
+-              const active = match(pathname)
+-              return (
+-                <Link
+-                  key={href}
+-                  href={href}
+-                  aria-current={active ? 'page' : undefined}
+-                  className={cn(
+-                    'group flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45',
+-                    active
+-                      ? 'bg-[var(--color-brand)]/14 font-medium text-[var(--color-brand)]'
+-                      : 'text-slate-500 hover:bg-white/65 hover:text-slate-800',
+-                  )}
+-                >
+-                  <Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
+-                  <span className='min-w-0 flex-1'>{label}</span>
+-                  {status === 'deferred' ? (
+-                    <span className='text-[10px] text-slate-400'>后续</span>
+-                  ) : null}
+-                </Link>
+-              )
+-            })}
+-          </div>
+-        ))}
+-      </nav>
+-    </aside>
+-  )
++	return (
++		<aside
++			aria-label='学习管理导航'
++			className='hidden min-w-0 overflow-hidden border-white/45 bg-white/48 shadow-[0_18px_70px_-38px_rgba(66,107,113,0.45)] backdrop-blur-xl md:mr-0 md:block md:min-h-[calc(100svh-3rem)] md:w-56 md:shrink-0 md:rounded-[28px] md:border'>
++			<nav className='hidden md:flex md:flex-col md:gap-4 md:p-3' aria-label='导航（桌面端分组）'>
++				{navGroups.map(group => (
++					<div key={group.title} className='flex flex-col gap-1.5'>
++						<p className='px-3 text-xs font-medium tracking-wide text-slate-400'>{group.title}</p>
++						{group.items.map(({ href, label, icon: Icon, match, status }) => {
++							const active = match(pathname)
++							return (
++								<Link
++									key={href}
++									href={href}
++									aria-current={active ? 'page' : undefined}
++									className={cn(
++										'group flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45 focus-visible:outline-none',
++										active ? 'bg-[var(--color-brand)]/14 font-medium text-[var(--color-brand)]' : 'text-slate-500 hover:bg-white/65 hover:text-slate-800'
++									)}>
++									<Icon className='h-4 w-4 shrink-0' aria-hidden='true' />
++									<span className='min-w-0 flex-1'>{label}</span>
++									{status === 'deferred' ? <span className='text-[10px] text-slate-400'>后续</span> : null}
++								</Link>
++							)
++						})}
++					</div>
++				))}
++			</nav>
++		</aside>
++	)
+ }
+diff --git a/src/app/notes/page.tsx b/src/app/notes/page.tsx
+index 391d8c6..3bee0d0 100644
+--- a/src/app/notes/page.tsx
++++ b/src/app/notes/page.tsx
+@@ -13,6 +13,7 @@ import { WeeklySummaryCard } from './components/weekly-summary-card'
+ import { MoveToFolderDialog } from '@/components/move-to-folder-dialog'
+ import { ContextMenu, type ContextMenuItem } from '@/components/context-menu'
+ import { EmptyState } from '@/components/empty-state'
++import { AsyncStatePanel } from '@/components/async-state-panel'
+ import { moveNoteToFolder, listFolders, findFolderPath, type FolderNode } from '@/lib/api/folders'
+ import { deleteNote } from '@/lib/api/notes'
+ import { useRouter, useSearchParams } from 'next/navigation'
+@@ -49,6 +50,8 @@ function NotesPageContent() {
+ 	const [folderRefreshKey, setFolderRefreshKey] = useState(0)
+ 	const [ctxMenu, setCtxMenu] = useState<{ slug: string; title: string; type: ContentType; x: number; y: number } | null>(null)
+ 	const [folderTree, setFolderTree] = useState<FolderNode[]>([])
++	const resultRegionRef = useRef<HTMLDivElement>(null)
++	const retryRequestedRef = useRef(false)
+ 
+ 	const folderPath = useMemo(() => {
+ 		if (!activeFolderId || folderTree.length === 0) return null
+@@ -177,12 +180,21 @@ function NotesPageContent() {
+ 	}
+ 
+ 	const emptyDescription = isAdmin ? '可以从工作区创建和整理内容' : '暂时没有公开笔记'
+-	const renderState = isLoading ? 'loading' : error ? 'error' : data?.items.length === 0 ? 'empty' : data ? 'ready' : 'error'
++	const renderState = isLoading ? 'loading' : error ? 'error' : data?.items.length === 0 ? 'empty' : data ? 'ready' : 'loading'
+ 
+ 	useEffect(() => {
+ 		if (renderState === 'ready' || renderState === 'empty') markRenderReady('notes:list-ready')
++		if ((renderState === 'ready' || renderState === 'empty') && retryRequestedRef.current) {
++			retryRequestedRef.current = false
++			resultRegionRef.current?.focus()
++		}
+ 	}, [renderState])
+ 
++	const retryNotes = () => {
++		retryRequestedRef.current = true
++		return mutate()
++	}
++
+ 	return (
+ 		<main className='mx-auto max-w-6xl px-4 py-8' data-render-state={renderState}>
+ 			<motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className='mb-6 text-2xl font-bold'>
+@@ -285,19 +297,24 @@ function NotesPageContent() {
+ 						</div>
+ 					)}
+ 
+-					{isLoading ? (
+-						<div className='py-20 text-center text-gray-400'>加载中...</div>
+-					) : data?.items.length === 0 ? (
+-						<div className='py-20'>
+-							<EmptyState
+-								variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
+-								title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
+-								description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : emptyDescription}
+-								action={isAdmin ? getCreateAction() : null}
+-							/>
+-						</div>
++					<div ref={resultRegionRef} tabIndex={-1} className='outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/45'>
++					{renderState !== 'ready' ? (
++						<AsyncStatePanel
++							status={renderState}
++							error={error}
++							onRetry={retryNotes}
++							loadingLabel='正在加载笔记'
++							emptyHint={
++								<EmptyState
++									variant={activeFilter && activeFilter !== 'all' ? 'no-results' : 'no-content'}
++									title={activeFilter && activeFilter !== 'all' ? '没有匹配结果' : '还没有笔记'}
++									description={activeFilter && activeFilter !== 'all' ? '试试调整筛选条件' : emptyDescription}
++									action={isAdmin ? getCreateAction() : null}
++								/>
++							}
++						/>
+ 					) : (
+-						<div className='space-y-3'>
++						<div role='region' aria-label='笔记结果' className='space-y-3'>
+ 							{data?.items.map(item => (
+ 								<div
+ 									key={item.id}
+@@ -359,6 +376,7 @@ function NotesPageContent() {
+ 							))}
+ 						</div>
+ 					)}
++					</div>
+ 
+ 					{data && data.total > 20 && (
+ 						<div className='mt-6 flex justify-center gap-2'>
+diff --git a/src/app/write-note/hooks/use-note-editor.ts b/src/app/write-note/hooks/use-note-editor.ts
+index f2726f1..6b6d8e2 100644
+--- a/src/app/write-note/hooks/use-note-editor.ts
++++ b/src/app/write-note/hooks/use-note-editor.ts
+@@ -1,299 +1,2 @@
+-'use client'
+-
+-import { useCallback, useRef, useState, type RefObject } from 'react'
+-import dayjs from 'dayjs'
+-import { getCaretCoordinates } from '@/lib/caret-position'
+-
+-const DEFAULT_FALLBACK = '文本'
+-
+-export type SlashState = {
+-	open: boolean
+-	position: { top: number; left: number }
+-	query: string
+-	commandStart: number
+-}
+-
+-type UseNoteEditorOptions = {
+-	textareaRef: RefObject<HTMLTextAreaElement | null>
+-	content: string
+-	onContentChange: (content: string) => void
+-	onImageUpload?: (file: File) => Promise<string>
+-}
+-
+-type UseNoteEditorReturn = {
+-	handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+-	handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+-	handlePaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void
+-	insertText: (text: string) => void
+-	wrapSelection: (before: string, after: string, fallback?: string) => void
+-	slashState: SlashState
+-	closeSlash: () => void
+-	executeSlash: (insertText: string) => void
+-}
+-
+-export function useNoteEditor({
+-	textareaRef,
+-	content,
+-	onContentChange,
+-	onImageUpload,
+-}: UseNoteEditorOptions): UseNoteEditorReturn {
+-	const [slashState, setSlashState] = useState<SlashState>({
+-		open: false,
+-		position: { top: 0, left: 0 },
+-		query: '',
+-		commandStart: 0,
+-	})
+-	const slashStateRef = useRef(slashState)
+-	slashStateRef.current = slashState
+-
+-	const closeSlash = useCallback(() => {
+-		setSlashState(s => ({ ...s, open: false, query: '' }))
+-	}, [])
+-
+-	const insertText = useCallback(
+-		(text: string) => {
+-			const textarea = textareaRef.current
+-			if (!textarea) return
+-
+-			textarea.focus()
+-			const success = document.execCommand('insertText', false, text)
+-
+-			if (!success) {
+-				const { selectionStart, selectionEnd, value } = textarea
+-				const before = value.substring(0, selectionStart)
+-				const after = value.substring(selectionEnd)
+-				onContentChange(before + text + after)
+-				setTimeout(() => {
+-					const newPos = selectionStart + text.length
+-					textarea.setSelectionRange(newPos, newPos)
+-					textarea.focus()
+-				}, 0)
+-			}
+-		},
+-		[textareaRef, onContentChange]
+-	)
+-
+-	const executeSlash = useCallback(
+-		(insert: string) => {
+-			const textarea = textareaRef.current
+-			if (!textarea) return
+-
+-			const { commandStart, query } = slashStateRef.current
+-			const slashEnd = commandStart + 1 + query.length
+-
+-			textarea.setSelectionRange(commandStart, slashEnd)
+-			closeSlash()
+-
+-			setTimeout(() => {
+-				insertText(insert)
+-			}, 0)
+-		},
+-		[textareaRef, insertText, closeSlash]
+-	)
+-
+-	const wrapSelection = useCallback(
+-		(before: string, after: string, fallback: string = DEFAULT_FALLBACK) => {
+-			const textarea = textareaRef.current
+-			if (!textarea) return
+-
+-			const { selectionStart, selectionEnd, value } = textarea
+-			const selectedText = value.substring(selectionStart, selectionEnd)
+-			const textBefore = value.substring(0, selectionStart)
+-			const textAfter = value.substring(selectionEnd)
+-
+-			const isWrapped = textBefore.endsWith(before) && textAfter.startsWith(after)
+-
+-			if (isWrapped && selectedText) {
+-				textarea.setSelectionRange(selectionStart - before.length, selectionEnd + after.length)
+-				insertText(selectedText)
+-			} else {
+-				const text = selectedText || fallback
+-				insertText(`${before}${text}${after}`)
+-				if (!selectedText) {
+-					setTimeout(() => {
+-						textarea.setSelectionRange(selectionStart + before.length, selectionStart + before.length + text.length)
+-						textarea.focus()
+-					}, 0)
+-				}
+-			}
+-		},
+-		[textareaRef, insertText]
+-	)
+-
+-	const handleKeyDown = useCallback(
+-		(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+-			const textarea = textareaRef.current
+-			if (!textarea) return
+-
+-			const { selectionStart, selectionEnd, value } = textarea
+-			const selectedText = value.substring(selectionStart, selectionEnd)
+-			const mod = e.ctrlKey || e.metaKey
+-
+-			if (mod && e.key === 'b') {
+-				e.preventDefault()
+-				wrapSelection('**', '**')
+-				return
+-			}
+-
+-			if (mod && e.key === 'i') {
+-				e.preventDefault()
+-				wrapSelection('*', '*')
+-				return
+-			}
+-
+-			if (mod && e.key === 'k') {
+-				e.preventDefault()
+-				const text = selectedText || DEFAULT_FALLBACK
+-				insertText(`[${text}](url)`)
+-				setTimeout(() => {
+-					const urlStart = selectionStart + text.length + 3
+-					textarea.setSelectionRange(urlStart, urlStart + 3)
+-					textarea.focus()
+-				}, 0)
+-				return
+-			}
+-
+-			if (mod && e.shiftKey && e.key === 'T') {
+-				e.preventDefault()
+-				insertText(dayjs().format('YYYY-MM-DD HH:mm'))
+-				return
+-			}
+-
+-			if (e.key === 'Tab' && !e.shiftKey) {
+-				e.preventDefault()
+-				insertText('\t')
+-				return
+-			}
+-
+-			if (e.key === 'Tab' && e.shiftKey) {
+-				e.preventDefault()
+-				const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1
+-				const line = value.substring(lineStart)
+-
+-				if (line.startsWith('\t')) {
+-					textarea.setSelectionRange(lineStart, lineStart + 1)
+-					insertText('')
+-				} else if (line.startsWith('  ')) {
+-					textarea.setSelectionRange(lineStart, lineStart + 2)
+-					insertText('')
+-				}
+-				return
+-			}
+-		},
+-		[textareaRef, insertText, wrapSelection]
+-	)
+-
+-	const handleChange = useCallback(
+-		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+-			const newValue = e.target.value
+-			onContentChange(newValue)
+-
+-			const textarea = textareaRef.current
+-			if (!textarea) return
+-
+-			const cursor = e.target.selectionStart || 0
+-			const textBeforeCursor = newValue.substring(0, cursor)
+-
+-			const slashIdx = textBeforeCursor.lastIndexOf('/')
+-			if (slashStateRef.current.open) {
+-				if (slashIdx === -1 || cursor < slashIdx) {
+-					closeSlash()
+-					return
+-				}
+-				const q = textBeforeCursor.substring(slashIdx + 1)
+-				if (q.includes(' ')) {
+-					closeSlash()
+-					return
+-				}
+-
+-				const rect = textarea.getBoundingClientRect()
+-				const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
+-				const menuHeight = 256
+-				const menuWidth = 224
+-
+-				const caret = getCaretCoordinates(textarea, slashIdx)
+-				const top = Math.min(
+-					Math.max(rect.top + caret.top + lineHeight + 4, rect.top),
+-					window.innerHeight - menuHeight - 8
+-				)
+-				const left = Math.min(
+-					Math.max(rect.left + caret.left, rect.left),
+-					window.innerWidth - menuWidth - 8
+-				)
+-
+-				setSlashState({
+-					open: true,
+-					position: { top, left },
+-					query: q,
+-					commandStart: slashIdx,
+-				})
+-			} else {
+-				if (slashIdx >= 0 && slashIdx === cursor - (textBeforeCursor.length - slashIdx)) {
+-					const charAfterSlash = newValue[slashIdx + 1]
+-					if (charAfterSlash === undefined || charAfterSlash === ' ' || charAfterSlash === '\n') return
+-
+-					const rect = textarea.getBoundingClientRect()
+-					const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
+-					const menuHeight = 256
+-					const menuWidth = 224
+-
+-					const caret = getCaretCoordinates(textarea, slashIdx)
+-					const top = Math.min(
+-						Math.max(rect.top + caret.top + lineHeight + 4, rect.top),
+-						window.innerHeight - menuHeight - 8
+-					)
+-					const left = Math.min(
+-						Math.max(rect.left + caret.left, rect.left),
+-						window.innerWidth - menuWidth - 8
+-					)
+-
+-					setSlashState({
+-						open: true,
+-						position: { top, left },
+-						query: textBeforeCursor.substring(slashIdx + 1),
+-						commandStart: slashIdx,
+-					})
+-				}
+-			}
+-		},
+-		[textareaRef, onContentChange, closeSlash]
+-	)
+-
+-	const handlePaste = useCallback(
+-		async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+-			if (!onImageUpload) return
+-			const items = e.clipboardData.items
+-			if (!items) return
+-
+-			const imageFiles: File[] = []
+-			for (let i = 0; i < items.length; i++) {
+-				const item = items[i]
+-				if (item.type.startsWith('image/')) {
+-					const file = item.getAsFile()
+-					if (file) imageFiles.push(file)
+-				}
+-			}
+-
+-			if (imageFiles.length === 0) return
+-
+-			e.preventDefault()
+-
+-			const { toast } = await import('sonner')
+-			let loadingId: string | number | undefined
+-			try {
+-				loadingId = toast.loading('上传图片中...')
+-				const urls = await Promise.all(imageFiles.map(f => onImageUpload(f)))
+-				if (loadingId) toast.dismiss(loadingId)
+-				toast.success(`成功上传 ${urls.length} 张图片`)
+-				const markdown = urls.map(url => `![](${url})`).join('\n')
+-				insertText(markdown)
+-			} catch (err: any) {
+-				if (loadingId) toast.dismiss(loadingId)
+-				toast.error('上传失败: ' + (err?.message || '未知错误'))
+-			}
+-		},
+-		[onImageUpload, insertText]
+-	)
+-
+-	return { handleKeyDown, handleChange, handlePaste, insertText, wrapSelection, slashState, closeSlash, executeSlash }
+-}
++export { useNoteEditor } from '@/hooks/use-note-editor'
++export type { SlashState } from '@/hooks/use-note-editor'
+diff --git a/src/app/write/components/ui/tag-input.tsx b/src/app/write/components/ui/tag-input.tsx
+index 1d80e30..8429174 100644
+--- a/src/app/write/components/ui/tag-input.tsx
++++ b/src/app/write/components/ui/tag-input.tsx
+@@ -1,51 +1 @@
+-import { useState } from 'react'
+-
+-type TagInputProps = {
+-	tags: string[]
+-	onChange: (tags: string[]) => void
+-}
+-
+-export function TagInput({ tags, onChange }: TagInputProps) {
+-	const [tagInput, setTagInput] = useState<string>('')
+-
+-	const handleAddTag = () => {
+-		if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+-			onChange([...tags, tagInput.trim()])
+-			setTagInput('')
+-		}
+-	}
+-
+-	const handleRemoveTag = (index: number) => {
+-		onChange(tags.filter((_, i) => i !== index))
+-	}
+-
+-	return (
+-		<div className='bg-card w-full rounded-lg border px-3 py-2'>
+-			{tags.length > 0 && (
+-				<div className='mb-2 flex flex-wrap gap-2'>
+-					{tags.map((tag, index) => (
+-						<span key={index} className='flex items-center gap-1.5 rounded-md bg-blue-100 px-2 py-1 text-sm text-blue-700'>
+-							#{tag}
+-							<button type='button' onClick={() => handleRemoveTag(index)} className='text-secondary'>
+-								×
+-							</button>
+-						</span>
+-					))}
+-				</div>
+-			)}
+-			<input
+-				type='text'
+-				placeholder='添加标签（按回车）'
+-				className='w-full bg-transparent text-sm outline-none'
+-				value={tagInput}
+-				onChange={e => setTagInput(e.target.value)}
+-				onKeyDown={e => {
+-					if (e.key === 'Enter') {
+-						e.preventDefault()
+-						handleAddTag()
+-					}
+-				}}
+-			/>
+-		</div>
+-	)
+-}
++export { TagInput } from '@/components/tag-input'
+diff --git a/src/lib/api/review-items.ts b/src/lib/api/review-items.ts
+index 9e9aedc..db1fb65 100644
+--- a/src/lib/api/review-items.ts
++++ b/src/lib/api/review-items.ts
+@@ -6,12 +6,13 @@ export interface ReviewItem {
+   id: string
+   target_type: 'mistake'
+   target_id: string
+-  state: 'active' | 'paused'
+-  algorithm: 'fixed_interval_v1'
++  state: 'active' | 'mastered' | 'paused'
++  algorithm: 'fixed_interval_v1' | 'fixed_interval_v2'
+   interval_days: number
+   repetitions: number
+   next_review_at: string
+   last_reviewed_at: string | null
++  last_rating: number | null
+   question_text: string
+   mistake_reason: string | null
+ }
+@@ -25,6 +26,8 @@ export interface ReviewRecord {
+   next_interval_days: number
+   previous_next_review_at: string
+   next_review_at: string
++  previous_state: 'active' | 'mastered' | 'paused'
++  new_state: 'active' | 'mastered' | 'paused'
+   created_at: string
+ }
+ 
+diff --git a/src/lib/content-routes.ts b/src/lib/content-routes.ts
+index a12328b..4102a7c 100644
+--- a/src/lib/content-routes.ts
++++ b/src/lib/content-routes.ts
+@@ -8,7 +8,7 @@ export function getContentDetailHref(type: ContentType, slug: string): string {
+ export function getContentEditHref(type: ContentType, slug: string): string {
+ 	// Route Cutover: 旧 write-* 编辑入口已停用，统一指向 /manage/* 主线
+ 	if (type === 'mistake') return `/manage/mistakes`
+-	return `/manage/dashboard`
++	return `/manage/notes/${slug}`
+ }
+ 
+ export function getContentListHref(type: ContentType, folderId?: string | null): string {

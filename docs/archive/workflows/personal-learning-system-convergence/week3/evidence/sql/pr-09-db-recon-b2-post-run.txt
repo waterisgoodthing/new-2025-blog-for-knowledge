@@ -1,0 +1,234 @@
+{
+  "ck_shapes": [
+    {
+      "conname": "ck_attachments_visibility",
+      "pg_get_constraintdef": "CHECK (((visibility)::text = 'private'::text))"
+    },
+    {
+      "conname": "ck_mistakes_visibility",
+      "pg_get_constraintdef": "CHECK (((visibility)::text = ANY ((ARRAY['private'::character varying, 'public'::character varying])::text[])))"
+    },
+    {
+      "conname": "ck_questions_visibility",
+      "pg_get_constraintdef": "CHECK (((visibility)::text = 'private'::text))"
+    }
+  ],
+  "counts": [
+    {
+      "draft_items": 10,
+      "ledger": 5,
+      "mistakes": 5,
+      "questions": 5,
+      "review_items": 5,
+      "source_total": 5,
+      "v1_ledger": 0,
+      "wk3_ledger": 5
+    }
+  ],
+  "ledger_by_mapping": [
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "n": 5,
+      "state": "migrated_active",
+      "with_mistake": 5,
+      "with_review": 5
+    }
+  ],
+  "pending_mapping": [
+    {
+      "n": 0
+    }
+  ],
+  "provenance": [
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_fk_ok": true,
+      "mistake_id_check": "6355d3ea-9547-55d8-a101-b47feb7b66ce",
+      "source_note_id": "1623aa36-b5dc-4039-b126-934db5953cf2",
+      "source_ref": "legacy-note:1623aa36-b5dc-4039-b126-934db5953cf2",
+      "state": "migrated_active",
+      "target_mistake_id": "6355d3ea-9547-55d8-a101-b47feb7b66ce",
+      "target_review_item_id": "24e91277-464d-5bb1-ab6d-6d171c51a490"
+    },
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_fk_ok": true,
+      "mistake_id_check": "e5adbb1e-9979-5e57-833e-063d9b211423",
+      "source_note_id": "8707dd79-e209-4d24-b951-94b1cf40c471",
+      "source_ref": "legacy-note:8707dd79-e209-4d24-b951-94b1cf40c471",
+      "state": "migrated_active",
+      "target_mistake_id": "e5adbb1e-9979-5e57-833e-063d9b211423",
+      "target_review_item_id": "5a2004f6-eea2-54fd-b402-6c2c0b2e9b2e"
+    },
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_fk_ok": true,
+      "mistake_id_check": "922d9aac-3233-5542-929b-959ef4f5a566",
+      "source_note_id": "d75cbc0c-d6b5-4e6a-8c5f-b72b936ce470",
+      "source_ref": "legacy-note:d75cbc0c-d6b5-4e6a-8c5f-b72b936ce470",
+      "state": "migrated_active",
+      "target_mistake_id": "922d9aac-3233-5542-929b-959ef4f5a566",
+      "target_review_item_id": "db2e0c3f-9d47-5720-a26f-ae9de7c758a4"
+    },
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_fk_ok": true,
+      "mistake_id_check": "f9749c70-0ae8-5a74-90a7-81bf838403ab",
+      "source_note_id": "e270a4e4-2845-48c8-80e6-b875cb5efb52",
+      "source_ref": "legacy-note:e270a4e4-2845-48c8-80e6-b875cb5efb52",
+      "state": "migrated_active",
+      "target_mistake_id": "f9749c70-0ae8-5a74-90a7-81bf838403ab",
+      "target_review_item_id": "f801bb44-a93f-5d0a-bad7-c30a2d8ae8fa"
+    },
+    {
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_fk_ok": true,
+      "mistake_id_check": "9015edf4-1818-5357-8282-0b03dab5c2fd",
+      "source_note_id": "fdd09fbd-cff7-4226-96d8-bc7a9c965ea1",
+      "source_ref": "legacy-note:fdd09fbd-cff7-4226-96d8-bc7a9c965ea1",
+      "state": "migrated_active",
+      "target_mistake_id": "9015edf4-1818-5357-8282-0b03dab5c2fd",
+      "target_review_item_id": "aedc57d7-13f2-5061-bdb6-abae4f9f3995"
+    }
+  ],
+  "review_items": [
+    {
+      "algorithm": "fixed_interval_v2",
+      "count": 1,
+      "interval_days": 0,
+      "last_reviewed_at": null,
+      "next_review_at": "2026-09-24 08:11:36.002785+00:00",
+      "repetitions": 0,
+      "state": "active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "count": 1,
+      "interval_days": 0,
+      "last_reviewed_at": null,
+      "next_review_at": "2026-09-24 08:11:36.056611+00:00",
+      "repetitions": 0,
+      "state": "active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "count": 1,
+      "interval_days": 0,
+      "last_reviewed_at": null,
+      "next_review_at": "2026-09-24 08:11:36.071588+00:00",
+      "repetitions": 0,
+      "state": "active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "count": 1,
+      "interval_days": 0,
+      "last_reviewed_at": null,
+      "next_review_at": "2026-09-24 08:11:36.082672+00:00",
+      "repetitions": 0,
+      "state": "active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "count": 1,
+      "interval_days": 0,
+      "last_reviewed_at": null,
+      "next_review_at": "2026-09-24 08:11:36.092506+00:00",
+      "repetitions": 0,
+      "state": "active"
+    }
+  ],
+  "source_matrix": [
+    {
+      "algorithm": "fixed_interval_v2",
+      "bucket": "published_hidden",
+      "interval_days": 0,
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_id": "e5adbb1e-9979-5e57-833e-063d9b211423",
+      "mistake_status": "active",
+      "mistake_visibility": "private",
+      "next_review": null,
+      "next_review_at": "2026-09-24 08:11:36.056611+00:00",
+      "note_id": "8707dd79-e209-4d24-b951-94b1cf40c471",
+      "repetitions": 0,
+      "review_id": "5a2004f6-eea2-54fd-b402-6c2c0b2e9b2e",
+      "slug": "pr09-published_hidden",
+      "state": "migrated_active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "bucket": "published_visible",
+      "interval_days": 0,
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_id": "9015edf4-1818-5357-8282-0b03dab5c2fd",
+      "mistake_status": "active",
+      "mistake_visibility": "public",
+      "next_review": "2026-12-15",
+      "next_review_at": "2026-09-24 08:11:36.092506+00:00",
+      "note_id": "fdd09fbd-cff7-4226-96d8-bc7a9c965ea1",
+      "repetitions": 0,
+      "review_id": "aedc57d7-13f2-5061-bdb6-abae4f9f3995",
+      "slug": "pr09-published_visible",
+      "state": "migrated_active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "bucket": "published_visible",
+      "interval_days": 0,
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_id": "922d9aac-3233-5542-929b-959ef4f5a566",
+      "mistake_status": "active",
+      "mistake_visibility": "public",
+      "next_review": null,
+      "next_review_at": "2026-09-24 08:11:36.071588+00:00",
+      "note_id": "d75cbc0c-d6b5-4e6a-8c5f-b72b936ce470",
+      "repetitions": 0,
+      "review_id": "db2e0c3f-9d47-5720-a26f-ae9de7c758a4",
+      "slug": "pr09-published_visible-extra",
+      "state": "migrated_active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "bucket": "unpublished_hidden",
+      "interval_days": 0,
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_id": "6355d3ea-9547-55d8-a101-b47feb7b66ce",
+      "mistake_status": "active",
+      "mistake_visibility": "private",
+      "next_review": null,
+      "next_review_at": "2026-09-24 08:11:36.002785+00:00",
+      "note_id": "1623aa36-b5dc-4039-b126-934db5953cf2",
+      "repetitions": 0,
+      "review_id": "24e91277-464d-5bb1-ab6d-6d171c51a490",
+      "slug": "pr09-unpublished_hidden",
+      "state": "migrated_active"
+    },
+    {
+      "algorithm": "fixed_interval_v2",
+      "bucket": "unpublished_visible",
+      "interval_days": 0,
+      "mapping_version": "wk3-mistake-visibility-v1",
+      "mistake_id": "f9749c70-0ae8-5a74-90a7-81bf838403ab",
+      "mistake_status": "active",
+      "mistake_visibility": "private",
+      "next_review": "2027-01-20",
+      "next_review_at": "2026-09-24 08:11:36.082672+00:00",
+      "note_id": "e270a4e4-2845-48c8-80e6-b875cb5efb52",
+      "repetitions": 0,
+      "review_id": "f801bb44-a93f-5d0a-bad7-c30a2d8ae8fa",
+      "slug": "pr09-unpublished_visible",
+      "state": "migrated_active"
+    }
+  ],
+  "visibility_counts": [
+    {
+      "count": 3,
+      "visibility": "private"
+    },
+    {
+      "count": 2,
+      "visibility": "public"
+    }
+  ]
+}
+PASS: db_name='astra_week3_pr09_db4' source=explicit:--db-name; executing ['/Users/limengyang/2025-blog-public/backend/.venv/bin/python', '/tmp/pr09-db/recon.py']

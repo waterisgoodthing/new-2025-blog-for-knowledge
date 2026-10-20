@@ -1,0 +1,2 @@
+PR-10 N+1 evidence: analytics statements for 1 active KP = 1, for 25 active KPs = 1
+PASS: db_name='astra_week3_pr10' source=explicit:--db-name; executing ['zsh', '-c', 'PYTHONPATH=. .venv/bin/python tests/_pr10_n1_evidence.py']

@@ -22,6 +22,9 @@ from app.schemas.knowledge import (
 )
 
 
+from app.services.tag_canonicalization import get_canonical_cluster
+
+
 def _split_knowledge_points(value: str | None) -> list[str]:
     if not value:
         return []
@@ -262,7 +265,8 @@ async def retrieve_weak_points(
         if not kps:
             kps = [note.subject or "未分类"]
         for kp in kps:
-            kp_map[kp].append(note)
+            canonical, _ = get_canonical_cluster(kp)
+            kp_map[canonical].append(note)
 
     weak_points: list[WeakPointItem] = []
     for kp, notes in sorted(kp_map.items(), key=lambda x: len(x[1]), reverse=True):
@@ -290,10 +294,13 @@ async def retrieve_weak_points(
                 )
 
         subject = notes[0].subject if notes else "未分类"
+        canonical_name, aliases = get_canonical_cluster(kp)
 
         weak_points.append(WeakPointItem(
             subject=subject or "未分类",
             knowledge_point=kp,
+            canonical_name=canonical_name,
+            aliases=aliases,
             mistake_count=mistake_count,
             due_review_count=due_review_count,
             recent_error_count=recent_error_count,

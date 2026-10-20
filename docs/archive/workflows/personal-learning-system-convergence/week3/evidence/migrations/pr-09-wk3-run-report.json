@@ -1,0 +1,65 @@
+{
+  "mapping_version": "wk3-mistake-visibility-v1",
+  "generated_at": "2026-09-23T06:48:12.098175+00:00",
+  "source": {
+    "total_legacy_mistakes": 4,
+    "by_mapping": {
+      "published_visible": 1,
+      "published_hidden": 1,
+      "unpublished_visible": 1,
+      "unpublished_hidden": 1
+    }
+  },
+  "targets": {
+    "created": 0,
+    "visibility_reconciled": 0,
+    "skipped_already_migrated": 0,
+    "skipped_already_migrated_private_ok": 0,
+    "rejected": [
+      {
+        "source_note_id": "10f34a5f-90c8-46d0-9105-7b5577e32060",
+        "reason": "SUBJECT_UNMAPPED"
+      },
+      {
+        "source_note_id": "13cdef94-034f-4dc6-8cc3-4cf790b45379",
+        "reason": "(sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: permission denied for table notes\n[SQL: SELECT next_review FROM public.notes WHERE id=$1]\n[parameters: (UUID('13cdef94-034f-4dc6-8cc3-4cf790b45379'),)]\n(Background on this error at: https://sqlalche.me/e/20/f405)"
+      },
+      {
+        "source_note_id": "7cca8de6-84da-497d-9acf-fcf53bf0a061",
+        "reason": "(sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: permission denied for table notes\n[SQL: SELECT next_review FROM public.notes WHERE id=$1]\n[parameters: (UUID('7cca8de6-84da-497d-9acf-fcf53bf0a061'),)]\n(Background on this error at: https://sqlalche.me/e/20/f405)"
+      },
+      {
+        "source_note_id": "ab24bf7c-55a4-4765-9bc7-56b9abffb2ca",
+        "reason": "(sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.InsufficientPrivilegeError'>: permission denied for table notes\n[SQL: SELECT next_review FROM public.notes WHERE id=$1]\n[parameters: (UUID('ab24bf7c-55a4-4765-9bc7-56b9abffb2ca'),)]\n(Background on this error at: https://sqlalche.me/e/20/f405)"
+      }
+    ]
+  },
+  "review_items": {
+    "created_v2": 0,
+    "next_due_from_source": 0,
+    "next_due_default": 0,
+    "unmapped": [
+      "ef",
+      "interval",
+      "repetitions",
+      "last_reviewed"
+    ]
+  },
+  "unmapped_source_fields": [
+    "ef",
+    "interval",
+    "repetitions",
+    "last_reviewed"
+  ],
+  "checks": {
+    "count_match": true,
+    "provenance_match": true,
+    "visibility_matrix_match": true,
+    "public_field_allowlist_match": true,
+    "replay_noop": false
+  },
+  "idempotency": {
+    "replay_noop": false
+  },
+  "dry_run": false
+}

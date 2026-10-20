@@ -57,3 +57,20 @@ export async function moveNoteToFolder(slug: string, folderId: string | null): P
     body: JSON.stringify({ folder_id: folderId }),
   });
 }
+
+export async function moveFolder(folderId: string, newParentId: string | null): Promise<FolderNode> {
+  return updateFolder(folderId, { parent_id: newParentId });
+}
+
+export async function renameFolder(folderId: string, name: string): Promise<FolderNode> {
+  return updateFolder(folderId, { name });
+}
+
+export function findFolderPath(nodes: FolderNode[], targetId: string): FolderNode[] | null {
+  for (const node of nodes) {
+    if (node.id === targetId) return [node]
+    const childPath = findFolderPath(node.children, targetId)
+    if (childPath) return [node, ...childPath]
+  }
+  return null
+}

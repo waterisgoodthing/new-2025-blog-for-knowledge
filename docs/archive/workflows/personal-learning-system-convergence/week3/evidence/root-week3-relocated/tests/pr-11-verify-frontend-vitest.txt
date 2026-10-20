@@ -1,0 +1,16 @@
+(node:28290) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+ ✓ src/lib/api/dashboard.test.ts (4 tests) 4ms
+ ✓ src/lib/api/practice.test.ts (5 tests) 6ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-content.test.tsx (2 tests) 41ms
+ ✓ src/app/manage/(workspace)/practice/practice-today.test.tsx (4 tests) 116ms
+ ✓ src/app/manage/(workspace)/dashboard/dashboard-overview.test.tsx (12 tests) 184ms
+
+ Test Files  5 passed (5)
+      Tests  27 passed (27)
+   Start at  19:21:50
+   Duration  923ms (transform 150ms, setup 238ms, collect 589ms, tests 351ms, environment 1.25s, prepare 232ms)
+

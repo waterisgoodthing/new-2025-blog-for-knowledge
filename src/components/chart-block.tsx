@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Maximize2, X, Download } from 'lucide-react'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 const ALLOWED_CHART_TYPES = ['bar', 'line', 'pie', 'radar'] as const
 type ChartType = typeof ALLOWED_CHART_TYPES[number]
@@ -228,7 +228,7 @@ export function ChartBlock({ code }: { code: string }) {
 				<LazyECharts option={echartsOption} style={{ height: 400, width: '100%' }} />
 			</div>
 
-			<DialogModal open={open} onClose={() => setOpen(false)} className='h-[92vh] w-[94vw] max-w-none bg-white p-0' overlayClassName='bg-white/80'>
+			<Modal bare ariaLabel='数据图表' open={open} onClose={() => setOpen(false)} className='h-[92vh] w-[94vw] max-w-none bg-white p-0' overlayClassName='bg-white/80'>
 				<div className='flex h-full flex-col'>
 					<div className='flex h-12 shrink-0 items-center justify-between border-b border-zinc-200 px-3'>
 						<div className='min-w-0 truncate text-sm font-medium text-zinc-700'>{safeOption.title || '数据图表'}</div>
@@ -251,7 +251,7 @@ export function ChartBlock({ code }: { code: string }) {
 						<LazyECharts option={echartsOption} style={{ height: '100%', width: '100%' }} />
 					</div>
 				</div>
-			</DialogModal>
+			</Modal>
 		</figure>
 	)
 }

@@ -1,0 +1,8 @@
+--- fresh heads ---
+033 (head)
+--- full suite (no deselect) ---
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+922 passed, 9 skipped, 2 warnings, 47 subtests passed in 31.20s
+--- downgrade 033->032 + re-upgrade ---
+PASS: db_name='astra_week4_gate2' source=explicit:--url; executing ['bash', '-c', "cd backend && export PYTHONPATH=. && .venv/bin/alembic upgrade head >/dev/null 2>&1 && echo '--- fresh heads ---' && .venv/bin/alembic heads && echo '--- full suite (no deselect) ---' && .venv/bin/python -m pytest tests/ -q 2>&1 | tail -3 && echo '--- downgrade 033->032 + re-upgrade ---' && .venv/bin/alembic downgrade 032 >/dev/null 2>&1 && echo downgrade_ok && .venv/bin/alembic upgrade head >/dev/null 2>&1 && echo upgrade_ok && .venv/bin/alembic heads"]

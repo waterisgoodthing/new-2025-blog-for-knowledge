@@ -1,0 +1,12 @@
+(node:69504) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v3.2.7 /Users/limengyang/2025-blog-public
+
+ ✓ src/lib/api/notes.test.ts (6 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  18:00:37
+   Duration  548ms (transform 30ms, setup 48ms, collect 19ms, tests 4ms, environment 234ms, prepare 49ms)
+

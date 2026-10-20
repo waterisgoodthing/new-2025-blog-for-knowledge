@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { motion } from 'motion/react'
 import { ANIMATION_DELAY, INIT_DELAY } from '@/consts'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 
 type ConvertedMeta = {
 	url: string
@@ -454,7 +454,7 @@ export default function Page() {
 			</div>
 
 			{compareIndex !== null && images[compareIndex]?.converted && (
-				<DialogModal open={true} onClose={handleCloseCompare} className='w-full'>
+				<Modal bare ariaLabel='图片对比' open={true} onClose={handleCloseCompare} className='w-full'>
 					<div className='grid w-full grid-cols-2 gap-4' onClick={handleCloseCompare}>
 						<div className='flex flex-col items-end p-4'>
 							<div>
@@ -469,7 +469,7 @@ export default function Page() {
 							</div>
 						</div>
 					</div>
-				</DialogModal>
+				</Modal>
 			)}
 		</div>
 	)

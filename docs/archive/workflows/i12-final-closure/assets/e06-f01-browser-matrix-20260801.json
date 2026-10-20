@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-08-01",
+  "origin": "http://localhost:3000",
+  "verification_mode": "isolated webpack dev server with real temporary sessions; AUTH_BYPASS=false",
+  "screenshots": [
+    {"path": "e06-f01-anonymous-390x844.png", "width": 390, "height": 844},
+    {"path": "e06-f01-nonadmin-390x844.png", "width": 390, "height": 844},
+    {"path": "e06-f01-admin-390x844.png", "width": 390, "height": 844},
+    {"path": "e06-f01-admin-1280x800.png", "width": 1280, "height": 800},
+    {"path": "e06-f01-admin-1440x900.png", "width": 1440, "height": 900}
+  ],
+  "geometry": {
+    "390x844": {"scroll_width": 390, "horizontal_overflow": false},
+    "1280x800": {"scroll_width": 1280, "horizontal_overflow": false},
+    "1440x900": {"scroll_width": 1440, "horizontal_overflow": false}
+  },
+  "permission_matrix": {
+    "anonymous_public_reads": "200",
+    "anonymous_admin_me": "401",
+    "invalid_session_admin_me": "401",
+    "non_admin_admin_dashboard": "403",
+    "non_admin_manage_dashboard_navigation": "redirected_to_/manage",
+    "admin_admin_dashboard": "200",
+    "admin_public_reads": "200"
+  },
+  "keyboard": {
+    "viewport": "390x844",
+    "anonymous_tab_path_reaches_public_navigation": true,
+    "admin_tab_path_reaches_menu_home_and_learning_actions": true
+  },
+  "browser_errors": [],
+  "temporary_sessions_closed": true,
+  "temporary_identities_removed_after_capture": true,
+  "passed": true
+}

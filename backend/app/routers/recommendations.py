@@ -8,14 +8,28 @@ from app.database import get_db
 from app.models.recommendation import DailyRecommendation
 from app.routers.auth import get_current_admin
 from app.schemas.recommendation import DailyRecommendationOut, RecommendationHistoryItem
-from app.services.recommendation import get_or_create_today_recommendation
+from app.services.recommendation import (
+    get_or_create_today_recommendation as generate_daily_recommendation,
+)
+from app.services.recommendation import get_today_recommendation as read_today_recommendation
 
 router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
 
 @router.get("/today", response_model=DailyRecommendationOut)
 async def get_today_recommendation(db: AsyncSession = Depends(get_db)):
-    return await get_or_create_today_recommendation(db)
+    recommendation = await read_today_recommendation(db)
+    if recommendation is None:
+        raise HTTPException(status_code=404, detail="No recommendation for today")
+    return recommendation
+
+
+@router.post("/today/generate", response_model=DailyRecommendationOut, status_code=201)
+async def generate_today_recommendation(
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(get_current_admin),
+):
+    return await generate_daily_recommendation(db)
 
 
 @router.delete("/today")
@@ -33,6 +47,7 @@ async def delete_today_recommendation(db: AsyncSession = Depends(get_db), _admin
 async def get_recommendation_history(
     limit: int = 30,
     db: AsyncSession = Depends(get_db),
+    _admin=Depends(get_current_admin),
 ):
     result = await db.execute(
         select(DailyRecommendation).order_by(DailyRecommendation.date.desc()).limit(limit)

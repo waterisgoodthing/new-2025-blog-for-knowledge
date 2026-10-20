@@ -1,0 +1,24 @@
+=== PR-11-verify C: SQL data provenance for the three questions ===
+date: 2026-09-25T12:13:22Z
+db: astra_week3_pr11_verify (Week 3 scratch, guarded)
+method: independent SQL recompute vs live /api/admin/dashboard/summary
+
+--- Q1 今日复习数 ---
+canonical SQL: SELECT count(*) FROM review_items WHERE state='active' AND next_review_at <= now()
+legacy SQL:    SELECT count(*) FROM notes WHERE type='mistake'   (0 = no legacy source)
+result: due_reviews_sql=2, legacy_note_mistakes_sql=0
+API/页面 review_today_count = 2  -> MATCH
+
+--- Q2 今日练习数 ---
+canonical SQL (PR-13 W3-D05 eligibility): active questions with KP,
+  excluding practice attempts in last 168h and mastered-linked mistakes.
+result: eligible=4, returned=min(eligible,3)=3
+API/页面 practice_today_count = 3  -> MATCH
+
+--- Q3 最弱 Top3 ---
+canonical SQL (PR-10 ordering): wrong_rate DESC, lapse DESC, due DESC, id ASC, LIMIT 3
+result: PR11V Alpha(1.0,2,1) / PR11V Beta(0.5,0,0) / PR11V Gamma(0.0,0,1)
+API/页面 weak_top3 == same 3 rows  -> MATCH
+
+All three values trace to canonical review_items/questions/mistakes/KP rows;
+legacy Note(type='mistake') count in scratch DB = 0.

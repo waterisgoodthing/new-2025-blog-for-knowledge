@@ -1,0 +1,184 @@
+
+Running 5 tests using 1 worker
+
+  ✘  1 [chromium] › tests/e2e/01-login-dashboard.spec.ts:15:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页 (16.9s)
+  ✘  2 [chromium] › tests/e2e/02-note-creation.spec.ts:15:5 › E2E-02: 新建笔记并保存后可再次编辑保存 (16.5s)
+  ✘  3 [chromium] › tests/e2e/03-capture.spec.ts:15:5 › E2E-03: 采集页展示上传入口并可在三种采集模式间切换 (16.4s)
+  ✘  4 [chromium] › tests/e2e/04-review-flow.spec.ts:15:5 › E2E-04: 复习页加载到期队列，无到期项时显示已完成空状态 (16.5s)
+  ✓  5 [chromium] › tests/e2e/05-error-retry.spec.ts:3:5 › E2E-05: 公开笔记页 API 失败时显示错误状态，重试后恢复 (1.8s)
+
+
+  1) [chromium] › tests/e2e/01-login-dashboard.spec.ts:15:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页 ─────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '管理面板' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByRole('heading', { name: '管理面板' })
+
+
+      10 |   await page.locator('#password').fill(ADMIN_PASSWORD)
+      11 |   await page.getByRole('button', { name: '密码登录' }).click()
+    > 12 |   await expect(page.getByRole('heading', { name: '管理面板' })).toBeVisible({ timeout: 15_000 })
+         |                                                             ^
+      13 | }
+      14 |
+      15 | test('E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页', async ({ page }) => {
+        at login (/Users/limengyang/2025-blog-public/tests/e2e/01-login-dashboard.spec.ts:12:61)
+        at /Users/limengyang/2025-blog-public/tests/e2e/01-login-dashboard.spec.ts:20:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/01-login-dashboard-E2E-01-未登录访问工作区跳转登录，登录后进入学习管理首页-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/01-login-dashboard-E2E-01-未登录访问工作区跳转登录，登录后进入学习管理首页-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/01-login-dashboard-E2E-01-未登录访问工作区跳转登录，登录后进入学习管理首页-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/01-login-dashboard-E2E-01-未登录访问工作区跳转登录，登录后进入学习管理首页-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/01-login-dashboard-E2E-01-未登录访问工作区跳转登录，登录后进入学习管理首页-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/02-note-creation.spec.ts:15:5 › E2E-02: 新建笔记并保存后可再次编辑保存 ────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '管理面板' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByRole('heading', { name: '管理面板' })
+
+
+      10 |   await page.locator('#password').fill(ADMIN_PASSWORD)
+      11 |   await page.getByRole('button', { name: '密码登录' }).click()
+    > 12 |   await expect(page.getByRole('heading', { name: '管理面板' })).toBeVisible({ timeout: 15_000 })
+         |                                                             ^
+      13 | }
+      14 |
+      15 | test('E2E-02: 新建笔记并保存后可再次编辑保存', async ({ page }) => {
+        at login (/Users/limengyang/2025-blog-public/tests/e2e/02-note-creation.spec.ts:12:61)
+        at /Users/limengyang/2025-blog-public/tests/e2e/02-note-creation.spec.ts:16:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/02-note-creation-E2E-02-新建笔记并保存后可再次编辑保存-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/02-note-creation-E2E-02-新建笔记并保存后可再次编辑保存-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/02-note-creation-E2E-02-新建笔记并保存后可再次编辑保存-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/02-note-creation-E2E-02-新建笔记并保存后可再次编辑保存-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/02-note-creation-E2E-02-新建笔记并保存后可再次编辑保存-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/03-capture.spec.ts:15:5 › E2E-03: 采集页展示上传入口并可在三种采集模式间切换 ────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '管理面板' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByRole('heading', { name: '管理面板' })
+
+
+      10 |   await page.locator('#password').fill(ADMIN_PASSWORD)
+      11 |   await page.getByRole('button', { name: '密码登录' }).click()
+    > 12 |   await expect(page.getByRole('heading', { name: '管理面板' })).toBeVisible({ timeout: 15_000 })
+         |                                                             ^
+      13 | }
+      14 |
+      15 | test('E2E-03: 采集页展示上传入口并可在三种采集模式间切换', async ({ page }) => {
+        at login (/Users/limengyang/2025-blog-public/tests/e2e/03-capture.spec.ts:12:61)
+        at /Users/limengyang/2025-blog-public/tests/e2e/03-capture.spec.ts:16:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/03-capture-E2E-03-采集页展示上传入口并可在三种采集模式间切换-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/03-capture-E2E-03-采集页展示上传入口并可在三种采集模式间切换-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/03-capture-E2E-03-采集页展示上传入口并可在三种采集模式间切换-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/03-capture-E2E-03-采集页展示上传入口并可在三种采集模式间切换-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/03-capture-E2E-03-采集页展示上传入口并可在三种采集模式间切换-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/04-review-flow.spec.ts:15:5 › E2E-04: 复习页加载到期队列，无到期项时显示已完成空状态 ──────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '管理面板' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByRole('heading', { name: '管理面板' })
+
+
+      10 |   await page.locator('#password').fill(ADMIN_PASSWORD)
+      11 |   await page.getByRole('button', { name: '密码登录' }).click()
+    > 12 |   await expect(page.getByRole('heading', { name: '管理面板' })).toBeVisible({ timeout: 15_000 })
+         |                                                             ^
+      13 | }
+      14 |
+      15 | test('E2E-04: 复习页加载到期队列，无到期项时显示已完成空状态', async ({ page }) => {
+        at login (/Users/limengyang/2025-blog-public/tests/e2e/04-review-flow.spec.ts:12:61)
+        at /Users/limengyang/2025-blog-public/tests/e2e/04-review-flow.spec.ts:16:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/04-review-flow-E2E-04-复习页加载到期队列，无到期项时显示已完成空状态-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/04-review-flow-E2E-04-复习页加载到期队列，无到期项时显示已完成空状态-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/04-review-flow-E2E-04-复习页加载到期队列，无到期项时显示已完成空状态-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/04-review-flow-E2E-04-复习页加载到期队列，无到期项时显示已完成空状态-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/04-review-flow-E2E-04-复习页加载到期队列，无到期项时显示已完成空状态-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/e2e/01-login-dashboard.spec.ts:15:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页 ──────
+    [chromium] › tests/e2e/02-note-creation.spec.ts:15:5 › E2E-02: 新建笔记并保存后可再次编辑保存 ─────────────────
+    [chromium] › tests/e2e/03-capture.spec.ts:15:5 › E2E-03: 采集页展示上传入口并可在三种采集模式间切换 ─────────────────
+    [chromium] › tests/e2e/04-review-flow.spec.ts:15:5 › E2E-04: 复习页加载到期队列，无到期项时显示已完成空状态 ───────────
+  1 passed (1.2m)

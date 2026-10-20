@@ -1,0 +1,1 @@
+OCR_MANUAL_DEADEND {"persistedStatus":"uploaded","persistedText":"Manual OCR-disabled fixture question","questionDraft":null,"manualQuestionField":0,"convertButtons":0,"aiDraftButtons":0,"recognizeButtons":0}

@@ -1,0 +1,214 @@
+===== PR-09 testfix: 7 skeleton defects (agent PR-09-testfix) =====
+date: 2026-09-24T11:06:34Z
+scratch cluster: /tmp/astra-week3-pr09-rw port=51469 db=astra_week3_pr09_tf alembic=031
+
+----- Run 1: the 7 named tests in one session -----
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 7 items
+
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source PASSED [ 14%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch PASSED [ 28%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten PASSED [ 42%]
+tests/test_pr09_verify_http.py::test_put_mistake_success_200 PASSED      [ 57%]
+tests/test_pr09_verify_http.py::test_delete_mistake_success_200 PASSED   [ 71%]
+tests/test_pr09_verify_http.py::test_put_mistake_wrong_version_409 PASSED [ 85%]
+tests/test_pr09_verify_http.py::test_delete_mistake_wrong_version_409 PASSED [100%]
+
+============================== 7 passed in 1.10s ===============================
+PASS: db_name='astra_week3_pr09_tf' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch', 'tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten', 'tests/test_pr09_verify_http.py::test_put_mistake_success_200', 'tests/test_pr09_verify_http.py::test_delete_mistake_success_200', 'tests/test_pr09_verify_http.py::test_put_mistake_wrong_version_409', 'tests/test_pr09_verify_http.py::test_delete_mistake_wrong_version_409', '-v', '--tb=short']
+DROP DATABASE
+CREATE DATABASE
+INFO  [alembic.runtime.migration] Running upgrade 030 -> 031, Widen ck_mistakes_visibility to allow 'public' (W3-D03 / PR-09).
+PASS: db_name='astra_week3_pr09_tf' source=explicit:--url; executing ['.venv/bin/alembic', 'upgrade', 'head']
+
+----- Run 2: whole test_pr09_rework.py + test_pr09_verify_http.py (fresh DB) -----
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 43 items
+
+tests/test_pr09_rework.py::test_map_next_review_date_to_utc_midnight PASSED [  2%]
+tests/test_pr09_rework.py::test_map_next_review_none_returns_default PASSED [  4%]
+tests/test_pr09_rework.py::test_map_next_review_naive_datetime_assumes_utc PASSED [  6%]
+tests/test_pr09_rework.py::test_map_next_review_aware_datetime_converts_to_utc PASSED [  9%]
+tests/test_pr09_rework.py::test_map_next_review_invalid_returns_default PASSED [ 11%]
+tests/test_pr09_rework.py::test_first_dry_run_replay_noop_is_true PASSED [ 13%]
+tests/test_pr09_rework.py::test_real_run_can_report_replay_noop_false PASSED [ 16%]
+tests/test_pr09_rework.py::test_dry_run_report_has_would_fields_and_zero_created PASSED [ 18%]
+tests/test_pr09_rework.py::test_real_run_report_created_fields_have_values PASSED [ 20%]
+tests/test_pr09_rework.py::test_report_checks_use_instance_fields PASSED [ 23%]
+tests/test_pr09_rework.py::test_report_rejected_count_includes_source_drift PASSED [ 25%]
+tests/test_pr09_rework.py::test_report_retained_public_only_maps_to_rejected_reason PASSED [ 27%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_checks_reflect_visibility_mismatch PASSED [ 30%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_dry_run_reports_planned_values PASSED [ 32%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_next_due_maps_from_source PASSED [ 34%]
+tests/test_pr09_rework.py::Wk3ReworkDbTest::test_source_drift_detected_and_target_not_overwritten PASSED [ 37%]
+tests/test_pr09_verify_http.py::test_public_empty_envelope_explicit PASSED [ 39%]
+tests/test_pr09_verify_http.py::test_public_populated_allowlist_and_no_private_fields PASSED [ 41%]
+tests/test_pr09_verify_http.py::test_anonymous_admin_list_401_403 PASSED [ 44%]
+tests/test_pr09_verify_http.py::test_anonymous_admin_update_401_403 PASSED [ 46%]
+tests/test_pr09_verify_http.py::test_anonymous_visibility_patch_401_403 PASSED [ 48%]
+tests/test_pr09_verify_http.py::test_anonymous_legacy_note_create_401_403 PASSED [ 51%]
+tests/test_pr09_verify_http.py::test_F1_create_type_mistake_frozen PASSED [ 53%]
+tests/test_pr09_verify_http.py::test_F2_update_type_into_mistake_frozen PASSED [ 55%]
+tests/test_pr09_verify_http.py::test_F3_promote_to_mistake_frozen PASSED [ 58%]
+tests/test_pr09_verify_http.py::test_F4_legacy_writer_ui_create_path_frozen PASSED [ 60%]
+tests/test_pr09_verify_http.py::test_F5_legacy_writer_ui_edit_save_frozen PASSED [ 62%]
+tests/test_pr09_verify_http.py::test_F6_write_note_mistake_content_save_frozen PASSED [ 65%]
+tests/test_pr09_verify_http.py::test_F7_sm2_submit_frozen PASSED         [ 67%]
+tests/test_pr09_verify_http.py::test_F8_field_update_frozen PASSED       [ 69%]
+tests/test_pr09_verify_http.py::test_F9_delete_frozen PASSED             [ 72%]
+tests/test_pr09_verify_http.py::test_F9_batch_delete_frozen PASSED       [ 74%]
+tests/test_pr09_verify_http.py::test_note_type_create_still_allowed PASSED [ 76%]
+tests/test_pr09_verify_http.py::test_compat_read_list_notes PASSED       [ 79%]
+tests/test_pr09_verify_http.py::test_compat_read_search PASSED           [ 81%]
+tests/test_pr09_verify_http.py::test_compat_read_review_queue PASSED     [ 83%]
+tests/test_pr09_verify_http.py::test_compat_read_get_single_mistake_note PASSED [ 86%]
+tests/test_pr09_verify_http.py::test_visibility_wrong_version_409 PASSED [ 88%]
+tests/test_pr09_verify_http.py::test_visibility_correct_version_toggles PASSED [ 90%]
+tests/test_pr09_verify_http.py::test_put_mistake_success_200 PASSED      [ 93%]
+tests/test_pr09_verify_http.py::test_put_mistake_wrong_version_409 PASSED [ 95%]
+tests/test_pr09_verify_http.py::test_delete_mistake_success_200 PASSED   [ 97%]
+tests/test_pr09_verify_http.py::test_delete_mistake_wrong_version_409 PASSED [100%]
+
+============================== 43 passed in 1.30s ==============================
+PASS: db_name='astra_week3_pr09_tf' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/test_pr09_rework.py', 'tests/test_pr09_verify_http.py', '-v', '--tb=short']
+
+----- Run 3: full pytest tests/ -q (fresh DB; baseline 10F/669P/12S) -----
+........................................................................ [ 10%]
+........................................................................ [ 20%]
+.......................................................................s [ 31%]
+sss........................................ss...........F............... [ 41%]
+........................................................................ [ 52%]
+........................................................................ [ 62%]
+...........................................F............................ [ 72%]
+........................................................................ [ 83%]
+........................sss....................................... [ 92%]
+.................................................                        [100%]
+=================================== FAILURES ===================================
+E   AssertionError: assert ModuleSpec(name='psycopg2', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10bad9040>, origin='/Users... submodule_search_locations=['/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/psycopg2']) is None
+     +  where ModuleSpec(name='psycopg2', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10bad9040>, origin='/Users... submodule_search_locations=['/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/psycopg2']) = <function find_spec at 0x107457600>('psycopg2')
+     +    where <function find_spec at 0x107457600> = <module 'importlib.util' (frozen)>.find_spec
+     +      where <module 'importlib.util' (frozen)> = importlib.util
+/Users/limengyang/2025-blog-public/backend/tests/test_lsr03_guarded_runner.py:84: AssertionError: assert ModuleSpec(name='psycopg2', loader=<_frozen_importlib_external.SourceFileLoader object at 0x10bad9040>, origin='/Users... submodule_search_locations=['/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/psycopg2']) is None
+E   assert False is True
+/Users/limengyang/2025-blog-public/backend/tests/test_pr09_verify_http.py:166: assert False is True
+=============================== warnings summary ===============================
+tests/test_ai_gateway.py::LogWriteFailureTest::test_log_write_failure_does_not_block
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 336, in test_log_write_failure_does_not_block
+      gw = await call_text("test_task", [{"role": "user", "content": "hi"}])
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 287, in call_text
+      await _write_call_log(task_type_str, gw_result, input_summary, prompt_version=prompt_version)
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 98, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_ai_gateway.py::LogWriteFailureTest::test_write_call_log_catches_exception
+  /Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py:98: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+  Coroutine created at (most recent call last)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/async_case.py", line 113, in _callMaybeAsync
+      return self._asyncioRunner.run(
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+      return self._loop.run_until_complete(task)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+      self.run_forever()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+      self._run_once()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1991, in _run_once
+      handle._run()
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/events.py", line 88, in _run
+      self._context.run(self._callback, *self._args)
+    File "/Users/limengyang/2025-blog-public/backend/tests/test_ai_gateway.py", line 361, in test_write_call_log_catches_exception
+      await _write_call_log("test", result, "summary")
+    File "/Users/limengyang/2025-blog-public/backend/app/services/ai_gateway.py", line 98, in _write_call_log
+      session.add(log)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1139, in __call__
+      return self._mock_call(*args, **kwargs)
+    File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+      return self._execute_mock_call(*args, **kwargs)
+    session.add(log)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_lsr03_guarded_runner.py::test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback
+FAILED tests/test_pr09_verify_http.py::test_public_empty_envelope_explicit - ...
+2 failed, 680 passed, 9 skipped, 2 warnings, 6 subtests passed in 5.99s
+PASS: db_name='astra_week3_pr09_tf' source=explicit:--url; executing ['.venv/bin/python', '-m', 'pytest', 'tests/', '-q', '--tb=line']
+
+----- Run 4: git status --short (write-scope check) -----
+?? backend/tests/test_pr09_rework.py
+?? backend/tests/test_pr09_verify_http.py
+ALL TEST-FILE TOUCHES:
+ M backend/tests/lsr03_final_verifier_harness.py
+ M backend/tests/test_legacy_note_migration_contract.py
+ M backend/tests/test_mistake_review_service.py
+ M backend/tests/test_security_settings_guards.py
+?? backend/tests/_pr09_evidence_constraint.py
+?? backend/tests/_pr09_evidence_seed.py
+?? backend/tests/test_guest_migration_contract.py
+?? backend/tests/test_pr09_legacy_mistake_freeze.py
+?? backend/tests/test_pr09_migration.py
+?? backend/tests/test_pr09_permissions.py
+?? backend/tests/test_pr09_rework.py
+?? backend/tests/test_pr09_routes.py
+?? backend/tests/test_pr09_verify_api_contract.py
+?? backend/tests/test_pr09_verify_http.py
+?? backend/tests/test_pr09_wk3_runner.py
+?? backend/tests/test_reanswer_v2.py
+?? backend/tests/test_review_scheduling_v2.py
+?? backend/tests/test_review_schema_v2.py
+?? backend/tests/test_week3_contracts.py
+?? backend/tests/week3_contracts_support.py
+
+===== SUMMARY =====
+7 named tests (Run 1): 7 passed / 0 failed / 0 skipped
+  A1 test_next_due_maps_from_source                PASS (was FAIL: cleanup FK)
+  A2 test_checks_reflect_visibility_mismatch        PASS (was FAIL: cleanup FK)
+  A3 test_source_drift_detected_and_target_not_overwritten PASS (was FAIL: cleanup FK)
+  B1 test_put_mistake_success_200                   PASS (was FAIL: seed FK)
+  B2 test_delete_mistake_success_200                PASS (was FAIL: seed FK)
+  B3 test_put_mistake_wrong_version_409             PASS (was FAIL: seed FK)
+  B4 test_delete_mistake_wrong_version_409          PASS (was FAIL: seed FK)
+whole files (Run 2): 43 passed / 0 failed / 0 skipped
+full suite (Run 3): 2 failed, 680 passed, 9 skipped
+  vs baseline 10F/669P/12S -> failures 10->2 (not increased), <=3F target met
+  remaining F:
+    test_lsr03_guarded_runner::test_asyncpg_is_available_and_psycopg2_is_not_a_runtime_fallback (pre-existing, allowed)
+    test_pr09_verify_http.py::test_public_empty_envelope_explicit (pre-existing in baseline 10F;
+      green in the two-file run; full-suite pollution from test_pr09_verify_api_contract.py
+      leaving visibility=public status=active mistakes - outside write scope)
+fix root causes:
+  A: cleanup DELETE notes was FK-blocked by legacy_note_migrations.source_note_id (ON DELETE
+     RESTRICT); ledger DELETE itself is guard-trigger-rejected (LEGACY_MIGRATION_LEDGER_DELETE_REJECTED)
+     so cleanup now runs in session_replication_role=replica, deletes ledger + associated target rows
+     (review_items/mistakes/drafts/questions/question_sources/qkp/kpl) first, then the note.
+     _setup_infra KP insert also made idempotent (ON CONFLICT) - was cascading later tests to skipTest.
+  B: _seed_public_mistake now creates real draft_items + questions + subjects rows (and the
+     review_items row required by get_mistake scalar_one) before inserting mistakes.
+assertions: unchanged (verifier-confirmed logic untouched).

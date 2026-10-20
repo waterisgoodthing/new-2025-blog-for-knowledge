@@ -1,0 +1,5 @@
+PR9F-06 PATCH status: 200
+PR9F-06 PATCH body: {"id":"400f0f53-cfc3-4b79-b010-5a7e22302ab4","source_draft_item_id":"7c72b2e0-3d64-4ce0-a483-4ea7cbfd359a","question_id":"aa93a2ea-5359-4381-9ac4-aab3a20ed902","subject_id":1,"title":"Patch Title","question_text":"Q?","my_answer":"secret","correct_answer":"A","analysis":"an","reason_category":"concept","mistake_reason":"reason","difficulty":"easy","status":"active","visibility":"public","version":2,"knowledge_point_ids":[],"review_item_id":"710c3e7f-9147-48d9-bc02-e2991516fda0","created_at":"2026-09-24T10:44:20.145669Z","updated_at":"2026-09-24T10:44:20.525630Z"}
+PR9F-06 visibility: public version: 2
+RESULTS: PR9F-06: PASS
+PASS: db_name='astra_week3_pr09_rw_verify' source=explicit:--url; executing ['.venv/bin/python', '../docs/workflows/personal-learning-system-convergence/week3/evidence/tests/pr-09-repro-patch-visibility.py']

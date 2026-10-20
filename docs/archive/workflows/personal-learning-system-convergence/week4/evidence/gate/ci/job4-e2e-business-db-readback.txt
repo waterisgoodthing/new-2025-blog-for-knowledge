@@ -1,0 +1,32 @@
+# Backend readback: rows the E2E business specs created in scratch DB astra_week4_f04_e2e
+# (2 repeat full runs after the harness was fixed; raw psql output)
+
+## attempts by context_type/is_correct
+ context_type | is_correct | count 
+--------------+------------+-------
+ practice     | f          |     3
+ review       | t          |     4
+(2 rows)
+
+## mistake drafts by status
+  status   | count 
+-----------+-------
+ converted |     1
+ pending   |     3
+(2 rows)
+
+## review_records: total and how many carry an attempt_id (re-answer linkage)
+ review_records | with_attempt 
+----------------+--------------
+              4 |            4
+(1 row)
+
+## newest review_records (rating + attempt linkage)
+ rating | has_attempt | new_state 
+--------+-------------+-----------
+      4 | t           | active
+      4 | t           | active
+      4 | t           | active
+      4 | t           | active
+(4 rows)
+

@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.0, pluggy-1.6.0 -- /Users/limengyang/2025-blog-public/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/limengyang/2025-blog-public/backend
+plugins: anyio-4.13.0
+collecting ... collected 6 items
+
+tests/test_login_throttling_integration.py::test_fourth_failure_has_real_two_second_delay 
+-------------------------------- live log call ---------------------------------
+WARNING  app.routers.auth:auth.py:188 Login throttled: account=slow-real-user ip=203.0.113.10 failures=3 delay=2.00s
+[timing] real default 4th-attempt elapsed=2.005s
+PASSED
+tests/test_login_throttling_integration.py::test_short_config_fourth_attempt_waits_first_delay 
+-------------------------------- live log call ---------------------------------
+WARNING  app.routers.auth:auth.py:188 Login throttled: account=short-config-user ip=203.0.113.11 failures=3 delay=0.25s
+[timing] short-config 4th-attempt elapsed=0.254s
+PASSED
+tests/test_login_throttling_integration.py::test_account_dimension_applies_from_a_new_ip 
+-------------------------------- live log call ---------------------------------
+WARNING  app.routers.auth:auth.py:188 Login throttled: account=account-across-ip ip=198.51.100.2 failures=3 delay=0.25s
+[timing] account-dimension new-IP elapsed=0.254s
+PASSED
+tests/test_login_throttling_integration.py::test_ip_dimension_applies_to_a_new_account 
+-------------------------------- live log call ---------------------------------
+WARNING  app.routers.auth:auth.py:188 Login throttled: account=shared-ip-fresh-account ip=198.51.100.9 failures=3 delay=0.25s
+[timing] ip-dimension new-account elapsed=0.253s
+PASSED
+tests/test_login_throttling_integration.py::test_disabled_throttle_adds_no_delay [timing] disabled-throttle elapsed=0.001s
+PASSED
+tests/test_login_throttling_integration.py::test_successful_login_resets_account_delay 
+-------------------------------- live log call ---------------------------------
+WARNING  app.routers.auth:auth.py:188 Login throttled: account=reset-user ip=192.0.2.51 failures=3 delay=2.00s
+[timing] post-success account reset elapsed=0.168s
+PASSED
+
+============================== 6 passed in 6.20s ===============================
+PASS: db_name='astra_week4_pr16' source=explicit:--url; executing ['bash', '-c', 'cd backend && .venv/bin/python -m pytest tests/test_login_throttling_integration.py -v -s --log-cli-level=WARNING']

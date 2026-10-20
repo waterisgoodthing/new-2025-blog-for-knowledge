@@ -1,0 +1,412 @@
+INFO:     Started server process [72469]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:18401 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50014 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50016 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50018 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50018 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50016 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50015 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50016 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50016 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50015 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50014 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50048 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50016 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50018 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50049 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50018 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50049 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50048 - "OPTIONS /api/admin/dashboard/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50014 - "OPTIONS /api/admin/profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50049 - "GET /api/admin/profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50017 - "GET /api/admin/dashboard/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50075 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50075 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50075 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50075 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50075 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50075 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50079 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50080 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50076 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50081 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50082 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50083 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50082 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50081 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50083 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50080 - "OPTIONS /api/notes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50083 - "POST /api/notes HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50080 - "OPTIONS /api/notes/e2e-%E7%AC%94%E8%AE%B0-1790502452554 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50083 - "PUT /api/notes/e2e-%E7%AC%94%E8%AE%B0-1790502452554 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50120 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50120 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50120 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50120 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50120 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50120 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50126 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50127 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50121 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50129 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50130 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50130 - "GET /api/admin/questions?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50130 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50129 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50127 - "OPTIONS /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50126 - "OPTIONS /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50129 - "GET /api/admin/subjects?status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50126 - "OPTIONS /api/admin/knowledge-points?subject_id=1&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/admin/knowledge-points?subject_id=1&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50126 - "OPTIONS /api/admin/attempts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "POST /api/admin/attempts HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50126 - "OPTIONS /api/admin/mistake-drafts/72d6dd01-c66e-4b0b-89e7-234948ae6dbb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/admin/mistake-drafts/72d6dd01-c66e-4b0b-89e7-234948ae6dbb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/admin/knowledge-points?subject_id=1&status=active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/admin/mistake-drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:50152 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50157 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50153 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50159 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50159 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50161 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "OPTIONS /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "OPTIONS /api/admin/mistakes/fd1035ce-a5b8-4739-8320-fc2830fc08e9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/admin/mistakes/fd1035ce-a5b8-4739-8320-fc2830fc08e9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "OPTIONS /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50158 - "OPTIONS /api/admin/attempts/review HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "POST /api/admin/attempts/review HTTP/1.1" 201 Created
+INFO:     127.0.0.1:50158 - "OPTIONS /api/admin/review/items/adbe1a4e-7f63-46e4-9ce2-c2f12514fcb8/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "POST /api/admin/review/items/adbe1a4e-7f63-46e4-9ce2-c2f12514fcb8/submit HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50160 - "GET /api/admin/review/items/adbe1a4e-7f63-46e4-9ce2-c2f12514fcb8/records HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50206 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50205 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50205 - "GET /api/auth/session-state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50205 - "GET /api/notes?status=published&page=1&size=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51675 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:51673 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51673 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51673 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51673 - "GET /api/notes?page=1&size=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51672 - "OPTIONS /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51683 - "OPTIONS /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51684 - "OPTIONS /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51673 - "GET /api/folders HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51675 - "GET /api/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/ai/suggestions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51673 - "GET /api/music/manage/daily-song/public HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51675 - "GET /api/content/site-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51684 - "OPTIONS /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/admin/review/items?due=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51684 - "OPTIONS /api/admin/mistakes/fd1035ce-a5b8-4739-8320-fc2830fc08e9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/admin/mistakes/fd1035ce-a5b8-4739-8320-fc2830fc08e9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51684 - "OPTIONS /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/admin/questions/a5a180fe-29d2-4997-a116-c2dab9fb9606 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51684 - "OPTIONS /api/admin/attempts/review HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "POST /api/admin/attempts/review HTTP/1.1" 201 Created
+INFO:     127.0.0.1:51684 - "OPTIONS /api/auth/session-state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51674 - "GET /api/auth/session-state HTTP/1.1" 200 OK
+Keep-alive ping failed
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 103, in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/http11.py", line 136, in handle_async_request
+    raise exc
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/http11.py", line 106, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/http11.py", line 177, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/http11.py", line 231, in _receive_event
+    raise RemoteProtocolError(msg)
+httpcore.RemoteProtocolError: Server disconnected without sending a response.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/app/services/keep_alive.py", line 21, in _ping_loop
+    resp = await client.get(url)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1768, in get
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.RemoteProtocolError: Server disconnected without sending a response.
+Keep-alive ping failed
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 101, in handle_async_request
+    raise exc
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 78, in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 124, in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/auto.py", line 31, in connect_tcp
+    return await self._backend.connect_tcp(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/anyio.py", line 113, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/app/services/keep_alive.py", line 21, in _ping_loop
+    resp = await client.get(url)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1768, in get
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 8] nodename nor servname provided, or not known
+Keep-alive ping failed
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 101, in handle_async_request
+    raise exc
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 78, in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 124, in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/auto.py", line 31, in connect_tcp
+    return await self._backend.connect_tcp(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/anyio.py", line 113, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/app/services/keep_alive.py", line 21, in _ping_loop
+    resp = await client.get(url)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1768, in get
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 8] nodename nor servname provided, or not known
+Keep-alive ping failed
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 101, in handle_async_request
+    raise exc
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 78, in handle_async_request
+    stream = await self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_async/connection.py", line 124, in _connect
+    stream = await self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/auto.py", line 31, in connect_tcp
+    return await self._backend.connect_tcp(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_backends/anyio.py", line 113, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/limengyang/2025-blog-public/backend/app/services/keep_alive.py", line 21, in _ping_loop
+    resp = await client.get(url)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1768, in get
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_2/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/limengyang/2025-blog-public/backend/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 8] nodename nor servname provided, or not known
+INFO:     127.0.0.1:54184 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72469]

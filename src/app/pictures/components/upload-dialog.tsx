@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
-import { DialogModal } from '@/components/dialog-modal'
+import { Uiv2Modal as Modal } from '@/components/ui-v2/Modal'
 import type { ImageItem } from '../../projects/components/image-upload-dialog'
 
 interface UploadDialogProps {
@@ -67,7 +67,7 @@ export default function UploadDialog({ onClose, onSubmit }: UploadDialogProps) {
 	}
 
 	return (
-		<DialogModal open onClose={handleClose} className='card w-md max-sm:w-full'>
+		<Modal bare ariaLabel='上传图片' open onClose={handleClose} className='card w-md max-sm:w-full'>
 			<div className='space-y-4'>
 				<h2 className='text-xl font-bold'>上传图片</h2>
 
@@ -140,6 +140,6 @@ export default function UploadDialog({ onClose, onSubmit }: UploadDialogProps) {
 					</button>
 				</div>
 			</div>
-		</DialogModal>
+		</Modal>
 	)
 }

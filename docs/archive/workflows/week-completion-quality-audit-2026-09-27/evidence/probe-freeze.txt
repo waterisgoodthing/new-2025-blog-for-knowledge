@@ -1,0 +1,1 @@
+{"http": 200, "response": {"executed": 1, "failed": 0, "errors": []}, "legacy_type": "mistake", "folder_changed": true, "scope": "ASGI admin dependency overridden; real handler/service/PG; transaction rollback"}

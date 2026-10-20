@@ -1,0 +1,34 @@
+=== A: dual-arg mismatch (db-name astra_week3_demo vs url .../astra_week3_other) ===
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'astra_week3_other' parsed from the connection URL (source=explicit:--url)
+exit=1
+
+=== B: --url production_db with legal --db-name ===
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'production_db' parsed from the connection URL (source=explicit:--url)
+exit=1
+
+=== B2: --url blog_db with legal --db-name ===
+FAIL: URL contains forbidden substring 'blog_db' (source=explicit:--url)
+exit=1
+
+=== B3: --url blog_v2 with legal --db-name ===
+FAIL: URL contains forbidden substring 'blog_v2' (source=explicit:--url)
+exit=1
+
+=== D: run with dual mismatched args — child must NOT execute ===
+FAIL: ambiguous target: --db-name='astra_week3_demo' disagrees with the database name 'production_db' parsed from the connection URL (source=explicit:--url)
+child command NOT executed
+exit=1
+
+=== D2: run with consistent dual args — CHILD_DSN must be the validated URL ===
+CHILD_DSN postgresql+asyncpg://scratch:scratch@localhost:5432/astra_week3_other
+PASS: db_name='astra_week3_other' source=explicit:--url; executing ['python3', '-c', "import os; print('CHILD_DSN', os.environ.get('DATABASE_URL',''))"]
+exit=0
+
+=== W3R-02: remote host without flag ===
+FAIL: host 'db.internal' is not in the local allowlist ['127.0.0.1', '::1', 'localhost']; pass --allow-remote-host to override (source=explicit:--url)
+exit=1
+
+=== W3R-02: remote host with --allow-remote-host ===
+WARNING: --allow-remote-host permits non-local host 'db.internal' (source=explicit:--url)
+PASS: db_name='astra_week3_demo' source=explicit:--url
+exit=0

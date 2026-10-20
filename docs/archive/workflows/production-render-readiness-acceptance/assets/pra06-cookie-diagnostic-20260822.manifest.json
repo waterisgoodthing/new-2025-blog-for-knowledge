@@ -1,0 +1,123 @@
+{
+  "run_id": "pra06-cookie-diagnostic-20260822",
+  "status": "fail",
+  "purpose": "single normal browser login cookie propagation diagnosis",
+  "source_head": "202ea14d3362a84a491a7a8e32d2afd5d2e0bc1f",
+  "snapshot_worktree": "/private/tmp/pra06-cookie-diagnostic-20260822-6YOPhy/worktree",
+  "frontend_base": "http://localhost:3102",
+  "api_base": "http://api.localhost:8102",
+  "api_bind": "http://127.0.0.1:8102",
+  "login_url": "http://api.localhost:8102/api/auth/login",
+  "origin": "http://localhost:3102",
+  "runtime": {
+    "next_public_api_url": "http://api.localhost:8102",
+    "allowed_origins": "http://localhost:3102",
+    "auth_bypass": false,
+    "auth_bypass_allow": false
+  },
+  "fixture": {
+    "total": 30,
+    "public_visible": 20,
+    "published_hidden": 5,
+    "drafts": 5,
+    "d1_public": true,
+    "types": {
+      "note": 10,
+      "blog": 10,
+      "mistake": 10
+    },
+    "temporary_admin_username": "pra06-cookie-diagnostic-admin",
+    "password_persisted": false
+  },
+  "probe": {
+    "normal_login_attempts": 1,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness_claim": false,
+    "password_token_cookie_values_persisted": false
+  },
+  "started_at": "2026-08-22T09:53:36.644Z",
+  "browser_version": "151.0.7922.34",
+  "ended_at": "2026-08-22T09:53:42.882Z",
+  "result": {
+    "sample_id": "M30-cookie-diagnostic-01",
+    "valid": false,
+    "failure_reason": "strict-management-status:401; cookie-jar:admin_session-absent; readiness-dom:0:missing; readiness-mark:manage-content-ready-missing; console-errors; failed-requests",
+    "login_post_statuses": [
+      200
+    ],
+    "me_statuses": [
+      200,
+      401,
+      401
+    ],
+    "strict_management_statuses": [
+      401
+    ],
+    "admin_session_cookie_jar_present": false,
+    "login_set_cookie_attribute_evidence_present": true,
+    "blocked_set_cookie_reason_count": 0,
+    "request_cookie_header_presence": {
+      "me": [
+        false,
+        false,
+        false
+      ],
+      "strict_management": [
+        false
+      ]
+    },
+    "readiness_dom_state": null,
+    "readiness_marks": {
+      "auth_submit": 1,
+      "content_ready": 0
+    },
+    "login_preflight_statuses": [
+      200
+    ],
+    "login_post_set_cookie_attribute_evidence_present": true,
+    "login_blocked_set_cookie_reason_count": 0,
+    "password_token_cookie_values_persisted": false,
+    "me_preflight_statuses": [
+      200
+    ],
+    "me_get_statuses": [
+      401,
+      401
+    ],
+    "me_result": 401,
+    "strict_management_get_statuses": [
+      401
+    ]
+  },
+  "preflight": {
+    "log": "pra06-cookie-diagnostic-20260822-preflight.log",
+    "health": 200,
+    "frontend_root": 200,
+    "cors_allow_origin": "http://localhost:3102",
+    "cors_allow_credentials": "true",
+    "startup_anomaly_preserved": true,
+    "login_not_submitted_during_startup_anomaly": true
+  },
+  "artifacts": {
+    "raw_ndjson": "pra06-cookie-diagnostic-20260822.raw.ndjson",
+    "cleanup_log": "pra06-cookie-diagnostic-20260822-cleanup.log",
+    "runtime_log": "pra06-cookie-diagnostic-20260822.log"
+  },
+  "cleanup": {
+    "temporary_admin_disabled": true,
+    "isolated_sessions_revoked": true,
+    "services_stopped": true,
+    "ports_3102_8102_55434_listeners": false,
+    "detached_worktree_unregistered": true,
+    "isolated_root_recoverable_copy": "/Users/limengyang/.Trash/pra06-cookie-diagnostic-20260822-6YOPhy",
+    "main_or_production_resources_touched": false
+  },
+  "claims": {
+    "diagnosis_only": true,
+    "auth_cors_fix_authorized": false,
+    "ten_sample_run": false,
+    "performance_baseline": false,
+    "production_readiness": false
+  }
+}

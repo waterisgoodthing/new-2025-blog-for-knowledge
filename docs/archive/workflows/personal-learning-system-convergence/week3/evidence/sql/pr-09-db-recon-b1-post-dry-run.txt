@@ -1,0 +1,6 @@
+ sources | ledger | pending | mistakes | review_items | questions | draft_items 
+---------+--------+---------+----------+--------------+-----------+-------------
+       5 |      0 |       0 |        0 |            0 |         0 |           0
+(1 row)
+
+PASS: db_name='astra_week3_pr09_db4' source=explicit:--db-name; executing ['psql', '-h', 'localhost', '-U', 'limengyang', '-d', 'astra_week3_pr09_db4', '-v', 'ON_ERROR_STOP=1', '-c', "\n    SELECT (SELECT count(*) FROM public.notes WHERE type='mistake') AS sources,\n           (SELECT count(*) FROM public.legacy_note_migrations) AS ledger,\n           (SELECT count(*) FROM public.legacy_note_migrations WHERE state='pending_mapping') AS pending,\n           (SELECT count(*) FROM public.mistakes) AS mistakes,\n           (SELECT count(*) FROM public.review_items) AS review_items,\n           (SELECT count(*) FROM public.questions) AS questions,\n           (SELECT count(*) FROM public.draft_items) AS draft_items;\n  "]

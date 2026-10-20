@@ -29,6 +29,85 @@ SYSTEM_PROMPTS = {
 }
 
 
+def _get_stream_providers() -> list[dict]:
+    settings = get_settings()
+    providers = []
+    if settings.DEEPSEEK_API_KEY:
+        providers.append({
+            "name": "deepseek",
+            "key": settings.DEEPSEEK_API_KEY,
+            "base_url": settings.DEEPSEEK_BASE_URL,
+            "model": settings.DEEPSEEK_MODEL,
+        })
+    if settings.DASHSCOPE_API_KEY:
+        general_model = settings.AI_MODEL
+        if "dashscope" in settings.DASHSCOPE_BASE_URL and not general_model.startswith("qwen"):
+            general_model = "qwen3.7-plus"
+        providers.append({
+            "name": "qwen_general",
+            "key": settings.DASHSCOPE_API_KEY,
+            "base_url": settings.DASHSCOPE_BASE_URL,
+            "model": general_model,
+        })
+    elif settings.AI_API_KEY:
+        providers.append({
+            "name": "qwen_general",
+            "key": settings.AI_API_KEY,
+            "base_url": settings.AI_BASE_URL,
+            "model": settings.AI_MODEL,
+        })
+    return providers
+
+
+async def _stream_from_provider(
+    provider: dict,
+    messages: list[dict],
+    request: Request,
+) -> AsyncGenerator[str, None]:
+    async with httpx.AsyncClient(timeout=60) as client:
+        async with client.stream(
+            "POST",
+            f"{provider['base_url']}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {provider['key']}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": provider["model"],
+                "messages": messages,
+                "max_tokens": 4000,
+                "stream": True,
+            },
+        ) as response:
+            if response.status_code != 200:
+                raise RuntimeError(f"AI service error ({response.status_code})")
+
+            chunk_count = 0
+            async for line in response.aiter_lines():
+                if await request.is_disconnected():
+                    return
+
+                if not line.startswith("data: "):
+                    continue
+
+                data_str = line[6:]
+                if data_str.strip() == "[DONE]":
+                    break
+
+                try:
+                    data = json.loads(data_str)
+                    delta = data.get("choices", [{}])[0].get("delta", {})
+                    content = delta.get("content")
+                    if content:
+                        chunk_count += 1
+                        yield f'data: {json.dumps({"chunk": content}, ensure_ascii=False)}\n\n'
+                        if chunk_count % 3 == 0:
+                            if await request.is_disconnected():
+                                return
+                except json.JSONDecodeError:
+                    continue
+
+
 async def polish_stream(
     text: str,
     action: str,
@@ -37,18 +116,15 @@ async def polish_stream(
     title: str | None = None,
     note_type: str | None = None,
     existing_tags: list[str] | None = None,
+    custom_prompt: str | None = None,
 ) -> AsyncGenerator[str, None]:
-    settings = get_settings()
-    api_key = settings.DEEPSEEK_API_KEY or settings.AI_API_KEY
-    base_url = settings.DEEPSEEK_BASE_URL
-    model = settings.DEEPSEEK_MODEL
-
-    if not api_key:
+    providers = _get_stream_providers()
+    if not providers:
         yield 'data: {"error": "AI 服务未配置"}\n\n'
         yield "data: [DONE]\n\n"
         return
 
-    system_prompt = SYSTEM_PROMPTS.get(action, SYSTEM_PROMPTS["polish"])
+    system_prompt = custom_prompt if action == "custom" and custom_prompt else SYSTEM_PROMPTS.get(action, SYSTEM_PROMPTS["polish"])
 
     messages = [{"role": "system", "content": system_prompt}]
     if context:
@@ -67,72 +143,49 @@ async def polish_stream(
 
     start_time = time.monotonic()
     status = "ok"
+    provider_used = ""
 
-    try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            async with client.stream(
-                "POST",
-                f"{base_url}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": messages,
-                    "max_tokens": 4000,
-                    "stream": True,
-                },
-            ) as response:
-                if response.status_code != 200:
-                    status = str(response.status_code)
-                    yield f'data: {json.dumps({"error": f"AI 服务错误 ({response.status_code})"}, ensure_ascii=False)}\n\n'
-                    yield "data: [DONE]\n\n"
-                    return
-
-                chunk_count = 0
-                async for line in response.aiter_lines():
-                    if await request.is_disconnected():
-                        status = "client_disconnected"
-                        break
-
-                    if not line.startswith("data: "):
-                        continue
-
-                    data_str = line[6:]
-                    if data_str.strip() == "[DONE]":
-                        break
-
-                    try:
-                        data = json.loads(data_str)
-                        delta = data.get("choices", [{}])[0].get("delta", {})
-                        content = delta.get("content")
-                        if content:
-                            chunk_count += 1
-                            yield f'data: {json.dumps({"chunk": content}, ensure_ascii=False)}\n\n'
-
-                            if chunk_count % 3 == 0:
-                                if await request.is_disconnected():
-                                    status = "client_disconnected"
-                                    break
-                    except json.JSONDecodeError:
-                        continue
-
-    except httpx.TimeoutException:
-        status = "timeout"
-        yield 'data: {"error": "AI 服务超时，请重试"}\n\n'
-    except Exception as e:
-        status = "error"
-        yield f'data: {{"error": "AI 服务异常"}}\n\n'
+    for i, provider in enumerate(providers):
+        try:
+            provider_used = provider["name"]
+            async for chunk in _stream_from_provider(provider, messages, request):
+                yield chunk
+            status = "ok"
+            break
+        except RuntimeError as e:
+            status = f"error_{provider['name']}"
+            logger.warning("Polish provider %s failed: %s", provider["name"], str(e)[:100])
+            if i == len(providers) - 1:
+                yield f'data: {json.dumps({"error": f"AI 服务错误: {str(e)[:100]}"}, ensure_ascii=False)}\n\n'
+                yield "data: [DONE]\n\n"
+                return
+            continue
+        except httpx.TimeoutException:
+            status = f"timeout_{provider['name']}"
+            logger.warning("Polish provider %s timed out", provider["name"])
+            if i == len(providers) - 1:
+                yield 'data: {"error": "AI 服务超时，请重试"}\n\n'
+                yield "data: [DONE]\n\n"
+                return
+            continue
+        except Exception as e:
+            status = f"error_{provider['name']}"
+            logger.warning("Polish provider %s exception: %s", provider["name"], str(e)[:100])
+            if i == len(providers) - 1:
+                yield 'data: {"error": "AI 服务异常"}\n\n'
+                yield "data: [DONE]\n\n"
+                return
+            continue
 
     duration_ms = int((time.monotonic() - start_time) * 1000)
     logger.info(
-        "ai_polish action=%s text_len=%d context_len=%d duration_ms=%d status=%s",
+        "ai_polish action=%s text_len=%d context_len=%d duration_ms=%d status=%s provider=%s",
         action,
         len(text),
         len(context) if context else 0,
         duration_ms,
         status,
+        provider_used,
     )
 
     yield "data: [DONE]\n\n"

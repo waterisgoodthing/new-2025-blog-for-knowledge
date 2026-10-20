@@ -1,0 +1,28 @@
+
+> 2025-blog@0.1.0 test:typecheck
+> node node_modules/typescript/bin/tsc --noEmit --project tsconfig.test.json
+
+src/features/ui-v2/dashboard/dashboard.test.tsx(26,53): error TS2322: Type '"ok"' is not assignable to type '"unknown" | "ready" | "empty"'.
+src/features/ui-v2/notes/notes.test.tsx(57,49): error TS2322: Type 'UiPageModel<NoteDetail[]>' is not assignable to type 'UiPageModel<NoteArtifact[]>'.
+  Type 'NoteDetail[]' is not assignable to type 'NoteArtifact[]'.
+    Type 'NoteDetail' is missing the following properties from type 'NoteArtifact': subjectLabel, knowledgePoints, updatedAt, editorHref, source
+src/features/ui-v2/notes/notes.test.tsx(60,30): error TS2322: Type 'UiPageModel<NoteDetail[]>' is not assignable to type 'UiPageModel<NoteArtifact[]>'.
+  Type 'NoteDetail[]' is not assignable to type 'NoteArtifact[]'.
+    Type 'NoteDetail' is missing the following properties from type 'NoteArtifact': subjectLabel, knowledgePoints, updatedAt, editorHref, source
+src/features/ui-v2/notes/notes.test.tsx(63,30): error TS2322: Type 'UiPageModel<NoteDetail[]>' is not assignable to type 'UiPageModel<NoteArtifact[]>'.
+  Type 'NoteDetail[]' is not assignable to type 'NoteArtifact[]'.
+    Type 'NoteDetail' is missing the following properties from type 'NoteArtifact': subjectLabel, knowledgePoints, updatedAt, editorHref, source
+src/features/ui-v2/questions/questions.test.tsx(63,30): error TS2322: Type 'Question[] | null' is not assignable to type 'QuestionCardModel[] | null'.
+  Type 'Question[]' is not assignable to type 'QuestionCardModel[]'.
+    Type 'Question' is missing the following properties from type 'QuestionCardModel': stem, questionType, correctAnswer, analysis, and 4 more.
+src/features/ui-v2/resources/resources.test.tsx(47,53): error TS2322: Type 'UiPageModel<Attachment[]>' is not assignable to type 'UiPageModel<ResourceItem[]>'.
+  Type 'Attachment[]' is not assignable to type 'ResourceItem[]'.
+    Type 'Attachment' is missing the following properties from type 'ResourceItem': name, mimeType, sizeLabel, uploadedAt, source
+src/features/ui-v2/resources/resources.test.tsx(50,34): error TS2322: Type 'UiPageModel<Attachment[]>' is not assignable to type 'UiPageModel<ResourceItem[]>'.
+  Type 'Attachment[]' is not assignable to type 'ResourceItem[]'.
+    Type 'Attachment' is missing the following properties from type 'ResourceItem': name, mimeType, sizeLabel, uploadedAt, source
+src/features/ui-v2/resources/resources.test.tsx(53,34): error TS2322: Type 'UiPageModel<Attachment[]>' is not assignable to type 'UiPageModel<ResourceItem[]>'.
+  Type 'Attachment[]' is not assignable to type 'ResourceItem[]'.
+    Type 'Attachment' is missing the following properties from type 'ResourceItem': name, mimeType, sizeLabel, uploadedAt, source
+src/features/ui-v2/today/today.test.tsx(32,53): error TS2322: Type '"ok"' is not assignable to type '"unknown" | "ready" | "empty"'.
+src/features/ui-v2/today/today.test.tsx(63,70): error TS2322: Type '"ok"' is not assignable to type '"unknown" | "ready" | "empty"'.

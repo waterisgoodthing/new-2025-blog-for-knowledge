@@ -1,0 +1,11 @@
+[e2e-seed] question=d971a70f-d0a8-45cc-b2aa-26617f57516f review_item=4d41c7cb-6b4a-4de6-b3b2-0c3e20547650 marker=E2E-W4-BUSINESS
+
+Running 5 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/01-login-dashboard.spec.ts:24:5 › E2E-01: 未登录访问工作区跳转登录，登录后进入学习管理首页 (2.2s)
+  ✓  2 [chromium] › tests/e2e/02-note-creation.spec.ts:20:5 › E2E-02: 新建笔记并保存后可再次编辑保存 (2.0s)
+  ✓  3 [chromium] › tests/e2e/03-capture.spec.ts:15:5 › E2E-03: 错误作答生成待确认错题草稿（真实页面操作 + 后端读回） (2.3s)
+  ✓  4 [chromium] › tests/e2e/04-review-flow.spec.ts:23:5 › E2E-04: 复习再答并写入 ReviewRecord（真实页面操作 + 后端读回） (2.0s)
+  ✓  5 [chromium] › tests/e2e/05-error-retry.spec.ts:8:5 › E2E-05: 公开笔记页 API 失败时显示错误状态，重试后恢复 (1.3s)
+
+  5 passed (10.7s)
